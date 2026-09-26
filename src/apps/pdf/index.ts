@@ -5,7 +5,7 @@ import { t } from '../../core/i18n'
 import { loadUser } from '../../core/store'
 import { confirmDialog, el, showDialog } from '../../ui/widgets'
 import { mountPdf, PDF_ACCEPT, pdfApps } from './app'
-import { fillDoc, WARN_SIZE } from './model'
+import { annotsMap, fileArray, fillDoc, metaMap, notesMap, pagesArray, pendingNotes, readFile, WARN_SIZE, type Note } from './model'
 import './pdf.css'
 
 export const accept = PDF_ACCEPT
@@ -56,14 +56,54 @@ export async function importFile(file: File): Promise<string> {
   return createLocalDocument('pdf', pdf.name.replace(/\.pdf$/i, ''), (doc) => fillDoc(doc, prepared))
 }
 
-// "Hand in": the PDF with editable annotations and a flattened copy.
+// Exports the stored document without a mounted viewer (home screen ▸ Download,
+// hand-in of a document that is not open). Encrypted originals are rasterized
+// with pdf.js on an offscreen canvas.
+async function exportStored(session: Session, mode: 'annotations' | 'flatten'): Promise<Uint8Array> {
+  const doc = session.doc
+  const size = Number(metaMap(doc).get('size') ?? 0)
+  const have = fileArray(doc).toArray().reduce((n, c) => n + c.length, 0)
+  if (size && have < size) throw new Error(t('The PDF is still loading'))
+  const bytes = readFile(doc)
+  const notes = new Map<string, Note>()
+  pendingNotes(doc).forEach((n, id) => notes.set(id, n))
+  if (session.commentsDoc) notesMap(session).forEach((n, id) => notes.set(id, n))
+  const { exportPdf } = await import('./export')
+  const opened: { pdf?: ReturnType<typeof import('./pdfjs').openPdf> } = {}
+  const raster = async (src: number): Promise<Uint8Array> => {
+    opened.pdf ??= import('./pdfjs').then((m) => m.openPdf(bytes!))
+    const page = await (await opened.pdf).getPage(src + 1)
+    const viewport = page.getViewport({ scale: 2 })
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.floor(viewport.width)
+    canvas.height = Math.floor(viewport.height)
+    await page.render({ canvas, viewport }).promise
+    const png = await new Promise<Blob>((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('canvas'))), 'image/png'))
+    return new Uint8Array(await png.arrayBuffer())
+  }
+  const input = {
+    bytes,
+    pages: pagesArray(doc).toArray(),
+    annots: [...annotsMap(doc).values()],
+    notes: [...notes.values()],
+    title: String(doc.getMap('meta').get('title') ?? '') || undefined,
+    raster: bytes ? raster : undefined,
+  }
+  try {
+    return await exportPdf(input, mode)
+  } finally {
+    opened.pdf?.then((pdf) => pdf.destroy()).catch(() => undefined)
+  }
+}
+
+// "Hand in" and home ▸ Download: the PDF with editable annotations and a flattened copy.
 export async function submitFiles(session: Session): Promise<SubmitFile[]> {
   const app = pdfApps.get(session)
-  if (!app) throw new Error(t('The PDF is still loading'))
+  const build = (mode: 'annotations' | 'flatten') => (app ? app.exportBytes(mode) : exportStored(session, mode))
   const title = String(session.doc.getMap('meta').get('title') || t('Untitled PDF'))
   const pdf = (bytes: Uint8Array) => new Blob([bytes as BlobPart], { type: 'application/pdf' })
   return [
-    { name: `${title}.pdf`, blob: pdf(await app.exportBytes('annotations')) },
-    { name: `${title} (${t('flattened')}).pdf`, blob: pdf(await app.exportBytes('flatten')) },
+    { name: `${title}.pdf`, blob: pdf(await build('annotations')) },
+    { name: `${title} (${t('flattened')}).pdf`, blob: pdf(await build('flatten')) },
   ]
 }

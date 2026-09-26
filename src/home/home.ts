@@ -9,6 +9,7 @@ import * as store from '../core/store'
 import { legalFooter } from '../legal/links'
 import { accessibilityButton } from '../ui/accessibility'
 import { brandMark } from '../ui/brand'
+import { nameButton } from '../ui/shell'
 import { helpMenuItems } from '../ui/menus'
 import { openAccountDialog, openFromNextcloud } from '../ui/nextcloud'
 import { registerShortcuts, showShortcuts } from '../ui/shortcuts'
@@ -106,6 +107,7 @@ export function mountHome(root: HTMLElement): void {
         helpButton(),
         accessibilityButton(true),
         nameInput,
+        nameButton(nameInput),
       ),
       el(
         'section',

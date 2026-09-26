@@ -61,6 +61,8 @@ input, select, textarea { font: inherit; color: inherit; }
 .share-btn, .handin-btn { display: inline-flex; align-items: center; gap: 6px; }
 .share-btn svg, .handin-btn svg { flex: none; }
 .user-name { width: 120px; padding: 5px 8px; border: 2px solid var(--border); border-radius: var(--radius-m); background: var(--surface); }
+/* Replaces the name field on narrow screens (see the media query below). */
+.user-name-btn { display: none; flex: none; width: 34px; height: 34px; padding: 0; border: 2px solid var(--border); border-radius: 50%; place-items: center; }
 
 /* ---------- Menus & popovers ---------- */
 
@@ -229,6 +231,7 @@ dialog.dlg { background: var(--surface); color: var(--text); }
 @media (max-width: 760px) {
   .appbar { padding: 6px 8px 0; }
   .user-name, .hide-narrow { display: none; }
+  .user-name-btn { display: grid; }
   /* The save state stays visible as an icon (its text is the tooltip). */
   .appbar .save-state { display: none; }
   .toolbar { flex-wrap: nowrap; overflow-x: auto; border-radius: 8px; }

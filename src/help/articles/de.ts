@@ -14,7 +14,7 @@ const articles: Articles = {
 - **Ihre Dokumente**: alles, was Sie in diesem Browser erstellt oder geöffnet haben, mit Suche, Ordnern, Schlagwörtern und Papierkorb (gelöschte Dokumente werden 30 Tage aufbewahrt).
 
 ## Ihr Name
-Geben Sie Ihren Namen oben rechts ein. Andere sehen ihn neben Ihrem Cursor und in Kommentaren, und er wird beim Abgeben für den Dateinamen verwendet. Ein Vorname oder Initialen genügen.
+Geben Sie Ihren Namen oben rechts ein (auf dem Handy oder in einem schmalen Fenster tippen Sie oben rechts auf die Personen-Schaltfläche). Andere sehen ihn neben Ihrem Cursor und in Kommentaren, und er wird beim Abgeben für den Dateinamen verwendet. Ein Vorname oder Initialen genügen.
 
 ## Wichtig
 - Dokumente werden **nur in diesem Browser** gespeichert. Lesen Sie [Offline arbeiten und wo Ihre Daten liegen](help:offline) und erstellen Sie [Sicherungen](help:backup).
@@ -158,10 +158,12 @@ Lesen Sie die vollständige [Datenschutzerklärung](legal:privacy) und die [Info
 - \`Strg+O\` Datei öffnen, \`Strg+P\` drucken, \`Strg+S\` in Nextcloud speichern (im Browser wird Ihre Arbeit ohnehin immer gespeichert)
 - \`Strg+Z\` rückgängig, \`Strg+Y\` wiederholen
 - \`Strg+X\` ausschneiden, \`Strg+C\` kopieren, \`Strg+V\` einfügen, \`Strg+A\` alles auswählen
-- \`Strg+F\` suchen, \`Strg+H\` suchen und ersetzen
+- \`Strg+F\` suchen
 - \`F10\` oder \`Alt+Umschalt+M\` zur Menüleiste; dann Pfeiltasten, \`Eingabe\` und \`Esc\`
 - \`Strg+/\` oder \`F1\` alle Tastenkombinationen der aktuellen App anzeigen
 - \`Alt+Umschalt+A\` Barrierefreiheit, \`Alt+Umschalt+R\` vorlesen, \`Alt+Umschalt+D\` diktieren
+
+In Ofimeo Dokumente und Ofimeo Tabellen öffnet \`Strg+H\` Suchen und Ersetzen.
 
 Die Menüs zeigen die Tastenkombination jedes Befehls daneben an.
 
@@ -210,7 +212,7 @@ Die Sprache der Oberfläche ändern Sie auf der Startseite oder im Panel.`,
 - Tippen Sie \`=\`, um eine Formel zu beginnen, zum Beispiel =SUM(B2:B30) oder =AVERAGE(C2:C30). Hunderte Funktionen stehen bereit.
 - **Einfügen ▸ Diagramm…** erstellt aus den markierten Zellen ein Säulen-, Balken-, Linien-, Kreis- oder Punktdiagramm. Diagramme passen sich an, wenn sich die Werte ändern.
 - **Daten** bietet Sortieren, Filter, Gültigkeitsprüfung und **Pivot-Tabelle…**.
-- **Format** bietet Zahlenformate, Rahmen, verbundene Zellen und bedingte Formatierung.
+- **Format** bietet Zahlenformate, verbundene Zellen und bedingte Formatierung; Rahmen finden Sie in der Symbolleiste.
 - Die Statusleiste zeigt Summe, Mittelwert und Anzahl der markierten Zellen.
 - Mehrere Personen können gleichzeitig bearbeiten; ihre Auswahl sehen Sie in ihren Farben.
 
@@ -272,8 +274,8 @@ Die Startseite bietet Vorlagen für Concept-Maps, Zeitleisten, Flussdiagramme un
     body: `Formulare, Umfragen und Quizze, die sich selbst auswerten.
 
 ## Für Lehrkräfte
-- **Frage hinzufügen** und den Typ wählen: Kurzantwort, Absatz, Multiple Choice, Kontrollkästchen, Dropdown, Skala, Raster, Datum, Uhrzeit oder Zahl. **Abschnitt hinzufügen** erstellt eine neue Seite.
-- **Als Quiz verwenden**, um richtige Antworten, Punkte und Rückmeldungen festzulegen. Die Bewertung erfolgt automatisch; Absätze werden von Hand bewertet.
+- **Frage** fügt eine Frage hinzu; wählen Sie ihren Typ: Kurzantwort, Absatz, Multiple Choice, Kontrollkästchen, Dropdown, Skala, Raster, Datum, Uhrzeit oder Zahl. **Abschnitt** erstellt eine neue Seite.
+- Aktivieren Sie **Quiz**, um richtige Antworten, Punkte und Rückmeldungen festzulegen. Die Bewertung erfolgt automatisch; Absätze werden von Hand bewertet.
 - **Senden** liefert den Link und einen QR-Code für die Klasse. Sie sehen nur das Formular, nicht die Antworten der anderen.
 - Antworten kommen an, wenn Ihr Browser (oder der einer anderen bearbeitenden Person) online ist. Sie sehen sie unter **Antworten**, mit Diagrammen und Statistiken, und können sie in eine Tabelle exportieren.
 

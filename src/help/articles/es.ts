@@ -14,7 +14,7 @@ const articles: Articles = {
 - **Tus documentos**: todo lo que has creado o abierto en este navegador, con búsqueda, carpetas, etiquetas y papelera (los documentos eliminados se guardan 30 días).
 
 ## Tu nombre
-Escribe tu nombre en la casilla de arriba a la derecha. Los colaboradores lo ven junto a tu cursor y en los comentarios, y se usa en el nombre del archivo cuando entregas un trabajo. Basta con el nombre de pila o las iniciales.
+Escribe tu nombre en la casilla de arriba a la derecha (en un móvil o en una ventana estrecha, toca el botón de la persona de arriba a la derecha). Los colaboradores lo ven junto a tu cursor y en los comentarios, y se usa en el nombre del archivo cuando entregas un trabajo. Basta con el nombre de pila o las iniciales.
 
 ## Importante
 - Los documentos se guardan **solo en este navegador**. Lee [Trabajar sin conexión y dónde se guardan tus datos](help:offline) y haz [copias de seguridad](help:backup).
@@ -158,10 +158,12 @@ Lee la [política de privacidad](legal:privacy) completa y la [información para
 - \`Ctrl+O\` abrir un archivo, \`Ctrl+P\` imprimir, \`Ctrl+S\` guardar en Nextcloud (tu trabajo siempre se guarda en el navegador de todas formas)
 - \`Ctrl+Z\` deshacer, \`Ctrl+Y\` rehacer
 - \`Ctrl+X\` cortar, \`Ctrl+C\` copiar, \`Ctrl+V\` pegar, \`Ctrl+A\` seleccionar todo
-- \`Ctrl+F\` buscar, \`Ctrl+H\` buscar y reemplazar
+- \`Ctrl+F\` buscar
 - \`F10\` o \`Alt+Mayús+M\` ir a la barra de menús; después usa las flechas, \`Intro\` y \`Esc\`
 - \`Ctrl+/\` o \`F1\` ver todos los atajos de la aplicación que estás usando
 - \`Alt+Mayús+A\` panel de accesibilidad, \`Alt+Mayús+R\` leer en voz alta, \`Alt+Mayús+D\` dictado
+
+En Ofimeo Documentos y Ofimeo Hojas de cálculo, \`Ctrl+H\` abre buscar y reemplazar.
 
 Los menús muestran el atajo de cada orden a su lado.
 
@@ -210,7 +212,7 @@ Abre y descarga Word (.docx) y OpenDocument (.odt); también abre .html, .txt y 
 - Escribe \`=\` para empezar una fórmula, por ejemplo =SUM(B2:B30) o =AVERAGE(C2:C30). Hay cientos de funciones.
 - **Insertar ▸ Gráfico…** crea un gráfico de columnas, barras, líneas, circular o de dispersión a partir de las celdas seleccionadas. Los gráficos se actualizan cuando cambian los valores.
 - **Datos** tiene ordenar, filtros, validación y **Tabla dinámica…**.
-- **Formato** tiene formatos de número, bordes, combinar celdas y formato condicional.
+- **Formato** tiene formatos de número, combinar celdas y formato condicional; los bordes están en la barra de herramientas.
 - La barra de estado muestra la suma, el promedio y el recuento de las celdas seleccionadas.
 - Varias personas pueden editar a la vez; ves sus selecciones en sus colores.
 
@@ -272,8 +274,8 @@ Abre PowerPoint (.pptx). Descarga PowerPoint (.pptx), OpenDocument (.odp), PDF e
     body: `Formularios, encuestas y cuestionarios que se corrigen solos.
 
 ## Para el profesorado
-- **Añadir pregunta** y elige su tipo: respuesta corta, párrafo, opción múltiple, casillas, desplegable, escala, cuadrícula, fecha, hora o número. **Añadir sección** crea una página nueva.
-- **Convertir en cuestionario evaluable** para fijar las respuestas correctas, los puntos y los comentarios. La corrección es automática; los párrafos se corrigen a mano.
+- **Pregunta** añade una pregunta; elige su tipo: respuesta corta, párrafo, opción múltiple, casillas, desplegable, escala, cuadrícula, fecha, hora o número. **Sección** crea una página nueva.
+- Activa **Cuestionario** para fijar las respuestas correctas, los puntos y los comentarios. La corrección es automática; los párrafos se corrigen a mano.
 - **Enviar** da el enlace y un código QR para tu alumnado. Solo ven el formulario, no las respuestas de los demás.
 - Las respuestas llegan cuando tu navegador (o el de otro editor) está conectado. Míralas en **Respuestas**, con gráficos y estadísticas, y expórtalas a una hoja de cálculo.
 

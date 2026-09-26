@@ -5,17 +5,31 @@
 //   sheet    workbook snapshot (sheet.checkpoint or sheet.base) plus the set-range-values log
 //   draw     text of the Excalidraw elements (draw-elements)
 //   diagram  cell labels (diagram-cells:*) and page names; slides also speaker notes
+//   forms    description, section and question titles, descriptions and options
+//            (form-settings, form-items; the answer key is private and never indexed)
+//   pdf      file name, text boxes, stamps and marked text (pdf-annots), sticky
+//            notes (pdf-notes in the comments document, pdf-pending-notes) and
+//            the page text, which the worker extracts with pdf.js (pdfText)
 
 import * as Y from 'yjs'
 import type { DocType } from './store'
 
-export function extractText(type: DocType, doc: Y.Doc): string {
+export interface ExtractExtra {
+  // Comments document (PDF sticky notes).
+  comments?: Y.Doc
+  // Text of the original PDF pages, by source page index.
+  pdfPages?: string[]
+}
+
+export function extractText(type: DocType, doc: Y.Doc, extra: ExtractExtra = {}): string {
   const title = String(doc.getMap('meta').get('title') ?? '')
   const parts: string[] = [title]
   try {
     if (type === 'writer') for (const name of ['body', 'header', 'footer']) parts.push(xmlText(doc.getXmlFragment(name)))
     else if (type === 'sheet') parts.push(sheetText(doc))
     else if (type === 'draw') parts.push(drawText(doc))
+    else if (type === 'forms') parts.push(formsText(doc))
+    else if (type === 'pdf') parts.push(pdfText(doc, extra))
     else parts.push(diagramText(doc))
   } catch {
     // Unexpected structure: index what was read.
@@ -83,6 +97,48 @@ function drawText(doc: Y.Doc): string {
     const text = element.originalText ?? element.text ?? element.name
     if (text) out.push(text)
   }
+  return out.join('\n')
+}
+
+interface Labelled {
+  label?: unknown
+}
+
+function formsText(doc: Y.Doc): string {
+  const out: string[] = []
+  const settings = doc.getMap<unknown>('form-settings')
+  const add = (v: unknown) => typeof v === 'string' && v.trim() && out.push(v)
+  add(settings.get('description'))
+  for (const item of doc.getArray<Y.Map<unknown>>('form-items').toArray()) {
+    if (!(item instanceof Y.Map)) continue
+    for (const key of ['title', 'description', 'minLabel', 'maxLabel']) add(item.get(key))
+    for (const key of ['options', 'rows']) {
+      const list = item.get(key)
+      if (Array.isArray(list)) for (const o of list as Labelled[]) add(o?.label)
+    }
+  }
+  return out.join('\n')
+}
+
+// Key of the stored PDF file: its text is extracted again only when it changes.
+export function pdfFileKey(doc: Y.Doc): string {
+  const meta = doc.getMap<unknown>('pdf-meta')
+  const chunks = doc.getArray<Uint8Array>('pdf-file')
+  const have = chunks.toArray().reduce((n, c) => n + (c?.length ?? 0), 0)
+  return `${String(meta.get('name') ?? '')}|${String(meta.get('size') ?? 0)}|${have}`
+}
+
+function pdfText(doc: Y.Doc, extra: ExtractExtra): string {
+  const out: string[] = []
+  const name = doc.getMap<unknown>('pdf-meta').get('name')
+  if (typeof name === 'string' && name) out.push(name)
+  const pages = doc.getArray<{ src?: number }>('pdf-pages').toArray()
+  if (extra.pdfPages) for (const p of pages) if (typeof p?.src === 'number' && p.src >= 0 && extra.pdfPages[p.src]) out.push(extra.pdfPages[p.src])
+  for (const a of doc.getMap<{ text?: string; quote?: string; alt?: string }>('pdf-annots').values()) {
+    for (const v of [a?.text, a?.quote, a?.alt]) if (typeof v === 'string' && v.trim()) out.push(v)
+  }
+  const notes = [doc.getMap<{ text?: string }>('pdf-pending-notes'), extra.comments?.getMap<{ text?: string }>('pdf-notes')]
+  for (const map of notes) for (const n of map?.values() ?? []) if (typeof n?.text === 'string' && n.text.trim()) out.push(n.text)
   return out.join('\n')
 }
 

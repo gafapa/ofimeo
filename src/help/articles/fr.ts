@@ -16,7 +16,7 @@ const articles: Articles = {
 - **Vos documents**${NB}: tout ce que vous avez créé ou ouvert dans ce navigateur, avec recherche, dossiers, étiquettes et corbeille (les documents supprimés sont conservés 30${NB}jours).
 
 ## Votre nom
-Saisissez votre nom dans la case en haut à droite. Vos collaborateurs le voient à côté de votre curseur et dans les commentaires, et il sert au nom du fichier quand vous rendez un travail. Un prénom ou des initiales suffisent.
+Saisissez votre nom dans la case en haut à droite (sur un téléphone ou dans une fenêtre étroite, touchez le bouton en forme de personne en haut à droite). Vos collaborateurs le voient à côté de votre curseur et dans les commentaires, et il sert au nom du fichier quand vous rendez un travail. Un prénom ou des initiales suffisent.
 
 ## À savoir
 - Les documents sont enregistrés **uniquement dans ce navigateur**. Lisez [Travailler hors ligne et où sont stockées vos données](help:offline) et faites des [sauvegardes](help:backup).
@@ -160,10 +160,12 @@ Lisez la [politique de confidentialité](legal:privacy) complète et les [inform
 - \`Ctrl+O\` ouvrir un fichier, \`Ctrl+P\` imprimer, \`Ctrl+S\` enregistrer dans Nextcloud (votre travail est de toute façon toujours enregistré dans le navigateur)
 - \`Ctrl+Z\` annuler, \`Ctrl+Y\` rétablir
 - \`Ctrl+X\` couper, \`Ctrl+C\` copier, \`Ctrl+V\` coller, \`Ctrl+A\` tout sélectionner
-- \`Ctrl+F\` rechercher, \`Ctrl+H\` rechercher et remplacer
+- \`Ctrl+F\` rechercher
 - \`F10\` ou \`Alt+Maj+M\` aller à la barre de menus${NB}; utilisez ensuite les flèches, \`Entrée\` et \`Échap\`
 - \`Ctrl+/\` ou \`F1\` afficher tous les raccourcis de l’application utilisée
 - \`Alt+Maj+A\` panneau d’accessibilité, \`Alt+Maj+R\` lecture à voix haute, \`Alt+Maj+D\` dictée
+
+Dans Ofimeo Documents et Ofimeo Classeurs, \`Ctrl+H\` ouvre rechercher et remplacer.
 
 Les menus affichent le raccourci de chaque commande à côté de celle-ci.
 
@@ -212,7 +214,7 @@ Ouvre et télécharge Word (.docx) et OpenDocument (.odt)${NB}; ouvre aussi .htm
 - Tapez \`=\` pour commencer une formule, par exemple =SUM(B2:B30) ou =AVERAGE(C2:C30). Des centaines de fonctions sont disponibles.
 - **Insertion ▸ Graphique…** crée un graphique en colonnes, en barres, en courbes, en secteurs ou en nuage de points à partir des cellules sélectionnées. Les graphiques se mettent à jour quand les valeurs changent.
 - **Données** propose le tri, les filtres, la validation et le **Tableau croisé dynamique…**.
-- **Format** propose les formats de nombre, les bordures, la fusion de cellules et la mise en forme conditionnelle.
+- **Format** propose les formats de nombre, la fusion de cellules et la mise en forme conditionnelle${NB}; les bordures sont dans la barre d’outils.
 - La barre d’état affiche la somme, la moyenne et le nombre des cellules sélectionnées.
 - Plusieurs personnes peuvent modifier en même temps${NB}; vous voyez leurs sélections dans leurs couleurs.
 
@@ -274,8 +276,8 @@ Ouvre PowerPoint (.pptx). Télécharge PowerPoint (.pptx), OpenDocument (.odp), 
     body: `Des formulaires, sondages et quiz qui se corrigent tout seuls.
 
 ## Pour les enseignants
-- **Ajouter une question** et choisissez son type${NB}: réponse courte, paragraphe, choix multiple, cases à cocher, liste déroulante, échelle, grille, date, heure ou nombre. **Ajouter une section** crée une nouvelle page.
-- **Transformer en quiz** pour définir les bonnes réponses, les points et les commentaires. La correction est automatique${NB}; les paragraphes sont corrigés à la main.
+- **Question** ajoute une question${NB}; choisissez son type${NB}: réponse courte, paragraphe, choix multiple, cases à cocher, liste déroulante, échelle, grille, date, heure ou nombre. **Section** crée une nouvelle page.
+- Activez **Quiz** pour définir les bonnes réponses, les points et les commentaires. La correction est automatique${NB}; les paragraphes sont corrigés à la main.
 - **Envoyer** donne le lien et un code QR pour vos élèves. Ils ne voient que le formulaire, pas les réponses des autres.
 - Les réponses arrivent quand votre navigateur (ou celui d’un autre éditeur) est en ligne. Consultez-les dans **Réponses**, avec graphiques et statistiques, et exportez-les vers un classeur.
 

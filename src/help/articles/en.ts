@@ -14,7 +14,7 @@ const articles: Articles = {
 - **Your documents**: everything you created or opened in this browser, with search, folders, tags and a trash (deleted documents are kept for 30 days).
 
 ## Your name
-Type your name in the box at the top right. Collaborators see it next to your cursor and in comments, and it is used for the file name when you hand in work. A first name or initials is enough.
+Type your name in the box at the top right (on a phone or in a narrow window, tap the person button at the top right). Collaborators see it next to your cursor and in comments, and it is used for the file name when you hand in work. A first name or initials is enough.
 
 ## Important to know
 - Documents are stored **in this browser** only. Read [Working offline and where your data is stored](help:offline) and make [backups](help:backup).
@@ -158,10 +158,12 @@ Read the full [privacy policy](legal:privacy) and the [information for schools](
 - \`Ctrl+O\` open a file, \`Ctrl+P\` print, \`Ctrl+S\` save to Nextcloud (your work is always saved in the browser anyway)
 - \`Ctrl+Z\` undo, \`Ctrl+Y\` redo
 - \`Ctrl+X\` cut, \`Ctrl+C\` copy, \`Ctrl+V\` paste, \`Ctrl+A\` select all
-- \`Ctrl+F\` find, \`Ctrl+H\` find and replace
+- \`Ctrl+F\` find
 - \`F10\` or \`Alt+Shift+M\` go to the menu bar; then use the arrow keys, \`Enter\` and \`Escape\`
 - \`Ctrl+/\` or \`F1\` show all the shortcuts of the app you are using
 - \`Alt+Shift+A\` accessibility panel, \`Alt+Shift+R\` read aloud, \`Alt+Shift+D\` dictation
+
+In Ofimeo Docs and Ofimeo Sheets, \`Ctrl+H\` opens find and replace.
 
 Menus show the shortcut of each command next to it.
 
@@ -210,7 +212,7 @@ Opens and downloads Word (.docx) and OpenDocument (.odt); also opens .html, .txt
 - Type \`=\` to start a formula, for example =SUM(B2:B30) or =AVERAGE(C2:C30). Hundreds of functions are available.
 - **Insert ▸ Chart…** makes a column, bar, line, pie or scatter chart from the selected cells. Charts update when the values change.
 - **Data** has sorting, filters, validation and **Pivot table…**.
-- **Format** has number formats, borders, merged cells and conditional formatting.
+- **Format** has number formats, merged cells and conditional formatting; borders are on the toolbar.
 - The status bar shows the sum, average and count of the selected cells.
 - Several people can edit at once; you see their selections in their colors.
 
@@ -272,8 +274,8 @@ Opens PowerPoint (.pptx). Downloads PowerPoint (.pptx), OpenDocument (.odp), PDF
     body: `Forms, surveys and quizzes that grade themselves.
 
 ## For teachers
-- **Add question** and choose its type: short answer, paragraph, multiple choice, checkboxes, dropdown, scale, grid, date, time or number. **Add section** makes a new page.
-- **Make this a quiz** to set the correct answers, points and feedback. Grading is automatic; paragraphs are graded by hand.
+- **Question** adds a question; choose its type: short answer, paragraph, multiple choice, checkboxes, dropdown, scale, grid, date, time or number. **Section** makes a new page.
+- Turn on **Quiz** to set the correct answers, points and feedback. Grading is automatic; paragraphs are graded by hand.
 - **Send** gives the link and a QR code for your students. They only see the form, not the answers of others.
 - Responses arrive when your browser (or another editor's) is online. See them in **Responses**, with charts and statistics, and export them to a spreadsheet.
 

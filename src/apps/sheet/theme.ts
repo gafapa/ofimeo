@@ -74,11 +74,18 @@ export function buildTheme(host: HTMLElement): Theme {
   return { ...defaultTheme, primary, gray }
 }
 
+// Text colors of the themes applied so far (Univer's gray 900). Univer's cell
+// editor gives typed text this color; it is the interface's, not the cell's.
+const themeTextColors = new Set<string>(['#1b1c1f'])
+export const isInterfaceTextColor = (rgb: unknown) => typeof rgb === 'string' && themeTextColors.has(rgb.trim().toLowerCase())
+
 // Applies the theme now and whenever the accessibility theme changes.
 export function followTheme(univerAPI: FUniver, host: HTMLElement, onChange?: () => void): void {
   const apply = () => {
     try {
-      univerAPI.setTheme(buildTheme(host))
+      const theme = buildTheme(host)
+      themeTextColors.add(String(theme.gray[900]).toLowerCase())
+      univerAPI.setTheme(theme)
       univerAPI.toggleDarkMode(isDarkMode())
     } catch (err) {
       console.warn('Could not apply the Univer theme', err)

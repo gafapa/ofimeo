@@ -782,8 +782,11 @@ or menu → *Install*) and it works without a connection for individual work.
 - Documents always live in the browser (IndexedDB), so creating, editing,
   opening and downloading files needs no network. Collaboration resumes by itself
   when peers are reachable again, and offline edits merge automatically.
-- When installed, the app registers as a handler for `.docx`, `.odt`, `.xlsx`,
-  `.ods`, `.csv`, `.drawio`, `.excalidraw` and `.pptx` files ("Open with").
+- When installed, the app registers as a handler for `.docx`, `.odt`, `.doc`,
+  `.xlsx`, `.ods`, `.xls`, `.csv`, `.tsv`, `.drawio`, `.vsdx`, `.excalidraw`,
+  `.pptx`, `.odp`, `.ppt`, `.oform` and `.pdf` files ("Open with"). Its
+  shortcuts (long-press or right-click the icon) start a new document in any
+  of the seven apps.
 - Updates are picked up automatically on the next visit.
 
 ## Nextcloud

@@ -13,6 +13,7 @@ import {
   iceServers,
   peerPath,
   publicRelays,
+  relayAddressProblem,
   relayGuideUrl,
   schoolRelay,
   setRelayOnly,
@@ -315,8 +316,33 @@ function relaySettings(onChange: () => void): HTMLElement {
       const input = el('input', { class: 'field mono', placeholder: 'https://relay.school.local:8443', spellcheck: false })
       input.setAttribute('aria-label', t('School relay address'))
       const use = el('button', { type: 'button', textContent: t('Use this relay') })
+      // Inline error for an address that cannot work, shown before anything is fetched.
+      const invalid = el('p', { class: 'conn-bad', id: 'conn-relay-error', role: 'alert', hidden: true })
+      const showProblem = (text: string | null) => {
+        invalid.hidden = !text
+        invalid.textContent = text ?? ''
+        if (text) {
+          input.setAttribute('aria-invalid', 'true')
+          input.setAttribute('aria-describedby', invalid.id)
+        } else {
+          input.removeAttribute('aria-invalid')
+          input.removeAttribute('aria-describedby')
+        }
+      }
+      input.addEventListener('input', () => showProblem(null))
       const submit = async () => {
         if (!input.value.trim()) return input.focus()
+        const problem = relayAddressProblem(input.value)
+        if (problem) {
+          showProblem(
+            problem === 'scheme'
+              ? t('The address must start with https:// or wss:// (http:// or ws:// only on the school network).')
+              : problem === 'insecure'
+                ? t('This page uses https, so the browser only connects to a relay with an https:// or wss:// address.')
+                : t('This is not a valid address. Example: https://relay.school.local:8443'),
+          )
+          return input.focus()
+        }
         use.disabled = true
         use.textContent = t('Checking…')
         try {
@@ -342,7 +368,7 @@ function relaySettings(onChange: () => void): HTMLElement {
           void submit()
         }
       })
-      box.append(el('div', { class: 'code-row' }, input, use))
+      box.append(el('div', { class: 'code-row' }, input, use), invalid)
     }
     if (message) {
       const p = el('p', { class: message.error ? 'conn-bad' : 'hint', textContent: message.text })

@@ -1,6 +1,7 @@
 // Hash-based routing, so the suite works on any static host:
 //   #app=<type>&doc=<id>&key=<secret>[&edit=…|&comment=…&verify=…|&verify=…&cverify=…][&copy=1]
 //                                        open a document (see keys.ts for the permission keys)
+//   #new=<type>                          a new document of that app (manifest shortcuts, main.ts)
 //   (empty)                              home screen
 // `copy=1` makes a private copy of the document instead of joining it.
 // The fragment is never sent to any server, which keeps the keys private.

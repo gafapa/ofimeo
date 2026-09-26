@@ -1,7 +1,8 @@
 // Home screen ▸ Download: documents in a standard format, built from their
 // stored state without opening them (Word for documents, PowerPoint for
-// presentations, draw.io for diagrams, Excalidraw for drawings). Several
-// documents go into one zip. Spreadsheets need the open app to export.
+// presentations, draw.io for diagrams, Excalidraw for drawings, the annotated
+// PDF for PDFs). Several documents go into one zip; a document that fails is
+// left out and reported. Spreadsheets need the open app to export.
 
 import * as Y from 'yjs'
 import { IndexeddbPersistence } from 'y-indexeddb'
@@ -16,16 +17,18 @@ const PREFERRED: Partial<Record<store.DocType, string>> = { writer: 'docx', slid
 
 export const canDownload = (d: store.DocEntry) => d.type !== 'sheet'
 
-async function loadDoc(id: string): Promise<Y.Doc> {
+async function loadDoc(name: string): Promise<Y.Doc> {
   const doc = new Y.Doc()
-  const persistence = new IndexeddbPersistence(store.dbName(id), doc)
+  const persistence = new IndexeddbPersistence(name, doc)
   await persistence.whenSynced
   await persistence.destroy()
   return doc
 }
 
 async function buildFile(entry: store.DocEntry): Promise<{ name: string; blob: Blob }> {
-  const doc = await loadDoc(entry.id)
+  const doc = await loadDoc(store.dbName(entry.id))
+  // PDF notes live in the comments document.
+  const commentsDoc = entry.type === 'pdf' ? await loadDoc(store.commentsDbName(entry.id)) : undefined
   const title = safeFileName(entry.title || appInfo(entry.type).untitled)
   try {
     if (entry.type === 'draw') {
@@ -35,7 +38,7 @@ async function buildFile(entry: store.DocEntry): Promise<{ name: string; blob: B
     }
     const module = await appInfo(entry.type).load!()
     // The exporters read only the shared state.
-    const session = { type: entry.type, doc, docId: entry.id, hooks: {} } as unknown as Session
+    const session = { type: entry.type, doc, commentsDoc, docId: entry.id, hooks: {} } as unknown as Session
     const files = (await module.submitFiles?.(session)) ?? []
     const file = files.find((f) => f.name.endsWith(`.${PREFERRED[entry.type]}`)) ?? files[0]
     if (!file) throw new Error(t('This document cannot be downloaded from here'))
@@ -43,6 +46,7 @@ async function buildFile(entry: store.DocEntry): Promise<{ name: string; blob: B
     return { name: `${title}${ext}`, blob: file.blob }
   } finally {
     doc.destroy()
+    commentsDoc?.destroy()
   }
 }
 
@@ -60,14 +64,20 @@ export async function downloadDocs(entries: store.DocEntry[]): Promise<void> {
     const { default: JSZip } = await import('jszip')
     const zip = new JSZip()
     const used = new Set<string>()
+    const failed: string[] = []
     for (const d of docs) {
-      const file = await buildFile(d)
+      const file = await buildFile(d).catch(() => null)
+      if (!file) {
+        failed.push(d.title || appInfo(d.type).untitled)
+        continue
+      }
       let name = file.name
       for (let n = 2; used.has(name); n++) name = file.name.replace(/(\.[^.]+)$/, ` (${n})$1`)
       used.add(name)
       zip.file(name, file.blob)
     }
-    downloadBlob(await zip.generateAsync({ type: 'blob' }), `${t('Ofimeo documents')}.zip`)
+    if (failed.length) toast(t('Could not include: {names}', { names: failed.join(', ') }))
+    if (used.size) downloadBlob(await zip.generateAsync({ type: 'blob' }), `${t('Ofimeo documents')}.zip`)
   } catch (err) {
     toast(t('Download failed: {message}', { message: (err as Error).message }))
   }

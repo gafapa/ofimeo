@@ -16,7 +16,7 @@ export async function aboutDialog(): Promise<void> {
     el(
       'div',
       { class: 'about' },
-      el('p', { textContent: t('{suite} is a collaborative office suite that runs entirely in your browser: documents, spreadsheets, drawings, diagrams and presentations.', { suite: SUITE }) }),
+      el('p', { textContent: t('{suite} is a collaborative office suite that runs entirely in your browser: documents, spreadsheets, drawings, diagrams, presentations, forms and PDFs.', { suite: SUITE }) }),
       el('p', {
         class: 'hint',
         textContent: t('Documents are stored in this browser. Collaborators connect directly (WebRTC); public Nostr relays are only used to find each other.'),

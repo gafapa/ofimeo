@@ -176,7 +176,7 @@ export function documentsSection(): DocsSection {
   const folderMenu = (f: lib.Folder): MenuEntry[] => [
     { label: t('New subfolder…'), run: () => void newFolder(f.id) },
     { label: t('Rename…'), run: () => void renameFolder(f) },
-    { label: t('Move to top level'), visible: () => !!f.parent, run: () => (lib.moveFolder(f.id), renderAll()) },
+    { label: t('Move to top level'), visible: () => !!f.parent, run: () => (lib.moveFolder(f.id) || toast(t('There is already a folder called “{name}” here. Choose another name.', { name: f.name })), renderAll()) },
     '-',
     { label: t('Delete folder…'), run: () => void deleteFolder(f) },
   ]
@@ -244,14 +244,28 @@ export function documentsSection(): DocsSection {
   }
 
   // ----- Folder and tag dialogs -----
+  // Asks for a name until it is free (or the dialog is cancelled).
+  const askName = async (title: string, label: string, value: string, taken: (name: string) => boolean, message: (name: string) => string): Promise<string | null> => {
+    for (;;) {
+      const name = (await promptText(title, label, value))?.trim()
+      if (!name) return null
+      if (!taken(name)) return name
+      toast(message(name))
+      value = name
+    }
+  }
+  const askFolderName = (title: string, parent?: string, value = '', except?: string) =>
+    askName(title, t('Folder name'), value, (name) => lib.folderNameTaken(name, parent, except), (name) => t('There is already a folder called “{name}” here. Choose another name.', { name }))
+  const askTagName = (title: string, value = '', except?: string) =>
+    askName(title, t('Tag name'), value, (name) => lib.tagNameTaken(name, except), (name) => t('There is already a tag called “{name}”. Choose another name.', { name }))
   const newFolder = async (parent?: string) => {
-    const name = (await promptText(t('New folder'), t('Folder name')))?.trim()
+    const name = await askFolderName(t('New folder'), parent)
     if (!name) return
     lib.createFolder(name, parent)
     renderAll()
   }
   const renameFolder = async (f: lib.Folder) => {
-    const name = (await promptText(t('Rename folder'), t('Folder name'), f.name))?.trim()
+    const name = await askFolderName(t('Rename folder'), f.parent, f.name, f.id)
     if (!name) return
     lib.renameFolder(f.id, name)
     renderAll()
@@ -263,14 +277,14 @@ export function documentsSection(): DocsSection {
     renderAll()
   }
   const newTag = async (): Promise<lib.Tag | null> => {
-    const name = (await promptText(t('New tag'), t('Tag name')))?.trim()
+    const name = await askTagName(t('New tag'))
     if (!name) return null
     const tag = lib.createTag(name)
     renderAll()
     return tag
   }
   const renameTag = async (tag: lib.Tag) => {
-    const name = (await promptText(t('Rename tag'), t('Tag name'), tag.name))?.trim()
+    const name = await askTagName(t('Rename tag'), tag.name, tag.id)
     if (!name) return
     lib.updateTag(tag.id, { name })
     renderAll()
@@ -305,7 +319,7 @@ export function documentsSection(): DocsSection {
     select.value = current ?? ''
     const newButton = el('button', { type: 'button', class: 'storage-btn', textContent: t('New folder…') })
     newButton.addEventListener('click', async () => {
-      const name = (await promptText(t('New folder'), t('Folder name')))?.trim()
+      const name = await askFolderName(t('New folder'), select.value || undefined)
       if (!name) return
       const f = lib.createFolder(name, select.value || undefined)
       select.append(new Option(f.name, f.id))

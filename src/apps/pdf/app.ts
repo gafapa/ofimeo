@@ -189,7 +189,7 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
 
   session.hooks.exportFormats = () => [
     { ext: 'pdf', label: t('PDF with annotations (editable)'), build: async () => blob(await exportBytes('annotations')) },
-    { ext: 'pdf', label: t('PDF with annotations merged (flattened)'), build: async () => blob(await exportBytes('flatten')) },
+    { ext: 'pdf', suffix: ` (${t('flattened')})`, label: t('PDF with annotations merged (flattened)'), build: async () => blob(await exportBytes('flatten')) },
   ]
 
   // Prints the flattened PDF as page images.

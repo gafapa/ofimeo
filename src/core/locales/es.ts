@@ -908,7 +908,6 @@ const es: Record<string, string> = {
   'Templates': 'Plantillas',
   'Content language': 'Idioma del contenido',
   'About {suite}': 'Acerca de {suite}',
-  '{suite} is a collaborative office suite that runs entirely in your browser: documents, spreadsheets, drawings, diagrams and presentations.': '{suite} es una suite ofimática colaborativa que funciona por completo en tu navegador: documentos, hojas de cálculo, dibujos, diagramas y presentaciones.',
   'Documents are stored in this browser. Collaborators connect directly (WebRTC); public Nostr relays are only used to find each other.': 'Los documentos se guardan en este navegador. Los colaboradores se conectan directamente (WebRTC); los relés públicos de Nostr solo se usan para encontrarse.',
   'Type': 'Tipo',
   'Last change': 'Último cambio',

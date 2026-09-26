@@ -64,6 +64,12 @@ export function mergeLibrary(other: Partial<Library>): void {
   write(lib)
 }
 
+// Names are unique among sibling folders and among tags, ignoring case and accents.
+const sameName = (a: string, b: string) => fold(a.trim()) === fold(b.trim())
+export const folderNameTaken = (name: string, parent?: string, except?: string) =>
+  listFolders().some((f) => f.id !== except && (f.parent ?? undefined) === (parent ?? undefined) && sameName(f.name, name))
+export const tagNameTaken = (name: string, except?: string) => listTags().some((t) => t.id !== except && sameName(t.name, name))
+
 export function createFolder(name: string, parent?: string): Folder {
   const lib = read()
   const folder: Folder = { id: newId(), name, ...(parent ? { parent } : {}) }
@@ -84,7 +90,7 @@ export function moveFolder(id: string, parent?: string): boolean {
   if (parent && (parent === id || descendants(id).includes(parent))) return false
   const lib = read()
   const folder = lib.folders.find((f) => f.id === id)
-  if (!folder) return false
+  if (!folder || folderNameTaken(folder.name, parent, id)) return false
   if (parent) folder.parent = parent
   else delete folder.parent
   write(lib)

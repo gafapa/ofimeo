@@ -908,7 +908,6 @@ const gl: Record<string, string> = {
   'Templates': 'Modelos',
   'Content language': 'Idioma do contido',
   'About {suite}': 'Acerca de {suite}',
-  '{suite} is a collaborative office suite that runs entirely in your browser: documents, spreadsheets, drawings, diagrams and presentations.': '{suite} é unha suite ofimática colaborativa que funciona por completo no teu navegador: documentos, follas de cálculo, debuxos, diagramas e presentacións.',
   'Documents are stored in this browser. Collaborators connect directly (WebRTC); public Nostr relays are only used to find each other.': 'Os documentos gárdanse neste navegador. Os colaboradores conéctanse directamente (WebRTC); os repetidores públicos de Nostr só se usan para atoparse.',
   'Type': 'Tipo',
   'Last change': 'Último cambio',

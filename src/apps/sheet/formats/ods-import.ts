@@ -7,6 +7,8 @@ import { t } from '../../../core/i18n'
 import { CHART_COMPONENT, DRAWING_TYPE_DOM, DRAWING_TYPE_IMAGE } from '../charts/model'
 import { DrawingCollector } from './drawings'
 import { odsFrames, pxToAnchor, readOdsCharts, type OdsFrame } from './ods-charts'
+import { emptyFeatures, featureResources, filteredRows, GLOBAL_SCOPE, type SheetNote } from './features'
+import { readOdsConditionalFormats, readOdsFilters, readOdsNames, readOdsNote } from './ods-features'
 
 // Limits against huge repeats (LibreOffice pads sheets to 1M rows × 16K columns).
 const MAX_ROWS = 100_000
@@ -105,16 +107,39 @@ export function convertOds(content: Document, stylesDoc: Document | null, settin
 
   const sheetOrder: string[] = []
   const sheets: IWorkbookData['sheets'] = {}
+  const features = emptyFeatures()
+  const filters = readOdsFilters(spreadsheet)
+  const styleOf = (name: string | null) => styles.styleProps(name)
   children(spreadsheet, 'table').forEach((table, i) => {
     const id = `sheet-${i + 1}`
     sheetOrder.push(id)
-    sheets[id] = readTable(table, id, styles, view)
+    const extra: TableExtras = { notes: [], filtered: [] }
+    const sheet = (sheets[id] = readTable(table, id, styles, view, extra))
+    if (extra.notes.length) features.notes[id] = extra.notes
+    const cf = readOdsConditionalFormats(table, styleOf, odfFormulaToExcel)
+    if (cf.length) features.cf[id] = cf
+    features.names.push(...readOdsNames(child(table, 'named-expressions'), id, odfFormulaToExcel, features.names.length))
+    const filter = filters.get(sheet.name ?? '')
+    if (filter) {
+      // Rows the filter hides belong to the filter, not to the sheet.
+      const hidden = filter.filterColumns?.length ? extra.filtered.filter((r) => r > filter.ref.startRow && r <= filter.ref.endRow) : []
+      for (const r of hidden) if (sheet.rowData?.[r]) delete sheet.rowData[r].hd
+      const cellText = (r: number, c: number) => String(sheet.cellData?.[r]?.[c]?.v ?? '')
+      features.filters[id] = { ...filter, cachedFilteredOut: hidden.length ? hidden : filteredRows(filter, cellText) }
+    }
   })
+  features.names.push(...readOdsNames(child(spreadsheet, 'named-expressions'), GLOBAL_SCOPE, odfFormulaToExcel, features.names.length))
   if (!sheetOrder.length) {
     sheetOrder.push('sheet-1')
     sheets['sheet-1'] = { id: 'sheet-1', name: 'Sheet1', rowCount: 1000, columnCount: 26, cellData: {} }
   }
-  return { name: '', locale: 'enUS' as IWorkbookData['locale'], styles: styles.registry, sheetOrder, sheets, resources: [] }
+  return { name: '', locale: 'enUS' as IWorkbookData['locale'], styles: styles.registry, sheetOrder, sheets, resources: featureResources(features) }
+}
+
+interface TableExtras {
+  notes: SheetNote[]
+  // Rows hidden by a filter (visibility="filter").
+  filtered: number[]
 }
 
 // ---------------------------------------------------------------------------
@@ -136,7 +161,7 @@ interface ParsedCell {
   cs: number
 }
 
-function readTable(table: Element, id: string, styles: StyleResolver, view: ViewSettings): Partial<IWorksheetData> {
+function readTable(table: Element, id: string, styles: StyleResolver, view: ViewSettings, extra: TableExtras): Partial<IWorksheetData> {
   const name = attr(table, 'name') || id
   const cellData: Record<number, Record<number, ICellData>> = {}
   const mergeData: IRange[] = []
@@ -178,6 +203,7 @@ function readTable(table: Element, id: string, styles: StyleResolver, view: View
     const hasContent = cells.some((el) => el.localName === 'table-cell' && isContentCell(el))
     const h = styles.rowHeight(attr(row, 'style-name'))
     const hd = attr(row, 'visibility') === 'collapse' || attr(row, 'visibility') === 'filter'
+    if (attr(row, 'visibility') === 'filter') for (let k = 0; k < Math.min(repeat, 10_000); k++) extra.filtered.push(r + k)
     let rowStyle = styles.cellStyleId(attr(row, 'default-cell-style-name'))
     // Padding rows (style-only, repeated to the end of the sheet) don't create cells.
     const padding = !hasContent && repeat >= FILLER_RUN
@@ -189,6 +215,8 @@ function readTable(table: Element, id: string, styles: StyleResolver, view: View
       if (col >= MAX_COLS) break
       const n = Math.min(int(attr(el, 'number-columns-repeated'), 1), MAX_COLS - col)
       if (el.localName === 'table-cell') {
+        const note = readOdsNote(el)
+        if (note) extra.notes.push({ ...note, row: r, col })
         const styleName = attr(el, 'style-name')
         const read = readCell(el)
         const cs = int(attr(el, 'number-columns-spanned'), 1)
@@ -561,6 +589,7 @@ class StyleResolver {
   private cellCache = new Map<string, string | undefined>()
   private resolved = new Map<string, { style: IStyleData; pattern?: string }>()
   private cellStyles = new Map<string, StyleEntry>()
+  private displayNames = new Map<string, string>()
   private otherStyles = new Map<string, Element>()
   private dataStyles = new Map<string, Element>()
   private fonts = new Map<string, string>()
@@ -584,7 +613,12 @@ class StyleResolver {
             if (el.namespaceURI?.includes(':datastyle:')) this.dataStyles.set(name, el)
             else if (el.localName === 'style') {
               const family = attr(el, 'family')
-              if (family === 'table-cell') this.cellStyles.set(name, { el, parent: attr(el, 'parent-style-name') })
+              if (family === 'table-cell') {
+                this.cellStyles.set(name, { el, parent: attr(el, 'parent-style-name') })
+                // Conditions refer to styles by their display name.
+                const display = attr(el, 'display-name')
+                if (display && display !== name) this.displayNames.set(display, name)
+              }
               else this.otherStyles.set(`${family}:${name}`, el)
             }
           }
@@ -618,6 +652,21 @@ class StyleResolver {
     }
     this.cellCache.set(cacheKey, id)
     return id
+  }
+
+  // Properties of a named style (conditional formatting), without inherited defaults.
+  styleProps(name: string | null): IStyleData {
+    if (!name) return {}
+    const own = this.cellStyles.has(name) ? name : this.displayNames.get(name)
+    if (!own) return {}
+    // Only the style's own properties: its parents are the cell's usual style.
+    const style: IStyleData = cellStyleProps(this.cellStyles.get(own)!.el, this.fonts)
+    if (!style.bl) delete style.bl
+    if (!style.it) delete style.it
+    if (!style.ul?.s) delete style.ul
+    if (!style.st?.s) delete style.st
+    const keep: (keyof IStyleData)[] = ['bg', 'cl', 'bl', 'it', 'ul', 'st']
+    return Object.fromEntries(Object.entries(style).filter(([k]) => keep.includes(k as keyof IStyleData))) as IStyleData
   }
 
   private resolve(name: string, depth: number): { style: IStyleData; pattern?: string } {

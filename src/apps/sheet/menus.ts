@@ -28,6 +28,7 @@ export interface SheetContext {
   pivotTable: () => void
   refreshPivots: () => void
   descriptiveStatistics: () => void
+  editWarnings: () => void
   insertFunction: (name: string) => void
   toolbarVisible: () => boolean
   setToolbarVisible: (on: boolean) => void
@@ -109,7 +110,7 @@ export function sheetFrame(ctx: SheetContext): Pick<FrameSpec, 'file' | 'edit' |
         ],
       },
       { label: t('Gridlines'), enabled: ctx.canEdit, active: () => !(sheet()?.hasHiddenGridLines() ?? false), run: run('gridlines') },
-      { label: t('Toolbar'), active: ctx.toolbarVisible, run: () => ctx.setToolbarVisible(!ctx.toolbarVisible()) },
+      { label: t('Toolbar'), enabled: ctx.canEdit, active: ctx.toolbarVisible, run: () => ctx.setToolbarVisible(!ctx.toolbarVisible()) },
       '-',
       { label: t('Zoom'), submenu: zoomMenuItems(ctx.zoom) },
     ],
@@ -222,7 +223,7 @@ export function sheetFrame(ctx: SheetContext): Pick<FrameSpec, 'file' | 'edit' |
       },
       action(t('Split text to columns…'), () => void splitText(cmds)),
       edit(t('Named ranges…'), 'namedRanges', { value: 'open' }),
-      edit(t('Protect range…'), 'protectRange'),
+      action(t('Warn before editing…'), ctx.editWarnings),
       '-',
       action(t('Pivot table…'), ctx.pivotTable),
       action(t('Refresh pivot tables'), ctx.refreshPivots),

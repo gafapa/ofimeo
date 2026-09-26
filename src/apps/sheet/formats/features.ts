@@ -155,6 +155,22 @@ export function featureResources(f: WorkbookFeatures): { name: string; data: str
   return out
 }
 
+// Rows a filter hides, for files that keep the criteria but not the hidden
+// rows (value lists only; `text(row, col)` is the cell's text).
+export function filteredRows(filter: SheetFilter, text: (row: number, col: number) => string): number[] {
+  const lists = (filter.filterColumns ?? []).filter((c) => c.filters)
+  if (!lists.length) return []
+  const out: number[] = []
+  for (let r = filter.ref.startRow + 1; r <= filter.ref.endRow; r++) {
+    const hidden = lists.some((c) => {
+      const v = text(r, c.colId)
+      return v === '' ? !c.filters!.blank : !(c.filters!.filters ?? []).includes(v)
+    })
+    if (hidden) out.push(r)
+  }
+  return out
+}
+
 // ---------- A1 helpers ----------
 
 export function colLetters(col: number): string {

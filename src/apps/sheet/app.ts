@@ -3,7 +3,7 @@
 // keeps its one-row tool bar, sheet tabs and context menu), themed from our
 // tokens and synced over Yjs, plus our charts, pivot tables and statistics.
 
-import { ICommandService, type FUniver, type IDisposable, type IRange, type IWorkbookData } from '@univerjs/presets'
+import { CustomCommandExecutionError, ICommandService, type FUniver, type IDisposable, type IRange, type IWorkbookData } from '@univerjs/presets'
 import { appInfo } from '../registry'
 import type { Session } from '../../core/session'
 import { language, locale, t } from '../../core/i18n'
@@ -17,11 +17,12 @@ import { exportSheetFile, SHEET_ACCEPT, type SheetExportFormat } from './formats
 import { sheetFrame } from './menus'
 import { renderPrintHtml, type PrintOverlay } from './print'
 import { SheetSync } from './sync'
-import { followTheme } from './theme'
+import { followTheme, isInterfaceTextColor } from './theme'
 import { createSpreadsheet, WORKBOOK_ID } from './univer'
 import { deleteChart, findChart, insertChart, listCharts, liveOption, registerCharts, updateChart } from './charts/view'
 import { snapshotCharts } from './charts/model'
 import { registerFunctionAliases } from './stats'
+import { setupEditWarnings, type EditWarnings } from './warnings'
 import { provideWebMcpTools } from '../../core/webmcp'
 
 // Live workbook access of each open session (for hand in).
@@ -41,7 +42,7 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
   shell.main.append(container)
   document.body.append(printArea, fileInput)
 
-  const { univer, univerAPI } = await createSpreadsheet(container)
+  const { univer, univerAPI } = await createSpreadsheet(container, { readOnly: !session.canEdit })
   const commands = univer.__getInjector().get(ICommandService)
   const cmds = createCommands(univer, univerAPI)
   const canEdit = () => session.canEdit
@@ -62,6 +63,7 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
 
   // Declared first: the initial rebuild runs inside the SheetSync constructor.
   let presence: SelectionPresence | undefined
+  let warnings: EditWarnings | undefined
   // Viewers and commenters get a read-only workbook (again after every rebuild).
   const applyAccess = () => {
     if (!session.canEdit) univerAPI.getActiveWorkbook()?.setEditable(false)
@@ -73,23 +75,43 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
     onRebuild: () => {
       applyAccess()
       presence?.render()
+      warnings?.render()
     },
   })
   presence = new SelectionPresence(session, univerAPI, commands)
+  warnings = setupEditWarnings(session, univerAPI, commands)
+  warnings.render()
   applyAccess()
   if (!session.canEdit) {
     // Commands and local mutations are refused (operations such as selecting,
-    // scrolling or copying still work); remote changes arrive as collab mutations.
+    // scrolling or copying still work); remote changes arrive as collab
+    // mutations. Univer treats this error as a cancelled command (no exception).
+    let told = 0
     commands.beforeCommandExecuted((info, options) => {
-      if (options?.fromCollab || options?.onlyLocal || /\.operation\.|copy|zoom/.test(info.id)) return
-      if (!/\.(command|mutation)\./.test(info.id)) return
+      if (options?.fromCollab || options?.onlyLocal) return
+      const editing = /\.(command|mutation)\./.test(info.id) || info.id === 'sheet.operation.rename-sheet' || (info.id === 'sheet.operation.set-cell-edit-visible' && (info.params as { visible?: boolean })?.visible)
+      if (!editing || (/\.operation\.|copy|zoom/.test(info.id) && !/rename-sheet|set-cell-edit-visible/.test(info.id))) return
       // Univer's internal editors (cell editor documents) are not the shared workbook.
       const unitId = (info.params as { unitId?: string } | undefined)?.unitId
       if (unitId && unitId !== WORKBOOK_ID) return
-      toast(t('This spreadsheet is view only'))
-      throw new Error(t('This spreadsheet is view only'))
+      if (Date.now() - told > 3000) toast(t('This spreadsheet is view only'))
+      told = Date.now()
+      throw new CustomCommandExecutionError(t('This spreadsheet is view only'))
     })
   }
+
+  // Univer's cell editor stores the interface's text color on every typed cell
+  // (dark in light mode, near black in dark mode); typed text keeps the automatic color.
+  commands.beforeCommandExecuted((info) => {
+    if (info.id !== UNIVER_COMMANDS.setRangeValues) return
+    const value = (info.params as { value?: unknown } | undefined)?.value
+    const strip = (cell: unknown) => {
+      const s = (cell as { s?: { cl?: { rgb?: string } } } | null)?.s
+      if (s && typeof s === 'object' && isInterfaceTextColor(s.cl?.rgb)) delete s.cl
+    }
+    if (value && typeof value === 'object' && ('v' in value || 's' in value || 'p' in value)) strip(value)
+    else if (value && typeof value === 'object') for (const row of Object.values(value)) for (const cell of Object.values(row ?? {})) strip(cell)
+  })
 
   const snapshot = () => univerAPI.getActiveWorkbook()!.save() as IWorkbookData
   const activeSheet = () => univerAPI.getActiveWorkbook()?.getActiveSheet()
@@ -174,7 +196,7 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
     presets: [0.5, 0.75, 0.9, 1, 1.25, 1.5, 2],
     keys: true,
   }
-  let toolbarVisible = true
+  let toolbarVisible = session.canEdit
   const languageLabel = el('span', { class: 'sb-text', textContent: LANGUAGE_NAMES[language], title: t('Language of function help and number formats') })
   const frameSpec = sheetFrame({
     session,
@@ -191,6 +213,7 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
     pivotTable: () => void import('./pivot').then((m) => m.pivotDialog(univerAPI)),
     refreshPivots: () => void import('./pivot').then((m) => m.refreshPivots(univerAPI)),
     descriptiveStatistics: () => void import('./stats').then((m) => m.descriptiveStatistics(univerAPI)),
+    editWarnings: () => void warnings?.dialog(),
     insertFunction: (name) => void import('./stats').then((m) => m.insertFunction(univerAPI, name)),
     toolbarVisible: () => toolbarVisible,
     setToolbarVisible: (on) => {

@@ -6,11 +6,14 @@
 
 import { dbAll, dbDelete, dbPut, fold, foldWithMap } from './library'
 import type { DocEntry, DocType } from './store'
+import type { PdfTextCache } from './library-search.worker'
 
 interface TextEntry {
   id: string
   text: string
   indexed: number
+  // PDFs: the page text of the stored file (parsed again only when the file changes).
+  pdf?: PdfTextCache
 }
 
 let cache: Map<string, TextEntry> | null = null
@@ -37,30 +40,36 @@ async function indexChanged(docs: DocEntry[]): Promise<void> {
   const known = await texts()
   const jobs = docs.filter((d) => (known.get(d.id)?.indexed ?? 0) < d.updated).map((d) => ({ id: d.id, type: d.type, updated: d.updated }))
   if (!jobs.length) return
-  const results = await extract(jobs.map(({ id, type }) => ({ id, type })))
+  const results = await extract(jobs.map(({ id, type }) => ({ id, type, pdf: known.get(id)?.pdf })))
   for (const job of jobs) {
-    const text = results.get(job.id)
+    const result = results.get(job.id)
+    const text = result?.text
     if (text === undefined || text === null) continue
-    const entry = { id: job.id, text, indexed: Math.max(job.updated, Date.now()) }
+    const entry: TextEntry = { id: job.id, text, indexed: Math.max(job.updated, Date.now()), pdf: result?.pdf }
     known.set(job.id, entry)
     await dbPut('texts', entry).catch(() => undefined)
   }
 }
 
-function extract(jobs: { id: string; type: DocType }[]): Promise<Map<string, string | null>> {
+interface Extracted {
+  text: string | null
+  pdf?: PdfTextCache
+}
+
+function extract(jobs: { id: string; type: DocType; pdf?: PdfTextCache }[]): Promise<Map<string, Extracted>> {
   return new Promise((resolve) => {
-    const out = new Map<string, string | null>()
+    const out = new Map<string, Extracted>()
     let worker: Worker
     try {
       worker = new Worker(new URL('./library-search.worker.ts', import.meta.url), { type: 'module' })
     } catch {
       return resolve(out)
     }
-    worker.onmessage = (e: MessageEvent<{ id?: string; text?: string | null; done?: boolean }>) => {
+    worker.onmessage = (e: MessageEvent<{ id?: string; text?: string | null; pdf?: PdfTextCache; done?: boolean }>) => {
       if (e.data.done) {
         worker.terminate()
         resolve(out)
-      } else if (e.data.id) out.set(e.data.id, e.data.text ?? null)
+      } else if (e.data.id) out.set(e.data.id, { text: e.data.text ?? null, pdf: e.data.pdf })
     }
     worker.onerror = () => {
       worker.terminate()

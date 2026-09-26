@@ -43,6 +43,7 @@ export interface SubmitFile {
 export interface ExportOption {
   ext: string // 'docx'
   label: string // 'Word (.docx)'
+  suffix?: string // added to the file name before the extension: ' (flattened)'
   build: () => Promise<Blob>
 }
 

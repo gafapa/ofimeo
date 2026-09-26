@@ -59,7 +59,7 @@ export interface FileMenuOptions {
 export async function downloadFormat(session: Session, option: ExportOption): Promise<void> {
   try {
     const title = String(session.doc.getMap('meta').get('title') || '') || appInfo(session.type).untitled
-    downloadBlob(await option.build(), `${safeFileName(title)}.${option.ext}`)
+    downloadBlob(await option.build(), `${safeFileName(title + (option.suffix ?? ''))}.${option.ext}`)
   } catch (err) {
     toast(t('Download failed: {message}', { message: (err as Error).message }))
   }

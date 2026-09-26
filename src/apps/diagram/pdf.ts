@@ -17,7 +17,7 @@ export interface PdfPicture {
   background?: string | null
 }
 
-// Pictures centered on their pages, shrunk to fit inside the margins.
+// One picture per page, shrunk to fit inside the margins.
 export async function picturesToPdf(pictures: PdfPicture[], title: string): Promise<Blob> {
   const pdf = await PDFDocument.create()
   pdf.setTitle(title)
@@ -35,7 +35,8 @@ export async function picturesToPdf(pictures: PdfPicture[], title: string): Prom
     const natural = [p.width * 0.75, p.height * 0.75]
     const scale = Math.min(1, (p.pageWidth - 2 * margin) / natural[0], (p.pageHeight - 2 * margin) / natural[1])
     const [w, h] = [natural[0] * scale, natural[1] * scale]
-    page.drawImage(image, { x: (p.pageWidth - w) / 2, y: (p.pageHeight - h) / 2, width: w, height: h })
+    // At the top of the page, centered across it.
+    page.drawImage(image, { x: (p.pageWidth - w) / 2, y: p.pageHeight - margin - h, width: w, height: h })
   }
   return new Blob([(await pdf.save()) as Uint8Array<ArrayBuffer>], { type: 'application/pdf' })
 }

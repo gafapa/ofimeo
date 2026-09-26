@@ -5,6 +5,8 @@ import type { IBorderStyleData, ICellData, IStyleData, IWorkbookData, IWorksheet
 import { escapeXml, toHex } from '../../../core/formats'
 import { DRAWING_TYPE_IMAGE, isChartSpec, normalizeSpec, snapshotDrawings, type CellAnchor } from '../charts/model'
 import { odsChartContent, odsChartFrame, odsChartManifest, odsImageFrame } from './ods-charts'
+import { DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, isThemeTextColor, readFeatures, type SheetNote, type WorkbookFeatures } from './features'
+import { odsAnnotation, odsDatabaseRanges, odsSheetName, OdsFeatureWriter } from './ods-features'
 
 const MIME = 'application/vnd.oasis.opendocument.spreadsheet'
 
@@ -26,8 +28,9 @@ const NS = [
   'xmlns:calcext="urn:org:documentfoundation:names:experimental:calc:xmlns:calcext:1.0"',
 ].join(' ')
 
-const DEFAULT_FONT = 'Arial'
-const DEFAULT_FONT_PT = 11
+const DEFAULT_FONT = DEFAULT_FONT_NAME
+const DEFAULT_FONT_PT = DEFAULT_FONT_SIZE
+const HYPERLINK_RANGE = 0
 const DEFAULT_COL_PX = 88
 const DEFAULT_ROW_PX = 24
 const MAX_COLUMNS = 16_384
@@ -36,7 +39,9 @@ const ERRORS = new Set(['#NULL!', '#DIV/0!', '#VALUE!', '#REF!', '#NAME?', '#NUM
 const EPOCH_1899 = Date.UTC(1899, 11, 30)
 
 export async function exportOds(data: IWorkbookData): Promise<Blob> {
-  const writer = new ContentWriter(data)
+  const features = readFeatures(data)
+  const featureWriter = new OdsFeatureWriter(excelFormulaToOdf)
+  const writer = new ContentWriter(data, features, featureWriter)
   const zip = new JSZip()
   // Charts and images: frames in each table's <table:shapes>, positioned in the sheet.
   const drawings = snapshotDrawings(data.resources)
@@ -78,14 +83,21 @@ export async function exportOds(data: IWorkbookData): Promise<Blob> {
     }
     return xml ? `<table:shapes>${xml}</table:shapes>` : ''
   }
-  const body = data.sheetOrder
-    .filter((id) => data.sheets[id])
-    .map((id) => {
-      const table = writer.table(data.sheets[id])
-      const extra = shapes(id)
-      return extra ? table.replace(/^(<table:table [^>]*>)/, `$1${extra}`) : table
-    })
-    .join('')
+  const sheetIds = data.sheetOrder.filter((id) => data.sheets[id])
+  const body =
+    sheetIds
+      .map((id) => {
+        const table = writer.table(data.sheets[id], id)
+        const extra = shapes(id)
+        return extra ? table.replace(/^(<table:table [^>]*>)/, `$1${extra}`) : table
+      })
+      .join('') +
+    // Workbook names, then the auto filters (database ranges), after the tables.
+    featureWriter.namedExpressions(
+      features.names.filter((n) => !n.localSheetId || !data.sheets[n.localSheetId]),
+      data.sheets[sheetIds[0]]?.name || 'Sheet1',
+    ) +
+    odsDatabaseRanges(sheetIds.filter((id) => features.filters[id]).map((id) => ({ sheet: data.sheets[id].name || id, filter: features.filters[id] })))
 
   // The mimetype entry must be first and uncompressed.
   zip.file('mimetype', MIME, { compression: 'STORE' })
@@ -98,7 +110,7 @@ export async function exportOds(data: IWorkbookData): Promise<Blob> {
       `<office:body><office:spreadsheet>${body}</office:spreadsheet></office:body>` +
       `</office:document-content>`,
   )
-  zip.file('styles.xml', stylesXml(writer.fontDecls()))
+  zip.file('styles.xml', stylesXml(writer.fontDecls(), featureWriter.styles()))
   zip.file('meta.xml', metaXml())
   zip.file('settings.xml', settingsXml(data))
   zip.file('META-INF/manifest.xml', manifestXml().replace('</manifest:manifest>', `${manifestExtra.join('')}</manifest:manifest>`))
@@ -120,7 +132,11 @@ class ContentWriter {
   private rowStyles = new Map<number, string>()
   private tableStyles: string[] = []
 
-  constructor(private data: IWorkbookData) {}
+  constructor(
+    private data: IWorkbookData,
+    private features: WorkbookFeatures,
+    private featureWriter: OdsFeatureWriter,
+  ) {}
 
   fontDecls(): string {
     return [...this.fonts]
@@ -146,8 +162,10 @@ class ContentWriter {
     return typeof s === 'string' ? (this.data.styles[s] ?? undefined) : s
   }
 
-  table(sheet: Partial<IWorksheetData>): string {
+  table(sheet: Partial<IWorksheetData>, sheetId: string): string {
     const name = sheet.name || 'Sheet'
+    const notes = new Map<string, SheetNote>((this.features.notes[sheetId] ?? []).map((n) => [`${n.row},${n.col}`, n]))
+    const filteredOut = new Set(this.features.filters[sheetId]?.cachedFilteredOut ?? [])
     const tableStyle = `ta${this.tableStyles.length + 1}`
     const tab = toHex(sheet.tabColor)
     this.tableStyles.push(
@@ -184,6 +202,10 @@ class ContentWriter {
       }
     }
     for (const [r, rd] of Object.entries(rowData)) if (rd && (rd.hd || rd.h || rd.s)) lastRow = Math.max(lastRow, +r)
+    for (const n of notes.values()) {
+      lastRow = Math.max(lastRow, n.row)
+      lastCol = Math.max(lastCol, n.col)
+    }
 
     // Columns: every column up to the sheet width, grouped into runs.
     const columnCount = Math.min(MAX_COLUMNS, Math.max(sheet.columnCount ?? 26, lastCol + 1, 1))
@@ -232,6 +254,7 @@ class ContentWriter {
       const h = rd?.h && rd.ia !== 1 && Math.abs(rd.h - defaultHeight) >= 0.5 ? rd.h : undefined
       let attrs = h ? ` table:style-name="${this.rowStyle(h)}"` : ''
       if (rd?.hd) attrs += ` table:visibility="collapse"`
+      else if (filteredOut.has(r)) attrs += ` table:visibility="filter"`
 
       const row = cellData[r] ?? {}
       let cells = ''
@@ -251,7 +274,7 @@ class ContentWriter {
           // Row styles are written on each cell (LibreOffice mishandles row default styles).
           const own = this.styleOf(cell?.s)
           const style = own && (rowStyle || colStyles[c]) ? { ...colStyles[c], ...rowStyle, ...own } : own || (rowStyle && { ...colStyles[c], ...rowStyle })
-          xml = this.cell(cell, style, spans.get(key))
+          xml = this.cell(cell, style, spans.get(key), notes.get(key))
         }
         if (pending && pending.xml === xml && !xml.includes('<text:p')) pending.n++
         else {
@@ -274,10 +297,22 @@ class ContentWriter {
     flushRow()
     if (!rows) rows = '<table:table-row><table:table-cell/></table:table-row>'
 
-    return `<table:table table:name="${escapeXml(name)}" table:style-name="${tableStyle}">${columns}${rows}</table:table>`
+    const cf = this.featureWriter.conditionalFormats(this.features.cf[sheetId] ?? [], name)
+    const localNames = this.featureWriter.namedExpressions(
+      this.features.names.filter((n) => n.localSheetId === sheetId),
+      name,
+    )
+    return `<table:table table:name="${escapeXml(name)}" table:style-name="${tableStyle}">${columns}${rows}${localNames}${cf}</table:table>`
   }
 
-  private cell(cell: ICellData | undefined, style: IStyleData | undefined, span?: { rows: number; cols: number }): string {
+  // Internal links (#gid=<sheetId>&range=A1) point at "#Sheet.A1".
+  private linkTarget(url: string): string {
+    const m = /^#gid=([^&]+)(?:&range=([A-Z]+\d+))?/i.exec(url)
+    const sheet = m && this.data.sheets[m[1]]
+    return sheet ? `#${odsSheetName(sheet.name || m![1])}.${m![2] || 'A1'}` : url
+  }
+
+  private cell(cell: ICellData | undefined, style: IStyleData | undefined, span?: { rows: number; cols: number }, note?: SheetNote): string {
     let attrs = ''
     let content = ''
     const pattern = style?.n?.pattern
@@ -325,8 +360,11 @@ class ContentWriter {
     if (styleName && styleName !== 'Default') xml += ` table:style-name="${styleName}"`
     xml += attrs
     if (span && (span.rows > 1 || span.cols > 1)) xml += ` table:number-columns-spanned="${span.cols}" table:number-rows-spanned="${span.rows}"`
-    if (!content && !attrs) return xml + '/>'
-    return xml + '>' + paragraphs(content) + '</table:table-cell>'
+    const annotation = note ? odsAnnotation(note) : ''
+    if (!content && !attrs && !annotation) return xml + '/>'
+    const link = cell?.p?.body?.customRanges?.find((r) => r.rangeType === HYPERLINK_RANGE && r.properties?.url)
+    const text = link && content && !content.includes('\n') ? `<text:p><text:a xlink:type="simple" xlink:href="${escapeXml(this.linkTarget(String(link.properties!.url)))}">${escapeXml(content)}</text:a></text:p>` : paragraphs(content)
+    return xml + '>' + annotation + (content ? text : '') + '</table:table-cell>'
   }
 
   private colStyle(px: number): string {
@@ -393,7 +431,7 @@ class ContentWriter {
     }
     if (s.st?.s) textProps.push('style:text-line-through-style="solid"', 'style:text-line-through-type="single"')
     const cl = toHex(s.cl?.rgb)
-    if (cl) textProps.push(`fo:color="${cl}"`)
+    if (cl && !isThemeTextColor(cl)) textProps.push(`fo:color="${cl}"`)
     if (s.va === 2) textProps.push('style:text-position="sub 58%"')
     else if (s.va === 3) textProps.push('style:text-position="super 58%"')
 
@@ -887,7 +925,7 @@ function fractionXml(v: string): string {
 // ---------------------------------------------------------------------------
 // Other parts
 
-function stylesXml(fontDecls: string): string {
+function stylesXml(fontDecls: string, conditionalStyles: string): string {
   return (
     `<?xml version="1.0" encoding="UTF-8"?>` +
     `<office:document-styles ${NS} office:version="1.3">` +
@@ -899,6 +937,7 @@ function stylesXml(fontDecls: string): string {
     `</style:default-style>` +
     `<number:number-style style:name="N0"><number:number number:min-integer-digits="1"/></number:number-style>` +
     `<style:style style:name="Default" style:family="table-cell"/>` +
+    conditionalStyles +
     `</office:styles>` +
     `<office:automatic-styles>` +
     `<style:page-layout style:name="pm1"><style:page-layout-properties style:writing-mode="lr-tb"/></style:page-layout>` +

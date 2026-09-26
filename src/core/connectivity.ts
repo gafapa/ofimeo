@@ -72,6 +72,33 @@ function save(value: Stored | null): void {
 }
 
 // https://host[:port] from what people paste ("host", "host:8443", a full URL…).
+// Why a typed school relay address cannot be used (null: it looks fine).
+//   scheme    not https://, http://, wss:// or ws://
+//   invalid   not an address (spaces, no host, a bare word without scheme or port)
+//   insecure  http:// or ws:// from a page served over https (the browser blocks it),
+//             except for this computer (localhost)
+export type RelayAddressProblem = 'scheme' | 'invalid' | 'insecure'
+
+export function relayAddressProblem(input: string): RelayAddressProblem | null {
+  const text = input.trim()
+  if (/\s/.test(text)) return 'invalid'
+  const scheme = /^([a-z][a-z0-9+.-]*):\/\//i.exec(text)?.[1]?.toLowerCase()
+  if (scheme && !['https', 'http', 'wss', 'ws'].includes(scheme)) return 'scheme'
+  if (!scheme && /^[a-z][a-z0-9+.-]*:(?!\d)/i.test(text)) return 'scheme'
+  const address = normalizeAddress(text)
+  if (!address) return 'invalid'
+  const url = new URL(address)
+  const host = url.hostname
+  const local = host === 'localhost' || /^127\./.test(host) || host === '[::1]'
+  const ip = /^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.startsWith('[')
+  const named = /^([a-z0-9]([a-z0-9-]*[a-z0-9])?)(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i.test(host)
+  if (!ip && !named) return 'invalid'
+  // A bare word ("relay") is only taken with a scheme or a port.
+  if (!ip && !local && !host.includes('.') && !scheme && !url.port) return 'invalid'
+  if (url.protocol === 'http:' && location.protocol === 'https:' && !local) return 'insecure'
+  return null
+}
+
 export function normalizeAddress(input: string): string | null {
   let text = input.trim()
   if (!text) return null

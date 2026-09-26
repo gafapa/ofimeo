@@ -8,7 +8,7 @@ import { CHART_COMPONENT, DRAWING_TYPE_DOM, DRAWING_TYPE_IMAGE } from '../charts
 import { DrawingCollector } from './drawings'
 import { readXlsxCharts } from './xlsx-charts'
 import { cfFromExcel, type ExcelRule } from './xlsx-features'
-import { emptyFeatures, featureResources, GLOBAL_SCOPE, parseRangeA1, type CfRule, type FilterColumn, type SheetNote } from './features'
+import { emptyFeatures, featureResources, filteredRows, GLOBAL_SCOPE, parseRangeA1, type CfRule, type FilterColumn, type SheetNote } from './features'
 
 // The browser build of ExcelJS is a UMD bundle; Vite exposes it as a default export.
 export const ExcelJS = ((ExcelJSModule as unknown as { default?: typeof ExcelJSModule }).default ?? ExcelJSModule) as typeof ExcelJSModule
@@ -327,7 +327,8 @@ export async function importXlsx(buf: ArrayBuffer): Promise<Partial<IWorkbookDat
           }
         }
       }
-      features.filters[id] = { ref: filter.ref, filterColumns: filter.filterColumns, cachedFilteredOut: hidden }
+      const cellText = (r: number, c: number) => String(sheet.cellData?.[r]?.[c]?.v ?? '')
+      features.filters[id] = { ref: filter.ref, filterColumns: filter.filterColumns, cachedFilteredOut: hidden.length ? hidden : filteredRows(filter, cellText) }
     }
     for (const link of norm.links[i] || []) {
       const c = decodeCell(link.ref.split(':')[0])

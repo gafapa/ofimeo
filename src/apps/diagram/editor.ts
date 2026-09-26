@@ -27,7 +27,7 @@ import type { ZoomTarget } from '../../ui/zoom'
 import { FormatPanel } from './format'
 import { buildCells, cellsToRecords, createGraph, isTyping, setStyleKey, styleFromString, styleToString, type EditorGraph } from './graph'
 import { chooseLibraries, loadEnabledLibraries, prepareItems, watchGraph } from './libraries'
-import type { CellRecord, PageRecord } from './model'
+import { pageDisplayName, type CellRecord, type PageRecord } from './model'
 import { PALETTE } from './palette'
 import { DiagramPresence } from './presence'
 import { registerShapes } from './shapes'
@@ -492,7 +492,7 @@ export function createDiagramEditor(session: Session, options: EditorOptions) {
     editStyle: () => void editStyle(),
     isGridVisible: () => gridVisible,
     setGridVisible,
-    pageName: () => sync.pageList().find((p) => p.id === sync.page)?.name ?? '',
+    pageName: () => pageDisplayName(sync.pageList().find((p) => p.id === sync.page)?.name ?? ''),
     renamePage: (name) => sync.renamePage(sync.page, name),
     emptySection: options.formatEmpty,
     diagramOptions: options.diagramOptions,
@@ -503,6 +503,9 @@ export function createDiagramEditor(session: Session, options: EditorOptions) {
   const togglePanel = (panel: HTMLElement) => {
     if (readOnly) return
     panel.hidden = !panel.hidden
+    // On phones the Shapes and Format panels would cover the whole canvas: one at a time.
+    const other = panel === sidebar.element ? format.element : panel === format.element ? sidebar.element : null
+    if (other && !panel.hidden && window.matchMedia('(max-width: 600px)').matches) other.hidden = true
     updateToolbar()
   }
 
@@ -709,8 +712,36 @@ export function createDiagramEditor(session: Session, options: EditorOptions) {
     const active = document.activeElement as HTMLElement | null
     if (active && !canvas.contains(active) && isTyping(active)) active.blur()
   })
+  // Selection changes made with the keyboard are read out by screen readers.
+  const announcer = el('div', { class: 'sr-only', role: 'status' })
+  announcer.setAttribute('aria-live', 'polite')
+  document.body.append(announcer)
+  // Tab / Shift+Tab on the focused canvas walks through the shapes and
+  // connectors of the page (arrows then move, Enter edits, Esc clears). Past the
+  // last (or before the first) one the selection clears and focus leaves the canvas.
+  const tabSelect = (back: boolean): boolean => {
+    const cells = graph.getChildCells(graph.getDefaultParent(), true, true).filter((c) => graph.isCellSelectable(c) && c.isVisible())
+    if (!cells.length) return false
+    const current = graph.getSelectionCell()
+    const index = current ? cells.indexOf(current) : -1
+    const next = index < 0 ? (back ? -1 : 0) : index + (back ? -1 : 1)
+    if (next < 0 || next >= cells.length) {
+      graph.clearSelection()
+      return false
+    }
+    const cell = cells[next]
+    graph.setSelectionCell(cell)
+    graph.scrollCellToVisible(cell)
+    const label = labelText({ value: graph.convertValueToString(cell) ?? '', style: styleToString(cell.getStyle()) } as CellRecord)
+    announcer.textContent = t('{label} ({n} of {total})', { label: label || (cell.isEdge() ? t('Connector') : t('Shape')), n: next + 1, total: cells.length })
+    return true
+  }
   document.addEventListener('keydown', (e) => {
     if (isTyping(e.target) || graph.isEditing() || document.querySelector('dialog[open]')) return
+    if (e.key === 'Tab' && !readOnly && !e.ctrlKey && !e.metaKey && !e.altKey && e.target instanceof Node && canvas.contains(e.target)) {
+      if (tabSelect(e.shiftKey)) e.preventDefault()
+      return
+    }
     if (options.onKey?.(e)) return
     const modKey = e.ctrlKey || e.metaKey
     const key = e.key.toLowerCase()

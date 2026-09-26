@@ -2147,6 +2147,11 @@ const gl: Record<string, string> = {
   'File ▸ Download as saves the PDF with your annotations.': 'Arquivo ▸ Descargar como garda o PDF coas túas anotacións.',
   'Quick start: {app}': 'Inicio rápido: {app}',
   'Got it': 'Entendido',
+  '{label} ({n} of {total})': '{label} ({n} de {total})',
+  'Heading': 'Encabezamento',
+  'Item {n}': 'Elemento {n}',
+  'Not an OpenDocument presentation': 'Non é unha presentación OpenDocument',
+  'PDF document (all pages)': 'Documento PDF (todas as páxinas)',
 }
 
 export default gl

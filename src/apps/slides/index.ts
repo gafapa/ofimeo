@@ -18,12 +18,16 @@ export function mount(session: Session): void {
   mountSlides(session, document.getElementById('root')!)
 }
 
-// Imports a PowerPoint file into a new local presentation; returns its path.
+// Imports a PowerPoint or OpenDocument presentation into a new local presentation; returns its path.
 export async function importFile(file: File): Promise<string> {
   const buffer = await file.arrayBuffer()
-  // PowerPoint 97-2003 files (.ppt) have their own importer.
-  const data = /\.ppt$/i.test(file.name) ? await (await import('./formats/ppt-import')).parsePpt(buffer) : await (await import('./formats/pptx-import')).parsePptx(buffer)
-  const title = file.name.replace(/\.pptx?$/i, '')
+  // PowerPoint 97-2003 files (.ppt) and OpenDocument files (.odp) have their own importers.
+  const data: Parameters<typeof writePresentation>[1] = /\.ppt$/i.test(file.name)
+    ? { themeId: 'imported', ...(await (await import('./formats/ppt-import')).parsePpt(buffer)) }
+    : /\.odp$/i.test(file.name)
+      ? await (await import('./formats/odp-import')).parseOdp(buffer)
+      : await (await import('./formats/pptx-import')).parsePptx(buffer)
+  const title = file.name.replace(/\.(pptx?|odp)$/i, '')
   return createLocalDocument('slides', title, (doc) => writePresentation(doc, data, DiagramSync.setPages))
 }
 

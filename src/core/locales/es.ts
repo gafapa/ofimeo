@@ -2147,6 +2147,11 @@ const es: Record<string, string> = {
   'File ▸ Download as saves the PDF with your annotations.': 'Archivo ▸ Descargar como guarda el PDF con tus anotaciones.',
   'Quick start: {app}': 'Inicio rápido: {app}',
   'Got it': 'Entendido',
+  '{label} ({n} of {total})': '{label} ({n} de {total})',
+  'Heading': 'Encabezado',
+  'Item {n}': 'Elemento {n}',
+  'Not an OpenDocument presentation': 'No es una presentación OpenDocument',
+  'PDF document (all pages)': 'Documento PDF (todas las páginas)',
 }
 
 export default es

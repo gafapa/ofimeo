@@ -23,9 +23,17 @@ export function shapeIds(xml: string): { ids: number[]; text: Set<number> } {
 
 // Adds transitions and animations to the slides of a pptxgenjs file; `objects` maps
 // each slide's cells to the indexes of the objects added for them.
-export async function addPptxAnimations(blob: Blob, slides: { objects: Map<string, number[]>; animations: Animation[]; transition?: string; transitionDuration?: number }[]): Promise<Blob> {
-  if (!slides.some((s) => s.animations.length || (s.transition && s.transition !== 'none'))) return blob
+// The theme is named after the app's theme ("Ofimeo: ocean"), so importing the file
+// back selects it again.
+export async function addPptxAnimations(blob: Blob, slides: { objects: Map<string, number[]>; animations: Animation[]; transition?: string; transitionDuration?: number }[], themeId?: string): Promise<Blob> {
+  if (!themeId && !slides.some((s) => s.animations.length || (s.transition && s.transition !== 'none'))) return blob
   const zip = await JSZip.loadAsync(blob)
+  if (themeId && /^\w+$/.test(themeId)) {
+    for (const path of Object.keys(zip.files).filter((p) => /^ppt\/theme\/theme\d+\.xml$/.test(p))) {
+      const xml = await zip.file(path)!.async('text')
+      zip.file(path, xml.replace(/(<a:theme\b[^>]*?\bname=")[^"]*"/, `$1Ofimeo: ${themeId}"`))
+    }
+  }
   for (const [i, slide] of slides.entries()) {
     const path = `ppt/slides/slide${i + 1}.xml`
     const file = zip.file(path)

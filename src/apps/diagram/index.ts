@@ -44,7 +44,7 @@ export async function submitFiles(session: Session): Promise<SubmitFile[]> {
   return files
 }
 
-async function renderPages(pages: Parameters<typeof buildCells>[0][], backgrounds: string[]): Promise<SVGSVGElement[]> {
+export async function renderPages(pages: Parameters<typeof buildCells>[0][], backgrounds: string[]): Promise<SVGSVGElement[]> {
   const host = document.createElement('div')
   host.style.cssText = 'position:fixed;left:-20000px;top:0;width:1200px;height:900px;overflow:hidden'
   document.body.append(host)

@@ -4,12 +4,15 @@
 // their position and default text size from the slide layout and master, and
 // theme colors resolve through the presentation theme. Charts become pictures
 // drawn from their data (kept with the object); SmartArt uses the drawing
-// PowerPoint stores with it, or a box with its text. Animations are skipped.
+// PowerPoint stores with it, or a box with its text. Transitions and the
+// preset animations of the main sequence (pptx-anim.ts writes the same ones)
+// become the app's transitions and animations.
 
 import JSZip from 'jszip'
 import { t } from '../../../core/i18n'
 import { newCellId, type CellRecord } from '../../diagram/model'
-import { SLIDE_SIZES, type Ratio, type SlideData } from '../model'
+import { SLIDE_SIZES, THEMES, type Ratio, type SlideData } from '../model'
+import { animationsFromStarts, defaultDuration, type AnimEffect, type AnimKind, type Animation, type Direction, type Trigger } from '../animations'
 import { parseChart, renderChartSvg, svgDataUri } from './chart'
 
 const EMU_PER_PX = 9525
@@ -87,7 +90,7 @@ function relOfType(part: Part, type: string): string | null {
 
 // ---------- Entry ----------
 
-export async function parsePptx(buffer: ArrayBuffer): Promise<{ ratio: Ratio; slides: SlideData[] }> {
+export async function parsePptx(buffer: ArrayBuffer): Promise<{ ratio: Ratio; themeId?: string; slides: SlideData[] }> {
   const zip = await JSZip.loadAsync(buffer)
   const pres = await readPart(zip, 'ppt/presentation.xml')
   if (!pres) throw new Error(t('Not a PowerPoint presentation'))
@@ -129,7 +132,10 @@ export async function parsePptx(buffer: ArrayBuffer): Promise<{ ratio: Ratio; sl
     const ctx: Ctx = { zip, scale, colors, majorFont, minorFont, slide, layout, master, cells: [{ id: '0' }, { id: '1', parent: '0' }], previous: undefined }
     const background = await backgroundOf(ctx, target.width, target.height)
     const tree = find(slide.doc, 'spTree')
-    if (tree) await walkTree(ctx, tree, null)
+    // Shape id → the cells made from it (animations target shape ids).
+    const spids = new Map<number, string[]>()
+    if (tree) await walkTree(ctx, tree, null, spids)
+    const transition = readTransition(slide.doc)
     const notesPath = relOfType(slide, 'notesSlides/')
     const notes = notesPath ? await readPart(zip, notesPath) : null
     const pageId = crypto.randomUUID()
@@ -139,42 +145,120 @@ export async function parsePptx(buffer: ArrayBuffer): Promise<{ ratio: Ratio; sl
       cells: ctx.cells,
       notes: notes ? notesText(notes) : '',
       background,
+      animations: readAnimations(slide.doc, spids),
+      ...transition,
     })
   }
   if (!slides.length) throw new Error(t('The presentation has no slides'))
-  return { ratio, slides }
+  // Presentations exported by this app name their theme ("Ofimeo: ocean"); other
+  // themes have no equivalent, so no theme of the picker is shown as active.
+  const themeName = attr(theme?.doc.documentElement, 'name') ?? ''
+  const own = /^Ofimeo: (\w+)$/.exec(themeName)?.[1]
+  return { ratio, themeId: THEMES.some((th) => th.id === own) ? own : 'imported', slides }
+}
+
+// ---------- Transitions and animations ----------
+
+// The slide transition: fade, push and wipe are kept, other effects become the
+// closest one (covers and pulls push, splits and shapes wipe, the rest fade).
+function readTransition(doc: Document): { transition?: string; transitionDuration?: number } {
+  // PowerPoint 2010+ writes <mc:AlternateContent> with a p14 choice (its exact
+  // duration) and a plain fallback: the first transition element is the richest.
+  const node = find(doc, 'transition')
+  if (!node) return {}
+  const effect = [...node.children].find((c) => c.localName !== 'sndAc' && c.localName !== 'extLst')?.localName
+  if (!effect) return {}
+  const transition = effect === 'fade' || effect === 'dissolve' || effect === 'cut' ? 'fade' : ['push', 'cover', 'pull', 'pan'].includes(effect) ? 'push' : ['wipe', 'split', 'strips', 'blinds', 'checker', 'circle', 'diamond', 'plus', 'wedge', 'wheel', 'zoom', 'randomBar'].includes(effect) ? 'wipe' : 'fade'
+  const spd = attr(node, 'spd')
+  const dur = Number(node.getAttribute('p14:dur') ?? attr(node, 'dur'))
+  return { transition, transitionDuration: dur > 0 ? dur : spd === 'slow' ? 1000 : spd === 'med' ? 750 : 500 }
+}
+
+const PRESET_EFFECTS: Record<string, AnimEffect> = { 1: 'appear', 10: 'fade', 2: 'fly', 53: 'zoom', 23: 'zoom', 21: 'wipe', 22: 'wipe', 3: 'wipe', 8: 'spin', 32: 'teeter', 6: 'pulse', 26: 'pulse', 34: 'pulse' }
+const SUBTYPE_DIRECTION: Record<string, Direction> = { 8: 'left', 2: 'right', 1: 'top', 4: 'bottom' }
+
+// The main sequence of <p:timing>: each child of mainSeq is a click step; inside
+// it, time groups (delayed from the start of the step) hold the preset effects.
+function readAnimations(doc: Document, spids: Map<number, string[]>): Animation[] {
+  const main = findAll(doc, 'cTn').find((c) => attr(c, 'nodeType') === 'mainSeq')
+  if (!main) return []
+  const delayOf = (cTn: Element | null) => num(attr(kid(kid(cTn, 'stCondLst'), 'cond'), 'delay'))
+  const found: (Omit<Animation, 'id' | 'pos' | 'delay'> & { start: number })[] = []
+  for (const step of kids(kid(main, 'childTnLst'), 'par')) {
+    // Only the first effect of a step waits for the click; the others go with it.
+    let first = true
+    for (const group of kids(kid(kid(step, 'cTn'), 'childTnLst'), 'par')) {
+      const groupCTn = kid(group, 'cTn')
+      for (const effect of kids(kid(groupCTn, 'childTnLst'), 'par')) {
+        const cTn = kid(effect, 'cTn')
+        const cls = attr(cTn, 'presetClass')
+        const kind: AnimKind | null = cls === 'entr' ? 'entrance' : cls === 'exit' ? 'exit' : cls === 'emph' ? 'emphasis' : null
+        const spid = Number(attr(find(cTn, 'spTgt'), 'spid'))
+        const cells = spids.get(spid)
+        if (!kind || !cTn || !cells?.length) continue
+        const preset = attr(cTn, 'presetID') ?? ''
+        let effectName = PRESET_EFFECTS[preset] ?? (kind === 'emphasis' ? 'pulse' : 'fade')
+        if (kind === 'emphasis' ? !['pulse', 'spin', 'teeter'].includes(effectName) : ['pulse', 'spin', 'teeter'].includes(effectName)) effectName = kind === 'emphasis' ? 'pulse' : 'fade'
+        // Length: the longest behavior (the one-millisecond visibility sets aside).
+        let duration = 0
+        let repeat = 1
+        for (const behavior of findAll(cTn, 'cTn')) {
+          const d = num(attr(behavior, 'dur'))
+          if (d > 1 && d > duration) {
+            duration = d
+            repeat = (attr(behavior, 'autoRev') === '1' ? 2 : 1) * (effectName === 'teeter' ? 2 : 1)
+          }
+        }
+        duration = effectName === 'appear' ? 0 : duration ? duration * repeat : defaultDuration(effectName)
+        const node = attr(cTn, 'nodeType')
+        const trigger: Trigger = node === 'afterEffect' ? 'after' : node === 'withEffect' || !first ? 'with' : 'click'
+        first = false
+        const start = delayOf(groupCTn) + delayOf(cTn)
+        const direction = SUBTYPE_DIRECTION[attr(cTn, 'presetSubtype') ?? ''] ?? 'left'
+        cells.forEach((cell, i) => found.push({ cell, kind, effect: effectName, trigger: i ? 'with' : trigger, duration, direction, start }))
+      }
+    }
+  }
+  return animationsFromStarts(found)
 }
 
 // ---------- Shapes ----------
 
 type GroupTransform = ((x: Xfrm) => Xfrm) | null
 
-async function walkTree(ctx: Ctx, tree: Element, transform: GroupTransform): Promise<void> {
+async function walkTree(ctx: Ctx, tree: Element, transform: GroupTransform, spids?: Map<number, string[]>): Promise<void> {
   for (const node of [...tree.children]) {
-    const name = node.localName
-    if (name === 'sp') await shape(ctx, node, transform)
-    else if (name === 'pic') await picture(ctx, node, transform)
-    else if (name === 'cxnSp') connector(ctx, node, transform)
-    else if (name === 'graphicFrame') await graphicFrame(ctx, node, transform)
-    else if (name === 'grpSp') {
-      const xfrm = kid(kid(node, 'grpSpPr'), 'xfrm')
-      const outer = readXfrm(xfrm)
-      const chOff = kid(xfrm, 'chOff')
-      const chExt = kid(xfrm, 'chExt')
-      let inner: GroupTransform = transform
-      if (outer && chOff && chExt) {
-        const sx = num(attr(chExt, 'cx'), 1) ? outer.w / num(attr(chExt, 'cx'), 1) : 1
-        const sy = num(attr(chExt, 'cy'), 1) ? outer.h / num(attr(chExt, 'cy'), 1) : 1
-        const ox = num(attr(chOff, 'x'))
-        const oy = num(attr(chOff, 'y'))
-        const map = (x: Xfrm): Xfrm => ({ ...x, x: outer.x + (x.x - ox) * sx, y: outer.y + (x.y - oy) * sy, w: x.w * sx, h: x.h * sy })
-        inner = transform ? (x) => transform(map(x)) : map
-      }
-      await walkTree(ctx, node, inner)
-    } else if (name === 'AlternateContent') {
-      const fallback = kid(node, 'Fallback') ?? kid(node, 'Choice')
-      if (fallback) await walkTree(ctx, fallback, transform)
+    const before = ctx.cells.length
+    await walkNode(ctx, node, transform)
+    const id = Number(attr(find(node, 'cNvPr'), 'id'))
+    if (spids && Number.isFinite(id)) spids.set(id, ctx.cells.slice(before).filter((c) => c.parent === '1').map((c) => c.id))
+  }
+}
+
+async function walkNode(ctx: Ctx, node: Element, transform: GroupTransform): Promise<void> {
+  const name = node.localName
+  if (name === 'sp') await shape(ctx, node, transform)
+  else if (name === 'pic') await picture(ctx, node, transform)
+  else if (name === 'cxnSp') connector(ctx, node, transform)
+  else if (name === 'graphicFrame') await graphicFrame(ctx, node, transform)
+  else if (name === 'grpSp') {
+    const xfrm = kid(kid(node, 'grpSpPr'), 'xfrm')
+    const outer = readXfrm(xfrm)
+    const chOff = kid(xfrm, 'chOff')
+    const chExt = kid(xfrm, 'chExt')
+    let inner: GroupTransform = transform
+    if (outer && chOff && chExt) {
+      const sx = num(attr(chExt, 'cx'), 1) ? outer.w / num(attr(chExt, 'cx'), 1) : 1
+      const sy = num(attr(chExt, 'cy'), 1) ? outer.h / num(attr(chExt, 'cy'), 1) : 1
+      const ox = num(attr(chOff, 'x'))
+      const oy = num(attr(chOff, 'y'))
+      const map = (x: Xfrm): Xfrm => ({ ...x, x: outer.x + (x.x - ox) * sx, y: outer.y + (x.y - oy) * sy, w: x.w * sx, h: x.h * sy })
+      inner = transform ? (x) => transform(map(x)) : map
     }
+    await walkTree(ctx, node, inner)
+  } else if (name === 'AlternateContent') {
+    const fallback = kid(node, 'Fallback') ?? kid(node, 'Choice')
+    if (fallback) await walkTree(ctx, fallback, transform)
   }
 }
 

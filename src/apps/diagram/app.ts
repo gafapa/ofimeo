@@ -18,6 +18,7 @@ import { createDiagramEditor, shortcutSections } from './editor'
 import { renderSvg, svgToPng, svgToString } from './export'
 import { DiagramSync } from './sync'
 import { createPageSettings, type PageSettings } from './page'
+import { pageDisplayName } from './model'
 
 export const DIAGRAM_ACCEPT = '.drawio,.xml,.vsdx,.vssx'
 
@@ -103,6 +104,7 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
     { ext: 'drawio', label: t('draw.io diagram (.drawio)'), build: async () => new Blob([(await formats()).serializeDrawio(DiagramSync.readPages(session.doc))], { type: 'application/vnd.jgraph.mxfile' }) },
     { ext: 'svg', label: t('SVG image (current page)'), build: async () => new Blob([svgToString(renderSvg(graph, { background: background() }))], { type: 'image/svg+xml' }) },
     { ext: 'png', label: t('PNG image (current page)'), build: () => svgToPng(renderSvg(graph, { background: background() })) },
+    { ext: 'pdf', label: t('PDF document (all pages)'), build: async () => (await import('./pdf')).diagramPdf(DiagramSync.readPages(session.doc), title()) },
   ]
   // Document details: pages, shapes and connectors of the whole diagram.
   const details = (): [string, string][] => {
@@ -127,14 +129,14 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
   }
   const duplicatePage = () => {
     const current = sync.pageList().find((p) => p.id === sync.page)!
-    const id = sync.addPage(`${current.name} (${t('copy')})`, sync.pageRecords(sync.page), sync.pageAttrs(sync.page))
+    const id = sync.addPage(`${pageDisplayName(current.name)} (${t('copy')})`, sync.pageRecords(sync.page), sync.pageAttrs(sync.page))
     sync.showPage(id)
   }
   const renamePage = async (id = sync.page) => {
     if (readOnly) return
     const current = sync.pageList().find((p) => p.id === id)
     if (!current) return
-    const name = await promptText(t('Rename page'), t('Name'), current.name)
+    const name = await promptText(t('Rename page'), t('Name'), pageDisplayName(current.name))
     if (name?.trim()) sync.renamePage(id, name.trim())
   }
   const deletePage = async (id = sync.page) => {
@@ -151,7 +153,7 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
     const peers = editor.presence()?.pagesOfPeers() ?? new Map()
     pageTabs.replaceChildren()
     for (const page of sync.pageList()) {
-      const tab = el('button', { type: 'button', class: 'page-tab', textContent: page.name || t('Untitled page'), role: 'tab' })
+      const tab = el('button', { type: 'button', class: 'page-tab', textContent: pageDisplayName(page.name) || t('Untitled page'), role: 'tab' })
       tab.classList.toggle('active', page.id === sync.page)
       tab.setAttribute('aria-selected', String(page.id === sync.page))
       for (const user of peers.get(page.id) ?? []) {

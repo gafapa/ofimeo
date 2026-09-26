@@ -31,12 +31,21 @@ export const DRAW_ACCEPT = '.excalidraw'
 // Excalidraw API of each open session (for hand in).
 export const drawApis = new WeakMap<Session, any>()
 
-export async function exportDrawing(api: any, format: 'png' | 'svg' | 'excalidraw'): Promise<Blob> {
+export async function exportDrawing(api: any, format: 'png' | 'svg' | 'pdf' | 'excalidraw', title = ''): Promise<Blob> {
   const elements = api.getSceneElements()
   // Exports keep the drawing's own colours, whatever the UI theme.
   const appState = { ...api.getAppState(), exportBackground: true, exportWithDarkMode: false }
   const files = api.getFiles()
   if (format === 'png') return exportToBlob({ elements, appState, files, mimeType: 'image/png' })
+  if (format === 'pdf') {
+    // The scene as one PDF page of its own size, from a picture at about 300 dpi.
+    const [{ picturesToPdf, pictureRatio }, png] = await Promise.all([import('../diagram/pdf'), exportToBlob({ elements, appState: { ...appState, exportScale: 1 }, files, mimeType: 'image/png' })])
+    const { width, height } = await createImageBitmap(png)
+    const ratio = pictureRatio(width, height)
+    const sharp = await exportToBlob({ elements, appState: { ...appState, exportScale: ratio }, files, mimeType: 'image/png' })
+    const live = elements.filter((e: any) => !e.isDeleted).length
+    return picturesToPdf([{ png: live ? sharp : null, width, height, pageWidth: width * 0.75, pageHeight: height * 0.75 }], title)
+  }
   if (format === 'svg') return new Blob([(await exportToSvg({ elements, appState, files })).outerHTML], { type: 'image/svg+xml' })
   return new Blob([serializeAsJSON(elements, appState, files, 'local')], { type: 'application/json' })
 }
@@ -201,15 +210,16 @@ export function mountDraw(session: Session, root: HTMLElement): void {
     )
   }
 
-  const exportBlob = (format: 'png' | 'svg' | 'excalidraw') => async () => {
+  const exportBlob = (format: 'png' | 'svg' | 'pdf' | 'excalidraw') => async () => {
     const a = api()
     if (!a) throw new Error(t('The drawing is still loading'))
-    return exportDrawing(a, format)
+    return exportDrawing(a, format, String(session.doc.getMap('meta').get('title') || t('Untitled drawing')))
   }
   session.hooks.exportFormats = () => [
     { ext: 'excalidraw', label: t('Excalidraw drawing (.excalidraw)'), build: exportBlob('excalidraw') },
     { ext: 'png', label: t('PNG image'), build: exportBlob('png') },
     { ext: 'svg', label: t('SVG image'), build: exportBlob('svg') },
+    { ext: 'pdf', label: t('PDF document (.pdf)'), build: exportBlob('pdf') },
   ]
 
   createRoot(container).render(h(Editor))

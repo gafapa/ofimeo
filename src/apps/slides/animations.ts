@@ -187,3 +187,18 @@ export function visibilityAt(tl: Timeline, done: number): Map<string, boolean> {
   }
   return visible
 }
+
+// Imported effects with their start time within the click step → animations
+// with the delay after (or with) the previous effect, as timeline() reads them.
+export function animationsFromStarts(found: (Omit<Animation, 'id' | 'pos' | 'delay'> & { start: number })[]): Animation[] {
+  let prevStart = 0
+  let prevEnd = 0
+  return found.map(({ start, ...a }, i) => {
+    if (a.trigger === 'click') prevStart = prevEnd = 0
+    const base = a.trigger === 'after' ? prevEnd : a.trigger === 'with' ? prevStart : 0
+    const delay = Math.max(0, Math.round(start - base))
+    prevStart = base + delay
+    prevEnd = prevStart + a.duration
+    return { ...a, id: `a${i}${Math.random().toString(36).slice(2, 8)}`, pos: i + 1, delay }
+  })
+}

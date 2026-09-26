@@ -55,6 +55,7 @@ export async function exportPptx(pres: PresentationData, renderer: SlideRenderer
   return addPptxAnimations(
     blob,
     pres.slides.map((s, i) => ({ objects: objects[i] ?? new Map(), animations: s.animations ?? [], transition: s.transition, transitionDuration: s.transitionDuration })),
+    pres.theme.id,
   )
 }
 

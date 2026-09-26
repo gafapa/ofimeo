@@ -7,6 +7,8 @@ import type { ICellData, IColumnData, IRange, IRowData, IStyleData, IWorkbookDat
 import { CHART_COMPONENT, DRAWING_TYPE_DOM, DRAWING_TYPE_IMAGE } from '../charts/model'
 import { DrawingCollector } from './drawings'
 import { readXlsxCharts } from './xlsx-charts'
+import { cfFromExcel, type ExcelRule } from './xlsx-features'
+import { emptyFeatures, featureResources, GLOBAL_SCOPE, parseRangeA1, type CfRule, type FilterColumn, type SheetNote } from './features'
 
 // The browser build of ExcelJS is a UMD bundle; Vite exposes it as a default export.
 export const ExcelJS = ((ExcelJSModule as unknown as { default?: typeof ExcelJSModule }).default ?? ExcelJSModule) as typeof ExcelJSModule
@@ -304,11 +306,29 @@ export async function importXlsx(buf: ArrayBuffer): Promise<Partial<IWorkbookDat
   const dvRes: Record<string, unknown[]> = {}
   const worksheets = wb.worksheets
   const sheetIds = new Map(worksheets.map((ws, i) => [ws.name, `sheet-${i + 1}`]))
+  const features = emptyFeatures()
 
   worksheets.forEach((ws, i) => {
     const id = `sheet-${i + 1}`
     sheetOrder.push(id)
-    const { sheet, dv } = convertSheet(ws, id, conv, sheetIds)
+    const { sheet, dv, notes } = convertSheet(ws, id, conv, sheetIds)
+    if (notes.length) features.notes[id] = notes
+    const cf = conditionalFormats(ws, conv)
+    if (cf.length) features.cf[id] = cf
+    const filter = norm.filters[i]
+    if (filter) {
+      // Rows hidden by the filter are the filter's, not manually hidden rows.
+      const hidden: number[] = []
+      if (filter.filterColumns.length) {
+        for (let r = filter.ref.startRow + 1; r <= filter.ref.endRow; r++) {
+          if (sheet.rowData?.[r]?.hd) {
+            hidden.push(r)
+            delete sheet.rowData[r].hd
+          }
+        }
+      }
+      features.filters[id] = { ref: filter.ref, filterColumns: filter.filterColumns, cachedFilteredOut: hidden }
+    }
     for (const link of norm.links[i] || []) {
       const c = decodeCell(link.ref.split(':')[0])
       const cell = c && sheet.cellData?.[c.row]?.[c.col]
@@ -319,8 +339,14 @@ export async function importXlsx(buf: ArrayBuffer): Promise<Partial<IWorkbookDat
     if (dv.length) dvRes[id] = dv
   })
 
+  norm.names.forEach((n, k) => {
+    const scope = n.localSheetId !== undefined ? sheetOrder[n.localSheetId] : GLOBAL_SCOPE
+    if (scope) features.names.push({ id: `name-${k + 1}`, name: n.name, formulaOrRefString: n.formula, localSheetId: scope, ...(n.comment ? { comment: n.comment } : {}), ...(n.hidden ? { hidden: true } : {}) })
+  })
+
   const resources: NonNullable<IWorkbookData['resources']> = []
   if (Object.keys(dvRes).length) resources.push({ name: DV_RESOURCE, data: JSON.stringify(dvRes) })
+  resources.push(...featureResources(features))
 
   // Floating images and native charts become Univer drawings anchored at the same cells.
   const drawings = new DrawingCollector(sheets)
@@ -380,15 +406,29 @@ const unescapeXml = (v: string) =>
 // Rewrites XML that ExcelJS misreads: boolean attributes written as "true"/"false"
 // (LibreOffice) and font flags explicitly turned off (<b val="0"/>). Also collects
 // internal hyperlinks (location="Sheet!A1"), which ExcelJS drops, per sheet index.
-async function normalize(buf: ArrayBuffer): Promise<{ buf: ArrayBuffer; links: InternalLink[][]; font?: DefaultFont }> {
+type XlsxName = { name: string; formula: string; localSheetId?: number; hidden?: boolean; comment?: string }
+type XlsxFilter = { ref: IRange; filterColumns: FilterColumn[] }
+
+interface Normalized {
+  buf: ArrayBuffer
+  links: InternalLink[][]
+  // Per sheet index: auto filters with their criteria (ExcelJS keeps only the range).
+  filters: (XlsxFilter | undefined)[]
+  // Defined names, formulas included (ExcelJS keeps only plain ranges).
+  names: XlsxName[]
+  font?: DefaultFont
+}
+
+async function normalize(buf: ArrayBuffer): Promise<Normalized> {
   let zip: JSZip
   try {
     zip = await JSZip.loadAsync(buf)
   } catch {
-    return { buf, links: [] }
+    return { buf, links: [], filters: [], names: [] }
   }
   let changed = false
   const linksByPath = new Map<string, InternalLink[]>()
+  const filtersByPath = new Map<string, XlsxFilter>()
   for (const path of Object.keys(zip.files)) {
     if (!/^xl\/(worksheets\/[^/]+|styles|sharedStrings)\.xml$/.test(path)) continue
     const xml = await zip.file(path)!.async('string')
@@ -406,10 +446,14 @@ async function normalize(buf: ArrayBuffer): Promise<{ buf: ArrayBuffer; links: I
       if (ref && location && !/\sr:id="/.test(tag)) links.push({ ref, location: unescapeXml(location) })
     }
     if (links.length) linksByPath.set(path, links)
+    const filter = readAutoFilter(xml)
+    if (filter) filtersByPath.set(path, filter)
   }
   const links: InternalLink[][] = []
-  if (linksByPath.size) {
-    const book = (await zip.file('xl/workbook.xml')?.async('string')) || ''
+  const filters: (XlsxFilter | undefined)[] = []
+  const book = (await zip.file('xl/workbook.xml')?.async('string')) || ''
+  const names = readDefinedNames(book)
+  if (linksByPath.size || filtersByPath.size) {
     const rels = (await zip.file('xl/_rels/workbook.xml.rels')?.async('string')) || ''
     const targets = new Map<string, string>()
     for (const tag of rels.match(/<(?:\w+:)?Relationship\s[^>]*>/g) || []) {
@@ -419,7 +463,9 @@ async function normalize(buf: ArrayBuffer): Promise<{ buf: ArrayBuffer; links: I
     }
     for (const tag of book.match(/<(?:\w+:)?sheet\s[^>]*>/g) || []) {
       const rid = attrOf(tag, 'r:id')
-      links.push((rid && linksByPath.get(targets.get(rid) || '')) || [])
+      const path = (rid && targets.get(rid)) || ''
+      links.push(linksByPath.get(path) || [])
+      filters.push(filtersByPath.get(path))
     }
   }
   // Default font: the first <font> of styles.xml.
@@ -448,13 +494,80 @@ async function normalize(buf: ArrayBuffer): Promise<{ buf: ArrayBuffer; links: I
       color: cl ? color : undefined,
     }
   }
-  return { buf: changed ? await zip.generateAsync({ type: 'arraybuffer' }) : buf, links, font }
+  return { buf: changed ? await zip.generateAsync({ type: 'arraybuffer' }) : buf, links, filters, names, font }
+}
+
+// <autoFilter ref="A1:C9"><filterColumn colId="2"><filters><filter val="x"/></filters></filterColumn></autoFilter>
+function readAutoFilter(xml: string): XlsxFilter | undefined {
+  const m = /<(?:\w+:)?autoFilter\b([^>]*?)(\/>|>([\s\S]*?)<\/(?:\w+:)?autoFilter>)/.exec(xml)
+  const ref = m && parseRangeA1(attrOf(m[1], 'ref') ?? '')
+  if (!m || !ref) return undefined
+  const filterColumns: FilterColumn[] = []
+  for (const col of (m[3] ?? '').match(/<(?:\w+:)?filterColumn\b[\s\S]*?(?:\/>|<\/(?:\w+:)?filterColumn>)/g) || []) {
+    const colId = Number(attrOf(col, 'colId'))
+    if (!Number.isFinite(colId)) continue
+    const values = [...col.matchAll(/<(?:\w+:)?filter\s[^>]*>/g)].map((f) => unescapeXml(attrOf(f[0], 'val') ?? ''))
+    const custom = [...col.matchAll(/<(?:\w+:)?customFilter\s[^>]*>/g)].map((f) => {
+      const val = unescapeXml(attrOf(f[0], 'val') ?? '')
+      const operator = attrOf(f[0], 'operator')
+      return { val: val !== '' && Number.isFinite(Number(val)) ? Number(val) : val, ...(operator ? { operator } : {}) }
+    })
+    const column: FilterColumn = { colId: ref.startColumn + colId }
+    if (/<(?:\w+:)?filters\b/.test(col)) column.filters = { ...(/<(?:\w+:)?filters\b[^>]*\sblank="(?:1|true)"/.test(col) ? { blank: true as const } : {}), filters: values }
+    else if (custom.length) column.customFilters = { ...(/\sand="(?:1|true)"/.test(col) ? { and: 1 as const } : {}), customFilters: custom.slice(0, 2) }
+    else continue
+    filterColumns.push(column)
+  }
+  return { ref, filterColumns }
+}
+
+function readDefinedNames(book: string): XlsxName[] {
+  const out: XlsxName[] = []
+  for (const m of book.matchAll(/<(?:\w+:)?definedName\b([^>]*)>([\s\S]*?)<\/(?:\w+:)?definedName>/g)) {
+    const name = unescapeXml(attrOf(m[1], 'name') ?? '')
+    const formula = unescapeXml(m[2]).trim()
+    // Built-in names (print areas, filter ranges) are not user names.
+    if (!name || !formula || name.startsWith('_xlnm.') || /#REF!/.test(formula)) continue
+    const local = attrOf(m[1], 'localSheetId')
+    const comment = attrOf(m[1], 'comment')
+    out.push({
+      name,
+      formula: formula.replace(/^=/, ''),
+      ...(local !== undefined ? { localSheetId: Number(local) } : {}),
+      ...(/^(1|true)$/.test(attrOf(m[1], 'hidden') ?? '') ? { hidden: true } : {}),
+      ...(comment ? { comment: unescapeXml(comment) } : {}),
+    })
+  }
+  return out
+}
+
+// Conditional formats of a sheet, highest priority first.
+function conditionalFormats(ws: Worksheet, conv: Converter): CfRule[] {
+  const list = ((ws as unknown as { conditionalFormattings?: { ref: string; rules: ExcelRule[] }[] }).conditionalFormattings ?? []).flatMap((cf) => {
+    const ranges = String(cf.ref ?? '')
+      .split(/\s+/)
+      .map((r) => parseRangeA1(r.replace(/^[^!]*!/, '')))
+      .filter((r): r is IRange => !!r)
+    return ranges.length ? (cf.rules ?? []).map((rule) => ({ rule, ranges })) : []
+  })
+  list.sort((a, b) => (Number(a.rule.priority) || 0) - (Number(b.rule.priority) || 0))
+  const out: CfRule[] = []
+  for (const { rule, ranges } of list) {
+    try {
+      const cf = cfFromExcel(rule, ranges, (c) => conv.color(c as XColor))
+      if (cf) out.push(cf)
+    } catch (err) {
+      console.warn('Could not read a conditional format', err)
+    }
+  }
+  return out
 }
 
 function convertSheet(ws: Worksheet, id: string, conv: Converter, sheetIds: Map<string, string>) {
   const cellData: Record<number, Record<number, ICellData>> = {}
   const rowData: Record<number, Partial<IRowData>> = {}
   const columnData: Record<number, Partial<IColumnData>> = {}
+  const notes: SheetNote[] = []
   let maxRow = 0
   let maxCol = 0
 
@@ -490,6 +603,8 @@ function convertSheet(ws: Worksheet, id: string, conv: Converter, sheetIds: Map<
       maxRow = Math.max(maxRow, rowNumber)
     }
     row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+      const note = noteText(cell.note)
+      if (note) notes.push({ note, row: r, col: colNumber - 1 })
       const cd = convertCell(cell, conv, sheetIds)
       if (!cd) return
       ;(cellData[r] ||= {})[colNumber - 1] = cd
@@ -549,7 +664,13 @@ function convertSheet(ws: Worksheet, id: string, conv: Converter, sheetIds: Map<
   if (view.zoomScale && view.zoomScale !== 100) sheet.zoomRatio = view.zoomScale / 100
   if (view.rightToLeft) sheet.rightToLeft = 1
 
-  return { sheet, dv: dataValidations(ws) }
+  return { sheet, dv: dataValidations(ws), notes }
+}
+
+function noteText(note: Cell['note'] | undefined): string {
+  if (!note) return ''
+  if (typeof note === 'string') return note
+  return ((note as { texts?: { text?: string }[] }).texts ?? []).map((t) => t.text ?? '').join('')
 }
 
 function convertCell(cell: Cell, conv: Converter, sheetIds: Map<string, string>): ICellData | undefined {

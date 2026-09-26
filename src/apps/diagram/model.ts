@@ -2,6 +2,8 @@
 // converters. It mirrors draw.io's mxGraphModel so files round-trip, but it is
 // plain data (no maxGraph objects), which keeps converters and sync simple.
 
+import { t } from '../../core/i18n'
+
 export interface GeometryRecord {
   x: number
   y: number
@@ -65,6 +67,12 @@ export type CellField = (typeof CELL_FIELDS)[number]
 // A new diagram: one page with the standard root and default layer.
 export function emptyPage(id = 'page-1', name = 'Page-1'): PageRecord {
   return { id, name, cells: [{ id: '0' }, { id: '1', parent: '0' }] }
+}
+
+// Name shown for a page: the fixed name of the first page of a new diagram
+// ("Page-1", stored as is so replicas agree) is shown in the interface language.
+export function pageDisplayName(name: string): string {
+  return name === 'Page-1' ? t('Page {n}', { n: 1 }) : name
 }
 
 // Random cell id in draw.io's style (20 URL-safe characters).

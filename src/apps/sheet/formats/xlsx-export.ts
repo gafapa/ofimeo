@@ -17,6 +17,8 @@ import {
   V_ALIGN,
 } from './xlsx-import'
 import { addXlsxCharts, type XlsxChart } from './xlsx-charts'
+import { cfToExcel, fixTextRules } from './xlsx-features'
+import { DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, isThemeTextColor, rangeA1, readFeatures, type DefinedName, type SheetFilter } from './features'
 import { DRAWING_TYPE_IMAGE, snapshotCharts, snapshotDrawings, snapshotValue } from '../charts/model'
 
 type StyleRef = IStyleData | string | null | undefined
@@ -98,26 +100,33 @@ function compose(...layers: (IStyleData | undefined)[]): IStyleData | undefined 
   return out
 }
 
-function fontOf(s: IStyleData): Partial<Font> | undefined {
+// Workbook default font, used for every styled cell: Excel and LibreOffice
+// read a font entry without a name or size as the theme's (serif) font.
+type BaseFont = { name: string; size: number }
+const DEFAULT_BASE: BaseFont = { name: DEFAULT_FONT_NAME, size: DEFAULT_FONT_SIZE }
+
+function fontOf(s: IStyleData, base: BaseFont = DEFAULT_BASE): Partial<Font> {
   const f: Partial<Font> = {}
-  if (s.ff) f.name = s.ff
-  if (s.fs) f.size = s.fs
+  f.name = s.ff || base.name
+  f.size = s.fs || base.size
   if (s.bl) f.bold = true
   if (s.it) f.italic = true
   if (s.ul?.s) f.underline = s.ul.t === 10 ? 'double' : true
   if (s.st?.s) f.strike = true
   if (s.va === 3) f.vertAlign = 'superscript'
   else if (s.va === 2) f.vertAlign = 'subscript'
-  const cl = argb(s.cl?.rgb)
+  // Text typed in older versions stored the interface's text color; it is the automatic color.
+  const cl = isThemeTextColor(s.cl?.rgb) ? undefined : argb(s.cl?.rgb)
   if (cl) f.color = { argb: cl }
-  return Object.keys(f).length ? f : undefined
+  return f
 }
 
-function toExcelStyle(s: IStyleData | undefined): Partial<Style> | undefined {
+function toExcelStyle(s: IStyleData | undefined, base: BaseFont = DEFAULT_BASE): Partial<Style> | undefined {
   if (!s) return undefined
   const out: Partial<Style> = {}
-  const font = fontOf(s)
-  if (font) out.font = font
+  const font = fontOf(s, base)
+  const plain = !s.ff && !s.fs && !s.bl && !s.it && !s.ul?.s && !s.st?.s && !s.va && !font.color
+  if (!plain) out.font = font
   const bg = argb(s.bg?.rgb)
   if (bg) out.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg }, bgColor: { indexed: 64 } as never }
   if (s.bd) {
@@ -173,6 +182,8 @@ export async function exportXlsx(data: IWorkbookData): Promise<Blob> {
   const names = new Map(sheetIds.map((id) => [id, sanitizeName(data.sheets[id].name || id, used)]))
   const rules = parseResource(data, DV_RESOURCE)
   const drawings = snapshotDrawings(data.resources)
+  const features = readFeatures(data)
+  const filters: { index: number; filter: SheetFilter }[] = []
 
   // Excel needs at least one visible sheet, which must also be the active one.
   const visible = sheetIds.filter((id) => !data.sheets[id].hidden)
@@ -186,6 +197,18 @@ export async function exportXlsx(data: IWorkbookData): Promise<Blob> {
     writeSheet(ws, sheet, resolve(data.defaultStyle as StyleRef), resolve, names)
     addImages(wb, ws, sheet, drawings.filter((d) => d.hostSheetId === id && d.drawingType === DRAWING_TYPE_IMAGE))
     for (const rule of (rules[id] as DvRule[] | undefined) || []) addValidation(ws, rule)
+    for (const cf of features.cf[id] ?? []) {
+      const excel = cfToExcel(cf)
+      if (excel) ws.addConditionalFormatting({ ref: cf.ranges.map((r) => rangeA1(r)).join(' '), rules: excel as never })
+    }
+    for (const note of features.notes[id] ?? []) ws.getCell(note.row + 1, note.col + 1).note = note.note
+    const filter = features.filters[id]
+    if (filter) {
+      ws.autoFilter = rangeA1(filter.ref)
+      // Rows the filter hides are hidden rows in the file, as Excel writes them.
+      for (const r of filter.cachedFilteredOut ?? []) if (r < MAX_ROWS) ws.getRow(r + 1).hidden = true
+      filters.push({ index: sheetIds.indexOf(id), filter })
+    }
   }
   if (!sheetIds.length) wb.addWorksheet('Sheet1')
 
@@ -208,7 +231,9 @@ export async function exportXlsx(data: IWorkbookData): Promise<Blob> {
     }
     return [chart]
   })
-  return new Blob([await postProcess(buf, resolve(data.defaultStyle as StyleRef), charts)], { type: XLSX_MIME })
+  const sheetIndex = new Map(sheetIds.map((id, i) => [id, i]))
+  const definedNames = features.names.map((n) => ({ ...n, index: n.localSheetId ? sheetIndex.get(n.localSheetId) : undefined }))
+  return new Blob([await postProcess(buf, resolve(data.defaultStyle as StyleRef), charts, { names: definedNames, filters, sheetNames: sheetIds.map((id) => names.get(id)!) })], { type: XLSX_MIME })
 }
 
 function writeSheet(
@@ -362,31 +387,45 @@ function cellValue(
   return result
 }
 
+interface PostExtras {
+  names: (DefinedName & { index?: number })[]
+  filters: { index: number; filter: SheetFilter }[]
+  sheetNames: string[]
+}
+
 // Fixes up ExcelJS output:
 // - the workbook default font (styles.xml font 0) follows the snapshot's default style;
+// - defined names (ExcelJS only keeps plain ranges) and the filters' criteria
+//   and hidden _FilterDatabase names are written here;
+// - text conditional formats get their `text` attribute;
 // - internal links (location="Sheet!A1") are written with an extra external
 //   relationship pointing at the same text, which Excel would follow, so it is dropped.
-async function postProcess(buf: ArrayBuffer, defaultStyle: IStyleData | undefined, charts: (XlsxChart & { sheetIndex: number })[]): Promise<ArrayBuffer> {
+async function postProcess(buf: ArrayBuffer, defaultStyle: IStyleData | undefined, charts: (XlsxChart & { sheetIndex: number })[], extras: PostExtras): Promise<ArrayBuffer> {
   const zip = await JSZip.loadAsync(buf)
-  let changed = charts.length > 0
+  let changed = true
+  await writeNamesAndFilters(zip, extras)
   await addXlsxCharts(zip, charts)
-  const font = defaultStyle && fontOf(defaultStyle)
-  const styles = font && (await zip.file('xl/styles.xml')?.async('string'))
-  if (font && styles) {
+  const font = fontOf(defaultStyle ?? {})
+  const styles = await zip.file('xl/styles.xml')?.async('string')
+  if (styles) {
     const xml =
       '<font>' +
       (font.bold ? '<b/>' : '') +
       (font.italic ? '<i/>' : '') +
-      `<sz val="${font.size ?? 11}"/>` +
+      `<sz val="${font.size ?? DEFAULT_FONT_SIZE}"/>` +
       (font.color?.argb ? `<color rgb="${font.color.argb}"/>` : '') +
-      `<name val="${escapeXml(font.name ?? 'Calibri')}"/><family val="2"/></font>`
+      `<name val="${escapeXml(font.name ?? DEFAULT_FONT_NAME)}"/><family val="2"/></font>`
     zip.file('xl/styles.xml', styles.replace(/(<fonts\b[^>]*>)\s*<font>[\s\S]*?<\/font>/, `$1${xml}`))
     changed = true
   }
   for (const path of Object.keys(zip.files)) {
     const m = /^xl\/worksheets\/([^/]+\.xml)$/.exec(path)
     if (!m) continue
-    const xml = await zip.file(path)!.async('string')
+    let xml = await zip.file(path)!.async('string')
+    if (xml.includes('<cfRule')) {
+      xml = fixTextRules(xml)
+      zip.file(path, xml)
+    }
     if (!xml.includes(' location="')) continue
     const ids: string[] = []
     const fixed = xml.replace(/<hyperlink\s[^>]*location="[^>]*>/g, (tag) =>
@@ -406,6 +445,45 @@ async function postProcess(buf: ArrayBuffer, defaultStyle: IStyleData | undefine
     changed = true
   }
   return changed ? zip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE' }) : buf
+}
+
+function quoteSheetName(name: string): string {
+  return /^[A-Za-z_][A-Za-z0-9_.]*$/.test(name) && !/^[A-Za-z]{1,3}\d+$/.test(name) ? name : `'${name.replace(/'/g, "''")}'`
+}
+
+async function writeNamesAndFilters(zip: JSZip, { names, filters, sheetNames }: PostExtras): Promise<void> {
+  const defined: string[] = []
+  for (const n of names) {
+    if (!/^[A-Za-z_\\][\w.\\]*$/.test(n.name) || n.name.startsWith('_xlnm.')) continue
+    const scope = n.index !== undefined ? ` localSheetId="${n.index}"` : ''
+    const extra = (n.hidden ? ' hidden="1"' : '') + (n.comment ? ` comment="${escapeXml(n.comment)}"` : '')
+    defined.push(`<definedName name="${escapeXml(n.name)}"${scope}${extra}>${escapeXml(n.formulaOrRefString.replace(/^=/, ''))}</definedName>`)
+  }
+  for (const { index, filter } of filters) {
+    const ref = rangeA1(filter.ref, true)
+    defined.push(`<definedName name="_xlnm._FilterDatabase" localSheetId="${index}" hidden="1">${escapeXml(`${quoteSheetName(sheetNames[index])}!${ref}`)}</definedName>`)
+    const path = `xl/worksheets/sheet${index + 1}.xml`
+    const xml = await zip.file(path)?.async('string')
+    const columns = (filter.filterColumns ?? [])
+      .map((c) => {
+        const colId = c.colId - filter.ref.startColumn
+        if (colId < 0) return ''
+        let inner = ''
+        if (c.filters) inner = `<filters${c.filters.blank ? ' blank="1"' : ''}>${(c.filters.filters ?? []).map((v) => `<filter val="${escapeXml(String(v))}"/>`).join('')}</filters>`
+        else if (c.customFilters?.customFilters?.length)
+          inner = `<customFilters${c.customFilters.and ? ' and="1"' : ''}>${c.customFilters.customFilters.map((f) => `<customFilter${f.operator ? ` operator="${f.operator}"` : ''} val="${escapeXml(String(f.val))}"/>`).join('')}</customFilters>`
+        return inner ? `<filterColumn colId="${colId}">${inner}</filterColumn>` : ''
+      })
+      .join('')
+    if (xml && columns) zip.file(path, xml.replace(/<autoFilter ref="([^"]*)"\s*\/>/, `<autoFilter ref="$1">${columns}</autoFilter>`))
+  }
+  if (!defined.length) return
+  const book = await zip.file('xl/workbook.xml')?.async('string')
+  if (!book) return
+  const xml = book.includes('<definedNames>')
+    ? book.replace(/<definedNames>[\s\S]*?<\/definedNames>/, `<definedNames>${defined.join('')}</definedNames>`)
+    : book.replace('</sheets>', `</sheets><definedNames>${defined.join('')}</definedNames>`)
+  zip.file('xl/workbook.xml', xml)
 }
 
 // Univer internal links (#gid=<sheetId>&range=A1) become "Sheet!A1" locations.

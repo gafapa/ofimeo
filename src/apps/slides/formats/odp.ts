@@ -118,7 +118,7 @@ export async function exportOdp(pres: PresentationData, renderer: SlideRenderer)
   )
   zip.file(
     'meta.xml',
-    `<?xml version="1.0" encoding="UTF-8"?><office:document-meta ${ns} xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0"><office:meta><meta:generator>Ofimeo</meta:generator></office:meta></office:document-meta>`,
+    `<?xml version="1.0" encoding="UTF-8"?><office:document-meta ${ns} xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0"><office:meta><meta:generator>Ofimeo</meta:generator><meta:user-defined meta:name="OfimeoTheme">${esc(pres.theme.id)}</meta:user-defined></office:meta></office:document-meta>`,
   )
   zip.file(
     'META-INF/manifest.xml',

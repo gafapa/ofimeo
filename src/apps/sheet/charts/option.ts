@@ -39,7 +39,6 @@ export function chartOption(spec: ChartSpec, data: ChartData, colors: ChartColor
     right: spec.legend === 'right' ? 120 : 20,
     top,
     bottom: (spec.legend === 'bottom' ? 34 : 10) + (spec.xTitle ? 26 : 0),
-    containLabel: true,
   }
   const axisCommon = {
     axisLine: { lineStyle: { color: colors.muted } },

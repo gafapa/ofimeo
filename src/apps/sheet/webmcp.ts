@@ -40,7 +40,8 @@ export function sheetTools(session: Session, univerAPI: FUniver): AppTools {
   const usedRange = (s: FWorksheet) => {
     const rows = s.getLastRow() + 1
     const cols = s.getLastColumn() + 1
-    return rows > 0 && cols > 0 ? toA1({ startRow: 0, startColumn: 0, endRow: rows - 1, endColumn: cols - 1 }) : null
+    if (rows < 1 || cols < 1 || (rows === 1 && cols === 1 && [null, undefined, ''].includes(s.getRange(0, 0).getValue() as never))) return null
+    return toA1({ startRow: 0, startColumn: 0, endRow: rows - 1, endColumn: cols - 1 })
   }
 
   const tools: OfimeoTool[] = [

@@ -656,6 +656,34 @@ whole suite; nothing changes in the documents themselves.
   pop-ups, and focus returns to the document. Dialogs, menus and toolbar buttons
   carry ARIA roles and names.
 
+## Help and onboarding
+
+Built-in help for teachers and students, bundled and available offline (`src/help/`):
+
+- **Welcome tour** (home screen, first visit in a browser): five short steps on
+  documents living in this browser, sharing links (edit / comment / view /
+  copy), offline use, backups and Nextcloud, and handing in. It is remembered in
+  `localStorage` (`words-online:help:welcome`) and reopened from *Help ▸
+  Getting started* on the home screen.
+- **Quick start** per app: the first time an app is opened, a small
+  non-blocking panel with three or four tips (respondents of a form and view or
+  comment links get their own). *Help ▸ Getting started* in every app on the
+  shared frame shows it again.
+- **Help center** (*Help ▸ Help center*): a searchable dialog (words in any
+  order, ignoring case and accents, with highlighted snippets) with articles on
+  getting started, sharing and permissions, offline use and where data is
+  stored, backups, Nextcloud, hand-in, school networks and the relay, privacy,
+  keyboard shortcuts, accessibility, and one per app. Articles live in
+  `src/help/articles/<lang>.ts` (English source plus es, gl, fr, de; the type
+  requires every article in every language) and use a tiny markup with links
+  to other articles and actions (open *Storage and backup*, the connection test…).
+- **Contextual help**: `showDialog(…, help)` adds a "?" button that opens an
+  article; used by Share, Hand in, Connection test, Storage and backup,
+  Nextcloud and the Nextcloud upload link.
+- **Opt-out**: `?notour` (remembered) or `localStorage['words-online:help:off'] = '1'`
+  turns the tour and quick starts off; they are also skipped under WebDriver
+  (Playwright) unless the URL has `?tour`.
+
 ## Languages
 
 The whole suite is available in **Spanish** (Spain), **Galician** (following
@@ -1153,7 +1181,8 @@ npm test          # grammar rule tests + end-to-end tests (build first)
   the home screen, the installed app works offline, the connection test
   and a school relay from the link work, a password-protected backup restores
   content, versions and comments after clearing the browser data, and deleted
-  documents stay in the trash until it is emptied.
+  documents stay in the trash until it is emptied, and the help center finds
+  articles and the welcome tour shows once.
 - `cd relay && go test ./...`: Ofimeo Relay (Nostr messages and signatures,
   TURN allocations with time-limited credentials, certificates, the TLS port
   shared by HTTPS and TURN, `/ofimeo/config`, serving the app).

@@ -3,7 +3,7 @@
 // each one is a single step of the editor's undo history, and the core records
 // them as the AI assistant's in the version history. Diagrams have no comments.
 //
-// Wiring (src/apps/diagram/app.ts, after the editor is created):
+// Wired in src/apps/diagram/app.ts (after mountFrame):
 //   provideWebMcpTools(session, () => import('./webmcp').then((m) => m.diagramTools(session, editor)))
 
 import { Cell, Geometry } from '@maxgraph/core'

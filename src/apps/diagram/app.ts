@@ -10,6 +10,7 @@ import type { Session } from '../../core/session'
 import { t } from '../../core/i18n'
 import { setupChrome } from '../../ui/chrome'
 import { mountFrame } from '../../ui/frame'
+import { provideWebMcpTools } from '../../core/webmcp'
 import { renderShell } from '../../ui/shell'
 import { mod } from '../../ui/shortcuts'
 import { colorPalette, confirmDialog, el, icon, openPopover, promptText, showContextMenu, toast, type Menu, type MenuEntry } from '../../ui/widgets'
@@ -243,6 +244,8 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
     keys: { find: editor.find },
     zoom: editor.zoomTarget,
   })
+  // AI assistants (WebMCP, off by default): the tool module loads only when turned on.
+  provideWebMcpTools(session, () => import('./webmcp').then((m) => m.diagramTools(session, editor)))
 
   // ---------- Toolbar ----------
 

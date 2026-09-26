@@ -94,7 +94,10 @@ export function showWelcomeTour(): Promise<void> {
       note.hidden = !last
       next.textContent = last ? t('Get started') : t('Next')
     }
-    const finish = () => dialog.close()
+    const finish = () => {
+      markWelcomeSeen()
+      dialog.close()
+    }
     skip.addEventListener('click', finish)
     back.addEventListener('click', () => {
       index = Math.max(0, index - 1)
@@ -245,5 +248,8 @@ export function showQuickStart(session: Session, focus = true): void {
   panel = node
   markTipsSeen(key) // shown once, even when it is ignored
   document.body.append(node)
+  // Phones: stack above the storage notice of a first document (both sit at the bottom).
+  const notice = document.querySelector<HTMLElement>('.persist-notice')
+  if (notice && innerWidth <= 600) node.style.bottom = `${notice.offsetHeight + 28}px`
   if (focus) ok.focus()
 }

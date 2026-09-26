@@ -59,7 +59,8 @@ const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
 export function plainText(body: string): string {
   return body
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .replace(/\*\*|`|^## |^- |^\d+\. /gm, '')
+    .replace(/^## (.*)$/gm, '$1 ·')
+    .replace(/\*\*|`|^- |^\d+\. /gm, '')
     .replace(/\s+/g, ' ')
     .trim()
 }

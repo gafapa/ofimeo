@@ -4,7 +4,7 @@
 // records changes as the AI assistant's in the version history. Comments go to
 // the comments channel, like the user's own.
 //
-// Wiring (src/apps/slides/app.ts, after the editor is created):
+// Wired in src/apps/slides/app.ts (after mountFrame):
 //   provideWebMcpTools(session, () => import('./webmcp').then((m) => m.slidesTools(session, editor)))
 
 import type { Session } from '../../core/session'

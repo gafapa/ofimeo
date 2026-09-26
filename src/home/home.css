@@ -62,7 +62,11 @@ body:has(.home) { overflow: auto; }
   .doc-table.list .doc-type, .doc-table.list .doc-date, .doc-head .doc-type, .doc-head .doc-date { display: none; }
   .home-section-title { flex-wrap: wrap; }
   .home-bar { gap: 8px; }
-  .home-bar .user-name, .offline-control { display: none; }
+  .home-bar .user-name, .home-bar .offline-control { display: none; }
+}
+/* Narrow phones: the suite name stays for screen readers only, so every header button fits. */
+@media (max-width: 440px) {
+  .home-bar h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }
 
 .offline-control { display: flex; align-items: center; }

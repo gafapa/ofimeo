@@ -419,25 +419,28 @@ export function mountWriter(session: Session, root: HTMLElement): WriterContext 
     { ext: 'pdf', label: t('PDF document (.pdf)'), build: () => import('./pdf').then((m) => m.exportPdf(ctx)) },
   ]
 
-  const print = async () => {
+  const print = () => {
     // Pages of different sizes cannot share one @page size: print the PDF instead.
     const sizes = layout.pages.map((p) => `${p.geo.width}x${p.geo.height}`)
     if (new Set(sizes).size > 1) {
       void import('./pdf').then((m) => m.printPdf(ctx))
       return
     }
-    // Printing uses the same page geometry as the screen at 100%, without gaps.
+    window.print()
+  }
+  // Printing (also from the browser menu) lays the pages out without gaps at 100%.
+  window.addEventListener('beforeprint', () => {
     printing = true
     paper.classList.add('printing')
-    relayout(editor.view)
-    await new Promise((r) => requestAnimationFrame(r))
     paper.style.transform = 'none'
-    window.print()
+    relayout(editor.view)
+  })
+  window.addEventListener('afterprint', () => {
     printing = false
     paper.classList.remove('printing')
     relayout(editor.view)
     updateZoomBox()
-  }
+  })
 
   // ---------- Wiring ----------
 

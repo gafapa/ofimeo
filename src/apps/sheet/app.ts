@@ -18,7 +18,7 @@ import { sheetFrame } from './menus'
 import { renderPrintHtml, type PrintOverlay } from './print'
 import { SheetSync } from './sync'
 import { followTheme } from './theme'
-import { createSpreadsheet } from './univer'
+import { createSpreadsheet, WORKBOOK_ID } from './univer'
 import { deleteChart, findChart, insertChart, listCharts, liveOption, registerCharts, updateChart } from './charts/view'
 import { snapshotCharts } from './charts/model'
 import { registerFunctionAliases } from './stats'
@@ -82,6 +82,9 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
     commands.beforeCommandExecuted((info, options) => {
       if (options?.fromCollab || options?.onlyLocal || /\.operation\.|copy|zoom/.test(info.id)) return
       if (!/\.(command|mutation)\./.test(info.id)) return
+      // Univer's internal editors (cell editor documents) are not the shared workbook.
+      const unitId = (info.params as { unitId?: string } | undefined)?.unitId
+      if (unitId && unitId !== WORKBOOK_ID) return
       toast(t('This spreadsheet is view only'))
       throw new Error(t('This spreadsheet is view only'))
     })

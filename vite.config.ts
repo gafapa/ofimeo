@@ -53,6 +53,7 @@ export default defineConfig({
               'application/vnd.jgraph.mxfile': ['.drawio'],
               'application/json': ['.excalidraw'],
               'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
+              'application/pdf': ['.pdf'],
             },
           },
         ],

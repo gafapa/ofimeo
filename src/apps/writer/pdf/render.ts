@@ -327,7 +327,14 @@ class Renderer {
       if (!rects.length) continue
       if (rects.length === 1) {
         const full = m[0].length > word.length ? m[0].slice(0, word.length + 1) : word
-        await this.drawText(full, parent, this.box(rects[0]), s, artifact, word)
+        // Underlines run on under the following space when it is on the same line.
+        let deco = 0
+        if (m[0].length > word.length) {
+          this.range.setEnd(node, start + m[0].length)
+          const all = [...this.range.getClientRects()].filter((r) => r.width > 0)
+          if (all.length === 1) deco = this.box(all[0]).w
+        }
+        await this.drawText(full, parent, this.box(rects[0]), s, artifact, word, deco)
         continue
       }
       // A word broken across lines: draw it character by character.
@@ -341,7 +348,7 @@ class Renderer {
   }
 
   // Draws text whose (measured) box is `b`; `measured` is the part the box covers.
-  private async drawText(text: string, el: Element, b: Box, s: CSSStyleDeclaration, artifact: boolean, measured = text) {
+  private async drawText(text: string, el: Element, b: Box, s: CSSStyleDeclaration, artifact: boolean, measured = text, decoWidth = 0) {
     const at = this.pageAt(b.y + b.h / 2)
     if (!at) return
     const runs = await this.runs(text, s)
@@ -375,7 +382,7 @@ class Renderer {
     }
     ops.push('ET')
     page.ops.push(ops.join(' '))
-    this.decorations(el, b, baseline, size, box, page)
+    this.decorations(el, decoWidth ? { ...b, w: decoWidth } : b, baseline, size, box, page)
   }
 
   // Underline and strike-through from the element and its inline ancestors.

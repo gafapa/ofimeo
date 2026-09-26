@@ -35,7 +35,7 @@ export const PALETTES: Record<PaletteName, string[]> = {
   // Okabe–Ito, distinguishable with color vision deficiencies.
   colorblind: ['#0072b2', '#e69f00', '#009e73', '#d55e00', '#cc79a7', '#56b4e9', '#f0e442', '#000000'],
   warm: ['#d93025', '#e8710a', '#f9ab00', '#b31412', '#e37400', '#c5221f', '#ea8600', '#a50e0e'],
-  cool: ['#174ea6', '#1a73e8', '#12b5cb', '#188038', '#4285f4', '#0d652d', '#129eaf', '#8ab4f8'],
+  cool: ['#1a73e8', '#12b5cb', '#188038', '#174ea6', '#8ab4f8', '#0d652d', '#129eaf', '#4285f4'],
   gray: ['#202124', '#5f6368', '#9aa0a6', '#3c4043', '#80868b', '#bdc1c6', '#dadce0', '#000000'],
 }
 

@@ -2149,6 +2149,15 @@ const fr: Record<string, string> = {
   'Item {n}': 'Élément {n}',
   'Not an OpenDocument presentation': 'Ce n\'est pas une présentation OpenDocument',
   'PDF document (all pages)': 'Document PDF (toutes les pages)',
+  '{suite} is a collaborative office suite that runs entirely in your browser: documents, spreadsheets, drawings, diagrams, presentations, forms and PDFs.': '{suite} est une suite bureautique collaborative qui fonctionne entièrement dans votre navigateur : documents, classeurs, dessins, diagrammes, présentations, formulaires et PDF.',
+  'Could not include: {names}': 'Impossible d’inclure : {names}',
+  'There is already a folder called “{name}” here. Choose another name.': 'Il y a déjà un dossier nommé « {name} » ici. Choisissez un autre nom.',
+  'There is already a tag called “{name}”. Choose another name.': 'Il y a déjà une étiquette nommée « {name} ». Choisissez un autre nom.',
+  'The address must start with https:// or wss:// (http:// or ws:// only on the school network).': 'L\'adresse doit commencer par https:// ou wss:// (http:// ou ws:// seulement sur le réseau de l’établissement).',
+  'This page uses https, so the browser only connects to a relay with an https:// or wss:// address.': 'Cette page utilise https : le navigateur ne se connecte donc qu’à un relais avec une adresse https:// ou wss://.',
+  'This is not a valid address. Example: https://relay.school.local:8443': 'Ce n’est pas une adresse valide. Exemple : https://relay.school.local:8443',
+  'Question adds a question of the type you choose; Section makes a new page.': 'Question ajoute une question du type choisi ; Section crée une nouvelle page.',
+  'Turn on Quiz to set correct answers, points and feedback.': 'Activez Quiz pour définir les bonnes réponses, les points et les commentaires.',
 }
 
 export default fr

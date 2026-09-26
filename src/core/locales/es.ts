@@ -2149,6 +2149,15 @@ const es: Record<string, string> = {
   'Item {n}': 'Elemento {n}',
   'Not an OpenDocument presentation': 'No es una presentación OpenDocument',
   'PDF document (all pages)': 'Documento PDF (todas las páginas)',
+  '{suite} is a collaborative office suite that runs entirely in your browser: documents, spreadsheets, drawings, diagrams, presentations, forms and PDFs.': '{suite} es una suite ofimática colaborativa que funciona por completo en tu navegador: documentos, hojas de cálculo, dibujos, diagramas, presentaciones, formularios y PDF.',
+  'Could not include: {names}': 'No se pudo incluir: {names}',
+  'There is already a folder called “{name}” here. Choose another name.': 'Ya hay una carpeta llamada «{name}» aquí. Elige otro nombre.',
+  'There is already a tag called “{name}”. Choose another name.': 'Ya hay una etiqueta llamada «{name}». Elige otro nombre.',
+  'The address must start with https:// or wss:// (http:// or ws:// only on the school network).': 'La dirección debe empezar por https:// o wss:// (http:// o ws:// solo en la red del centro).',
+  'This page uses https, so the browser only connects to a relay with an https:// or wss:// address.': 'Esta página usa https, así que el navegador solo se conecta a un relé con una dirección https:// o wss://.',
+  'This is not a valid address. Example: https://relay.school.local:8443': 'Esta no es una dirección válida. Ejemplo: https://relay.school.local:8443',
+  'Question adds a question of the type you choose; Section makes a new page.': 'Pregunta añade una pregunta del tipo que elijas; Sección crea una página nueva.',
+  'Turn on Quiz to set correct answers, points and feedback.': 'Activa Cuestionario para fijar las respuestas correctas, los puntos y los comentarios.',
 }
 
 export default es

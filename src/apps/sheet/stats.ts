@@ -12,7 +12,7 @@ import { IDescriptionService, IFunctionService, type BaseFunction } from '@unive
 import { t } from '../../core/i18n'
 import { el, showDialog, toast } from '../../ui/widgets'
 import { detectHeaders, parseA1, toA1, colName, type Cell, type CellRange } from './charts/model'
-import { defaultRange } from './charts/dialog'
+import { dataRegion } from './charts/dialog'
 import { SPANISH_FUNCTIONS } from './functions'
 
 // Registers the aliases in the formula engine: the same executor class under
@@ -106,10 +106,22 @@ const STATISTICS: [() => string, (ref: string) => string][] = [
   [() => t('Range'), (x) => `=MAX(${x})-MIN(${x})`],
 ]
 
+// Default range: the selection; a single cell stands for its column of the
+// data region around it (header included), so one variable is summarized.
+function statisticsRange(univerAPI: FUniver): string {
+  const sheet = univerAPI.getActiveWorkbook()!.getActiveSheet()
+  const sel = sheet.getSelection()?.getActiveRange()?.getRange()
+  if (!sel) return 'A1:A10'
+  if (sel.startRow !== sel.endRow || sel.startColumn !== sel.endColumn) return toA1(sel)
+  const region = dataRegion(univerAPI, sel.startRow, sel.startColumn)
+  const col = Math.min(Math.max(sel.startColumn, region.startColumn), region.endColumn)
+  return toA1({ ...region, startColumn: col, endColumn: col })
+}
+
 export async function descriptiveStatistics(univerAPI: FUniver): Promise<void> {
   const wb = univerAPI.getActiveWorkbook()!
   const sheet = wb.getActiveSheet()
-  const range = el('input', { class: 'field', value: defaultRange(univerAPI), spellcheck: false })
+  const range = el('input', { class: 'field', value: statisticsRange(univerAPI), spellcheck: false })
   const labels = el('input', { type: 'checkbox' })
   const where = el(
     'select',
@@ -157,11 +169,20 @@ export async function descriptiveStatistics(univerAPI: FUniver): Promise<void> {
     left = c.startColumn
   }
   const header = sheet.getRange(r.startRow, r.startColumn, 1, r.endColumn - r.startColumn + 1).getValues()[0] as Cell[]
+  const block = sheet.getRange(dataRows.startRow, r.startColumn, dataRows.endRow - dataRows.startRow + 1, r.endColumn - r.startColumn + 1).getValues() as Cell[][]
   const columns = []
+  let skipped = 0
   for (let c = r.startColumn; c <= r.endColumn; c++) {
+    // Columns without numbers (names, groups…) have no statistics.
+    if (!block.some((row) => typeof row[c - r.startColumn] === 'number')) {
+      skipped++
+      continue
+    }
     const name = labels.checked && header[c - r.startColumn] !== null && header[c - r.startColumn] !== '' ? String(header[c - r.startColumn]) : `${colName(c)}`
     columns.push({ name, ref: absRange({ ...dataRows, startColumn: c, endColumn: c }, sourceName) })
   }
+  if (!columns.length) return toast(t('The range has no numbers'))
+  if (skipped) toast(t('Columns without numbers were left out: {n}', { n: skipped }))
   const rows: (string | number)[][] = [[t('Statistic'), ...columns.map((c) => c.name)]]
   for (const [label, formula] of STATISTICS) rows.push([label(), ...columns.map((c) => formula(c.ref))])
   const out = target.getRange(top, left, rows.length, rows[0].length)
@@ -169,7 +190,9 @@ export async function descriptiveStatistics(univerAPI: FUniver): Promise<void> {
   target.getRange(top, left, 1, rows[0].length).setFontWeight('bold')
   target.getRange(top, left, rows.length, 1).setFontWeight('bold')
   target.getRange(top + 2, left + 1, rows.length - 2, rows[0].length - 1).setNumberFormat('0.00')
-  target.setColumnWidth(left, 220)
+  // Wide enough for the longest label ("Standard deviation (population)").
+  const longest = Math.max(...rows.map((row) => String(row[0]).length))
+  target.setColumnWidth(left, Math.max(160, Math.min(360, Math.round(longest * 7.5 + 24))))
   target.activate()
   target.setActiveRange(out)
 }

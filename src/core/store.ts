@@ -83,8 +83,9 @@ export function saveDoc(entry: Omit<DocEntry, 'updated'>): void {
   const docs = all.filter((d) => d.id !== entry.id)
   docs.push({ ...previous, ...entry, updated: Date.now() })
   write(DOCS_KEY, docs)
-  // The first document of this browser: ask for persistent storage (backup.ts).
-  if (!previous && !all.length) void import('./backup').then((m) => m.onFirstDocument())
+  // The first document of this browser that one can edit (not a form to answer
+  // or a view link): ask for persistent storage (backup.ts, asks only once).
+  if (!previous && (entry.access ?? 'edit') === 'edit' && !all.some((d) => (d.access ?? 'edit') === 'edit')) void import('./backup').then((m) => m.onFirstDocument())
 }
 
 // Changes organization fields (folder, tags, trash) without touching `updated`.

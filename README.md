@@ -127,7 +127,7 @@ before the rename keep working.
   rewritten before they are applied; remote changes and undo are never
   rewritten. Suggesting needs edit access (commenters comment instead).
   Paragraph splits/joins and formatting changes are applied directly.
-- **Authorship**: *View → Show authorship* tints text in the color of whoever
+- **Authorship**: *Review → Show authorship* tints text in the color of whoever
   typed it, and *Contributions…* lists words, characters and share per author
   (for group work). Text carries the Yjs client id of its author (an
   `authorship` mark, so it survives paragraph splits); older text falls back to
@@ -558,8 +558,10 @@ document (as binary chunks in Yjs) and travels to collaborators with it; above
   Circle, Line, FreeText, Stamp, Text with Popup and replies) with appearance
   streams, so they show and stay editable in Acrobat and other readers;
   "flattened" draws them into the page content (vector; highlights use the
-  Multiply blend mode) and keeps the notes. Hand in includes both; Save to
-  Nextcloud uses the editable one.
+  Multiply blend mode) and keeps the notes; its file is named
+  "<title> (flattened).pdf". Hand in includes both; Save to Nextcloud and the
+  home screen's Download use the editable one (built from the stored document,
+  without opening the viewer).
 - Import: annotations of those types in an opened PDF become editable
   annotations (and are removed from the stored file so they are not drawn
   twice). Files exported by Ofimeo carry the exact records, so a round trip
@@ -599,13 +601,15 @@ created and opened.
 | Document | Situación de aprendizaje (identification, justification, specific competences, evaluation criteria, basic knowledge, activity sequence, UDL/DUA, evaluation), rubric, student worksheet, student report (cover, index, sections, APA bibliography), meeting minutes, letter to families with a consent slip |
 | Spreadsheet | Gradebook (weighted averages per term from a weights sheet, final grade, IN/SU/BI/NT/SB level, pass/fail colors, group statistics, grade distribution chart), weekly timetable, monthly attendance register (weekdays from month/year, F/J/R codes, totals and attendance %), rubric with automatic score |
 | Diagram | Concept map, timeline, process flowchart, graphic organizers (KWL, Venn, cause and effect) |
-| Drawing | Brainstorm board |
-| Presentation | Learning situation presentation, student oral presentation |
+| Drawing | Brainstorm board, mind map, storyboard (six scenes with action and dialogue) |
+| Presentation | Learning situation presentation, student oral presentation, class presentation (goals, key concept, example, activity steps, exit ticket), project report (team, objective, process, results table, next steps), lesson plan for the teacher (objectives, timed phases table, materials and differentiation, evaluation table) |
+| Form | Self-assessment, review quiz (answer key, points, feedback), family survey, peer assessment rubric |
+| PDF | None: a PDF starts from a file (or blank pages) |
 
 Templates are generated in code (no network) and go through each app's own
 import path: HTML for documents, a workbook snapshot for spreadsheets,
-`.drawio` XML for diagrams, `.excalidraw` for drawings and `.pptx` for
-presentations. The gallery and each app's templates are separate chunks, loaded
+`.drawio` XML for diagrams, `.excalidraw` for drawings, `.pptx` for
+presentations and the form model for forms. The gallery and each app's templates are separate chunks, loaded
 only when the home screen shows them or a template is used.
 
 ### My templates
@@ -761,12 +765,18 @@ The home screen organizes the documents of this browser. All of this is local
 - **Content search.** The search box matches titles and content, ignoring case
   and accents (`educacion` finds «Educación»), and shows a snippet with the
   matches highlighted. The plain text of each document (document text, cell
-  values, drawing texts, diagram and slide labels and speaker notes) is extracted
-  from its Yjs state in a Web Worker and kept in a local index, refreshed
-  incrementally for documents that changed since they were indexed.
+  values, drawing texts, diagram and slide labels and speaker notes, form
+  descriptions, questions and options, PDF page text, text boxes, stamps and
+  sticky notes) is extracted from its Yjs state in a Web Worker and kept in a
+  local index, refreshed incrementally for documents that changed since they
+  were indexed. PDF page text comes from pdf.js, loaded in the worker only when a
+  PDF is indexed; it is kept with the index and extracted again only when the
+  file itself changes (not when annotations do). Form answer keys are never
+  indexed.
 - **Download** builds files from the stored state without opening the documents
-  (Word, PowerPoint, draw.io, Excalidraw; several go into a zip). Spreadsheets are
-  downloaded from the app.
+  (Word, PowerPoint, draw.io, Excalidraw, `.oform`, the PDF with editable
+  annotations; several go into a zip, and a document that cannot be built is
+  left out and named in a message). Spreadsheets are downloaded from the app.
 
 Code: `src/core/backup.ts`, `src/core/library.ts` (folders, tags, local database),
 `src/core/library-search.ts` + `library-extract.ts` + `library-search.worker.ts`,

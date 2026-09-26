@@ -10,15 +10,18 @@ import { language, locale, t } from '../../core/i18n'
 import { setupChrome } from '../../ui/chrome'
 import { mountFrame } from '../../ui/frame'
 import { renderShell } from '../../ui/shell'
-import { el, showContextMenu, toast } from '../../ui/widgets'
+import { el, showContextMenu, showDialog, toast } from '../../ui/widgets'
 import type { ZoomTarget } from '../../ui/zoom'
 import { createCommands, UNIVER_COMMANDS } from './commands'
 import { exportSheetFile, SHEET_ACCEPT, type SheetExportFormat } from './formats'
+import type { CsvOptions } from './formats/csv'
+import { downloadFormat } from '../../ui/menus'
 import { sheetFrame } from './menus'
-import { renderPrintHtml, type PrintOverlay } from './print'
+import { pageCss, pageSetupDialog, printWidth, readPrintSettings, renderPrintHtml, type PrintOverlay, type PrintSettings } from './print'
 import { SheetSync } from './sync'
 import { followTheme, isInterfaceTextColor } from './theme'
-import { createSpreadsheet, WORKBOOK_ID } from './univer'
+import { createSpreadsheet, emptyWorkbook, WORKBOOK_ID } from './univer'
+import { takeNewDoc } from '../../core/router'
 import { deleteChart, findChart, insertChart, listCharts, liveOption, registerCharts, updateChart } from './charts/view'
 import { snapshotCharts } from './charts/model'
 import { registerFunctionAliases } from './stats'
@@ -43,6 +46,28 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
   document.body.append(printArea, fileInput)
 
   const { univer, univerAPI } = await createSpreadsheet(container, { readOnly: !session.canEdit })
+  labelUniver(container)
+  if (!session.canEdit) {
+    // No "+" sheet button, and no renaming a tab by double click.
+    container.classList.add('sheet-readonly')
+    // Univer starts renaming on a second press within 300 ms; the guard sits on
+    // an ancestor, so it runs before Univer's handlers.
+    let lastPress = 0
+    shell.main.addEventListener(
+      'pointerdown',
+      (e) => {
+        if (!(e.target as Element | null)?.closest?.('[data-u-comp="slide-tab-item"]')) return
+        const now = Date.now()
+        if (now - lastPress < 400) {
+          e.stopPropagation()
+          e.preventDefault()
+          toast(t('This spreadsheet is view only'))
+        }
+        lastPress = now
+      },
+      true,
+    )
+  }
   const commands = univer.__getInjector().get(ICommandService)
   const cmds = createCommands(univer, univerAPI)
   const canEdit = () => session.canEdit
@@ -67,6 +92,10 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
   // Viewers and commenters get a read-only workbook (again after every rebuild).
   const applyAccess = () => {
     if (!session.canEdit) univerAPI.getActiveWorkbook()?.setEditable(false)
+  }
+  // A new document created here: its first sheet gets a name in the user's language.
+  if (session.canEdit && takeNewDoc(session.docId) && !session.doc.getMap('sheet').has('base') && session.doc.getArray('sheet-ops').length === 0) {
+    SheetSync.setBase(session.doc, emptyWorkbook(t('Sheet{n}', { n: 1 })))
   }
   const sync = new SheetSync({
     doc: session.doc,
@@ -143,10 +172,16 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
 
   // ---------- File actions ----------
 
-  const print = async () => {
+  // Page setup of viewers (editors keep it in the document).
+  const printLocal: Partial<PrintSettings> = {}
+  const printStyle = el('style', { id: 'sheet-print-page' })
+  document.head.append(printStyle)
+  const print = async (selectionOnly = false) => {
     const sheet = activeSheet()
     if (!sheet) return
     const sheetId = sheet.getSheetId()
+    const selected = sheet.getSelection()?.getActiveRange()?.getRange()
+    const range = selectionOnly && selected ? { startRow: selected.startRow, endRow: selected.endRow, startColumn: selected.startColumn, endColumn: selected.endColumn } : undefined
     const data = snapshot()
     const onSheet = snapshotCharts(data.resources).filter((c) => c.hostSheetId === sheetId)
     const overlays: PrintOverlay[] = []
@@ -157,7 +192,9 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
         overlays.push({ from: c.from, width, height, svg: renderSvg(liveOption(univerAPI, c.spec, PAPER_COLORS, width), width, height) })
       }
     }
-    printArea.innerHTML = renderPrintHtml(data, sheetId, (r, c) => sheet.getRange(r, c).getDisplayValue(), overlays)
+    const settings = { ...readPrintSettings(session.doc), ...printLocal }
+    printArea.innerHTML = renderPrintHtml(data, sheetId, (r, c) => sheet.getRange(r, c).getDisplayValue(), overlays, { range, repeatHeader: settings.repeatHeader })
+    printStyle.textContent = pageCss(settings, printWidth(data, sheetId, overlays, range)).css
     window.print()
     printArea.innerHTML = ''
   }
@@ -175,13 +212,29 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
     }
   })
 
-  const exportBlob = (format: SheetExportFormat) => () => exportSheetFile(format, snapshot(), activeSheet()!.getSheetId())
+  // CSV: separator and values as chosen last time (File ▸ Download as asks).
+  const csvOptions = (choice = loadCsvChoice()): CsvOptions => {
+    const sheet = activeSheet()
+    const decimalComma = choice.delimiter === ';' && usesDecimalComma()
+    const display = (r: number, c: number) => {
+      const text = sheet?.getRange(r, c).getDisplayValue() ?? ''
+      // Univer formats numbers the English way; a ';' file gets decimal commas.
+      return decimalComma && /^[-+]?[\d,]*\.?\d+%?$/.test(text) ? text.replace(/[.,]/g, (m) => (m === '.' ? ',' : '.')) : text
+    }
+    return { delimiter: choice.delimiter, decimalComma, ...(choice.displayed ? { display } : {}) }
+  }
+  const exportBlob = (format: SheetExportFormat) => () => exportSheetFile(format, snapshot(), activeSheet()!.getSheetId(), format === 'csv' ? csvOptions() : undefined)
   session.hooks.print = () => void print()
   session.hooks.exportFormats = () => [
     { ext: 'xlsx', label: t('Microsoft Excel (.xlsx)'), build: exportBlob('xlsx') },
     { ext: 'ods', label: t('OpenDocument spreadsheet (.ods)'), build: exportBlob('ods') },
     { ext: 'csv', label: t('Comma-separated values (.csv, current sheet)'), build: exportBlob('csv') },
   ]
+  const downloadCsv = async () => {
+    const choice = await csvDialog()
+    if (!choice) return
+    await downloadFormat(session, { ext: 'csv', label: 'CSV', build: () => exportSheetFile('csv', snapshot(), activeSheet()!.getSheetId(), csvOptions(choice)) })
+  }
 
   // ---------- Frame: menus, keys, status bar ----------
 
@@ -227,7 +280,20 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
     ...frameSpec,
     file: {
       ...frameSpec.file,
-      download: [{ label: t('PDF (via Print, current sheet)'), run: () => void print() }],
+      downloadItems: [
+        ...(session.hooks.exportFormats?.() ?? []).map((f) =>
+          f.ext === 'csv' ? { label: `${f.label}…`, run: () => void downloadCsv() } : { label: f.label, run: () => void downloadFormat(session, f) },
+        ),
+        '-',
+        { label: t('PDF (via Print, current sheet)'), run: () => void print() },
+      ],
+      slots: {
+        ...frameSpec.file.slots,
+        print: [
+          { label: t('Page setup…'), run: () => void pageSetupDialog(session.doc, session.canEdit, printLocal) },
+          { label: t('Print selection…'), run: () => void print(true) },
+        ],
+      },
       details: () => [
         [t('Sheets'), String(univerAPI.getActiveWorkbook()?.getSheets().length ?? 0)],
         [t('Charts'), String(listCharts(univerAPI).length)],
@@ -259,6 +325,79 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
     const chartsApi = await import('./charts/view')
     Object.assign(window, { univer, univerAPI, sheetSync: sync, awareness: session.awareness, sheetCharts: chartsApi, sheetCommands: cmds, sheetShareUrl: (a: 'view' | 'comment' | 'edit') => session.shareUrl(a) })
   }
+}
+
+// Screen reader labels Univer leaves untranslated (a locale key, the
+// notification region's English name) get the suite's words.
+function labelUniver(container: HTMLElement): void {
+  let queued = false
+  const fix = () => {
+    queued = false
+    for (const node of container.querySelectorAll('[aria-label="ribbon.start"]')) node.setAttribute('aria-label', t('Spreadsheet toolbar'))
+    for (const node of document.querySelectorAll('section[aria-label^="Notifications"]')) {
+      if (node.getAttribute('aria-label') !== t('Notifications')) node.setAttribute('aria-label', t('Notifications'))
+    }
+  }
+  fix()
+  new MutationObserver(() => {
+    if (queued) return
+    queued = true
+    requestAnimationFrame(fix)
+  }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-label'] })
+}
+
+// ---------- CSV download options ----------
+
+interface CsvChoice {
+  delimiter: ',' | ';' | '\t'
+  // Values as the sheet shows them (number formats) instead of plain values.
+  displayed: boolean
+}
+const CSV_KEY = 'words-online:sheet-csv'
+const usesDecimalComma = () => new Intl.NumberFormat(locale).format(1.5).includes(',')
+
+function loadCsvChoice(): CsvChoice {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CSV_KEY) || 'null') as CsvChoice | null
+    if (saved && [',', ';', '\t'].includes(saved.delimiter)) return { delimiter: saved.delimiter, displayed: !!saved.displayed }
+  } catch {
+    // No saved choice.
+  }
+  return { delimiter: usesDecimalComma() ? ';' : ',', displayed: true }
+}
+
+async function csvDialog(): Promise<CsvChoice | null> {
+  const current = loadCsvChoice()
+  const delimiter = el(
+    'select',
+    { class: 'field' },
+    el('option', { value: ',', textContent: t('Comma (,)') }),
+    el('option', { value: ';', textContent: t('Semicolon (;), for Excel in languages with a decimal comma') }),
+    el('option', { value: '\t', textContent: t('Tab') }),
+  )
+  delimiter.value = current.delimiter
+  const values = el(
+    'select',
+    { class: 'field' },
+    el('option', { value: 'displayed', textContent: t('As shown in the sheet (dates, percentages, decimals)') }),
+    el('option', { value: 'plain', textContent: t('Plain values') }),
+  )
+  values.value = current.displayed ? 'displayed' : 'plain'
+  const body = el(
+    'div',
+    { class: 'form' },
+    el('label', { class: 'field-label' }, t('Separator'), delimiter),
+    el('label', { class: 'field-label' }, t('Values'), values),
+    el('p', { class: 'dialog-note', textContent: t('CSV files keep only the values of the current sheet: no formatting, formulas or other sheets.') }),
+  )
+  if ((await showDialog(t('Download as CSV'), body, [{ label: t('Cancel'), value: 'cancel' }, { label: t('Download'), value: 'ok', primary: true }])) !== 'ok') return null
+  const choice: CsvChoice = { delimiter: delimiter.value as CsvChoice['delimiter'], displayed: values.value === 'displayed' }
+  try {
+    localStorage.setItem(CSV_KEY, JSON.stringify(choice))
+  } catch {
+    // Remembering the choice is a convenience.
+  }
+  return choice
 }
 
 // "Sum · Average · Count" of the numbers in the selection (status bar).

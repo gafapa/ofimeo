@@ -110,6 +110,28 @@ export const THUMBS: Record<string, () => string> = {
         line(26, 38, 110, 38, '#fff', 5) +
         line(26, 50, 80, 50, '#e6f4ea', 3),
     ),
+  'class-presentation': () =>
+    svg(
+      rect(14, 12, 132, 76, '#fff', '#dadce0') +
+        rect(14, 12, 4, 76, '#e8710a') +
+        line(26, 24, 84, 24, '#1f2937', 4) +
+        [0, 1, 2, 3].map((i) => rect(26 + i * 29, 38, 25, 40, '#feefe3', '#e8710a', 3) + circle(33 + i * 29, 45, 3.5, '#e8710a')).join(''),
+    ),
+  'project-report': () =>
+    svg(
+      rect(14, 12, 132, 76, '#fff', '#dadce0') +
+        rect(14, 12, 4, 76, '#9334e6') +
+        line(26, 24, 80, 24, '#1f2937', 4) +
+        grid(26, 36, 3, 4, 36, 10, '#9334e6', (r) => (r % 2 ? '#fff' : '#f3e8fd')),
+    ),
+  'lesson-plan': () =>
+    svg(
+      rect(14, 12, 132, 76, '#fff', '#dadce0') +
+        rect(14, 12, 4, 76, '#00897b') +
+        line(26, 24, 92, 24, '#1f2937', 4) +
+        grid(26, 34, 4, 4, 27, 10, '#00897b', (r) => (r % 2 ? '#fff' : '#e0f2f1')) +
+        textLines(80, 1, 26, 90),
+    ),
   brainstorm: () =>
     svg(
       [
@@ -126,6 +148,31 @@ export const THUMBS: Record<string, () => string> = {
         ['#ffec99', '#b2f2bb', '#ffc9c9', '#d0bfff', '#ffd8a8', '#99e9f2']
           .map((c, i) => rect([8, 66, 124][i % 3], i < 3 ? 6 : 80, 28, 14, c, '#1e1e1e', 2))
           .join(''),
+      '#fff',
+    ),
+  'mind-map': () =>
+    svg(
+      [
+        [34, 24],
+        [126, 24],
+        [34, 76],
+        [126, 76],
+      ]
+        .map(([x, y]) => line(80, 50, x, y, '#adb5bd', 1.5) + line(x, y, x - 22, y + (y < 50 ? -14 : 14), '#ced4da', 1) + line(x, y, x + 22, y + (y < 50 ? -14 : 14), '#ced4da', 1))
+        .join('') +
+        `<ellipse cx="80" cy="50" rx="22" ry="12" fill="#ffec99" stroke="#1e1e1e"/>` +
+        ['#a5d8ff', '#b2f2bb', '#ffc9c9', '#d0bfff'].map((c, i) => rect(i % 2 ? 112 : 20, i < 2 ? 18 : 70, 28, 12, c, '#1e1e1e', 2)).join(''),
+      '#fff',
+    ),
+  storyboard: () =>
+    svg(
+      [0, 1, 2, 3, 4, 5]
+        .map((i) => {
+          const x = 10 + (i % 3) * 49
+          const y = 8 + Math.floor(i / 3) * 46
+          return rect(x, y, 42, 28, '#f8f9fa', '#1e1e1e', 2) + line(x, y + 34, x + 34, y + 34, '#adb5bd', 1.5) + line(x, y + 39, x + 24, y + 39, '#ced4da', 1.5)
+        })
+        .join(''),
       '#fff',
     ),
 }

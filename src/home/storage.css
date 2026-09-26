@@ -43,3 +43,6 @@
 @media (max-width: 600px) {
   .persist-notice { left: var(--space-4); right: var(--space-4); width: auto; bottom: var(--space-4); }
 }
+/* Spreadsheets: above the sheet tabs and the status bar, not over them. */
+body:has(.app-sheet) .persist-notice { left: auto; right: var(--space-4); bottom: 96px; }
+@media print { .persist-notice { display: none !important; } }

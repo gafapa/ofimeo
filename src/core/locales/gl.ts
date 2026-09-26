@@ -2149,6 +2149,15 @@ const gl: Record<string, string> = {
   'Item {n}': 'Elemento {n}',
   'Not an OpenDocument presentation': 'Non é unha presentación OpenDocument',
   'PDF document (all pages)': 'Documento PDF (todas as páxinas)',
+  '{suite} is a collaborative office suite that runs entirely in your browser: documents, spreadsheets, drawings, diagrams, presentations, forms and PDFs.': '{suite} é unha suite ofimática colaborativa que funciona por completo no teu navegador: documentos, follas de cálculo, debuxos, diagramas, presentacións, formularios e PDF.',
+  'Could not include: {names}': 'Non se puido incluír: {names}',
+  'There is already a folder called “{name}” here. Choose another name.': 'Xa hai un cartafol chamado «{name}» aquí. Escolle outro nome.',
+  'There is already a tag called “{name}”. Choose another name.': 'Xa hai unha etiqueta chamada «{name}». Escolle outro nome.',
+  'The address must start with https:// or wss:// (http:// or ws:// only on the school network).': 'O enderezo debe comezar por https:// ou wss:// (http:// ou ws:// só na rede do centro).',
+  'This page uses https, so the browser only connects to a relay with an https:// or wss:// address.': 'Esta páxina usa https, así que o navegador só se conecta a un repetidor cun enderezo https:// ou wss://.',
+  'This is not a valid address. Example: https://relay.school.local:8443': 'Este non é un enderezo válido. Exemplo: https://relay.school.local:8443',
+  'Question adds a question of the type you choose; Section makes a new page.': 'Pregunta engade unha pregunta do tipo que escollas; Sección crea unha páxina nova.',
+  'Turn on Quiz to set correct answers, points and feedback.': 'Activa Cuestionario para fixar as respostas correctas, os puntos e os comentarios.',
 }
 
 export default gl

@@ -4,6 +4,7 @@
 import type { IWorkbookData } from '@univerjs/presets'
 import { t } from '../../../core/i18n'
 import { canonicalWorkbook } from '../functions'
+import type { CsvOptions } from './csv'
 
 export type SheetExportFormat = 'xlsx' | 'ods' | 'csv'
 
@@ -23,13 +24,13 @@ export async function importSheetFile(file: File): Promise<Partial<IWorkbookData
   const ext = file.name.split('.').pop()?.toLowerCase()
   if (ext === 'xlsx') return (await load('xlsx-import')).importXlsx(await file.arrayBuffer())
   if (ext === 'ods') return (await load('ods-import')).importOds(await file.arrayBuffer())
-  if (ext === 'csv' || ext === 'tsv') return (await load('csv')).importCsv(await file.text(), ext === 'tsv' ? '\t' : undefined)
+  if (ext === 'csv' || ext === 'tsv') return (await load('csv')).importCsv(await file.text(), ext === 'tsv' ? '\t' : undefined, t('Sheet{n}', { n: 1 }))
   if (ext === 'xls') return (await load('xls-import')).importXls(await file.arrayBuffer())
   throw new Error(t('Unsupported file type'))
 }
 
-// `sheetId` selects the sheet for single-sheet formats (CSV).
-export async function exportSheetFile(format: SheetExportFormat, snapshot: IWorkbookData, sheetId?: string): Promise<Blob> {
+// `sheetId` selects the sheet for single-sheet formats (CSV), `csv` its options.
+export async function exportSheetFile(format: SheetExportFormat, snapshot: IWorkbookData, sheetId?: string, csv?: CsvOptions): Promise<Blob> {
   // Spanish function names typed in formulas are saved with their English names.
   const data = canonicalWorkbook(snapshot)
   switch (format) {
@@ -38,6 +39,7 @@ export async function exportSheetFile(format: SheetExportFormat, snapshot: IWork
     case 'ods':
       return (await load('ods-export')).exportOds(data)
     case 'csv':
-      return new Blob([(await load('csv')).exportCsv(data, sheetId)], { type: 'text/csv;charset=utf-8' })
+      // A byte order mark, so Excel reads the file as UTF-8.
+      return new Blob(['\ufeff' + (await load('csv')).exportCsv(data, sheetId, csv)], { type: 'text/csv;charset=utf-8' })
   }
 }

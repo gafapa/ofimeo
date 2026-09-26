@@ -44,9 +44,26 @@ export function defaultRange(univerAPI: FUniver): string {
   const sel = sheet.getSelection()?.getActiveRange()?.getRange()
   if (!sel) return 'A1:B5'
   if (sel.startRow !== sel.endRow || sel.startColumn !== sel.endColumn) return toA1(sel)
-  // Grow a single cell to its contiguous data region.
+  return toA1(dataRegion(univerAPI, sel.startRow, sel.startColumn))
+}
+
+// The contiguous data region around a cell. An empty cell next to the data
+// (just below or right of a table) starts from its filled neighbour, so the
+// region does not grow by an empty row or column.
+export function dataRegion(univerAPI: FUniver, row: number, col: number): { startRow: number; endRow: number; startColumn: number; endColumn: number } {
+  const sheet = univerAPI.getActiveWorkbook()!.getActiveSheet()
   const filled = (r: number, c: number) => r >= 0 && c >= 0 && (sheet.getRange(r, c).getValue() ?? '') !== ''
-  const box = { ...sel }
+  let start = { row, col }
+  if (!filled(row, col)) {
+    const near = [
+      [row - 1, col],
+      [row, col - 1],
+      [row + 1, col],
+      [row, col + 1],
+    ].find(([r, c]) => filled(r, c))
+    if (near) start = { row: near[0], col: near[1] }
+  }
+  const box = { startRow: start.row, endRow: start.row, startColumn: start.col, endColumn: start.col }
   let grew = true
   for (let i = 0; grew && i < 200; i++) {
     grew = false
@@ -59,7 +76,7 @@ export function defaultRange(univerAPI: FUniver): string {
       if (filled(r, box.endColumn + 1)) (box.endColumn++, (grew = true))
     }
   }
-  return toA1(box)
+  return box
 }
 
 export async function chartDialog(univerAPI: FUniver, current?: ChartSpec): Promise<ChartSpec | null> {

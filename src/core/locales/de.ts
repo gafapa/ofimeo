@@ -2149,6 +2149,15 @@ const de: Record<string, string> = {
   'Item {n}': 'Element {n}',
   'Not an OpenDocument presentation': 'Keine OpenDocument-Präsentation',
   'PDF document (all pages)': 'PDF-Dokument (alle Seiten)',
+  '{suite} is a collaborative office suite that runs entirely in your browser: documents, spreadsheets, drawings, diagrams, presentations, forms and PDFs.': '{suite} ist eine kollaborative Office-Suite, die vollständig in Ihrem Browser läuft: Dokumente, Tabellen, Zeichnungen, Diagramme, Präsentationen, Formulare und PDFs.',
+  'Could not include: {names}': 'Konnte nicht aufgenommen werden: {names}',
+  'There is already a folder called “{name}” here. Choose another name.': 'Hier gibt es bereits einen Ordner namens „{name}“. Wählen Sie einen anderen Namen.',
+  'There is already a tag called “{name}”. Choose another name.': 'Es gibt bereits einen Tag namens „{name}“. Wählen Sie einen anderen Namen.',
+  'The address must start with https:// or wss:// (http:// or ws:// only on the school network).': 'Die Adresse muss mit https:// oder wss:// beginnen (http:// oder ws:// nur im Schulnetz).',
+  'This page uses https, so the browser only connects to a relay with an https:// or wss:// address.': 'Diese Seite verwendet https, daher verbindet sich der Browser nur mit einem Relay mit einer https://- oder wss://-Adresse.',
+  'This is not a valid address. Example: https://relay.school.local:8443': 'Das ist keine gültige Adresse. Beispiel: https://relay.school.local:8443',
+  'Question adds a question of the type you choose; Section makes a new page.': 'Frage fügt eine Frage des gewählten Typs hinzu; Abschnitt erstellt eine neue Seite.',
+  'Turn on Quiz to set correct answers, points and feedback.': 'Aktivieren Sie Quiz, um richtige Antworten, Punkte und Rückmeldungen festzulegen.',
 }
 
 export default de

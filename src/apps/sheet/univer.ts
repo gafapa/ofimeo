@@ -37,7 +37,10 @@ import '@univerjs/preset-sheets-table/lib/index.css'
 // Fixed ids: every replica must address the same workbook and sheets.
 export const WORKBOOK_ID = 'workbook'
 
-export function emptyWorkbook(): Partial<IWorkbookData> {
+// Documents without a stored base start from this workbook on every replica,
+// so its first sheet keeps the language-independent name "Sheet1"; documents
+// created in this browser store a base with a localized name (app.ts).
+export function emptyWorkbook(firstSheet = 'Sheet1'): Partial<IWorkbookData> {
   return {
     id: WORKBOOK_ID,
     name: '',
@@ -45,7 +48,7 @@ export function emptyWorkbook(): Partial<IWorkbookData> {
     styles: {},
     sheetOrder: ['sheet-1'],
     sheets: {
-      'sheet-1': { id: 'sheet-1', name: 'Sheet1', rowCount: 1000, columnCount: 26, cellData: {} },
+      'sheet-1': { id: 'sheet-1', name: firstSheet, rowCount: 1000, columnCount: 26, cellData: {} },
     },
     resources: [],
   }

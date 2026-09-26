@@ -136,7 +136,59 @@ function brainstorm(lang: Lang): Element[] {
   return els
 }
 
-const BUILDERS: Record<string, (lang: Lang) => Element[]> = { brainstorm }
+function mindMap(lang: Lang): Element[] {
+  const L = pick(lang)
+  const els: Element[] = []
+  els.push(text('title', L('Mapa mental', 'Mapa mental', 'Carte mentale', 'Mindmap'), 350, 60, 400, 45, 36))
+  labelled(els, 'center', 'ellipse', L('Idea central', 'Idea central', 'Idée centrale', 'Zentrale Idee'), 440, 480, 220, 120, '#ffec99', 28)
+  const center = els.find((e) => e.id === 'center')!
+  const branches: [number, number, string, [number, number][]][] = [
+    [140, 260, '#a5d8ff', [[-40, -110], [200, -110]]],
+    [760, 260, '#b2f2bb', [[-40, -110], [200, -110]]],
+    [140, 720, '#ffc9c9', [[-40, 150], [200, 150]]],
+    [760, 720, '#d0bfff', [[-40, 150], [200, 150]]],
+  ]
+  branches.forEach(([x, y, fill, leaves], i) => {
+    labelled(els, `b${i}`, 'rectangle', `${L('Rama', 'Póla', 'Branche', 'Zweig')} ${i + 1}`, x, y, 200, 90, fill, 22)
+    const branch = els.find((e) => e.id === `b${i}`)!
+    arrow(els, `ab${i}`, center, branch)
+    leaves.forEach(([dx, dy], j) => {
+      labelled(els, `b${i}l${j}`, 'rectangle', L('Detalle', 'Detalle', 'Détail', 'Detail'), x + dx, y + dy, 160, 60, '#ffffff', 18)
+      arrow(els, `ab${i}l${j}`, branch, els.find((e) => e.id === `b${i}l${j}`)!)
+    })
+  })
+  els.push(
+    text(
+      'help',
+      L('Escribe una palabra clave en cada rama; usa colores y dibujos para recordar mejor.', 'Escribe unha palabra clave en cada póla; usa cores e debuxos para lembrar mellor.', 'Écris un mot-clé sur chaque branche ; utilise des couleurs et des dessins pour mieux retenir.', 'Schreibe ein Schlüsselwort an jeden Zweig; Farben und Bilder helfen beim Merken.'),
+      150,
+      980,
+      800,
+      25,
+      18,
+      { strokeColor: '#868e96' },
+    ),
+  )
+  return els
+}
+
+function storyboard(lang: Lang): Element[] {
+  const L = pick(lang)
+  const els: Element[] = []
+  els.push(text('title', L('Guion gráfico', 'Guión gráfico', 'Storyboard', 'Storyboard'), 350, 60, 400, 45, 36))
+  els.push(text('meta', L('Título: ______________   Autor/a: ______________', 'Título: ______________   Autor/a: ______________', 'Titre : ______________   Auteur : ______________', 'Titel: ______________   Autor/in: ______________'), 200, 115, 700, 25, 20, { strokeColor: '#495057' }))
+  for (let i = 0; i < 6; i++) {
+    const x = 60 + (i % 3) * 340
+    const y = 200 + Math.floor(i / 3) * 400
+    els.push(base('rectangle', `frame${i}`, x, y, 300, 200, { backgroundColor: '#f8f9fa', roundness: { type: 3 } }))
+    els.push(text(`n${i}`, `${L('Escena', 'Escena', 'Scène', 'Szene')} ${i + 1}`, x, y - 32, 300, 25, 20, { textAlign: 'left' }))
+    els.push(text(`c${i}`, L('Qué pasa: …', 'Que pasa: …', 'Ce qui se passe : …', 'Was passiert: …'), x, y + 212, 300, 25, 18, { textAlign: 'left', strokeColor: '#495057' }))
+    els.push(text(`d${i}`, L('Diálogo / sonido: …', 'Diálogo / son: …', 'Dialogue / son : …', 'Dialog / Ton: …'), x, y + 244, 300, 25, 18, { textAlign: 'left', strokeColor: '#868e96' }))
+  }
+  return els
+}
+
+const BUILDERS: Record<string, (lang: Lang) => Element[]> = { brainstorm, 'mind-map': mindMap, storyboard }
 
 export async function createDrawTemplate(id: string, lang: Lang, name: string): Promise<string> {
   const scene = { type: 'excalidraw', version: 2, source: 'words-online', elements: BUILDERS[id](lang), appState: { gridSize: 20, viewBackgroundColor: '#ffffff' }, files: {} }

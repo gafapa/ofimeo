@@ -21,7 +21,8 @@ export interface WarnRange {
 // Commands that change the content or format of the cells they target.
 const EDITS =
   /^(sheet\.command\.(set-range-values|clear-selection-(content|format|all)|set-style|set-range-[a-z-]+|set-(text-color|background-color|border[a-z-]*|horizontal-text-align|vertical-text-align|text-wrap|text-rotation|bold|italic|underline|stroke|font-family|font-size|font-color)|reset-[a-z-]+-color|numfmt\..+|delete-range-move-(left|up)(-confirm)?|insert-range-move-(right|down)(-confirm)?|move-range|auto-fill|add-worksheet-merge[a-z-]*|remove-worksheet-merge|paste-[a-z-]+|sort-range[a-z-]*|split-text-to-columns|set-once-format-painter|apply-format-painter|insert-(float-image|cell-image)|add-hyper-link|update-hyper-link|remove-hyper-link)|univer\.command\.(paste|cut))$/
-// Opening the cell editor (typing or double click on a cell).
+// Opening the cell editor (typing or double click on a cell): only a notice,
+// as cancelling it leaves Univer's editor unusable; the edit asks when it is saved.
 const OPEN_EDITOR = 'sheet.operation.set-cell-edit-visible'
 // A confirmation is valid this long for a range.
 const CONFIRMED_MS = 10 * 60 * 1000
@@ -68,6 +69,10 @@ export function setupEditWarnings(session: Session, univerAPI: FUniver, commands
     const target = targets(info.id, info.params as Record<string, unknown> | undefined)
     const found = target && hit(target.sheetId, target.ranges)
     if (!found) return
+    if (info.id === OPEN_EDITOR) {
+      toast(t('These cells are marked “Warn before editing”'))
+      return
+    }
     void ask(found, info.id, info.params as object | undefined)
     // Cancels the command quietly (Univer returns false for this error).
     throw new CustomCommandExecutionError('Edit waits for confirmation')

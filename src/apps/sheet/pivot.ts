@@ -68,15 +68,26 @@ export async function pivotDialog(univerAPI: FUniver): Promise<void> {
   const none = () => el('option', { value: '', textContent: t('(none)') })
   const fill = () => {
     const r = parseA1(range.value)
-    const header = r ? (values2d(sheet, { ...r, endRow: r.startRow })[0] ?? []).map((v) => (empty(v) ? '' : String(v))).filter(Boolean) : []
-    const options = () => header.map((h) => el('option', { value: h, textContent: h }))
+    const block = r ? values2d(sheet, r) : []
+    const header = (block[0] ?? []).map((v) => (empty(v) ? '' : String(v)))
+    const names = header.filter(Boolean)
+    const options = () => names.map((h) => el('option', { value: h, textContent: h }))
     rows.replaceChildren(...options())
     columns.replaceChildren(none(), ...options())
     values.replaceChildren(...options())
     filter.replaceChildren(none(), ...options())
-    // Guesses: first column as rows, a numeric last column as values.
-    if (header.length > 1) values.value = header[header.length - 1]
-    if (header.length > 2) columns.value = header[1] !== values.value ? header[1] : ''
+    // Guesses: the last mostly numeric column as values, the first text column
+    // as rows, no columns (the user adds them when wanted).
+    const numeric = header.map((h, i) => {
+      const cells = block.slice(1).map((row) => row[i]).filter((v) => !empty(v))
+      return !!h && cells.length > 0 && cells.filter((v) => typeof v === 'number').length / cells.length >= 0.8
+    })
+    const valueIndex = numeric.lastIndexOf(true)
+    const rowIndex = header.findIndex((h, i) => h && !numeric[i] && i !== valueIndex)
+    if (valueIndex >= 0) values.value = header[valueIndex]
+    if (rowIndex >= 0) rows.value = header[rowIndex]
+    else if (names.length > 1 && values.value === names[0]) rows.value = names[1]
+    columns.value = ''
   }
   range.addEventListener('change', fill)
   fill()
@@ -199,7 +210,9 @@ function writePivot(univerAPI: FUniver, target: FWorksheet, at: { row: number; c
   target.getRange(top, at.col, 1, width).setFontWeight('bold').setBackgroundColor('#e6f4ea')
   target.getRange(top, at.col, out.length, 1).setFontWeight('bold')
   target.getRange(top + out.length - 1, at.col, 1, width).setFontWeight('bold').setBackgroundColor('#f1f3f4')
-  if (spec.agg !== 'COUNT') target.getRange(top + 1, at.col + 1, out.length - 1, width - 1).setNumberFormat(spec.agg === 'AVERAGE' ? '0.00' : '#,##0.##')
+  // Whole numbers without a decimal point; decimals only when the data have them.
+  const decimals = data.slice(1).some((row) => typeof row[vi] === 'number' && !Number.isInteger(row[vi] as number))
+  if (spec.agg !== 'COUNT') target.getRange(top + 1, at.col + 1, out.length - 1, width - 1).setNumberFormat(spec.agg === 'AVERAGE' ? '0.00' : decimals ? '#,##0.00' : '#,##0')
   target.getRange(at.row, at.col).setCustomMetaData({ [PIVOT_KEY]: { ...spec, source: toA1(src), size } })
   return true
 }

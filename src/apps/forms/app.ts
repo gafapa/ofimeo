@@ -127,8 +127,9 @@ function mountEditorApp(state: FormState, root: HTMLElement): void {
   const title = () => String(doc.getMap('meta').get('title') || info.untitled)
   const formats = (): ExportOption[] => [
     { ext: 'oform', label: t('Ofimeo form (.oform)'), build: async () => new Blob([JSON.stringify(formFile(doc, priv), null, 1)], { type: 'application/json' }) },
-    { ext: 'csv', label: t('Responses (.csv)'), build: async () => toCsv(resultsTable(doc, priv)) },
-    { ext: 'xlsx', label: t('Responses (.xlsx)'), build: () => toXlsx(resultsTable(doc, priv), title()) },
+    // Named like the Responses tab's downloads: "<title> - Responses.csv".
+    { ext: 'csv', label: t('Responses (.csv)'), suffix: ` - ${t('Responses')}`, build: async () => toCsv(resultsTable(doc, priv)) },
+    { ext: 'xlsx', label: t('Responses (.xlsx)'), suffix: ` - ${t('Responses')}`, build: () => toXlsx(resultsTable(doc, priv), title()) },
   ]
   session.hooks.exportFormats = formats
 

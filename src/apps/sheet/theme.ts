@@ -67,7 +67,9 @@ export function buildTheme(host: HTMLElement): Theme {
       600: hex(hover), 700: hex(alt), 800: hex(surface), 900: hex(mix(surface, BLACK, 0.12)), 1000: '#000000',
     }
   } else if (mode === 'contrast-dark') {
-    gray = { 0: '#ffffff', 50: '#ffffff', 100: '#e6e6e6', 200: '#ffffff', 300: '#ffffff', 400: '#ffffff', 500: '#ffffff', 600: '#333333', 700: '#000000', 800: '#000000', 900: '#000000', 1000: '#000000' }
+    // 200 also draws the gridlines and header borders, which Univer's dark mode
+    // inverts on the canvas: mid gray becomes clearly visible lines on black.
+    gray = { 0: '#ffffff', 50: '#ffffff', 100: '#e6e6e6', 200: '#4a4a4a', 300: '#ffffff', 400: '#ffffff', 500: '#ffffff', 600: '#333333', 700: '#000000', 800: '#000000', 900: '#000000', 1000: '#000000' }
   } else if (mode === 'contrast-light') {
     gray = { 0: '#ffffff', 50: '#ffffff', 100: '#e0e0e0', 200: '#e0e0e0', 300: '#000000', 400: '#000000', 500: '#1f1f1f', 600: '#000000', 700: '#000000', 800: '#000000', 900: '#000000', 1000: '#000000' }
   }

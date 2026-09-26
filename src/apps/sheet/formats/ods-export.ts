@@ -6,7 +6,7 @@ import { escapeXml, toHex } from '../../../core/formats'
 import { DRAWING_TYPE_IMAGE, isChartSpec, normalizeSpec, snapshotDrawings, type CellAnchor } from '../charts/model'
 import { odsChartContent, odsChartFrame, odsChartManifest, odsImageFrame } from './ods-charts'
 import { DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, isThemeTextColor, readFeatures, type SheetNote, type WorkbookFeatures } from './features'
-import { odsAnnotation, odsDatabaseRanges, odsSheetName, OdsFeatureWriter } from './ods-features'
+import { odsAnnotation, odsDatabaseRanges, odsSheetName, OdsFeatureWriter, odsValidations, type OdsValidations } from './ods-features'
 
 const MIME = 'application/vnd.oasis.opendocument.spreadsheet'
 
@@ -41,7 +41,8 @@ const EPOCH_1899 = Date.UTC(1899, 11, 30)
 export async function exportOds(data: IWorkbookData): Promise<Blob> {
   const features = readFeatures(data)
   const featureWriter = new OdsFeatureWriter(excelFormulaToOdf)
-  const writer = new ContentWriter(data, features, featureWriter)
+  const validations = odsValidations(features.validations, (id) => data.sheets[id]?.name || id, excelFormulaToOdf)
+  const writer = new ContentWriter(data, features, featureWriter, validations)
   const zip = new JSZip()
   // Charts and images: frames in each table's <table:shapes>, positioned in the sheet.
   const drawings = snapshotDrawings(data.resources)
@@ -85,6 +86,7 @@ export async function exportOds(data: IWorkbookData): Promise<Blob> {
   }
   const sheetIds = data.sheetOrder.filter((id) => data.sheets[id])
   const body =
+    validations.xml +
     sheetIds
       .map((id) => {
         const table = writer.table(data.sheets[id], id)
@@ -136,6 +138,7 @@ class ContentWriter {
     private data: IWorkbookData,
     private features: WorkbookFeatures,
     private featureWriter: OdsFeatureWriter,
+    private validations: OdsValidations,
   ) {}
 
   fontDecls(): string {
@@ -165,6 +168,7 @@ class ContentWriter {
   table(sheet: Partial<IWorksheetData>, sheetId: string): string {
     const name = sheet.name || 'Sheet'
     const notes = new Map<string, SheetNote>((this.features.notes[sheetId] ?? []).map((n) => [`${n.row},${n.col}`, n]))
+    const validated = this.validations.cells.get(sheetId) ?? new Map<string, string>()
     const filteredOut = new Set(this.features.filters[sheetId]?.cachedFilteredOut ?? [])
     const tableStyle = `ta${this.tableStyles.length + 1}`
     const tab = toHex(sheet.tabColor)
@@ -205,6 +209,12 @@ class ContentWriter {
     for (const n of notes.values()) {
       lastRow = Math.max(lastRow, n.row)
       lastCol = Math.max(lastCol, n.col)
+    }
+    // Validated cells are written even when empty.
+    for (const key of validated.keys()) {
+      const [r, c] = key.split(',').map(Number)
+      lastRow = Math.max(lastRow, r)
+      lastCol = Math.max(lastCol, c)
     }
 
     // Columns: every column up to the sheet width, grouped into runs.
@@ -274,7 +284,7 @@ class ContentWriter {
           // Row styles are written on each cell (LibreOffice mishandles row default styles).
           const own = this.styleOf(cell?.s)
           const style = own && (rowStyle || colStyles[c]) ? { ...colStyles[c], ...rowStyle, ...own } : own || (rowStyle && { ...colStyles[c], ...rowStyle })
-          xml = this.cell(cell, style, spans.get(key), notes.get(key))
+          xml = this.cell(cell, style, spans.get(key), notes.get(key), validated.get(key))
         }
         if (pending && pending.xml === xml && !xml.includes('<text:p')) pending.n++
         else {
@@ -312,7 +322,7 @@ class ContentWriter {
     return sheet ? `#${odsSheetName(sheet.name || m![1])}.${m![2] || 'A1'}` : url
   }
 
-  private cell(cell: ICellData | undefined, style: IStyleData | undefined, span?: { rows: number; cols: number }, note?: SheetNote): string {
+  private cell(cell: ICellData | undefined, style: IStyleData | undefined, span?: { rows: number; cols: number }, note?: SheetNote, validation?: string): string {
     let attrs = ''
     let content = ''
     const pattern = style?.n?.pattern
@@ -360,6 +370,7 @@ class ContentWriter {
     if (styleName && styleName !== 'Default') xml += ` table:style-name="${styleName}"`
     xml += attrs
     if (span && (span.rows > 1 || span.cols > 1)) xml += ` table:number-columns-spanned="${span.cols}" table:number-rows-spanned="${span.rows}"`
+    if (validation) xml += ` table:content-validation-name="${validation}"`
     const annotation = note ? odsAnnotation(note) : ''
     if (!content && !attrs && !annotation) return xml + '/>'
     const link = cell?.p?.body?.customRanges?.find((r) => r.rangeType === HYPERLINK_RANGE && r.properties?.url)

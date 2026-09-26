@@ -23,6 +23,9 @@ import { createEditor } from './editor'
 import { resultsTable, toCsv, toXlsx } from './export'
 import { formFile, itemsArray, parseFormFile, createForm, QUESTION_TYPES, readSettings, settingsMap, typeLabel, type QuestionType } from './model'
 import { mountRespond, mountRespondentPage, privacyNote, verifiedBadge } from './respond'
+import { setupPaperPrint } from './paper'
+import { createFindBar } from './find'
+import { zoomMenuItems, type ZoomTarget } from '../../ui/zoom'
 import { provideWebMcpTools } from '../../core/webmcp'
 import { createResults, whoSeesResponses } from './results'
 import { LOCAL, openFormState, type FormState } from './state'
@@ -33,10 +36,14 @@ type Tab = 'questions' | 'responses' | 'settings' | 'preview'
 
 export async function mountForms(session: Session, root: HTMLElement): Promise<void> {
   const info = appInfo('forms')
-  if (!session.isProtected || !(await x25519Available())) {
+  const protectedLink = session.isProtected
+  if (!protectedLink || !(await x25519Available())) {
     root.innerHTML = '<div class="notice"><h1></h1><p class="text"></p><p><a href="#"></a></p></div>'
     root.querySelector('h1')!.textContent = t('This form cannot be opened here')
-    root.querySelector('.text')!.textContent = t('Forms need a secure (https) connection and a recent browser, because responses are encrypted.')
+    // A link without the permission keys (cut off, or an old kind of link) versus a browser without the needed cryptography.
+    root.querySelector('.text')!.textContent = protectedLink || !window.isSecureContext || !crypto.subtle
+      ? t('Forms need a secure (https) connection and a recent browser, because responses are encrypted.')
+      : t('This link is incomplete: it does not include the keys of the form. Ask the person who sent it for the whole link.')
     root.querySelector('a')!.textContent = t('Back to all documents')
     return
   }
@@ -55,7 +62,8 @@ function mountEditorApp(state: FormState, root: HTMLElement): void {
 
   const scroll = el('div', { class: 'fm-scroll' })
   const tabs = el('div', { class: 'fm-tabs', role: 'tablist' })
-  shell.main.append(tabs, scroll)
+  const find = createFindBar(scroll)
+  shell.main.append(tabs, find.element, scroll)
   shell.main.classList.add('fm-main')
 
   const editor = createEditor(state)
@@ -114,6 +122,7 @@ function mountEditorApp(state: FormState, root: HTMLElement): void {
 
   const fileInput = el('input', { type: 'file', accept: FORMS_ACCEPT, hidden: true })
   document.body.append(fileInput)
+  setupPaperPrint(doc)
   fileInput.addEventListener('change', async () => {
     const file = fileInput.files?.[0]
     fileInput.value = ''
@@ -154,6 +163,19 @@ function mountEditorApp(state: FormState, root: HTMLElement): void {
     fn()
   }
 
+  let zoomLevel = 1
+  const zoom: ZoomTarget = {
+    get: () => zoomLevel,
+    set: (z) => {
+      zoomLevel = Math.round(z * 100) / 100
+      scroll.style.zoom = String(zoomLevel)
+      frame.status?.zoom?.update()
+    },
+    min: 0.5,
+    max: 2,
+    presets: [0.5, 0.75, 0.9, 1, 1.25, 1.5, 2],
+    keys: true,
+  }
   const frame = mountFrame({
     session,
     shell,
@@ -167,7 +189,19 @@ function mountEditorApp(state: FormState, root: HTMLElement): void {
         [t('Owner code'), state.fingerprint],
       ],
     },
-    edit: { undo: () => undo.undo(), redo: () => undo.redo(), canUndo: () => undo.canUndo(), canRedo: () => undo.canRedo() },
+    edit: {
+      undo: () => undo.undo(),
+      redo: () => undo.redo(),
+      canUndo: () => undo.canUndo(),
+      canRedo: () => undo.canRedo(),
+      // The form's text fields: the browser's clipboard commands on the focused field.
+      cut: () => document.execCommand('cut'),
+      copy: () => document.execCommand('copy'),
+      paste: () => void pasteText(),
+      selectAll: () => selectAllText(scroll),
+      find: find.open,
+    },
+    zoom,
     menus: {
       view: {
         label: t('View'),
@@ -176,6 +210,8 @@ function mountEditorApp(state: FormState, root: HTMLElement): void {
           { label: t('Responses'), run: () => show('responses'), active: () => tab === 'responses' },
           { label: t('Settings'), run: () => show('settings'), active: () => tab === 'settings' },
           { label: t('Preview'), run: () => show('preview'), active: () => tab === 'preview' },
+          '-',
+          { label: t('Zoom'), submenu: zoomMenuItems(zoom) },
         ],
       },
       insert: {
@@ -225,6 +261,40 @@ function mountEditorApp(state: FormState, root: HTMLElement): void {
   renderTabs()
   show('questions')
   if (import.meta.env.DEV) Object.assign(window, { formsApp: { show, editor, results } })
+}
+
+// ---------- Clipboard ----------
+
+// Edit ▸ Paste: the clipboard text into the focused field (browsers without
+// clipboard access explain Ctrl+V instead).
+async function pasteText(): Promise<void> {
+  const field = document.activeElement
+  let text: string | null = null
+  try {
+    text = await navigator.clipboard.readText()
+  } catch {
+    text = null
+  }
+  if (text === null || !(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) {
+    toast(t('Use Ctrl+V to paste into a field'))
+    return
+  }
+  field.focus()
+  document.execCommand('insertText', false, text)
+}
+
+// Edit ▸ Select all: the focused field's text, else the text of the open tab.
+function selectAllText(scope: HTMLElement): void {
+  const field = document.activeElement
+  if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
+    field.select()
+    return
+  }
+  const range = document.createRange()
+  range.selectNodeContents(scope)
+  const selection = getSelection()
+  selection?.removeAllRanges()
+  selection?.addRange(range)
 }
 
 // ---------- Settings ----------

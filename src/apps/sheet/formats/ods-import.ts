@@ -7,8 +7,8 @@ import { t } from '../../../core/i18n'
 import { CHART_COMPONENT, DRAWING_TYPE_DOM, DRAWING_TYPE_IMAGE } from '../charts/model'
 import { DrawingCollector } from './drawings'
 import { odsFrames, pxToAnchor, readOdsCharts, type OdsFrame } from './ods-charts'
-import { emptyFeatures, featureResources, filteredRows, GLOBAL_SCOPE, type SheetNote } from './features'
-import { readOdsConditionalFormats, readOdsFilters, readOdsNames, readOdsNote } from './ods-features'
+import { cellDocument, emptyFeatures, featureResources, filteredRows, GLOBAL_SCOPE, type SheetNote } from './features'
+import { readOdsConditionalFormats, readOdsFilters, readOdsNames, readOdsNote, readOdsValidations } from './ods-features'
 
 // Limits against huge repeats (LibreOffice pads sheets to 1M rows × 16K columns).
 const MAX_ROWS = 100_000
@@ -113,9 +113,11 @@ export function convertOds(content: Document, stylesDoc: Document | null, settin
   children(spreadsheet, 'table').forEach((table, i) => {
     const id = `sheet-${i + 1}`
     sheetOrder.push(id)
-    const extra: TableExtras = { notes: [], filtered: [] }
+    const extra: TableExtras = { notes: [], filtered: [], validated: new Map() }
     const sheet = (sheets[id] = readTable(table, id, styles, view, extra))
     if (extra.notes.length) features.notes[id] = extra.notes
+    const rules = extra.validated.size ? readOdsValidations(spreadsheet, extra.validated, odfFormulaToExcel) : []
+    if (rules.length) features.validations[id] = rules
     const cf = readOdsConditionalFormats(table, styleOf, odfFormulaToExcel)
     if (cf.length) features.cf[id] = cf
     features.names.push(...readOdsNames(child(table, 'named-expressions'), id, odfFormulaToExcel, features.names.length))
@@ -129,6 +131,17 @@ export function convertOds(content: Document, stylesDoc: Document | null, settin
     }
   })
   features.names.push(...readOdsNames(child(spreadsheet, 'named-expressions'), GLOBAL_SCOPE, odfFormulaToExcel, features.names.length))
+  // Links to cells ("#Sheet1.A1") point at Univer sheet ids.
+  const ids = new Map(Object.entries(sheets).map(([id, s]) => [s.name ?? '', id]))
+  for (const sheet of Object.values(sheets)) {
+    for (const row of Object.values(sheet.cellData ?? {})) {
+      for (const cell of Object.values(row ?? {}) as (ICellData | undefined)[]) {
+        const range = cell?.p?.body?.customRanges?.[0]
+        const m = range && /^#\$?'?((?:[^'.]|'')+)'?\.\$?([A-Z]+)\$?(\d+)/i.exec(String(range.properties?.url ?? ''))
+        if (m && ids.has(m[1].replace(/''/g, "'"))) range!.properties = { ...range!.properties, url: `#gid=${ids.get(m[1].replace(/''/g, "'"))}&range=${m[2].toUpperCase()}${m[3]}` }
+      }
+    }
+  }
   if (!sheetOrder.length) {
     sheetOrder.push('sheet-1')
     sheets['sheet-1'] = { id: 'sheet-1', name: 'Sheet1', rowCount: 1000, columnCount: 26, cellData: {} }
@@ -140,7 +153,11 @@ interface TableExtras {
   notes: SheetNote[]
   // Rows hidden by a filter (visibility="filter").
   filtered: number[]
+  // Cells of each content validation (by name).
+  validated: Map<string, { row: number; col: number }[]>
 }
+
+const MAX_VALIDATED = 200_000
 
 // ---------------------------------------------------------------------------
 // Tables
@@ -217,6 +234,12 @@ function readTable(table: Element, id: string, styles: StyleResolver, view: View
       if (el.localName === 'table-cell') {
         const note = readOdsNote(el)
         if (note) extra.notes.push({ ...note, row: r, col })
+        const validation = attr(el, 'content-validation-name')
+        if (validation) {
+          const list = extra.validated.get(validation) ?? []
+          for (let k = 0; k < repeat && list.length < MAX_VALIDATED; k++) for (let j = 0; j < n && list.length < MAX_VALIDATED; j++) list.push({ row: r + k, col: col + j })
+          extra.validated.set(validation, list)
+        }
         const styleName = attr(el, 'style-name')
         const read = readCell(el)
         const cs = int(attr(el, 'number-columns-spanned'), 1)
@@ -380,6 +403,10 @@ function readCell(el: Element): { cell: ICellData; fallback?: string } | null {
     }
   }
   if (formula) cell.f = odfFormulaToExcel(formula)
+  // A text cell that is a link (<text:a xlink:href>).
+  const link = !formula && typeof cell.v === 'string' ? el.getElementsByTagNameNS('*', 'a')[0] : undefined
+  const href = link && [...link.attributes].find((a) => a.localName === 'href')?.value
+  if (href && typeof cell.v === 'string') cell.p = cellDocument(cell.v, undefined, href, `link-${href.length}-${cell.v.length}`)
   return { cell, fallback }
 }
 

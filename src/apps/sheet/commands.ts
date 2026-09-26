@@ -53,6 +53,7 @@ export const UNIVER_COMMANDS = {
   alignH: 'sheet.command.set-horizontal-text-align',
   alignV: 'sheet.command.set-vertical-text-align',
   wrap: 'sheet.command.set-text-wrap',
+  borders: 'sheet.command.set-border-basic',
   mergeAll: 'sheet.command.add-worksheet-merge-all',
   mergeHorizontal: 'sheet.command.add-worksheet-merge-horizontal',
   mergeVertical: 'sheet.command.add-worksheet-merge-vertical',

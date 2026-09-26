@@ -3,11 +3,12 @@
 // snapshots by the file converters. Plain data only: the converter chunks do
 // not load the Univer runtime.
 
-import type { IRange, IStyleData, IWorkbookData } from '@univerjs/presets'
+import type { ICellData, IRange, IStyleData, IWorkbookData } from '@univerjs/presets'
 
 export const CF_RESOURCE = 'SHEET_CONDITIONAL_FORMATTING_PLUGIN'
 export const NOTE_RESOURCE = 'SHEET_NOTE_PLUGIN'
 export const NAME_RESOURCE = 'SHEET_DEFINED_NAME_PLUGIN'
+export const VALIDATION_RESOURCE = 'SHEET_DATA_VALIDATION_PLUGIN'
 export const FILTER_RESOURCE = 'SHEET_FILTER_PLUGIN'
 // Univer's scope of workbook-wide defined names.
 export const GLOBAL_SCOPE = 'AllDefaultWorkbook'
@@ -93,14 +94,67 @@ export interface SheetFilter {
   cachedFilteredOut?: number[]
 }
 
+// Univer data validation rule (the fields the converters use).
+export interface ValidationRule {
+  uid?: string
+  type: string
+  ranges: IRange[]
+  formula1?: string
+  formula2?: string
+  operator?: string
+  allowBlank?: boolean
+  showDropDown?: boolean
+  showErrorMessage?: boolean
+  showInputMessage?: boolean
+  errorStyle?: number
+  error?: string
+  errorTitle?: string
+  prompt?: string
+  promptTitle?: string
+}
+
+// Options of a list rule: a JSON array or comma-separated text.
+export function listOptions(formula: string): string[] {
+  try {
+    const arr = JSON.parse(formula)
+    if (Array.isArray(arr)) return arr.map(String).filter(Boolean)
+  } catch {
+    // Comma-separated list.
+  }
+  return formula
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
+// Groups cells into rectangles: horizontal runs per row, then stacked vertically.
+export function cellsToRanges(cells: { row: number; col: number }[]): IRange[] {
+  cells.sort((a, b) => a.row - b.row || a.col - b.col)
+  const runs: IRange[] = []
+  for (const c of cells) {
+    const last = runs[runs.length - 1]
+    if (last && last.startRow === c.row && last.endColumn === c.col - 1) last.endColumn = c.col
+    else runs.push({ startRow: c.row, endRow: c.row, startColumn: c.col, endColumn: c.col })
+  }
+  const out: IRange[] = []
+  for (const r of runs) {
+    const prev = out.find((o) => o.endRow === r.startRow - 1 && o.startColumn === r.startColumn && o.endColumn === r.endColumn)
+    if (prev) prev.endRow = r.endRow
+    else out.push(r)
+  }
+  return out
+}
+
 export interface WorkbookFeatures {
   cf: Record<string, CfRule[]>
   notes: Record<string, SheetNote[]>
   names: DefinedName[]
   filters: Record<string, SheetFilter>
+  // Written by the ODS converters only (the XLSX ones handle validation themselves).
+  validations: Record<string, ValidationRule[]>
 }
 
-export const emptyFeatures = (): WorkbookFeatures => ({ cf: {}, notes: {}, names: [], filters: {} })
+export const emptyFeatures = (): WorkbookFeatures => ({ cf: {}, notes: {}, names: [], filters: {}, validations: {} })
 
 function resource<T>(data: Partial<IWorkbookData>, name: string): T | undefined {
   const raw = data.resources?.find((r) => r.name === name)?.data
@@ -134,6 +188,9 @@ export function readFeatures(data: Partial<IWorkbookData>): WorkbookFeatures {
   for (const [sheetId, filter] of Object.entries(resource<Record<string, SheetFilter>>(data, FILTER_RESOURCE) ?? {})) {
     if (sheets[sheetId] && filter?.ref) out.filters[sheetId] = filter
   }
+  for (const [sheetId, rules] of Object.entries(resource<Record<string, ValidationRule[]>>(data, VALIDATION_RESOURCE) ?? {})) {
+    if (sheets[sheetId] && Array.isArray(rules) && rules.length) out.validations[sheetId] = rules.filter((r) => r?.type && Array.isArray(r.ranges))
+  }
   return out
 }
 
@@ -152,6 +209,7 @@ export function featureResources(f: WorkbookFeatures): { name: string; data: str
   }
   if (f.names.length) out.push({ name: NAME_RESOURCE, data: JSON.stringify(Object.fromEntries(f.names.map((d) => [d.id, { localSheetId: GLOBAL_SCOPE, ...d }]))) })
   if (Object.keys(f.filters).length) out.push({ name: FILTER_RESOURCE, data: JSON.stringify(f.filters) })
+  if (Object.keys(f.validations).length) out.push({ name: VALIDATION_RESOURCE, data: JSON.stringify(f.validations) })
   return out
 }
 
@@ -169,6 +227,32 @@ export function filteredRows(filter: SheetFilter, text: (row: number, col: numbe
     if (hidden) out.push(r)
   }
   return out
+}
+
+// Minimal cell document holding plain text with optional hyperlink / rich text runs.
+export function cellDocument(text: string, runs?: { st: number; ed: number; ts: IStyleData }[], url?: string, linkId = 'link'): NonNullable<ICellData['p']> {
+  return {
+    id: 'd',
+    documentStyle: {},
+    body: {
+      dataStream: text.replace(/\r?\n/g, '\r') + '\r\n',
+      textRuns: runs,
+      paragraphs: [{ startIndex: text.length }],
+      ...(url
+        ? {
+            customRanges: [
+              {
+                startIndex: 0,
+                endIndex: Math.max(0, text.length - 1),
+                rangeId: linkId,
+                rangeType: 0 /* HYPERLINK */,
+                properties: { url },
+              },
+            ],
+          }
+        : {}),
+    },
+  } as NonNullable<ICellData['p']>
 }
 
 // ---------- A1 helpers ----------

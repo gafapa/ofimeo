@@ -4,7 +4,8 @@
 
 import * as Y from 'yjs'
 import { IndexeddbPersistence } from 'y-indexeddb'
-import type { Session } from '../../core/session'
+import type { PrivateStateHooks, Session } from '../../core/session'
+import { listVersions, RESTORE_ORIGIN } from '../../core/versions'
 import { t } from '../../core/i18n'
 import { editorKeys, fingerprint, openResponse, sealResult, type EditorKeys, type SealedResponse } from './crypto'
 import { buildResult, scoreResponse } from './grading'
@@ -51,9 +52,48 @@ export async function openFormState(session: Session): Promise<FormState> {
   if (settings.get('responseKey') !== keys.responsePublic) session.doc.transact(() => settings.set('responseKey', keys.responsePublic), LOCAL)
   const transport = new FormsTransport(session, { key: keys.vault, doc: priv })
   const state: FormState = { session, priv, keys, transport, fingerprint: code }
+  session.hooks.privateState = answerKeyHooks(session, priv)
   transport.onSubmit = (sealed) => void receiveSealed(state, sealed, 'p2p')
   if (import.meta.env.DEV) Object.assign(window, { formState: state })
   return state
+}
+
+// The answer key travels with copies, templates and versions made by editors
+// (never with the respondents' link): a private Y.Doc holding only 'answers'.
+// Versions keep their key in the private document, by version id.
+function answerKeyHooks(session: Session, priv: Y.Doc): PrivateStateHooks {
+  const versions = priv.getMap<Uint8Array>('versions')
+  const snapshot = () => {
+    const copy = new Y.Doc()
+    const answers = answersMap(copy)
+    answersMap(priv).forEach((key, id) => answers.set(id, key))
+    const out = Y.encodeStateAsUpdate(copy)
+    copy.destroy()
+    return out
+  }
+  return {
+    snapshot,
+    saveVersion: (id) =>
+      priv.transact(() => {
+        versions.set(id, snapshot())
+        // Versions thinned out of the history drop their key too.
+        const kept = new Set(listVersions(session.doc).map((v) => v.id))
+        for (const old of [...versions.keys()]) if (!kept.has(old)) versions.delete(old)
+      }, LOCAL),
+    version: (id) => versions.get(id) ?? null,
+    restore: (state) => {
+      const old = new Y.Doc()
+      Y.applyUpdate(old, state)
+      const from = answersMap(old)
+      const to = answersMap(priv)
+      priv.transact(() => {
+        for (const id of [...to.keys()]) if (!from.has(id)) to.delete(id)
+        from.forEach((key, id) => to.set(id, key))
+        // Not LOCAL: the editor re-renders for it like for a remote change.
+      }, RESTORE_ORIGIN)
+      old.destroy()
+    },
+  }
 }
 
 export const keyLookup = (priv: Y.Doc | null) => (id: string) => (priv ? (answersMap(priv).get(id) as AnswerKey | undefined) : undefined)

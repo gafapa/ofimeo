@@ -19,6 +19,7 @@
 import * as Y from 'yjs'
 import { IndexeddbPersistence } from 'y-indexeddb'
 import { createLocalDocument } from '../../core/session'
+import * as store from '../../core/store'
 import { t } from '../../core/i18n'
 
 export type QuestionType = 'short' | 'paragraph' | 'choice' | 'checkbox' | 'dropdown' | 'scale' | 'grid' | 'date' | 'time' | 'number'

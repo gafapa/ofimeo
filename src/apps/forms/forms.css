@@ -4,7 +4,10 @@
 .fm-scroll { flex: 1; min-height: 0; overflow: auto; background: var(--canvas); padding: var(--space-4) 16px 48px; }
 .fm-column { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-3); }
 
-.fm-tabs { display: flex; justify-content: center; gap: var(--space-1); background: var(--surface); border-bottom: 1px solid var(--border); flex: none; overflow-x: auto; }
+.fm-tabs { display: flex; gap: var(--space-1); background: var(--surface); border-bottom: 1px solid var(--border); flex: none; overflow-x: auto; }
+/* Centered while they fit; scrollable from the first tab when they do not (centering an overflowing row would cut its start). */
+.fm-tabs > .fm-tab:first-child { margin-left: auto; }
+.fm-tabs > .fm-tab:last-child { margin-right: auto; }
 .fm-tab { border: 0; background: none; padding: 10px 16px; border-bottom: 3px solid transparent; color: var(--muted); font-weight: 500; white-space: nowrap; }
 .fm-tab:hover { color: var(--text); background: var(--hover); }
 .fm-tab.active { color: var(--app-color); border-bottom-color: var(--app-color); }
@@ -143,7 +146,36 @@ textarea.fm-auto { resize: none; overflow: hidden; }
   .fm-bar-track { grid-column: span 2; order: 3; }
 }
 
+/* Find bar (Ctrl+F). */
+.fm-find { display: flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-2); background: var(--surface); border-bottom: 1px solid var(--border); flex: none; }
+.fm-find[hidden] { display: none; }
+.fm-find-input { flex: 0 1 280px; min-width: 0; padding: 4px 8px; border: 1px solid var(--border); border-radius: var(--radius-m); background: var(--surface); color: var(--text); font: inherit; }
+.fm-find-count { color: var(--muted); font-size: var(--fs-s); min-width: 5em; }
+.fm-find-btn { border: 0; background: none; color: var(--text); width: 28px; height: 28px; border-radius: var(--radius-m); display: inline-flex; align-items: center; justify-content: center; }
+.fm-find-btn:hover { background: var(--hover); }
+
+/* Paper version of the form (paper.ts): shown only while printing. */
+.fm-print { display: none; }
+.fm-paper { max-width: none; color: #000; }
+.fm-paper .fm-card { background: #fff; color: #000; border-color: #999; }
+.fm-paper-line { display: block; border-bottom: 1px solid #555; height: 1.9em; }
+.fm-paper-who { display: grid; grid-template-columns: auto 1fr; gap: var(--space-2); align-items: end; }
+.fm-paper-answer { display: flex; flex-direction: column; }
+.fm-paper-options { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.fm-paper-options li { display: flex; gap: 10px; align-items: center; }
+.fm-paper-circle, .fm-paper-box { display: inline-block; flex: none; width: 13px; height: 13px; border: 1.5px solid #333; border-radius: 50%; }
+.fm-paper-box { border-radius: 2px; }
+.fm-paper-hint { margin: 0 0 4px; font-size: var(--fs-s); color: #444; }
+.fm-paper-scale, .fm-paper-grid { border-collapse: collapse; }
+.fm-paper-scale td { padding: 2px 8px; text-align: center; }
+.fm-paper-grid th, .fm-paper-grid td { padding: 4px 10px; text-align: center; border-bottom: 1px solid #ccc; font-weight: normal; }
+.fm-paper-grid th:first-child { text-align: left; }
+.fm-paper-points { font-weight: normal; color: #444; }
+
 @media print {
-  .fm-tabs, .fm-card-tools, .fm-card-footer { display: none !important; }
+  .fm-tabs, .fm-card-tools, .fm-card-footer, .fm-preview-note, .fm-nav, .fm-link { display: none !important; }
   .fm-scroll { overflow: visible; background: none; }
+  .fm-card { break-inside: avoid; }
+  body.fm-printing > :not(.fm-print) { display: none !important; }
+  body.fm-printing .fm-print { display: block; }
 }

@@ -36,6 +36,12 @@ export interface SheetContext {
 
 const ALIGN = { left: 1, center: 2, right: 3, top: 1, middle: 2, bottom: 3 } as const
 const WRAP = 3
+// Univer's BorderStyleTypes: thin, medium (thick) and double lines.
+const THIN = 1
+const THICK = 8
+const DOUBLE = 7
+// Params of Univer's set-border-basic command (BorderType values) on the selection.
+const border = (type: string, style = THIN) => ({ value: { type, style, color: '#000000' } })
 
 export function sheetFrame(ctx: SheetContext): Pick<FrameSpec, 'file' | 'edit' | 'menus' | 'help'> {
   const { cmds, univerAPI } = ctx
@@ -183,6 +189,25 @@ export function sheetFrame(ctx: SheetContext): Pick<FrameSpec, 'file' | 'edit' |
         ],
       },
       edit(t('Wrap text'), 'wrap', { value: WRAP }),
+      {
+        label: t('Borders'),
+        enabled: ctx.canEdit,
+        submenu: [
+          edit(t('All borders'), 'borders', border('all')),
+          edit(t('Outside borders'), 'borders', border('outside')),
+          edit(t('Inside borders'), 'borders', border('inside')),
+          '-',
+          edit(t('Top border'), 'borders', border('top')),
+          edit(t('Bottom border'), 'borders', border('bottom')),
+          edit(t('Left border'), 'borders', border('left')),
+          edit(t('Right border'), 'borders', border('right')),
+          '-',
+          edit(t('Thick outside border'), 'borders', border('outside', THICK)),
+          edit(t('Double bottom border'), 'borders', border('bottom', DOUBLE)),
+          '-',
+          edit(t('No borders'), 'borders', border('none')),
+        ],
+      },
       {
         label: t('Merge cells'),
         enabled: ctx.canEdit,

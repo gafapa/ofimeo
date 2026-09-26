@@ -22,6 +22,9 @@ import {
   type HighlightRule,
   type SheetFilter,
   type SheetNote,
+  type ValidationRule,
+  cellsToRanges,
+  listOptions,
 } from './features'
 
 const PX_PER_IN = 96
@@ -236,6 +239,140 @@ export class OdsFeatureWriter {
     }
     return xml ? `<table:named-expressions>${xml}</table:named-expressions>` : ''
   }
+}
+
+// ---------- Data validation (table:content-validations) ----------
+
+const MAX_VALIDATED_CELLS = 200_000
+const VALUE_KIND: Record<string, string> = {
+  whole: 'cell-content-is-whole-number() and ',
+  decimal: 'cell-content-is-decimal-number() and ',
+  date: 'cell-content-is-date() and ',
+  time: 'cell-content-is-time() and ',
+  textLength: '',
+}
+const CMP: Record<string, string> = { equal: '=', notEqual: '!=', greaterThan: '>', greaterThanOrEqual: '>=', lessThan: '<', lessThanOrEqual: '<=' }
+
+export interface OdsValidations {
+  // <table:content-validations> for office:spreadsheet ('' without rules).
+  xml: string
+  // Validation name of each cell ("row,col"), by sheet id.
+  cells: Map<string, Map<string, string>>
+}
+
+export function odsValidations(bySheet: Record<string, ValidationRule[]>, sheetName: (id: string) => string, toOdf: ToOdf): OdsValidations {
+  const cells = new Map<string, Map<string, string>>()
+  let xml = ''
+  let n = 0
+  let budget = MAX_VALIDATED_CELLS
+  const value = (v: string | undefined, type: string): string => {
+    const s = String(v ?? '').trim()
+    if (s.startsWith('=')) return toOdf(s).replace(/^=/, '')
+    if (s !== '' && Number.isFinite(Number(s))) return s
+    if (type === 'date') {
+      const d = Date.parse(s.includes('T') ? s : s + 'T00:00:00Z')
+      if (!Number.isNaN(d)) return String(25569 + d / 86400000)
+    }
+    return quoteText(s)
+  }
+  for (const [sheetId, rules] of Object.entries(bySheet)) {
+    const sheet = sheetName(sheetId)
+    const map = new Map<string, string>()
+    for (const rule of rules) {
+      const type = rule.type === 'listMultiple' ? 'list' : rule.type
+      let condition = ''
+      if (type === 'list') {
+        const f = String(rule.formula1 ?? '')
+        condition = `cell-content-is-in-list(${f.startsWith('=') ? toOdf(f).replace(/^=/, '') : listOptions(f).map(quoteText).join(';')})`
+      } else if (type === 'custom') {
+        const f = String(rule.formula1 ?? '').replace(/^=/, '')
+        if (f) condition = `is-true-formula(${toOdf('=' + f).replace(/^=/, '')})`
+      } else if (type in VALUE_KIND) {
+        const op = rule.operator ?? 'between'
+        const length = type === 'textLength'
+        const a = value(rule.formula1, type)
+        if (op === 'between' || op === 'notBetween') {
+          condition = `${VALUE_KIND[type]}cell-content${length ? '-text-length' : ''}-is-${op === 'notBetween' ? 'not-' : ''}between(${a},${value(rule.formula2, type)})`
+        } else if (CMP[op]) condition = `${VALUE_KIND[type]}cell-content${length ? '-text-length' : ''}()${CMP[op]}${a}`
+      }
+      if (!condition || !rule.ranges?.length) continue
+      const name = `val${++n}`
+      const first = rule.ranges[0]
+      const styleByNum = ['information', 'stop', 'warning'][rule.errorStyle ?? 1] ?? 'stop'
+      xml +=
+        `<table:content-validation table:name="${name}" table:condition="${escapeXml('of:' + condition)}" table:allow-empty-cell="${rule.allowBlank !== false}" table:base-cell-address="${escapeXml(`${odsSheetName(sheet)}.${cellA1(first.startRow, first.startColumn)}`)}"${type === 'list' ? ` table:display-list="${rule.showDropDown === false ? 'none' : 'unsorted'}"` : ''}>` +
+        `<table:help-message table:title="${escapeXml(rule.promptTitle ?? '')}" table:display="${!!rule.showInputMessage}">${rule.prompt ? `<text:p>${escapeXml(rule.prompt)}</text:p>` : ''}</table:help-message>` +
+        `<table:error-message table:message-type="${styleByNum}" table:title="${escapeXml(rule.errorTitle ?? '')}" table:display="${!!rule.showErrorMessage}">${rule.error ? `<text:p>${escapeXml(rule.error)}</text:p>` : ''}</table:error-message>` +
+        `</table:content-validation>`
+      for (const r of rule.ranges) {
+        for (let row = r.startRow; row <= r.endRow && budget > 0; row++) {
+          for (let col = r.startColumn; col <= r.endColumn && budget > 0; col++, budget--) map.set(`${row},${col}`, name)
+        }
+      }
+    }
+    if (map.size) cells.set(sheetId, map)
+  }
+  return { xml: xml ? `<table:content-validations>${xml}</table:content-validations>` : '', cells }
+}
+
+// Reads <table:content-validations>; `cells` lists the cells using each one.
+export function readOdsValidations(spreadsheet: Element, cells: Map<string, { row: number; col: number }[]>, toExcel: ToExcel): ValidationRule[] {
+  const out: ValidationRule[] = []
+  const formula = (v: string) => {
+    const s = v.trim()
+    const text = unquote(s)
+    if (text !== undefined) return text
+    if (s !== '' && Number.isFinite(Number(s))) return s
+    return toExcel('of:=' + s)
+  }
+  for (const group of children(spreadsheet, 'content-validations')) {
+    for (const v of children(group, 'content-validation')) {
+      const name = attr(v, 'name')
+      const used = name ? cells.get(name) : undefined
+      if (!name || !used?.length) continue
+      const condition = (attr(v, 'condition') ?? '').replace(/^[a-z]+:/, '').trim()
+      const rule: ValidationRule = { type: '', ranges: cellsToRanges(used), allowBlank: attr(v, 'allow-empty-cell') !== 'false' }
+      const list = /^cell-content-is-in-list\((.*)\)$/s.exec(condition)
+      const custom = /^is-true-formula\((.*)\)$/s.exec(condition)
+      if (list) {
+        const args = splitArgs(list[1].replace(/;/g, ','))
+        const values = args.map(unquote)
+        rule.type = 'list'
+        rule.formula1 = values.every((x) => x !== undefined) ? values.join(',') : toExcel('of:=' + list[1])
+        rule.showDropDown = attr(v, 'display-list') !== 'none'
+      } else if (custom) {
+        rule.type = 'custom'
+        rule.formula1 = toExcel('of:=' + custom[1])
+      } else {
+        rule.type = /whole-number/.test(condition) ? 'whole' : /decimal-number/.test(condition) ? 'decimal' : /is-date\(\)/.test(condition) ? 'date' : /is-time\(\)/.test(condition) ? 'time' : /text-length/.test(condition) ? 'textLength' : ''
+        const between = /cell-content(?:-text-length)?-is-(not-)?between\((.*)\)\s*$/s.exec(condition)
+        const cmp = /cell-content(?:-text-length)?\(\)\s*(<=|>=|!=|<|>|=)\s*(.+)$/s.exec(condition)
+        if (between) {
+          const [a, b] = splitArgs(between[2].replace(/;/g, ','))
+          rule.operator = between[1] ? 'notBetween' : 'between'
+          rule.formula1 = formula(a ?? '')
+          rule.formula2 = formula(b ?? '')
+        } else if (cmp) {
+          rule.operator = Object.entries(CMP).find(([, sym]) => sym === cmp[1])?.[0]
+          rule.formula1 = formula(cmp[2])
+        } else continue
+        if (!rule.type) rule.type = 'decimal'
+      }
+      const help = child(v, 'help-message')
+      const error = child(v, 'error-message')
+      const text = (el: Element | null) => (el ? children(el, 'p').map((p) => p.textContent ?? '').join('\n') : '')
+      rule.showInputMessage = attr(help, 'display') === 'true'
+      if (attr(help, 'title')) rule.promptTitle = attr(help, 'title')!
+      if (text(help)) rule.prompt = text(help)
+      rule.showErrorMessage = attr(error, 'display') !== 'false'
+      rule.errorStyle = { information: 0, stop: 1, warning: 2 }[attr(error, 'message-type') ?? 'stop'] ?? 1
+      if (attr(error, 'title')) rule.errorTitle = attr(error, 'title')!
+      if (text(error)) rule.error = text(error)
+      rule.uid = `dv-ods-${out.length + 1}`
+      out.push(rule)
+    }
+  }
+  return out
 }
 
 // <table:database-ranges> holding the sheets' auto filters.

@@ -6,6 +6,7 @@
 import * as Y from 'yjs'
 import { IndexeddbPersistence } from 'y-indexeddb'
 import { Awareness } from 'y-protocols/awareness'
+import { appInfo } from '../apps/registry'
 import { t } from './i18n'
 import { mergeKeys, type LinkKeys } from './keys'
 import { isRemoteOrigin, RoomProvider } from './network'
@@ -59,12 +60,12 @@ async function writePrivateState(type: store.DocType, id: string, state: Uint8Ar
   doc.destroy()
 }
 
-export const copyTitle = (title: string) => t('Copy of {title}', { title: title || t('Untitled') })
+export const copyTitle = (title: string, type?: store.DocType) => t('Copy of {title}', { title: title || (type ? appInfo(type).untitled : t('Untitled')) })
 
 // "Make a copy": copies the open document and opens the copy.
 export async function copyDocument(session: Session, navigate = true): Promise<string> {
   const title = String(session.doc.getMap('meta').get('title') ?? '')
-  const path = await createCopyFromState(session.type, copyTitle(title), snapshotState(session.doc), session.canEdit ? session.hooks.privateState?.snapshot() : null)
+  const path = await createCopyFromState(session.type, copyTitle(title, session.type), snapshotState(session.doc), session.canEdit ? session.hooks.privateState?.snapshot() : null)
   if (navigate) location.href = path
   return path
 }
@@ -127,7 +128,7 @@ export async function copyFromLink(route: CopyLinkRoute, onStatus: (message: str
     }
   }
   const title = String(doc.getMap('meta').get('title') ?? '')
-  const path = await createCopyFromState(route.type, copyTitle(title), snapshotState(doc))
+  const path = await createCopyFromState(route.type, copyTitle(title, route.type), snapshotState(doc))
   doc.destroy()
   return path
 }

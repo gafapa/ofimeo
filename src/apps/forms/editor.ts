@@ -368,9 +368,10 @@ export function createEditor(state: FormState): FormEditor {
     return i < 0 ? items.length : i + 1
   }
 
+  // Ids come from the plain item: reading a Y.Map before it is in the document warns.
   const addQuestion = (type: QuestionType) => {
-    const map = itemMap(newQuestion(type))
-    const id = String(map.get('id'))
+    const id = newId()
+    const map = itemMap({ id, ...newQuestion(type) })
     change(() => items.insert(insertAt(), [map]))
     selected = id
     render()
@@ -380,8 +381,8 @@ export function createEditor(state: FormState): FormEditor {
   }
 
   const addSection = () => {
-    const map = itemMap({ kind: 'section', title: '' })
-    const id = String(map.get('id'))
+    const id = newId()
+    const map = itemMap({ id, kind: 'section', title: '' })
     change(() => items.insert(insertAt(), [map]))
     selected = id
     render()

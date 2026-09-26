@@ -8,7 +8,7 @@ import { CHART_COMPONENT, DRAWING_TYPE_DOM, DRAWING_TYPE_IMAGE } from '../charts
 import { DrawingCollector } from './drawings'
 import { readXlsxCharts } from './xlsx-charts'
 import { cfFromExcel, type ExcelRule } from './xlsx-features'
-import { emptyFeatures, featureResources, filteredRows, GLOBAL_SCOPE, parseRangeA1, type CfRule, type FilterColumn, type SheetNote } from './features'
+import { cellDocument, emptyFeatures, featureResources, filteredRows, GLOBAL_SCOPE, parseRangeA1, type CfRule, type FilterColumn, type SheetNote } from './features'
 
 // The browser build of ExcelJS is a UMD bundle; Vite exposes it as a default export.
 export const ExcelJS = ((ExcelJSModule as unknown as { default?: typeof ExcelJSModule }).default ?? ExcelJSModule) as typeof ExcelJSModule
@@ -235,31 +235,7 @@ class Converter {
   }
 }
 
-// Minimal cell document holding plain text with optional hyperlink / rich text runs.
-export function cellDocument(text: string, runs?: { st: number; ed: number; ts: IStyleData }[], url?: string, linkId = 'link'): NonNullable<ICellData['p']> {
-  return {
-    id: 'd',
-    documentStyle: {},
-    body: {
-      dataStream: text.replace(/\r?\n/g, '\r') + '\r\n',
-      textRuns: runs,
-      paragraphs: [{ startIndex: text.length }],
-      ...(url
-        ? {
-            customRanges: [
-              {
-                startIndex: 0,
-                endIndex: Math.max(0, text.length - 1),
-                rangeId: linkId,
-                rangeType: HYPERLINK_RANGE,
-                properties: { url },
-              },
-            ],
-          }
-        : {}),
-    },
-  } as NonNullable<ICellData['p']>
-}
+export { cellDocument }
 
 type RichRun = { text: string; font?: Partial<Font> }
 

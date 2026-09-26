@@ -1,4 +1,5 @@
-// Univer setup: open-source presets only (Apache-2.0).
+// Univer setup: open-source presets only (Apache-2.0), pinned to an exact
+// version in package.json (command ids used by our menus live in commands.ts).
 
 import { createUniver, LocaleType, mergeLocales, type IWorkbookData } from '@univerjs/presets'
 import { language } from '../../core/i18n'
@@ -106,7 +107,13 @@ export async function createSpreadsheet(container: HTMLElement) {
     locale: ui ? ui.type : LocaleType.EN_US,
     locales: ui ? { [ui.type]: ui.data, [LocaleType.EN_US]: english } : { [LocaleType.EN_US]: english },
     presets: [
-      UniverSheetsCorePreset({ container }),
+      UniverSheetsCorePreset({
+        container,
+        // One tool row without Univer's ribbon tabs: our menu bar has File…Help.
+        ribbonType: 'simple',
+        // Only the sheet tabs: selection statistics and zoom are in our status bar.
+        footer: { sheetBar: true, statisticBar: false, menus: false, zoomSlider: false },
+      }),
       UniverSheetsFilterPreset(),
       UniverSheetsSortPreset(),
       UniverSheetsConditionalFormattingPreset(),

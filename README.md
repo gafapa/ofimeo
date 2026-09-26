@@ -336,6 +336,20 @@ import path: HTML for documents, a workbook snapshot for spreadsheets,
 presentations. The gallery and each app's templates are separate chunks, loaded
 only when the home screen shows them or a template is used.
 
+### My templates
+
+**File ▸ Save as template…** (every app) saves the open document as an own
+template: a snapshot of its content (no comments, version history, authors or
+sharing keys) with a name, a description and a preview (the app's PNG/SVG export
+for drawings and diagrams, otherwise the first lines of text). Own templates are
+kept in this browser (IndexedDB) and appear in the gallery under **My templates**:
+click to create a document, or use ⋮ to rename, delete, **export as a file**
+(`.ofimeo-template`, JSON with the Yjs state) or share it to the Nextcloud folder
+`/Plantillas`. **Import template…** reads template files and **From Nextcloud…**
+lists the `.ofimeo-template` files in `/Plantillas`, so a department can
+distribute its templates as files or through a shared Nextcloud folder.
+Code: `src/core/library-templates.ts`, `src/home/my-templates.ts`, `src/home/save-template.ts`.
+
 ## Accessibility
 
 The **Accessibility** button (app bar and home screen, or `Alt+Shift+A`) opens a
@@ -402,6 +416,61 @@ spaces before `: ; ! ?` and « », German „…“ quotes and formal *Sie*).
 - Existing document content is never translated. The first page, slide and
   sheet of a new document keep fixed names ("Page-1", "Slide 1", "Sheet1") so
   that collaborators who create it at the same time agree on them.
+
+## Your documents: storage, backup and organization
+
+Documents live only in the browser (one IndexedDB database per document), so
+the suite takes care of keeping them safe:
+
+- **Persistent storage.** When the first document is created, Ofimeo asks the
+  browser for persistent storage (`navigator.storage.persist()`), so it does not
+  evict the documents when space runs low, and explains it in a small notice.
+- **Storage and backup** (home screen: drive icon; every app: File ▸ Storage and
+  backup…) shows the storage used and available, whether it is protected, how many
+  documents exist only in this browser, and warns that clearing the browser data
+  deletes them.
+- **Back up all documents** downloads one `.ofimeo-backup` file: a zip with the
+  document index (titles, keys and access, folders and tags), each document's Yjs
+  state (its version history is part of it), its comments document, the signed
+  update logs of protected documents and the own templates. With a password, the
+  zip is encrypted with AES-GCM (256-bit key from PBKDF2-SHA-256, 310 000
+  iterations). The file contains the keys to edit the documents, hence the password.
+- **Restore backup** merges: documents that are already here receive the backup's
+  Yjs updates (nothing is lost on either side, stronger keys are adopted), missing
+  ones are added; a report lists what was added, merged with changes and already
+  up to date.
+- **Reminder.** When documents exist only in this browser (not linked to
+  Nextcloud) and there has been no backup for N days (7 by default, configurable,
+  or never), the home screen shows a dismissable warning.
+- **Automatic backup to Nextcloud** (off by default): with a linked account, a
+  backup is uploaded every N days to a folder (`/Ofimeo/Backups`), optionally
+  encrypted; it runs when the home screen opens and it is due.
+
+The home screen organizes the documents of this browser. All of this is local
+(never shared with collaborators):
+
+- **Folders** (nested) and **tags** (with colors) in the side panel; move
+  documents by drag and drop onto a folder or tag, with ⋮ ▸ Move to folder… /
+  Tags, or several at once (checkboxes, Ctrl/Shift-click, Space) with the
+  selection bar: move, tag, download, back up the selection, move to the trash.
+- **Filters** by app, folder and tag; **sort** by last modified, name or type;
+  **list** and **grid** views (remembered).
+- **Trash.** Deleting moves a document to the trash (restore, delete for good,
+  empty trash); documents are deleted for good after 30 days. The IndexedDB data
+  is only removed when a document leaves the trash.
+- **Content search.** The search box matches titles and content, ignoring case
+  and accents (`educacion` finds «Educación»), and shows a snippet with the
+  matches highlighted. The plain text of each document (document text, cell
+  values, drawing texts, diagram and slide labels and speaker notes) is extracted
+  from its Yjs state in a Web Worker and kept in a local index, refreshed
+  incrementally for documents that changed since they were indexed.
+- **Download** builds files from the stored state without opening the documents
+  (Word, PowerPoint, draw.io, Excalidraw; several go into a zip). Spreadsheets are
+  downloaded from the app.
+
+Code: `src/core/backup.ts`, `src/core/library.ts` (folders, tags, local database),
+`src/core/library-search.ts` + `library-extract.ts` + `library-search.worker.ts`,
+`src/home/docs.ts`, `src/home/storage.ts`, `src/home/download.ts`.
 
 ## Offline and installable
 
@@ -666,7 +735,9 @@ src/
     keys.ts          Permission keys in links, Ed25519 signing
     network.ts       Yjs sync/awareness provider over Trystero (WebRTC + Nostr), signed sync
     connectivity.ts  School relay settings (?relay=, /ofimeo/config, TURN credentials) and network checks
-    store.ts         Local document index (id, key, type, title, access) and user identity
+    store.ts         Local document index (id, key, type, title, access, folder, tags, trash) and user identity
+    backup.ts        Persistent storage, .ofimeo-backup files (optional AES-GCM), restore by merging, auto backup
+    library*.ts      Folders and tags, content search index (worker), own templates
     copy.ts          Copies of documents, template links
     versions.ts      Version history, generic restore
     handin.ts        Hand in (ZIP), printing
@@ -690,7 +761,7 @@ src/
     widgets.ts       Menus, context menus, popovers, color palette, dialogs, toasts
     equation.ts      Equation editor (MathLive, lazy) and KaTeX rendering / MathML
     base.css
-  home/              Home screen: new document buttons, open file, recent documents
+  home/              Home screen: new document buttons, open file, documents (folders, tags, trash, search), storage and backup
   templates/         Template gallery (catalog, thumbnails) and template content per app
   apps/
     registry.ts      App list: name, icon, loader, supported files
@@ -791,8 +862,10 @@ npm test          # grammar rule tests + end-to-end tests (build first)
   build (`vite preview`) and a local Nostr relay (`tests/relay.mjs`), never
   public relays: every app opens without errors, the UI language follows the
   browser, two browsers edit the same document, `.drawio`/HTML files open from
-  the home screen, the installed app works offline, and the connection test
-  and a school relay from the link work.
+  the home screen, the installed app works offline, the connection test
+  and a school relay from the link work, a password-protected backup restores
+  content, versions and comments after clearing the browser data, and deleted
+  documents stay in the trash until it is emptied.
 - `cd relay && go test ./...`: Ofimeo Relay (Nostr messages and signatures,
   TURN allocations with time-limited credentials, certificates, the TLS port
   shared by HTTPS and TURN, `/ofimeo/config`, serving the app).

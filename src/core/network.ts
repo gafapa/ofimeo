@@ -130,6 +130,12 @@ export class RoomProvider {
     return channel
   }
 
+  // Raw message action for app protocols that are not a Yjs document (e.g. form
+  // responses, forms/transport.ts). `name` is the Trystero action name (at most 12 bytes).
+  makeAction(name: string): MessageAction<Uint8Array> {
+    return this.room.makeAction<Uint8Array>(name)
+  }
+
   // Resolves when signed logs are loaded (call before relying on relaying).
   whenReady(): Promise<void> {
     return Promise.all(this.channels.map((c) => c.ready)).then(() => undefined)

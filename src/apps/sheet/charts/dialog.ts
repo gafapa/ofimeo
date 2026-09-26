@@ -95,7 +95,8 @@ export async function chartDialog(univerAPI: FUniver, current?: ChartSpec): Prom
   legend.value = current?.legend ?? 'bottom'
   const palette = el('select', { class: 'field' }, ...(Object.keys(PALETTES) as PaletteName[]).map((p) => el('option', { value: p, textContent: PALETTE_LABELS[p]() })))
   palette.value = current?.palette ?? 'ofimeo'
-  const swatches = el('div', { class: 'chart-swatches', 'aria-hidden': 'true' })
+  const swatches = el('div', { class: 'chart-swatches' })
+  swatches.setAttribute('aria-hidden', 'true')
   const trendline = el('input', { type: 'checkbox', checked: !!current?.trendline })
   const trendRow = el('label', { class: 'check-label' }, trendline, t('Linear trendline with equation and R²'))
   const error = el('div', { class: 'chart-error', role: 'alert' })
@@ -140,7 +141,11 @@ export async function chartDialog(univerAPI: FUniver, current?: ChartSpec): Prom
     trendRow.hidden = type !== 'scatter'
     const axes = type !== 'pie' && type !== 'doughnut'
     xTitle.disabled = yTitle.disabled = !axes
-    swatches.replaceChildren(...PALETTES[palette.value as PaletteName].slice(0, 6).map((c) => el('span', { style: `background:${c}` })))
+    swatches.replaceChildren(...PALETTES[palette.value as PaletteName].slice(0, 6).map((c) => {
+      const s = el('span')
+      s.style.background = c
+      return s
+    }))
     const { spec, message } = resolve()
     error.textContent = message
     if (!spec || !chart) return

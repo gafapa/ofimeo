@@ -1,5 +1,6 @@
 // Printing: renders the used range of a sheet as an HTML table (styles,
-// merges, column widths and formatted values) for the browser's print dialog.
+// merges, column widths, row heights and formatted values) for the browser's
+// print dialog, with the sheet's charts (SVG) laid over it at their position.
 
 import type { ICellData, IRange, IStyleData, IWorkbookData } from '@univerjs/presets'
 import { t } from '../../core/i18n'
@@ -7,8 +8,18 @@ import { t } from '../../core/i18n'
 const H_ALIGN: Record<number, string> = { 1: 'left', 2: 'center', 3: 'right', 4: 'justify', 5: 'justify', 6: 'justify' }
 const V_ALIGN: Record<number, string> = { 1: 'top', 2: 'middle', 3: 'bottom' }
 const DEFAULT_COL_WIDTH = 88
+const DEFAULT_ROW_HEIGHT = 24
 
-export function renderPrintHtml(data: IWorkbookData, sheetId: string, display: (row: number, col: number) => string): string {
+// A chart (or other drawing) in sheet pixels, relative to cell A1.
+export interface PrintOverlay {
+  left: number
+  top: number
+  width: number
+  height: number
+  svg: string
+}
+
+export function renderPrintHtml(data: IWorkbookData, sheetId: string, display: (row: number, col: number) => string, overlays: PrintOverlay[] = []): string {
   const sheet = data.sheets[sheetId]
   if (!sheet) return ''
   const cells = sheet.cellData ?? {}
@@ -29,7 +40,7 @@ export function renderPrintHtml(data: IWorkbookData, sheetId: string, display: (
     lastRow = Math.max(lastRow, m.endRow)
     lastCol = Math.max(lastCol, m.endColumn)
   }
-  if (lastRow < 0) return `<p>${t('(empty sheet)')}</p>`
+  if (lastRow < 0 && !overlays.length) return `<p>${t('(empty sheet)')}</p>`
 
   const covered = new Set<string>()
   const spans = new Map<string, IRange>()
@@ -43,13 +54,20 @@ export function renderPrintHtml(data: IWorkbookData, sheetId: string, display: (
     return typeof cell.s === 'string' ? (data.styles?.[cell.s] ?? undefined) : cell.s
   }
 
-  let html = `<h1>${escape(sheet.name ?? '')}</h1><table><colgroup>`
-  for (let c = 0; c <= lastCol; c++) html += `<col style="width:${sheet.columnData?.[c]?.w ?? sheet.defaultColumnWidth ?? DEFAULT_COL_WIDTH}px">`
-  html += '</colgroup>'
+  // Rows and columns keep their sheet size so charts land on the same cells.
+  const width = (c: number) => sheet.columnData?.[c]?.w ?? sheet.defaultColumnWidth ?? DEFAULT_COL_WIDTH
+  let html = `<h1>${escape(sheet.name ?? '')}</h1><div class="sheet-print-page">`
+  if (lastRow >= 0) {
+    let total = 0
+    for (let c = 0; c <= lastCol; c++) total += width(c)
+    html += `<table style="width:${total}px"><colgroup>`
+    for (let c = 0; c <= lastCol; c++) html += `<col style="width:${width(c)}px">`
+    html += '</colgroup>'
+  }
   for (let r = 0; r <= lastRow; r++) {
     if (sheet.rowData?.[r]?.hd) continue
-    const height = sheet.rowData?.[r]?.h
-    html += height ? `<tr style="height:${height}px">` : '<tr>'
+    const height = sheet.rowData?.[r]?.h ?? sheet.defaultRowHeight ?? DEFAULT_ROW_HEIGHT
+    html += `<tr style="height:${height}px">`
     for (let c = 0; c <= lastCol; c++) {
       if (covered.has(`${r}:${c}`)) continue
       const cell = cells[r]?.[c]
@@ -60,7 +78,9 @@ export function renderPrintHtml(data: IWorkbookData, sheetId: string, display: (
     }
     html += '</tr>'
   }
-  return `${html}</table>`
+  if (lastRow >= 0) html += '</table>'
+  for (const o of overlays) html += `<div class="sheet-print-chart" style="left:${o.left}px;top:${o.top}px;width:${o.width}px;height:${o.height}px">${o.svg}</div>`
+  return `${html}</div>`
 }
 
 function cellCss(s: IStyleData | undefined, numeric: boolean): string {

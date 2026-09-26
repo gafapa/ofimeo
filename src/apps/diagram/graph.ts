@@ -328,8 +328,16 @@ function richTextEditing(graph: Graph): void {
     init()
     editor.textarea?.setAttribute('spellcheck', 'true')
     editor.textarea?.setAttribute('lang', document.documentElement.lang)
-    // Our spelling and grammar checker (language: the nearest lang attribute).
-    if (editor.textarea) attachSpellcheck(editor.textarea)
+  }
+  // Our spelling and grammar checker (language: the nearest lang attribute). The
+  // editor reuses one element that leaves the page after each edit, which
+  // detaches the checker, so it is attached again every time editing starts.
+  const startEditing = editor.startEditing.bind(editor)
+  let detachSpellcheck: (() => void) | null = null
+  editor.startEditing = (cell, trigger) => {
+    startEditing(cell, trigger)
+    detachSpellcheck?.()
+    detachSpellcheck = editor.textarea?.isConnected ? attachSpellcheck(editor.textarea) : null
   }
   const isRich = (cell: Cell) => String((cell.getStyle() as Record<string, unknown> | null)?.html ?? '') === '1'
   const getInitialValue = editor.getInitialValue.bind(editor)

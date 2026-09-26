@@ -172,3 +172,4 @@ body:has(.home) { overflow: auto; }
   .docs-tools .home-search { flex: 1; width: auto; min-width: 0; }
   .doc-table.list .doc-row .row-check { opacity: 1; }
 }
+.doc-head span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -399,7 +399,7 @@ async function smartArt(ctx: Ctx, node: Element, x: Xfrm): Promise<void> {
   // No drawing: the text of the diagram's points, as a list in a dashed box.
   const texts = findAll(data?.doc, 'pt')
     .filter((pt) => !['parTrans', 'sibTrans', 'pres', 'doc'].includes(attr(pt, 'type') ?? 'node'))
-    .map((pt) => findAll(pt, 't').map((t) => t.textContent ?? '').join(''))
+    .map((pt) => findAll(pt, 't').filter((e) => e.namespaceURI?.endsWith('/drawingml/2006/main')).map((e) => e.textContent ?? '').join(''))
     .filter((text) => text.trim())
   const html = texts.length ? `<ul>${texts.map((t) => `<li>${escapeHtml(t)}</li>`).join('')}</ul>` : escapeHtml(t('SmartArt'))
   push(ctx, {

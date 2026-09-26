@@ -124,9 +124,9 @@
 }
 
 /* Page view: the printable pages on a gray desk, with page breaks and the grid on them */
-.diagram-canvas.page-view { background-color: #e8eaed; background-image: none; }
+.diagram-canvas.page-view { background-color: var(--canvas); background-image: none; }
 .diagram-page {
-  position: absolute; pointer-events: none; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.12), 0 2px 8px rgb(0 0 0 / 0.12);
+  position: absolute; pointer-events: none; box-shadow: var(--shadow-s);
   --page-w: 850px; --page-h: 1100px;
   background-image:
     linear-gradient(to right, rgb(0 0 0 / 0.25) 1px, transparent 1px),

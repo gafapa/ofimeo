@@ -2136,8 +2136,6 @@ const es: Record<string, string> = {
   'Type the speaker notes under the slide.': 'Escribe las notas del orador debajo de la diapositiva.',
   'Present shows the slides full screen; everyone else in the presentation can follow you.': 'Presentar muestra las diapositivas a pantalla completa; el resto de personas en la presentación pueden seguirte.',
   'File ▸ Download as saves PowerPoint, OpenDocument or PDF files.': 'Archivo ▸ Descargar como guarda archivos de PowerPoint, OpenDocument o PDF.',
-  'Add questions and choose their type; Add section makes a new page.': 'Añade preguntas y elige su tipo; Añadir sección crea una página nueva.',
-  'Make this a quiz to set correct answers, points and feedback.': 'Convertir en cuestionario evaluable permite fijar las respuestas correctas, los puntos y los comentarios.',
   'Send gives the link and a QR code for your students.': 'Enviar da el enlace y un código QR para tu alumnado.',
   'Responses arrive while you (or another editor) are online; see them in Responses.': 'Las respuestas llegan mientras tú (u otro editor) estáis conectados; míralas en Respuestas.',
   'Choose a tool: highlight, pen, text box, stamps, sticky notes or your signature.': 'Elige una herramienta: resaltar, bolígrafo, cuadro de texto, sellos, notas adhesivas o tu firma.',

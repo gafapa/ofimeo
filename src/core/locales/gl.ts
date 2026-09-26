@@ -2136,8 +2136,6 @@ const gl: Record<string, string> = {
   'Type the speaker notes under the slide.': 'Escribe as notas do relator debaixo da diapositiva.',
   'Present shows the slides full screen; everyone else in the presentation can follow you.': 'Presentar amosa as diapositivas a pantalla completa; o resto de persoas na presentación poden seguirte.',
   'File ▸ Download as saves PowerPoint, OpenDocument or PDF files.': 'Arquivo ▸ Descargar como garda ficheiros de PowerPoint, OpenDocument ou PDF.',
-  'Add questions and choose their type; Add section makes a new page.': 'Engade preguntas e escolle o seu tipo; Engadir sección crea unha páxina nova.',
-  'Make this a quiz to set correct answers, points and feedback.': 'Converter en cuestionario avaliable permite fixar as respostas correctas, os puntos e os comentarios.',
   'Send gives the link and a QR code for your students.': 'Enviar dá a ligazón e un código QR para o teu alumnado.',
   'Responses arrive while you (or another editor) are online; see them in Responses.': 'As respostas chegan mentres ti (ou outro editor) estades conectados; míraas en Respostas.',
   'Choose a tool: highlight, pen, text box, stamps, sticky notes or your signature.': 'Escolle unha ferramenta: resaltar, bolígrafo, caixa de texto, selos, notas adhesivas ou a túa sinatura.',

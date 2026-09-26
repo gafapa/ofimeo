@@ -181,8 +181,8 @@ export function quickStartTips(session: Session): string[] {
       t('File ▸ Download as saves PowerPoint, OpenDocument or PDF files.'),
     ],
     forms: [
-      t('Add questions and choose their type; Add section makes a new page.'),
-      t('Make this a quiz to set correct answers, points and feedback.'),
+      t('Question adds a question of the type you choose; Section makes a new page.'),
+      t('Turn on Quiz to set correct answers, points and feedback.'),
       t('Send gives the link and a QR code for your students.'),
       t('Responses arrive while you (or another editor) are online; see them in Responses.'),
     ],

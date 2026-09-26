@@ -2136,8 +2136,6 @@ const de: Record<string, string> = {
   'Type the speaker notes under the slide.': 'Schreiben Sie die Notizen für den Referenten unter die Folie.',
   'Present shows the slides full screen; everyone else in the presentation can follow you.': 'Präsentieren zeigt die Folien im Vollbild; alle anderen in der Präsentation können Ihnen folgen.',
   'File ▸ Download as saves PowerPoint, OpenDocument or PDF files.': 'Datei ▸ Herunterladen als speichert PowerPoint-, OpenDocument- oder PDF-Dateien.',
-  'Add questions and choose their type; Add section makes a new page.': 'Fügen Sie Fragen hinzu und wählen Sie ihren Typ; Abschnitt hinzufügen erstellt eine neue Seite.',
-  'Make this a quiz to set correct answers, points and feedback.': 'Mit Als Quiz verwenden legen Sie richtige Antworten, Punkte und Rückmeldungen fest.',
   'Send gives the link and a QR code for your students.': 'Senden liefert den Link und einen QR-Code für Ihre Klasse.',
   'Responses arrive while you (or another editor) are online; see them in Responses.': 'Antworten kommen an, während Sie (oder eine andere bearbeitende Person) online sind; Sie sehen sie unter Antworten.',
   'Choose a tool: highlight, pen, text box, stamps, sticky notes or your signature.': 'Wählen Sie ein Werkzeug: Hervorheben, Stift, Textfeld, Stempel, Notizen oder Ihre Unterschrift.',

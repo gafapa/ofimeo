@@ -89,7 +89,11 @@ export class Review {
       const sg = target.closest<HTMLElement>('[data-suggestion]')
       if (hl) this.activate(`c:${hl.dataset.commentIds!.split(' ').pop()}`, false)
       else if (sg) this.activate(this.suggestionKeys.get(sg.dataset.suggestion!) ?? `s:${sg.dataset.suggestion}`, false)
-      else if (this.active) this.activate(null, false)
+      // Deferred: the editor applies the clicked caret position first.
+      else if (this.active) {
+        const was = this.active
+        setTimeout(() => this.active === was && this.activate(null, false))
+      }
     })
     window.addEventListener('resize', () => this.reposition())
     this.refresh()
@@ -167,6 +171,10 @@ export class Review {
       for (const s of this.suggestions) if (this.suggestionKeys.get(s.id) === this.active) decorations.push(Decoration.inline(s.from, s.to, { class: 'sg-active' }))
     }
     const set = DecorationSet.create(editor.state.doc, decorations)
+    // Read a pending DOM selection (a click the editor has not processed yet)
+    // first; otherwise this transaction would write the old selection back and
+    // the next keystroke would replace the previously selected text.
+    ;(editor.view as unknown as { domObserver?: { flush(): void } }).domObserver?.flush()
     editor.view.dispatch(editor.state.tr.setMeta(reviewKey, set).setMeta('addToHistory', false))
     this.render()
   }

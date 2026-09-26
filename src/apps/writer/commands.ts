@@ -479,13 +479,14 @@ function clipboardCommand(editor: Editor, command: 'cut' | 'copy') {
 }
 
 export function pickImage(editor: Editor): void {
+  if (!editor.isEditable) return
   const input = document.getElementById('image-input') as HTMLInputElement
   input.onchange = () => {
     const file = input.files?.[0]
     input.value = ''
     if (!file) return
     const reader = new FileReader()
-    reader.onload = () => editor.chain().focus().setImage({ src: String(reader.result) }).run()
+    reader.onload = () => editor.isEditable && editor.chain().focus().setImage({ src: String(reader.result) }).run()
     reader.readAsDataURL(file)
   }
   input.click()
@@ -495,10 +496,20 @@ export function pickImage(editor: Editor): void {
 
 export function buildToolbar(ctx: WriterContext, tb: Toolbar): void {
   const { editor } = ctx
+  // Editing controls check editability themselves (not only the toolbar's
+  // read-only styling), so they stay inert in the "⋯" overflow panel too.
+  const editable = () => editor.isEditable
+  const guard = (action: () => void) => () => {
+    if (editable()) action()
+  }
   const button = (node: IconNode, title: string, action: () => void, active?: () => boolean, enabled?: () => boolean, shortcut?: string) =>
-    tb.button(node, title, action, { active, enabled, shortcut })
+    tb.button(node, title, guard(action), { active, enabled: () => editable() && (enabled?.() ?? true), shortcut })
+  const guard1 = <T>(fn: (v: T) => void) => (v: T) => {
+    if (editable()) fn(v)
+  }
   const select = <T extends string>(title: string, options: [T, string][], value: () => T, onChange: (v: T) => void, cls = '') =>
     tb.select(title, options, value, (v) => {
+      if (!editable() && !cls.includes('tb-mode')) return
       onChange(v)
       editor.commands.focus()
     }, cls)
@@ -506,13 +517,13 @@ export function buildToolbar(ctx: WriterContext, tb: Toolbar): void {
   // Stays usable in read-only documents.
   tb.group(
     { keep: true },
-    button(Undo2, t('Undo'), () => editor.chain().focus().undo().run(), undefined, () => editor.isEditable && editor.can().undo(), mod('Z')),
-    button(Redo2, t('Redo'), () => editor.chain().focus().redo().run(), undefined, () => editor.isEditable && editor.can().redo(), mod('Y')),
-    button(Printer, t('Print'), ctx.print, undefined, undefined, mod('P')),
-    button(Search, t('Find and replace'), () => ctx.find.open(true), undefined, undefined, mod('F')),
+    button(Undo2, t('Undo'), () => editor.chain().focus().undo().run(), undefined, () => editor.can().undo(), mod('Z')),
+    button(Redo2, t('Redo'), () => editor.chain().focus().redo().run(), undefined, () => editor.can().redo(), mod('Y')),
+    tb.button(Printer, t('Print'), ctx.print, { shortcut: mod('P') }),
+    tb.button(Search, t('Find and replace'), () => ctx.find.open(editor.isEditable), { shortcut: mod('F') }),
   )
 
-  tb.group(select(t('Paragraph style'), STYLES, () => currentStyle(editor), (v) => editor.commands.setParagraphStyle(v), 'tb-style'))
+  tb.group(select(t('Paragraph style'), STYLES, () => currentStyle(editor), guard1((v) => editor.commands.setParagraphStyle(v)), 'tb-style'))
 
   const fontOptions = FONTS.map((f) => [f, f] as [string, string])
   const fontSelect = select(
@@ -536,6 +547,7 @@ export function buildToolbar(ctx: WriterContext, tb: Toolbar): void {
   FONT_SIZES.forEach((s) => sizeList.append(el('option', { value: String(s) })))
   sizeInput.setAttribute('list', 'font-sizes')
   sizeInput.addEventListener('change', () => {
+    if (!editable()) return
     const v = parseFloat(sizeInput.value)
     if (Number.isFinite(v)) setFontSize(editor, v)
   })
@@ -554,14 +566,14 @@ export function buildToolbar(ctx: WriterContext, tb: Toolbar): void {
       Baseline,
       t('Text color'),
       () => editor.getAttributes('textStyle').color ?? '#000000',
-      (c) => (c ? editor.chain().focus().setColor(c).run() : editor.chain().focus().unsetColor().run()),
+      guard1((c: string | null) => (c ? editor.chain().focus().setColor(c).run() : editor.chain().focus().unsetColor().run())),
       t('Automatic'),
     ),
     tb.colorButton(
       Highlighter,
       t('Highlight color'),
       () => editor.getAttributes('highlight').color,
-      (c) => (c ? editor.chain().focus().setHighlight({ color: c }).run() : editor.chain().focus().unsetHighlight().run()),
+      guard1((c: string | null) => (c ? editor.chain().focus().setHighlight({ color: c }).run() : editor.chain().focus().unsetHighlight().run())),
       t('None'),
     ),
   )
@@ -569,9 +581,11 @@ export function buildToolbar(ctx: WriterContext, tb: Toolbar): void {
   const tableButton = el('button', { type: 'button', class: 'tb-btn', title: t('Insert table') }, icon(Table))
   tableButton.setAttribute('aria-label', t('Insert table'))
   tableButton.addEventListener('mousedown', (e) => e.preventDefault())
-  tableButton.addEventListener('click', () =>
-    openPopover(tableButton, tableGrid((rows, cols) => editor.chain().focus().insertTable({ rows, cols, withHeaderRow: false }).run())),
-  )
+  tableButton.addEventListener('click', () => {
+    if (!editable()) return
+    openPopover(tableButton, tableGrid((rows, cols) => editable() && editor.chain().focus().insertTable({ rows, cols, withHeaderRow: false }).run()))
+  })
+  tb.onRefresh(() => (tableButton.disabled = !editable()))
   tb.group(
     button(Link, t('Insert link'), () => dialogs().then((d) => d.editLink(ctx)), () => editor.isActive('link'), undefined, mod('K')),
     button(ImageIcon, t('Insert image'), () => pickImage(editor)),
@@ -585,14 +599,14 @@ export function buildToolbar(ctx: WriterContext, tb: Toolbar): void {
     button(TextAlignJustify, t('Justify'), () => editor.chain().focus().setTextAlign('justify').run(), () => editor.isActive({ textAlign: 'justify' })),
   )
 
-  const spacingButton = tb.button(ListChevronsUpDown, t('Line spacing'), () => {
+  const spacingButton = button(ListChevronsUpDown, t('Line spacing'), () => {
     const list = el('div', { class: 'menu-list' })
     for (const h of LINE_HEIGHTS) {
       const item = el('button', { type: 'button', class: 'menu-row', textContent: h === '1' ? t('Single') : h === '2' ? t('Double') : h })
       item.addEventListener('mousedown', (e) => e.preventDefault())
       item.addEventListener('click', () => {
         closePopover()
-        editor.chain().focus().setLineHeight(h === '1.15' ? null : h).run()
+        if (editable()) editor.chain().focus().setLineHeight(h === '1.15' ? null : h).run()
       })
       list.append(item)
     }
@@ -614,8 +628,10 @@ export function buildToolbar(ctx: WriterContext, tb: Toolbar): void {
   )
 
   // Review tools stay available to commenters, pinned at the right end.
-  const commentButton = button(MessageSquarePlus, t('Comment'), () => ctx.review.startComment(), undefined, undefined, isMac ? '⌥⌘M' : mod('Alt+M'))
-  commentButton.disabled = ctx.access === 'view'
+  const commentButton = tb.button(MessageSquarePlus, t('Comment'), () => ctx.access !== 'view' && ctx.review.startComment(), {
+    shortcut: isMac ? '⌥⌘M' : mod('Alt+M'),
+    enabled: () => ctx.access !== 'view',
+  })
   const reviewItems: HTMLElement[] = [commentButton]
   if (ctx.access === 'edit') {
     reviewItems.push(

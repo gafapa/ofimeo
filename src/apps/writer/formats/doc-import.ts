@@ -1,17 +1,37 @@
 // Word 97-2003 (.doc) import: text from the piece table with paragraphs,
 // headings and title styles, bold / italic / underline / strike / size /
-// color / super- and subscript, alignment, bulleted and numbered lists,
-// tables, footnotes, hyperlinks, page breaks and inline pictures (JPEG/PNG).
-// Not imported: headers/footers, floating shapes, comments, tracked changes.
+// color / highlight / super- and subscript, alignment, bulleted and numbered
+// lists, tables (with merged cells), footnotes, hyperlinks, page breaks,
+// inline pictures (JPEG/PNG), the default header and footer (with page
+// numbers) and comments (with their ranges and authors).
+// Not imported (listed in `notImported` so the app can tell the user):
+// endnotes, text boxes and floating shapes, other picture formats.
 
 import type { JSONContent } from '@tiptap/core'
 import { readCompoundFile } from '../../../core/cfb'
 import { bytesToDataUrl } from '../../../core/formats'
 import { t } from '../../../core/i18n'
-import { DEFAULT_PAGE, type ImportedDocument, type PageSettings } from './types'
+import { DEFAULT_PAGE, type CommentData, type ImportedDocument, type PageSettings } from './types'
 
 // FibRgFcLcb97 indexes (MS-DOC 2.5.6).
-const FC = { stshf: 1, plcffndRef: 2, plcffndTxt: 3, plcfSed: 6, plcfBteChpx: 12, plcfBtePapx: 13, clx: 33, plfLst: 73, plfLfo: 74 }
+const FC = {
+  stshf: 1,
+  plcffndRef: 2,
+  plcffndTxt: 3,
+  plcfandRef: 4,
+  plcfandTxt: 5,
+  plcfSed: 6,
+  plcfHdd: 11,
+  plcfBteChpx: 12,
+  plcfBtePapx: 13,
+  clx: 33,
+  grpXstAtnOwners: 36,
+  sttbfAtnBkmk: 37,
+  plcfAtnBkf: 42,
+  plcfAtnBkl: 43,
+  plfLst: 73,
+  plfLfo: 74,
+}
 
 // Windows-1252 characters 0x80-0x9F (compressed pieces).
 const CP1252 = '€\u0081‚ƒ„…†‡ˆ‰Š‹Œ\u008dŽ\u008f\u0090‘’“”•–—˜™š›œ\u009džŸ'
@@ -37,6 +57,8 @@ interface Pap {
   inTable?: boolean
   rowEnd?: boolean
   pageBreakBefore?: boolean
+  // Row end paragraphs: cell boundaries (twips) and merge flags (TDefTable).
+  cells?: { centers: number[]; merge: number[]; vmerge: number[] }
 }
 
 interface Run {
@@ -63,7 +85,8 @@ function sprmSize(sprm: number, data: Uint8Array, at: number): number {
       return 3
     default:
       // Variable: sprmTDefTable / sprmPChgTabs have 2-byte lengths.
-      if (sprm === 0xd608) return 2 + (data[at] | (data[at + 1] << 8))
+      // sprmTDefTable: the 2-byte count includes one byte of itself.
+      if (sprm === 0xd608) return 1 + (data[at] | (data[at + 1] << 8))
       if (sprm === 0xc615) return 1 + (data[at] === 255 ? 0 : data[at])
       return 1 + data[at]
   }
@@ -117,6 +140,19 @@ function chpOf(grpprl: Uint8Array): Chp {
       case 0x2a0c:
         c.highlight = ICO[op[0]] || undefined
         break
+      // Character shading (what LibreOffice writes for highlighting).
+      case 0x4866: {
+        const back = ((op[0] | (op[1] << 8)) >> 5) & 31
+        if (!c.highlight && back && ICO[back] && ICO[back] !== '#ffffff') c.highlight = ICO[back]
+        break
+      }
+      case 0xca71:
+        // cb, cvFore (4), cvBack (4: r g b, 0xff = automatic), ipat.
+        if (op.length >= 9 && op[8] !== 0xff) {
+          const hex = `#${[op[5], op[6], op[7]].map((b) => b.toString(16).padStart(2, '0')).join('')}`
+          if (hex !== '#ffffff') c.highlight = hex
+        }
+        break
       case 0x6a03:
         c.picture = op[0] | (op[1] << 8) | (op[2] << 16) | (op[3] << 24)
         break
@@ -130,6 +166,7 @@ function chpOf(grpprl: Uint8Array): Chp {
 
 function papOf(data: Uint8Array): Pap {
   const p: Pap = { istd: data[0] | (data[1] << 8) }
+  const vertMerge: [number, number][] = []
   for (const [sprm, op] of sprms(data.subarray(2))) {
     switch (sprm) {
       case 0x2403:
@@ -153,8 +190,29 @@ function papOf(data: Uint8Array): Pap {
       case 0x2407:
         p.pageBreakBefore = op[0] === 1
         break
+      case 0xd608: {
+        // cb (2), itcMac, rgdxaCenter[itcMac + 1], TC80[itcMac] (20 bytes; flags first).
+        const dv = new DataView(op.buffer, op.byteOffset, op.byteLength)
+        const count = op[2]
+        if (op.length < 3 + (count + 1) * 2) break
+        const centers = Array.from({ length: count + 1 }, (_, k) => dv.getInt16(3 + k * 2, true))
+        const tcAt = 3 + (count + 1) * 2
+        const flags = Array.from({ length: count }, (_, k) => (tcAt + k * 20 + 2 <= op.length ? dv.getUint16(tcAt + k * 20, true) : 0))
+        p.cells = {
+          centers,
+          merge: flags.map((f) => (f & 2 ? 1 : 0)),
+          // 0 none, 1 continues the cell above, 2 starts a vertical merge.
+          vmerge: flags.map((f) => (f & 0x20 ? (f & 0x40 ? 2 : 1) : 0)),
+        }
+        break
+      }
+      case 0xd62b:
+        // sprmTVertMerge: cb, itc, vertMerge (1 continue, 3 restart).
+        vertMerge.push([op[1], op[2] === 1 ? 1 : op[2] === 3 ? 2 : 0])
+        break
     }
   }
+  for (const [itc, v] of vertMerge) if (p.cells && itc < p.cells.vmerge.length) p.cells.vmerge[itc] = v
   return p
 }
 
@@ -290,182 +348,338 @@ export async function importDoc(buffer: ArrayBuffer): Promise<ImportedDocument> 
     }
   }
 
-  // ---- Paragraphs → blocks ----
-  const body: JSONContent[] = []
-  let inline: JSONContent[] = []
-  let fieldDepth = 0
-  const fieldStack: { code: string; result: boolean; link?: string }[] = []
-  let table_: { rows: JSONContent[][]; cell: JSONContent[]; row: JSONContent[] } | null = null
-  const listStack: { node: JSONContent; kind: string; level: number }[] = []
-  // A TOC field being read: its paragraphs become the entries of one node.
-  let toc: { maxLevel: number; entries: { level: number; text: string; page?: number }[]; depth: number } | null = null
-
-  const pushText = (text: string, i: number) => {
-    const c = chpAt(i)
-    const marks: JSONContent['marks'] = []
-    if (c.bold) marks.push({ type: 'bold' })
-    if (c.italic) marks.push({ type: 'italic' })
-    const link = [...fieldStack].reverse().find((f) => f.link)?.link
-    if (link) marks.push({ type: 'link', attrs: { href: link } })
-    if (c.strike) marks.push({ type: 'strike' })
-    if (c.underline && !link) marks.push({ type: 'underline' })
-    const style: Record<string, string> = {}
-    if (c.color && c.color !== '#000000') style.color = c.color
-    if (c.size && c.size !== 11 && c.size !== 12) style.fontSize = `${c.size}pt`
-    if (Object.keys(style).length) marks.push({ type: 'textStyle', attrs: style })
-    if (c.highlight) marks.push({ type: 'highlight', attrs: { color: c.highlight } })
-    if (c.vert === 'sup') marks.push({ type: 'superscript' })
-    if (c.vert === 'sub') marks.push({ type: 'subscript' })
-    const last = inline[inline.length - 1]
-    if (last?.type === 'text' && JSON.stringify(last.marks ?? []) === JSON.stringify(marks)) last.text += text
-    else inline.push(marks.length ? { type: 'text', text, marks } : { type: 'text', text })
+  // Comments (annotations): text, author and the commented range.
+  const ccpHdd = lw(5)
+  const ccpMcr = lw(6)
+  const ccpAtn = lw(7)
+  const comments: CommentData[] = []
+  const commentRanges: { id: string; from: number; to: number }[] = []
+  {
+    const [fcRef, lcbRef] = fcLcb(FC.plcfandRef)
+    const [fcTxt, lcbTxt] = fcLcb(FC.plcfandTxt)
+    const count = lcbRef >= 4 ? Math.floor((lcbRef - 4) / 34) : 0
+    if (count && lcbTxt) {
+      const base = ccpText + ccpFtn + ccpHdd + ccpMcr
+      const txt = Array.from({ length: lcbTxt / 4 }, (_, i) => tv.getUint32(fcTxt + i * 4, true))
+      // Authors: a list of length-prefixed UTF-16 strings.
+      const owners: string[] = []
+      {
+        const [fc, lcb] = fcLcb(FC.grpXstAtnOwners)
+        for (let q = fc; q + 2 <= fc + lcb; ) {
+          const len = tv.getUint16(q, true)
+          let name = ''
+          for (let k = 0; k < len; k++) name += String.fromCharCode(tv.getUint16(q + 2 + k * 2, true))
+          owners.push(name)
+          q += 2 + len * 2
+        }
+      }
+      // Range bookmarks: tag → [start, end] character positions.
+      const bookmarks = new Map<number, [number, number]>()
+      try {
+        const [fcS, lcbS] = fcLcb(FC.sttbfAtnBkmk)
+        const [fcF, lcbF] = fcLcb(FC.plcfAtnBkf)
+        const [fcL, lcbL] = fcLcb(FC.plcfAtnBkl)
+        if (lcbS && lcbF && lcbL && tv.getUint16(fcS, true) === 0xffff) {
+          const n = tv.getUint16(fcS + 2, true)
+          const cbExtra = tv.getUint16(fcS + 4, true)
+          const nf = (lcbF - 4) / 8
+          const nl = (lcbL - 4) / 4
+          let q = fcS + 6
+          for (let k = 0; k < n && k < nf; k++) {
+            const cch = tv.getUint16(q, true)
+            q += 2 + cch * 2
+            const tag = cbExtra >= 6 ? tv.getInt32(q + 2, true) : -1
+            q += cbExtra
+            const start = tv.getUint32(fcF + k * 4, true)
+            const ibkl = tv.getUint16(fcF + (nf + 1) * 4 + k * 4, true)
+            if (ibkl < nl) bookmarks.set(tag, [start, tv.getUint32(fcL + ibkl * 4, true)])
+          }
+        }
+      } catch {
+        // Without bookmarks, comments anchor on the word before their mark.
+      }
+      for (let k = 0; k < count; k++) {
+        const ref = tv.getUint32(fcRef + k * 4, true)
+        const at = fcRef + (count + 1) * 4 + k * 30
+        const ibst = tv.getInt16(at + 20, true)
+        const tag = tv.getInt32(at + 26, true)
+        const from = base + (txt[k] ?? 0)
+        const to = base + (txt[k + 1] ?? txt[k] ?? 0)
+        const text = clean(chars.slice(from, Math.min(to, base + ccpAtn)).join(''))
+          .replace(/\u0005/g, '')
+          .replace(/\u0007/g, '\n')
+          .trim()
+        let range = bookmarks.get(tag)
+        if (!range || range[0] >= range[1] || range[1] > ccpText) {
+          let start = ref
+          while (start > 0 && /\s/.test(chars[start - 1] ?? '')) start--
+          while (start > 0 && /\S/.test(chars[start - 1] ?? '') && chars[start - 1] >= ' ') start--
+          range = [start, ref]
+        }
+        const id = String(k + 1)
+        comments.push({ id, author: owners[ibst] ?? '', date: 0, text })
+        if (range[0] < range[1]) commentRanges.push({ id, from: range[0], to: range[1] })
+      }
+    }
   }
 
-  const finishParagraph = (i: number) => {
-    const pap = papAt(i)
-    const style = styles.get(pap.istd)
-    if (toc) {
-      const text = inline.map((n) => n.text ?? '').join('')
-      inline = []
-      const tab = text.lastIndexOf('\t')
-      const label = (tab >= 0 ? text.slice(0, tab) : text).replace(/\t/g, ' ').trim()
-      const page = tab >= 0 ? Number(text.slice(tab + 1).trim()) : NaN
-      if (label) toc.entries.push({ level: style?.toc ?? 1, text: label, ...(page > 0 ? { page } : {}) })
-      return
+  // Parses the characters [start, end) into blocks (the body or a header / footer story).
+  const parseStory = (start: number, end: number): JSONContent[] => {
+    const body: JSONContent[] = []
+    let inline: JSONContent[] = []
+    const fieldStack: { code: string; result: boolean; link?: string; skip?: boolean }[] = []
+    type Cell = { node: JSONContent; merge: number; vmerge: number }
+    let table_: { rows: { cells: Cell[]; centers: number[] }[]; cell: JSONContent[]; row: JSONContent[] } | null = null
+    const listStack: { node: JSONContent; kind: string; level: number }[] = []
+    // A TOC field being read: its paragraphs become the entries of one node.
+    let toc: { maxLevel: number; entries: { level: number; text: string; page?: number }[]; depth: number } | null = null
+
+    const pushText = (text: string, i: number) => {
+      const c = chpAt(i)
+      const marks: NonNullable<JSONContent['marks']> = []
+      if (c.bold) marks.push({ type: 'bold' })
+      if (c.italic) marks.push({ type: 'italic' })
+      const link = [...fieldStack].reverse().find((f) => f.link)?.link
+      if (link) marks.push({ type: 'link', attrs: { href: link } })
+      if (c.strike) marks.push({ type: 'strike' })
+      if (c.underline && !link) marks.push({ type: 'underline' })
+      const style: Record<string, string> = {}
+      if (c.color && c.color !== '#000000') style.color = c.color
+      if (c.size && c.size !== 11 && c.size !== 12) style.fontSize = `${c.size}pt`
+      if (Object.keys(style).length) marks.push({ type: 'textStyle', attrs: style })
+      if (c.highlight) marks.push({ type: 'highlight', attrs: { color: c.highlight } })
+      if (c.vert === 'sup') marks.push({ type: 'superscript' })
+      if (c.vert === 'sub') marks.push({ type: 'subscript' })
+      for (const r of commentRanges) if (i >= r.from && i < r.to) marks.push({ type: 'commentRange', attrs: { id: r.id } })
+      const last = inline[inline.length - 1]
+      if (last?.type === 'text' && JSON.stringify(last.marks ?? []) === JSON.stringify(marks)) last.text += text
+      else inline.push(marks.length ? { type: 'text', text, marks } : { type: 'text', text })
     }
-    const content = inline.length ? inline : undefined
-    inline = []
-    let node: JSONContent
-    if (style?.heading) node = { type: 'heading', attrs: { level: style.heading, ...(pap.align ? { textAlign: pap.align } : {}) }, content }
-    else {
-      const attrs: Record<string, unknown> = {}
-      if (pap.align) attrs.textAlign = pap.align
-      if (style?.kind) attrs.styleId = style.kind
-      node = { type: 'paragraph', ...(Object.keys(attrs).length ? { attrs } : {}), content }
-    }
-    if (pap.pageBreakBefore && !pap.inTable) body.push({ type: 'pageBreak' })
-    // Tables: paragraphs until the cell mark; the row mark ends the row.
-    if (pap.inTable) {
-      table_ ??= { rows: [], cell: [], row: [] }
-      if (pap.rowEnd) {
-        table_.rows.push(table_.row)
-        table_.row = []
-        table_.cell = []
+
+    const finishParagraph = (i: number) => {
+      const pap = papAt(i)
+      const style = styles.get(pap.istd)
+      if (toc) {
+        const text = inline.map((n) => n.text ?? '').join('')
+        inline = []
+        const tab = text.lastIndexOf('\t')
+        const label = (tab >= 0 ? text.slice(0, tab) : text).replace(/\t/g, ' ').trim()
+        const page = tab >= 0 ? Number(text.slice(tab + 1).trim()) : NaN
+        if (label) toc.entries.push({ level: style?.toc ?? 1, text: label, ...(page > 0 ? { page } : {}) })
         return
       }
-      table_.cell.push(node.type === 'heading' ? { ...node, type: 'paragraph', attrs: {} } : node)
-      if (chars[i] === '\u0007') {
-        table_.row.push({ type: 'tableCell', content: table_.cell })
-        table_.cell = []
+      const content = inline.length ? inline : undefined
+      inline = []
+      let node: JSONContent
+      if (style?.heading) node = { type: 'heading', attrs: { level: style.heading, ...(pap.align ? { textAlign: pap.align } : {}) }, content }
+      else {
+        const attrs: Record<string, unknown> = {}
+        if (pap.align) attrs.textAlign = pap.align
+        if (style?.kind) attrs.styleId = style.kind
+        node = { type: 'paragraph', ...(Object.keys(attrs).length ? { attrs } : {}), content }
       }
-      return
-    }
-    flushTable()
-    const list = pap.ilfo ? lists(pap.ilfo, pap.ilvl ?? 0) : null
-    if (list) {
-      const level = Math.min(pap.ilvl ?? 0, listStack.length)
-      listStack.length = Math.min(listStack.length, level + 1)
-      if (listStack[level] && listStack[level].kind !== list) listStack.length = level
-      if (listStack.length === level) {
-        const l: JSONContent = { type: list === 'bullet' ? 'bulletList' : 'orderedList', content: [] }
-        if (level === 0) body.push(l)
-        else {
-          const items = listStack[level - 1].node.content!
-          items[items.length - 1].content!.push(l)
+      if (pap.pageBreakBefore && !pap.inTable) body.push({ type: 'pageBreak' })
+      // Tables: paragraphs until the cell mark; the row mark ends the row.
+      if (pap.inTable) {
+        table_ ??= { rows: [], cell: [], row: [] }
+        if (pap.rowEnd) {
+          const cells = pap.cells
+          table_.rows.push({
+            cells: table_.row.map((node, k) => ({ node, merge: cells?.merge[k] ?? 0, vmerge: cells?.vmerge[k] ?? 0 })),
+            centers: cells && cells.centers.length === table_.row.length + 1 ? cells.centers : [],
+          })
+          table_.row = []
+          table_.cell = []
+          return
         }
-        listStack.push({ node: l, kind: list, level })
+        table_.cell.push(node.type === 'heading' ? { ...node, type: 'paragraph', attrs: {} } : node)
+        if (chars[i] === '\u0007') {
+          table_.row.push({ type: 'tableCell', content: table_.cell })
+          table_.cell = []
+        }
+        return
       }
-      listStack[level].node.content!.push({ type: 'listItem', content: [{ ...node, type: 'paragraph', attrs: node.type === 'heading' ? {} : node.attrs }] })
-      return
+      flushTable()
+      // Headings keep their level: outline numbering attached to heading styles is not a list.
+      const list = pap.ilfo && !style?.heading ? lists(pap.ilfo, pap.ilvl ?? 0) : null
+      if (list) {
+        const level = Math.min(pap.ilvl ?? 0, listStack.length)
+        listStack.length = Math.min(listStack.length, level + 1)
+        if (listStack[level] && listStack[level].kind !== list) listStack.length = level
+        if (listStack.length === level) {
+          const l: JSONContent = { type: list === 'bullet' ? 'bulletList' : 'orderedList', content: [] }
+          if (level === 0) body.push(l)
+          else {
+            const items = listStack[level - 1].node.content!
+            items[items.length - 1].content!.push(l)
+          }
+          listStack.push({ node: l, kind: list, level })
+        }
+        listStack[level].node.content!.push({ type: 'listItem', content: [node] })
+        return
+      }
+      listStack.length = 0
+      body.push(node)
     }
-    listStack.length = 0
-    body.push(node)
-  }
-  const flushTable = () => {
-    if (!table_) return
-    const rows = table_.rows.filter((r) => r.length)
-    if (rows.length) body.push({ type: 'table', content: rows.map((cells) => ({ type: 'tableRow', content: cells })) })
-    table_ = null
+    // Builds the table: cell boundaries give column spans; merge flags give
+    // horizontal (old style) and vertical merges.
+    const flushTable = () => {
+      if (!table_) return
+      const rows = table_.rows.filter((r) => r.cells.length)
+      table_ = null
+      if (!rows.length) return
+      const grid: number[] = []
+      for (const r of rows) for (const x of r.centers) if (!grid.some((g) => Math.abs(g - x) < 30)) grid.push(x)
+      grid.sort((a, b) => a - b)
+      const col = (x: number) => grid.findIndex((g) => Math.abs(g - x) < 30)
+      // Per row: [cell, start column, span].
+      const laid = rows.map((r) => {
+        const out: { cell: Cell; start: number; span: number }[] = []
+        r.cells.forEach((cell, k) => {
+          const a = r.centers.length ? col(r.centers[k]) : k
+          const b = r.centers.length ? col(r.centers[k + 1]) : k + 1
+          const span = Math.max(1, b - a)
+          const prev = out[out.length - 1]
+          if (cell.merge && prev) prev.span += span
+          else out.push({ cell, start: a, span })
+        })
+        return out
+      })
+      const content: JSONContent[] = []
+      laid.forEach((row, ri) => {
+        const cells: JSONContent[] = []
+        for (const { cell, start, span } of row) {
+          if (cell.vmerge === 1 && ri > 0) continue
+          let rowspan = 1
+          if (cell.vmerge === 2) {
+            for (let rj = ri + 1; rj < laid.length; rj++) {
+              if (laid[rj].some((c) => c.start === start && c.cell.vmerge === 1)) rowspan++
+              else break
+            }
+          }
+          const attrs: Record<string, unknown> = {}
+          if (span > 1) attrs.colspan = span
+          if (rowspan > 1) attrs.rowspan = rowspan
+          cells.push(Object.keys(attrs).length ? { ...cell.node, attrs: { ...cell.node.attrs, ...attrs } } : cell.node)
+        }
+        if (cells.length) content.push({ type: 'tableRow', content: cells })
+      })
+      if (content.length) body.push({ type: 'table', content })
+    }
+
+    for (let i = start; i < Math.min(end, chars.length); i++) {
+      const ch = chars[i]
+      const code = ch.charCodeAt(0)
+      if (code === 0x13) {
+        fieldStack.push({ code: '', result: false })
+        continue
+      }
+      if (code === 0x14 && fieldStack.length) {
+        const f = fieldStack[fieldStack.length - 1]
+        f.result = true
+        const m = /^\s*HYPERLINK\s+(?:\\l\s+)?"([^"]+)"/i.exec(f.code)
+        if (m) f.link = /\\l/.test(f.code) ? `#${m[1]}` : m[1]
+        // Page numbers (headers and footers) become live fields.
+        const page = /^\s*(PAGE|NUMPAGES|SECTIONPAGES)\b/i.exec(f.code)?.[1].toUpperCase()
+        if (page) {
+          inline.push({ type: 'pageNumber', attrs: { kind: page === 'PAGE' ? 'page' : 'total' } })
+          f.skip = true
+        }
+        if (/^\s*TOC\b/.test(f.code) && !toc) {
+          const range = /\\o\s+"?(\d)-(\d)/.exec(f.code)
+          if (inline.length) finishParagraph(i)
+          toc = { maxLevel: range ? Math.min(6, Number(range[2])) : 3, entries: [], depth: fieldStack.length }
+        }
+        continue
+      }
+      if (code === 0x15 && fieldStack.length) {
+        if (toc && fieldStack.length === toc.depth) {
+          if (inline.length) finishParagraph(i)
+          body.push({ type: 'tableOfContents', attrs: { maxLevel: toc.maxLevel, title: '', entries: toc.entries } })
+          toc = null
+        }
+        fieldStack.pop()
+        continue
+      }
+      const field = fieldStack[fieldStack.length - 1]
+      if (field && !field.result) {
+        field.code += ch
+        continue
+      }
+      if (field?.skip && ch !== '\r' && code !== 0x07) continue
+      if (ch === '\r' || code === 0x07) {
+        finishParagraph(i)
+        continue
+      }
+      if (code === 0x0c) {
+        // Page or section break.
+        if (inline.length) finishParagraph(i)
+        flushTable()
+        listStack.length = 0
+        body.push({ type: 'pageBreak' })
+        continue
+      }
+      if (code === 0x0b) {
+        inline.push({ type: 'hardBreak' })
+        continue
+      }
+      if (code === 0x02 && chpAt(i).special) {
+        const note = notes.get(i)
+        if (note !== undefined) inline.push({ type: 'footnote', attrs: { content: note } })
+        continue
+      }
+      if (code === 0x01 && chpAt(i).special) {
+        const img = data ? picture(data, chpAt(i).picture ?? -1) : null
+        if (img) inline.push(img)
+        else notImported.add('pictures')
+        continue
+      }
+      if (code === 0x08 && chpAt(i).special) notImported.add('shapes')
+      if (code < 0x20 && code !== 0x09) continue
+      if (code === 0x1e) {
+        pushText('‑', i)
+        continue
+      }
+      if (code === 0x1f) continue
+      pushText(ch, i)
+    }
+    if (inline.length) finishParagraph(Math.min(end, chars.length) - 1)
+    flushTable()
+    // Trailing empty paragraph of a story.
+    while (body.length > 1 && body[body.length - 1].type === 'paragraph' && !body[body.length - 1].content?.length) body.pop()
+    return body
   }
 
-  for (let i = 0; i < Math.min(ccpText, chars.length); i++) {
-    const ch = chars[i]
-    const code = ch.charCodeAt(0)
-    if (code === 0x13) {
-      fieldDepth++
-      fieldStack.push({ code: '', result: false })
-      continue
+  const notImported = new Set<string>()
+  const body = parseStory(0, ccpText)
+  // Headers and footers of the first section: stories 6-11 of the header
+  // document (even header, odd header, even footer, odd footer, first header,
+  // first footer); the odd ones are the default, the others are fallbacks.
+  let header: JSONContent | null = null
+  let footer: JSONContent | null = null
+  {
+    const [fc, lcb] = fcLcb(FC.plcfHdd)
+    const cps = lcb ? Array.from({ length: lcb / 4 }, (_, i) => tv.getUint32(fc + i * 4, true)) : []
+    const base = ccpText + ccpFtn
+    const story = (k: number): JSONContent | null => {
+      if (k + 1 >= cps.length || cps[k + 1] <= cps[k]) return null
+      const blocks = parseStory(base + cps[k], base + Math.min(cps[k + 1], ccpHdd))
+      const empty = blocks.every((b) => b.type === 'paragraph' && !b.content?.length)
+      return empty ? null : { type: 'doc', content: blocks }
     }
-    if (code === 0x14 && fieldStack.length) {
-      const f = fieldStack[fieldStack.length - 1]
-      f.result = true
-      const m = /^\s*HYPERLINK\s+(?:\\l\s+)?"([^"]+)"/i.exec(f.code)
-      if (m) f.link = /\\l/.test(f.code) ? `#${m[1]}` : m[1]
-      if (/^\s*TOC\b/.test(f.code) && !toc) {
-        const range = /\\o\s+"?(\d)-(\d)/.exec(f.code)
-        if (inline.length) finishParagraph(i)
-        toc = { maxLevel: range ? Math.min(6, Number(range[2])) : 3, entries: [], depth: fieldStack.length }
-      }
-      continue
-    }
-    if (code === 0x15 && fieldStack.length) {
-      if (toc && fieldStack.length === toc.depth) {
-        if (inline.length) finishParagraph(i)
-        body.push({ type: 'tableOfContents', attrs: { maxLevel: toc.maxLevel, title: '', entries: toc.entries } })
-        toc = null
-      }
-      fieldStack.pop()
-      fieldDepth--
-      continue
-    }
-    const field = fieldStack[fieldStack.length - 1]
-    if (field && !field.result) {
-      field.code += ch
-      continue
-    }
-    if (ch === '\r' || code === 0x07) {
-      finishParagraph(i)
-      continue
-    }
-    if (code === 0x0c) {
-      // Page or section break.
-      if (inline.length) finishParagraph(i)
-      flushTable()
-      listStack.length = 0
-      body.push({ type: 'pageBreak' })
-      continue
-    }
-    if (code === 0x0b) {
-      inline.push({ type: 'hardBreak' })
-      continue
-    }
-    if (code === 0x02 && chpAt(i).special) {
-      const note = notes.get(i)
-      if (note !== undefined) inline.push({ type: 'footnote', attrs: { content: note } })
-      continue
-    }
-    if (code === 0x01 && chpAt(i).special) {
-      const img = data ? picture(data, chpAt(i).picture ?? -1) : null
-      if (img) inline.push(img)
-      continue
-    }
-    if (code < 0x20 && code !== 0x09) continue
-    if (code === 0x1e) {
-      pushText('‑', i)
-      continue
-    }
-    if (code === 0x1f) continue
-    pushText(ch, i)
+    header = story(7) ?? story(10) ?? story(6)
+    footer = story(9) ?? story(11) ?? story(8)
   }
-  if (inline.length) finishParagraph(Math.min(ccpText, chars.length) - 1)
-  flushTable()
-  void fieldDepth
+  if (lw(8) > 0) notImported.add('endnotes')
+  if (lw(9) > 0 || lw(10) > 0) notImported.add('shapes')
 
   return {
     body: { type: 'doc', content: body.length ? body : [{ type: 'paragraph' }] },
-    header: null,
-    footer: null,
+    header,
+    footer,
     page: pageSettings(table, tv, fcLcb(FC.plcfSed), word) ?? DEFAULT_PAGE,
+    ...(comments.length ? { comments } : {}),
+    ...(notImported.size ? { notImported: [...notImported] } : {}),
   }
 }
 

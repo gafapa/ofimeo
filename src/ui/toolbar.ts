@@ -10,7 +10,9 @@
 //   editor.on('transaction', tb.refresh)       // re-evaluates active/enabled/value
 //
 // Groups marked { keep: true } stay usable in read-only documents when the app
-// adds the "readonly" class to the toolbar (see .toolbar.readonly in base.css).
+// adds the "readonly" class to the toolbar. Read-only is enforced with the real
+// `disabled` state on every other control (not only CSS), so it still holds when
+// a group moves into the "⋯" overflow panel, which lives outside the toolbar.
 
 import { ChevronDown, Ellipsis, type IconNode } from 'lucide'
 import { t } from '../core/i18n'
@@ -62,6 +64,28 @@ export function createToolbar(container: HTMLElement, { afterAction }: { afterAc
   container.append(more, pinnedWrap)
 
   let panel: HTMLElement | null = null
+  const isReadOnly = () => container.classList.contains('readonly')
+  // Disables every control of the non-"keep" groups while the toolbar is read-only.
+  const applyReadOnly = () => {
+    const ro = isReadOnly()
+    panel?.classList.toggle('readonly', ro)
+    for (const g of [...flowing, ...pinnedWrap.querySelectorAll<HTMLElement>('.tb-group')]) {
+      if (g.classList.contains('tb-keep')) continue
+      for (const c of g.querySelectorAll<HTMLButtonElement | HTMLSelectElement | HTMLInputElement>('button, select, input')) {
+        if (ro) {
+          c.disabled = true
+          c.dataset.tbRo = '1'
+        } else if (c.dataset.tbRo) {
+          delete c.dataset.tbRo
+          c.disabled = false
+        }
+      }
+    }
+  }
+  new MutationObserver(() => {
+    applyReadOnly()
+    if (!isReadOnly()) for (const u of updaters) u()
+  }).observe(container, { attributes: true, attributeFilter: ['class'] })
   const overflowed = () => flowing.filter((g) => g.classList.contains('tb-overflowed'))
 
   const closePanel = () => {
@@ -82,6 +106,7 @@ export function createToolbar(container: HTMLElement, { afterAction }: { afterAc
     if (!hidden.length) return
     const z = uiZoom()
     panel = el('div', { class: 'menu-panel tb-overflow', role: 'toolbar' })
+    panel.classList.toggle('readonly', isReadOnly())
     panel.setAttribute('aria-label', t('More tools'))
     panel.append(...hidden)
     document.body.append(panel)
@@ -140,6 +165,7 @@ export function createToolbar(container: HTMLElement, { afterAction }: { afterAc
       if (options.shortcut) b.setAttribute('aria-keyshortcuts', options.shortcut.replace(/\s/g, ''))
       b.addEventListener('mousedown', (e) => e.preventDefault())
       b.addEventListener('click', () => {
+        if (b.disabled) return
         run()
         afterAction?.()
       })
@@ -160,6 +186,7 @@ export function createToolbar(container: HTMLElement, { afterAction }: { afterAc
       s.setAttribute('aria-label', label)
       for (const [v, text] of options) s.append(el('option', { value: v, textContent: text }))
       s.addEventListener('change', () => {
+        if (s.disabled) return
         onChange(s.value as (typeof options)[number][0])
         afterAction?.()
       })
@@ -173,13 +200,14 @@ export function createToolbar(container: HTMLElement, { afterAction }: { afterAc
       b.setAttribute('aria-label', label)
       b.setAttribute('aria-haspopup', 'true')
       b.addEventListener('mousedown', (e) => e.preventDefault())
-      b.addEventListener('click', () => openPopover(b, colorPalette(apply, resetLabel)))
+      b.addEventListener('click', () => !b.disabled && openPopover(b, colorPalette(apply, resetLabel)))
       const bar = b.querySelector<HTMLElement>('.tb-color-bar')!
       updaters.push(() => (bar.style.background = current() ?? 'transparent'))
       return b
     },
     refresh() {
       for (const u of updaters) u()
+      if (isReadOnly()) applyReadOnly()
     },
     onRefresh(fn) {
       updaters.push(fn)

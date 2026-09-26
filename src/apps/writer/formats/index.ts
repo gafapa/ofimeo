@@ -3,14 +3,14 @@
 
 import { generateJSON, type JSONContent } from '@tiptap/core'
 import { allExtensions } from '../editor/extensions'
-import { DEFAULT_PAGE, type DocumentData } from './types'
+import { DEFAULT_PAGE, type DocumentData, type ImportedDocument } from './types'
 import { t } from '../../../core/i18n'
 
 export type ExportFormat = 'docx' | 'odt' | 'html' | 'txt'
 
 export const OPEN_ACCEPT = '.docx,.odt,.doc,.html,.htm,.txt,.md'
 
-export type Imported = Omit<DocumentData, 'title'>
+export type Imported = ImportedDocument
 
 export async function importFile(file: File): Promise<Imported> {
   const ext = file.name.split('.').pop()?.toLowerCase()

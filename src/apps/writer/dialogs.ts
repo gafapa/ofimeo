@@ -44,6 +44,7 @@ export async function wordCount(ctx: WriterContext): Promise<void> {
 
 export async function editLink(ctx: WriterContext): Promise<void> {
   const { editor } = ctx
+  if (!editor.isEditable) return
   const current = editor.getAttributes('link').href ?? ''
   const { from, to, empty } = editor.state.selection
   const text = el('input', { class: 'field', value: empty ? '' : editor.state.doc.textBetween(from, to, ' ') })
@@ -55,6 +56,7 @@ export async function editLink(ctx: WriterContext): Promise<void> {
     { label: t('Apply'), value: 'ok', primary: true },
   ]
   const result = await showDialog(current ? t('Edit link') : t('Insert link'), body, buttons)
+  if (!editor.isEditable) return
   if (result === 'remove') {
     editor.chain().focus().extendMarkRange('link').unsetLink().run()
     return

@@ -81,7 +81,10 @@ export const DEFAULT_FONT_SIZE_PT = 11
 export const HEADING_SIZES_PT = [20, 16, 14, 12, 11, 11]
 export const TITLE_SIZE_PT = 26
 export const SUBTITLE_SIZE_PT = 15
-export type ImportedDocument = Omit<DocumentData, 'title'>
+export type ImportedDocument = Omit<DocumentData, 'title'> & {
+  // What an importer could not bring over ("endnotes", "shapes", "pictures", …), shown to the user once.
+  notImported?: string[]
+}
 
 // ---------- Sections and columns ----------
 

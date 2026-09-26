@@ -132,7 +132,7 @@ input, select, textarea { font: inherit; color: inherit; }
 .tb-pinned .tb-group:last-child { border-right: 0; }
 .tb-overflow { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; padding: 6px; max-width: min(420px, calc(100vw - 8px)); background: var(--toolbar-bg); }
 .tb-overflow .tb-group.tb-overflowed { display: flex; border-right: 0; }
-.toolbar.readonly .tb-group:not(.tb-keep) :is(button, select, input):not(.tb-more) { pointer-events: none; opacity: 0.4; }
+:is(.toolbar, .tb-overflow).readonly .tb-group:not(.tb-keep) :is(button, select, input):not(.tb-more) { pointer-events: none; opacity: 0.4; }
 
 /* ---------- Status bar ---------- */
 

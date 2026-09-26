@@ -8,7 +8,7 @@
 import * as Y from 'yjs'
 import { appInfo } from '../apps/registry'
 import { base64 } from './backup'
-import { createCopyFromState } from './copy'
+import { cleanCopy, createCopyFromState } from './copy'
 import { safeFileName } from './handin'
 import { t } from './i18n'
 import { dbAll, dbDelete, dbGet, dbPut } from './library'
@@ -30,6 +30,8 @@ export interface OwnTemplate {
   thumb: string
   created: number
   state: Uint8Array
+  // The app's editor-only state (a form's answer key), when saved by an editor.
+  privateState?: Uint8Array
 }
 
 const newId = () => crypto.getRandomValues(new Uint32Array(2)).join('-')
@@ -46,18 +48,18 @@ export async function updateOwnTemplate(id: string, patch: Partial<Pick<OwnTempl
 export const deleteOwnTemplate = (id: string) => dbDelete('templates', id)
 
 // Creates a new document from the template and returns its path.
-export const useOwnTemplate = (tpl: OwnTemplate) => createCopyFromState(tpl.app, tpl.name, tpl.state)
+export const useOwnTemplate = (tpl: OwnTemplate) => createCopyFromState(tpl.app, tpl.name, tpl.state, tpl.privateState)
 
 // Saves the open document as a template.
 export async function saveTemplateFromSession(session: Session, name: string, description: string): Promise<OwnTemplate> {
   const copy = new Y.Doc()
   Y.applyUpdate(copy, snapshotState(session.doc))
-  const authors = copy.getMap('authors')
-  for (const key of [...authors.keys()]) authors.delete(key)
+  cleanCopy(session.type, copy)
   copy.getMap('meta').set('title', name)
   const state = Y.encodeStateAsUpdate(copy)
   copy.destroy()
-  const tpl: OwnTemplate = { id: newId(), app: session.type, name, description, thumb: await sessionThumb(session, name), created: Date.now(), state }
+  const privateState = session.canEdit ? session.hooks.privateState?.snapshot() : null
+  const tpl: OwnTemplate = { id: newId(), app: session.type, name, description, thumb: await sessionThumb(session, name), created: Date.now(), state, ...(privateState ? { privateState } : {}) }
   await dbPut('templates', tpl)
   return tpl
 }
@@ -65,13 +67,13 @@ export async function saveTemplateFromSession(session: Session, name: string, de
 // ---------- Files ----------
 
 export function templateFile(tpl: OwnTemplate): { blob: Blob; name: string } {
-  const { state, id: _id, ...rest } = tpl
-  const json = JSON.stringify({ format: FORMAT, version: 1, ...rest, state: base64.encode(state) })
+  const { state, privateState, id: _id, ...rest } = tpl
+  const json = JSON.stringify({ format: FORMAT, version: 1, ...rest, state: base64.encode(state), ...(privateState ? { privateState: base64.encode(privateState) } : {}) })
   return { blob: new Blob([json], { type: 'application/json' }), name: `${safeFileName(tpl.name)}${TEMPLATE_EXT}` }
 }
 
 export async function importTemplateFile(file: Blob): Promise<OwnTemplate> {
-  let data: Partial<Omit<OwnTemplate, 'state'>> & { format?: string; state?: string }
+  let data: Partial<Omit<OwnTemplate, 'state' | 'privateState'>> & { format?: string; state?: string; privateState?: string }
   try {
     data = JSON.parse(await file.text())
   } catch {
@@ -79,8 +81,10 @@ export async function importTemplateFile(file: Blob): Promise<OwnTemplate> {
   }
   if (data.format !== FORMAT || !data.state || !data.app || !DOC_TYPES.includes(data.app)) throw new Error(t('This file is not an Ofimeo template.'))
   const state = base64.decode(data.state)
-  // Must be a valid Yjs update.
+  // Must be valid Yjs updates.
   Y.applyUpdate(new Y.Doc(), state)
+  const privateState = typeof data.privateState === 'string' ? base64.decode(data.privateState) : undefined
+  if (privateState) Y.applyUpdate(new Y.Doc(), privateState)
   const tpl: OwnTemplate = {
     id: newId(),
     app: data.app,
@@ -89,6 +93,7 @@ export async function importTemplateFile(file: Blob): Promise<OwnTemplate> {
     thumb: typeof data.thumb === 'string' && data.thumb.startsWith('data:image/') ? data.thumb : iconThumb(data.app),
     created: Date.now(),
     state,
+    ...(privateState ? { privateState } : {}),
   }
   await dbPut('templates', tpl)
   return tpl

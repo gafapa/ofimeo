@@ -13,15 +13,50 @@ import { createLocalDocument, type Session } from './session'
 import * as store from './store'
 import { snapshotState, VERSIONS_KEY } from './versions'
 
-// Creates a local document from a state (Y.encodeStateAsUpdate) and returns its path.
-export function createCopyFromState(type: store.DocType, title: string, state: Uint8Array): Promise<string> {
-  return createLocalDocument(type, title, (doc) => {
+// Shared data that belongs to one document only and is not copied: a form's
+// receipts of received responses, its released grades and the key
+// respondents encrypt to (the copy publishes its own when an editor opens it).
+const NOT_COPIED: Partial<Record<store.DocType, { maps: string[]; keys: [map: string, key: string][] }>> = {
+  forms: { maps: ['form-receipts', 'form-results'], keys: [['form-settings', 'responseKey']] },
+}
+
+// Removes what a copy of a `type` document must not carry (history, authors, NOT_COPIED).
+export function cleanCopy(type: store.DocType, doc: Y.Doc): void {
+  const versions = doc.getArray(VERSIONS_KEY)
+  if (versions.length) versions.delete(0, versions.length)
+  const authors = doc.getMap('authors')
+  for (const key of [...authors.keys()]) authors.delete(key)
+  const extra = NOT_COPIED[type]
+  for (const name of extra?.maps ?? []) {
+    const map = doc.getMap(name)
+    for (const key of [...map.keys()]) map.delete(key)
+  }
+  for (const [name, key] of extra?.keys ?? []) doc.getMap(name).delete(key)
+}
+
+// Creates a local document from a state (Y.encodeStateAsUpdate) and returns its
+// path. `privateState` is the app's editor-only state (session.hooks.privateState).
+export async function createCopyFromState(type: store.DocType, title: string, state: Uint8Array, privateState?: Uint8Array | null): Promise<string> {
+  const path = await createLocalDocument(type, title, (doc) => {
     Y.applyUpdate(doc, state)
-    const versions = doc.getArray(VERSIONS_KEY)
-    if (versions.length) versions.delete(0, versions.length)
-    const authors = doc.getMap('authors')
-    for (const key of [...authors.keys()]) authors.delete(key)
+    cleanCopy(type, doc)
   })
+  const id = new URLSearchParams(path.split('#')[1]).get('doc')
+  if (privateState && id) await writePrivateState(type, id, privateState)
+  return path
+}
+
+async function writePrivateState(type: store.DocType, id: string, state: Uint8Array): Promise<void> {
+  const doc = new Y.Doc()
+  Y.applyUpdate(doc, state)
+  const persistence = new IndexeddbPersistence(store.privateDbName(type, id), doc)
+  await persistence.whenSynced
+  await persistence.destroy()
+  // As in createLocalDocument: wait until the write is done before navigating.
+  const check = new IndexeddbPersistence(store.privateDbName(type, id), new Y.Doc())
+  await check.whenSynced
+  await check.destroy()
+  doc.destroy()
 }
 
 export const copyTitle = (title: string) => t('Copy of {title}', { title: title || t('Untitled') })
@@ -29,7 +64,7 @@ export const copyTitle = (title: string) => t('Copy of {title}', { title: title 
 // "Make a copy": copies the open document and opens the copy.
 export async function copyDocument(session: Session, navigate = true): Promise<string> {
   const title = String(session.doc.getMap('meta').get('title') ?? '')
-  const path = await createCopyFromState(session.type, copyTitle(title), snapshotState(session.doc))
+  const path = await createCopyFromState(session.type, copyTitle(title), snapshotState(session.doc), session.canEdit ? session.hooks.privateState?.snapshot() : null)
   if (navigate) location.href = path
   return path
 }

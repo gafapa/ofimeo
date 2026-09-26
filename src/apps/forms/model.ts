@@ -147,7 +147,7 @@ export const answersMap = (priv: Y.Doc) => priv.getMap<AnswerKey>('answers')
 export const responsesMap = (priv: Y.Doc) => priv.getMap<FormResponse>('responses')
 export const gradesMap = (priv: Y.Doc) => priv.getMap<Grade>('grades')
 
-export const privateDbName = (docId: string) => `words-online:${docId}:forms-private`
+export const privateDbName = (docId: string) => store.privateDbName('forms', docId)
 
 export function readSettings(doc: Y.Doc): Settings {
   const map = settingsMap(doc)

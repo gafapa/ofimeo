@@ -75,6 +75,8 @@ export function saveVersion(session: Session, label?: string, auto = false, auth
     array.push([version])
     thin(array)
   })
+  // Editor-only state (a form's answer key) is versioned outside the shared document.
+  session.hooks.privateState?.saveVersion(version.id)
   return version
 }
 
@@ -120,6 +122,8 @@ export async function restoreVersion(session: Session, version: Version): Promis
   saveVersion(session, t('Before restoring the version of {date}', { date: new Date(version.time).toLocaleString(locale) }), true)
   if (session.hooks.restoreVersion) await session.hooks.restoreVersion(version.state)
   else applyStateGeneric(session.doc, version.state)
+  const privateState = session.hooks.privateState?.version(version.id)
+  if (privateState) session.hooks.privateState!.restore(privateState)
 }
 
 type Kind = 'map' | 'array' | 'xml' | 'text'

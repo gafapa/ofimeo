@@ -47,7 +47,22 @@ export interface ExportOption {
   build: () => Promise<Blob>
 }
 
+// Editor-only state an app keeps outside the shared document (a form's answer
+// key, see apps/forms/state.ts). Copies, templates and versions made by editors
+// include it; links never carry it.
+export interface PrivateStateHooks {
+  // The state to copy (Y.encodeStateAsUpdate of a private Y.Doc), or null.
+  snapshot: () => Uint8Array | null
+  // Keeps the current state with version `id`, and returns a version's state.
+  saveVersion: (id: string) => void
+  version: (id: string) => Uint8Array | null
+  // Replaces the current state (version restore).
+  restore: (state: Uint8Array) => void
+}
+
 export interface SessionHooks {
+  // Editor-only state outside the shared document (see PrivateStateHooks).
+  privateState?: PrivateStateHooks
   // Formats for "Save to Nextcloud", the app's usual download formats (first: default).
   exportFormats?: () => ExportOption[]
   // Files in the app's original formats for "Hand in".

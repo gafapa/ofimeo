@@ -64,7 +64,8 @@ export async function openVersionHistory(session: Session): Promise<void> {
     open.addEventListener('click', async () => {
       toast(t('Making a copy…'))
       const title = String(session.doc.getMap('meta').get('title') ?? '')
-      location.href = await createCopyFromState(session.type, `${copyTitle(title)} (${new Date(v.time).toLocaleString(locale)})`, v.state)
+      const privateState = session.canEdit ? session.hooks.privateState?.version(v.id) : null
+      location.href = await createCopyFromState(session.type, `${copyTitle(title)} (${new Date(v.time).toLocaleString(locale)})`, v.state, privateState)
     })
     const actions = el('div', { class: 'version-actions' }, open)
     if (session.canEdit) {

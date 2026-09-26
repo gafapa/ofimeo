@@ -50,6 +50,8 @@ export interface User {
 
 export const dbName = (id: string) => `words-online:${id}`
 export const commentsDbName = (id: string) => `words-online:${id}:comments`
+// Editor-only state of an app kept outside the shared document (a form's answer key).
+export const privateDbName = (type: DocType, id: string) => `words-online:${id}:${type}-private`
 export const signedLogKey = (id: string, channel: string) => `signed:${id}:${channel}`
 
 export const newDocId = () => randomToken(9)

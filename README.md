@@ -1023,6 +1023,34 @@ SVG of every page (diagrams). It then offers *Print / Save as PDF* and
 - An `authors` map in the document records who edited (name and color per
   Yjs client).
 
+## AI assistants (WebMCP)
+
+Ofimeo contains no AI, but it can let an AI assistant that **you** run in your
+browser (an extension or the browser's own agent implementing the W3C
+[WebMCP](https://webmachinelearning.github.io/webmcp/) draft) work with the
+open document. Details: [docs/webmcp.md](docs/webmcp.md).
+
+- **Off by default**, turned on per browser with **Tools → Allow AI assistants
+  (WebMCP)…** after a dialog that explains what it allows. While on, an
+  **AI access on** indicator in the app bar shows it (click it to turn it off).
+- The tools follow the link's access: view links get read tools only, comment
+  links can also add comments, edit links can also change the document. The
+  assistant never gets share links, keys or other documents.
+- In documents the assistant's text changes are **suggestions** you accept or
+  reject; in the other apps each change is one undo step. Versions "Before
+  changes by the AI assistant" / "Changes by the AI assistant" frame its work in
+  the version history, and its comments are signed "AI assistant (*you*)".
+- Tools: `get_document_info` everywhere; documents `get_text` (Markdown),
+  `get_outline`, `find`, comments, `insert_text`, `replace_range`,
+  `apply_heading`, `format`; spreadsheets `list_sheets`, `read_range`,
+  `write_range`, `add_sheet`, `insert_chart`, notes; presentations
+  `list_slides`, `get_slide`, `add_slide`, `set_text`, comments; diagrams
+  `get_diagram`, `add_shape`, `connect`, `set_label`; forms (editors)
+  `get_form`, `add_question`, `get_responses`; PDF `get_text`, notes,
+  `add_highlight`; drawings `get_scene`, `add_element`.
+- Uses the native `document.modelContext` when the browser has it, otherwise
+  loads the MIT-licensed `@mcp-b/global` polyfill (only while the switch is on).
+
 ## Architecture
 
 ```
@@ -1045,6 +1073,8 @@ src/
     idb.ts           Small IndexedDB key-value store (signed logs)
     formats.ts       Format helpers: XML, colors, units, images
     i18n.ts          UI language, t() translations; locales/ holds the es, gl, fr and de catalogs
+    webmcp/          AI assistants over WebMCP: switch, permission gate, registry (native or polyfill), attribution;
+                     each app's tools are in apps/<app>/webmcp.ts (docs/webmcp.md)
   ui/                Shared UI so every app looks the same (the "app frame")
     shell.ts         App frame markup: app bar, menu bar, toolbar row, status bar
     frame.ts         mountFrame(): standard menus, keys, toolbar and status bar for an app
@@ -1059,6 +1089,7 @@ src/
     versions.ts      Make a copy / Save version / Version history (File menu items)
     nextcloud.ts     Nextcloud dialogs: account, CORS help, file browser, save, status, hand in
     widgets.ts       Menus, context menus, popovers, color palette, dialogs, toasts
+    webmcp.ts        Tools → Allow AI assistants (WebMCP) switch, explanation dialog, app bar indicator
     equation.ts      Equation editor (MathLive, lazy) and KaTeX rendering / MathML
     base.css
   home/              Home screen: new document buttons, open file, documents (folders, tags, trash, search), storage and backup
@@ -1181,8 +1212,9 @@ npm test          # grammar rule tests + end-to-end tests (build first)
   the home screen, the installed app works offline, the connection test
   and a school relay from the link work, a password-protected backup restores
   content, versions and comments after clearing the browser data, and deleted
-  documents stay in the trash until it is emptied, and the help center finds
-  articles and the welcome tour shows once.
+  documents stay in the trash until it is emptied, the help center finds
+  articles and the welcome tour shows once, and AI assistants (WebMCP) get
+  only the tools the link allows, with writer changes as suggestions.
 - `cd relay && go test ./...`: Ofimeo Relay (Nostr messages and signatures,
   TURN allocations with time-limited credentials, certificates, the TLS port
   shared by HTTPS and TURN, `/ofimeo/config`, serving the app).

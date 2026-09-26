@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
-import { openApp, trackErrors } from './helpers'
+import { randomBytes } from 'node:crypto'
+import { APP_READY, openApp, RELAYS, trackErrors, uniqueDoc } from './helpers'
 
 // WebMCP: tools are called through navigator.modelContextTesting, the testing
 // hook of the @mcp-b/global polyfill (loaded because headless Chromium has no
@@ -12,10 +13,6 @@ type Tools = { listTools(): { name: string }[]; executeTool(name: string, args: 
 
 async function toolNames(page: Page): Promise<string[]> {
   return page.evaluate(() => ((navigator as unknown as { modelContextTesting?: Tools }).modelContextTesting?.listTools() ?? []).map((t) => t.name).sort())
-}
-
-async function waitForTool(page: Page, name: string): Promise<void> {
-  await page.waitForFunction((n) => ((navigator as unknown as { modelContextTesting?: Tools }).modelContextTesting?.listTools() ?? []).some((t) => t.name === n), name, { timeout: 30_000 })
 }
 
 // Calls a tool; returns the parsed JSON of its text result (or the text).
@@ -53,8 +50,7 @@ test('writer: turned on from Tools, the assistant reads the text and its changes
   await expect(dialog).toContainText('never gets your share links')
   await dialog.getByRole('button', { name: 'Allow', exact: true }).click()
   await expect(page.locator('.webmcp-indicator')).toBeVisible()
-  await waitForTool(page, 'format')
-  expect(await toolNames(page)).toEqual(
+  await expect.poll(() => toolNames(page)).toEqual(
     ['add_comment', 'apply_heading', 'find', 'format', 'get_document_info', 'get_outline', 'get_text', 'insert_text', 'list_comments', 'replace_range'].sort(),
   )
 
@@ -104,8 +100,7 @@ test('sheet: the assistant reads and writes ranges, adds sheets and charts', asy
   await page.addInitScript(ENGLISH)
   await page.addInitScript(ENABLED)
   await openApp(page, 'sheet')
-  await waitForTool(page, 'add_comment')
-  expect(await toolNames(page)).toEqual(['add_comment', 'add_sheet', 'get_document_info', 'insert_chart', 'list_comments', 'list_sheets', 'read_range', 'write_range'])
+  await expect.poll(() => toolNames(page)).toEqual(['add_comment', 'add_sheet', 'get_document_info', 'insert_chart', 'list_comments', 'list_sheets', 'read_range', 'write_range'])
 
   const written = await call(page, 'write_range', { range: 'A1', values: [['Month', 'Sales'], ['Jan', 10], ['Feb', 20], ['Total', '=SUM(B2:B3)']] })
   expect(written.data).toMatchObject({ written: 'A1:B4' })
@@ -132,7 +127,10 @@ test('sheet: the assistant reads and writes ranges, adds sheets and charts', asy
 test('a view link only gets read tools', async ({ browser }) => {
   const owner = await (await browser.newContext()).newPage()
   await owner.addInitScript(ENGLISH)
-  await openApp(owner, 'writer')
+  // A protected document (permission keys in the link: key and edit seed).
+  const b64 = (n: number) => randomBytes(n).toString('base64url')
+  await owner.goto(`/${RELAYS}#app=writer&doc=${uniqueDoc('webmcp-view')}&key=${b64(18)}&edit=${b64(32)}`)
+  await owner.locator(APP_READY.writer).waitFor({ timeout: 60_000 })
   await owner.locator('.ProseMirror').click()
   await owner.keyboard.type('Read me')
   await owner.locator('#btn-share').click()
@@ -148,8 +146,7 @@ test('a view link only gets read tools', async ({ browser }) => {
   await reader.goto(link)
   await reader.locator('.ProseMirror').waitFor({ timeout: 60_000 })
   await expect(reader.locator('.webmcp-indicator')).toBeVisible()
-  await waitForTool(reader, 'get_text')
-  expect(await toolNames(reader)).toEqual(['find', 'get_document_info', 'get_outline', 'get_text', 'list_comments'])
+  await expect.poll(() => toolNames(reader)).toEqual(['find', 'get_document_info', 'get_outline', 'get_text', 'list_comments'])
   expect((await call(reader, 'get_document_info')).data).toMatchObject({ access: 'view', allowed: ['read'] })
   await expect.poll(async () => (await call(reader, 'get_text')).data, { timeout: 60_000 }).toBe('Read me')
   expect(errors).toEqual([])

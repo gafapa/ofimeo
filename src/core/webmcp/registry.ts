@@ -67,36 +67,35 @@ export class ToolRegistration {
 
   constructor(private readonly session: Session) {}
 
-  // Replaces the registered tools with the allowed ones of `tools`.
-  async register(tools: OfimeoTool[]): Promise<string[]> {
+  // Replaces the registered tools with the allowed ones of `all` (registered together).
+  async register(all: OfimeoTool[]): Promise<string[]> {
     this.unregister()
     const controller = new AbortController()
     this.controller = controller
     const ctx = await modelContext()
     if (controller.signal.aborted) return []
-    const names: string[] = []
     const seen = new Set<string>()
-    for (const tool of allowedTools(this.session, tools)) {
-      if (seen.has(tool.name)) continue
-      seen.add(tool.name)
-      const readOnly = tool.readOnly ?? tool.access === 'view'
-      try {
-        await ctx.registerTool(
+    const tools = allowedTools(this.session, all).filter((tool) => !seen.has(tool.name) && !!seen.add(tool.name))
+    const results = await Promise.allSettled(
+      tools.map(async (tool) =>
+        ctx.registerTool(
           {
             name: tool.name,
             description: tool.description,
             inputSchema: tool.inputSchema as never,
-            annotations: { readOnlyHint: readOnly },
+            annotations: { readOnlyHint: tool.readOnly ?? tool.access === 'view' },
             execute: wrap(this.session, tool),
           },
           { signal: controller.signal },
-        )
-        names.push(tool.name)
-      } catch (err) {
-        console.warn(`WebMCP: could not register ${tool.name}`, err)
-      }
-      if (controller.signal.aborted) return []
-    }
+        ),
+      ),
+    )
+    if (controller.signal.aborted) return []
+    const names: string[] = []
+    results.forEach((r, i) => {
+      if (r.status === 'fulfilled') names.push(tools[i].name)
+      else console.warn(`WebMCP: could not register ${tools[i].name}`, r.reason)
+    })
     this.names = names
     return names
   }

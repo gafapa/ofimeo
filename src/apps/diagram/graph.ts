@@ -322,6 +322,8 @@ export function createGraph(container: HTMLElement): EditorGraph {
 function richTextEditing(graph: Graph): void {
   const editor = graph.getPlugin<CellEditorHandler>('CellEditorHandler')
   if (!editor) return
+  // Esc ends editing and keeps the typed text, like draw.io and PowerPoint.
+  editor.escapeCancelsEditing = false
   // The browser's spell checker, in the interface language, while a label is edited.
   const init = editor.init.bind(editor)
   editor.init = () => {

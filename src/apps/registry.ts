@@ -29,6 +29,8 @@ export interface AppInfo {
   // File extensions the app opens; declared here so the home screen can offer
   // them without loading the app.
   accept?: string
+  // False for apps without comments: sharing offers no "Can comment" link.
+  comments?: boolean
   load?: () => Promise<AppModule>
 }
 
@@ -55,6 +57,7 @@ export const APPS: AppInfo[] = [
     letter: 'S',
     color: '#188038',
     accept: '.xlsx,.ods,.csv,.tsv,.xls',
+    comments: false,
     load: () => import('./sheet'),
   },
   {
@@ -67,6 +70,7 @@ export const APPS: AppInfo[] = [
     letter: 'D',
     color: '#e8710a',
     accept: '.excalidraw',
+    comments: false,
     load: () => import('./draw'),
   },
   {
@@ -79,6 +83,7 @@ export const APPS: AppInfo[] = [
     letter: 'G',
     color: '#9334e6',
     accept: '.drawio,.xml,.vsdx,.vssx',
+    comments: false,
     load: () => import('./diagram'),
   },
   {
@@ -90,7 +95,7 @@ export const APPS: AppInfo[] = [
     untitled: t('Untitled presentation'),
     letter: 'P',
     color: '#d24726',
-    accept: '.pptx,.ppt',
+    accept: '.pptx,.ppt,.odp',
     load: () => import('./slides'),
   },
   {
@@ -103,6 +108,7 @@ export const APPS: AppInfo[] = [
     letter: 'F',
     color: '#00897b',
     accept: '.oform',
+    comments: false,
     load: () => import('./forms'),
   },
   {

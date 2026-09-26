@@ -5,7 +5,7 @@ import { createLocalDocument } from '../../core/session'
 import { svgToPng } from '../diagram/export'
 import { DiagramSync } from '../diagram/sync'
 import { SLIDES_ACCEPT, mountSlides } from './app'
-import { notesText, parseBackground, presentationSize, presentationTheme, readSlideMeta, writePresentation, type PresentationData } from './model'
+import { blankSlide, notesText, parseBackground, presentationSize, presentationTheme, readSlideMeta, writePresentation, type PresentationData } from './model'
 import { SlideRenderer } from './render'
 import { readAnimations } from './animations'
 import { t } from '../../core/i18n'
@@ -34,7 +34,9 @@ export function readPresentation(session: Session): PresentationData {
   return {
     ...presentationSize(doc),
     theme,
-    slides: DiagramSync.readPages(doc).map((p) => {
+    // A new presentation shows a blank title slide that is only written to the
+    // document on its first edit: it is still part of the presentation.
+    slides: (DiagramSync.readPages(doc).length ? DiagramSync.readPages(doc) : [blankSlide()]).map((p) => {
       const meta = readSlideMeta(doc, p.id)
       return {
         id: p.id,

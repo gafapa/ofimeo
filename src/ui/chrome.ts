@@ -146,7 +146,7 @@ export async function openShareDialog(session: Session): Promise<void> {
   const choices: { value: LinkChoice; label: string; desc: string }[] = []
   if (session.isProtected) {
     if (session.canEdit) choices.push({ value: 'edit', label: t('Can edit'), desc: t('Anyone with this link can edit the document with you in real time.') })
-    if (session.canComment) choices.push({ value: 'comment', label: t('Can comment'), desc: t('Anyone with this link can read the document and add comments, but not change it.') })
+    if (session.canComment && appInfo(session.type).comments !== false) choices.push({ value: 'comment', label: t('Can comment'), desc: t('Anyone with this link can read the document and add comments, but not change it.') })
     choices.push({ value: 'view', label: t('Can view'), desc: t('Anyone with this link can read the document (and follow changes live), but not change it.') })
   } else {
     choices.push({ value: 'edit', label: t('Can edit'), desc: t('Anyone who opens this link can edit the document with you in real time.') })

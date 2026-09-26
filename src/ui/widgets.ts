@@ -205,6 +205,11 @@ export function shortcutLabel(shortcut: string): string {
   return shortcut.replace(/\b(Ctrl|Shift|Enter|Del|Arrow|Wheel)\b/g, (k) => names[k])
 }
 
+function submenuEnabled(items: MenuEntry[]): boolean {
+  const entries = visibleEntries(items).filter((e): e is Exclude<MenuEntry, '-'> => e !== '-')
+  return !entries.length || entries.some((e) => (e.enabled ? e.enabled() : e.submenu ? submenuEnabled(e.submenu) : true))
+}
+
 // Drops hidden items, then leading, trailing and repeated separators.
 function visibleEntries(items: MenuEntry[]): MenuEntry[] {
   const out: MenuEntry[] = []
@@ -230,6 +235,10 @@ function renderItems(items: MenuEntry[], close: () => void, beforeRun = () => {}
     submenu.style.top = `${(rect.top - 4) / z}px`
     row.setAttribute('aria-expanded', 'true')
     list.append(submenu)
+    // No room on the right: open on the left side of the parent instead of
+    // sliding over it (menus near the right edge of the window).
+    const width = submenu.getBoundingClientRect().width
+    if (rect.right + width > window.innerWidth - 4 && rect.left - width >= 4) submenu.style.left = `${(rect.left - width + 2) / z}px`
     keepInViewport(submenu, z)
     if (focus) focusRow(submenu, 0)
   }
@@ -238,7 +247,8 @@ function renderItems(items: MenuEntry[], close: () => void, beforeRun = () => {}
       list.append(el('div', { class: 'menu-sep', role: 'separator' }))
       continue
     }
-    const enabled = item.enabled ? item.enabled() : true
+    // A submenu whose items are all disabled is disabled itself.
+    const enabled = item.enabled ? item.enabled() : item.submenu ? submenuEnabled(item.submenu) : true
     const checked = item.active?.()
     const row = el(
       'button',

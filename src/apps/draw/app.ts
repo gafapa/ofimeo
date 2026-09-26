@@ -146,7 +146,7 @@ export function mountDraw(session: Session, root: HTMLElement): void {
   let lastInfo = ''
   const updateStatus = (elements: readonly any[], appState: any) => {
     const selected = Object.keys(appState.selectedElementIds ?? {}).length
-    const text = selected ? tn(selected, '{n} element selected', '{n} elements selected') : tn(elements.length, '{n} element', '{n} elements')
+    const text = selected ? tn(selected, '{n} element selected', '{n} elements selected') : tn(elements.filter((e) => !e.isDeleted).length, '{n} element', '{n} elements')
     if (text !== lastInfo) selection.textContent = lastInfo = text
   }
 

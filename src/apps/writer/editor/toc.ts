@@ -6,7 +6,7 @@
 
 import { Node, mergeAttributes, type Editor, type JSONContent } from '@tiptap/core'
 import type { Node as PMNode } from '@tiptap/pm/model'
-import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
+import { Plugin, PluginKey, TextSelection, type Transaction } from '@tiptap/pm/state'
 import type { EditorView } from '@tiptap/pm/view'
 import { ySyncPluginKey } from '@tiptap/y-tiptap'
 import { t } from '../../../core/i18n'
@@ -63,6 +63,19 @@ export function tocHeadingsJSON(body: JSONContent, maxLevel: number): JSONConten
   return out
 }
 
+// Bookmark names (_Toc000000001…) for the headings listed by the tables of contents of a body.
+export function tocBookmarks(body: JSONContent): Map<JSONContent, string> {
+  const out = new Map<JSONContent, string>()
+  let max = 0
+  const walk = (n: JSONContent) => {
+    if (n.type === 'tableOfContents') max = Math.max(max, Number(n.attrs?.maxLevel) || 3)
+    n.content?.forEach(walk)
+  }
+  walk(body)
+  if (max) tocHeadingsJSON(body, max).forEach((h, i) => out.set(h, `_Toc${String(i + 1).padStart(9, '0')}`))
+  return out
+}
+
 export function headingText(node: JSONContent): string {
   if (node.type === 'text') return node.text ?? ''
   return (node.content ?? []).map(headingText).join('')
@@ -79,17 +92,26 @@ function sameEntries(a: unknown, b: TocEntry[]): boolean {
   return JSON.stringify(a ?? []) === JSON.stringify(b)
 }
 
-// Rewrites the entries of every table of contents; returns whether anything changed.
-function refresh(view: EditorView, options: TocOptions): boolean {
-  const tr = view.state.tr
-  view.state.doc.descendants((node, pos) => {
+// Rewrites the entries of every table of contents into `tr`; returns whether anything changed.
+function refreshInto(view: EditorView, options: TocOptions, tr: Transaction): boolean {
+  let changed = false
+  tr.doc.descendants((node, pos) => {
     if (node.type.name !== 'tableOfContents') return !node.isAtom
     const entries = computeEntries(view, Number(node.attrs.maxLevel) || 3, options.pageOf)
-    if (!sameEntries(node.attrs.entries, entries)) tr.setNodeMarkup(pos, undefined, { ...node.attrs, entries })
+    if (!sameEntries(node.attrs.entries, entries)) {
+      tr.setNodeMarkup(pos, undefined, { ...node.attrs, entries })
+      changed = true
+    }
     return false
   })
-  if (!tr.docChanged) return false
-  view.dispatch(tr.setMeta(tocKey, true).setMeta('addToHistory', false))
+  if (changed) tr.setMeta(tocKey, true).setMeta('addToHistory', false)
+  return changed
+}
+
+function refresh(view: EditorView, options: TocOptions): boolean {
+  const tr = view.state.tr
+  if (!refreshInto(view, options, tr)) return false
+  view.dispatch(tr)
   return true
 }
 
@@ -145,8 +167,8 @@ export const TableOfContents = Node.create<TocOptions>({
         },
       updateTablesOfContents:
         () =>
-        ({ view }) => {
-          refresh(view, this.options)
+        ({ view, tr, dispatch }) => {
+          if (dispatch) refreshInto(view, this.options, tr)
           return true
         },
     }

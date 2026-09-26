@@ -13,6 +13,8 @@ find each other.
 | Drawing (`draw`) | Ofimeo Drawing / Ofimeo Dibujo | Available |
 | Diagram (`diagram`) | Ofimeo Diagrams / Ofimeo Diagramas | Available |
 | Presentation (`slides`) | Ofimeo Slides / Ofimeo Presentaciones | Available |
+| Forms and quizzes (`forms`) | Ofimeo Forms / Ofimeo Formularios | Available |
+| PDF correction (`pdf`) | Ofimeo PDF / Ofimeo PDF | Available |
 
 Storage keys and database names keep the historical `words-online` prefix
 (`localStorage` `words-online:*`, IndexedDB and cache names), so documents made
@@ -338,6 +340,135 @@ presented or exported.
   picture that keeps the data, and SmartArt uses the drawing PowerPoint saves
   with it (else a box with its text).
 - Hand in: the .pptx plus a PNG of every slide.
+
+## Forms and quizzes
+
+Ofimeo Forms is a form and quiz app for schools that works without a server.
+
+- **Editor** (edit link, on the shared frame, edited together in real time):
+  sections (one page each for respondents), questions of the types short
+  answer, paragraph, multiple choice, checkboxes, dropdown, linear scale,
+  multiple choice grid, date, time and number. Questions can have images and
+  equations, and can be required or have their options shuffled. The form can
+  shuffle the order of questions. There is also a description, a preview, and
+  undo and redo. File upload questions are not supported.
+- **Quiz mode**: you set correct answers (a number can have a tolerance, a
+  short answer can accept several answers), points, feedback for right and
+  wrong answers and for each option. Grading is automatic; paragraphs are
+  graded by hand, with points and comments in *Responses → Grading*. Grades
+  are released per response or all at once, or right after the response is
+  received (only when no question needs manual grading). Only the respondent
+  can read a released grade.
+- **Send**: the Send button gives the form's *view* link, together with a QR
+  code and the owner code. Respondents see only the form. They type their name
+  (and optionally a class or group) and submit. If they submit offline, the
+  response is queued and sent when the connection returns. They get a receipt
+  once an editor has stored the response. *Download my response* (`.oresp`)
+  is the fallback when no teacher comes online; the teacher imports the file.
+  The teacher can also add a Nextcloud "File drop" link, and every response is
+  then uploaded there as well, encrypted. The form can be limited to one
+  response per browser.
+- **Results**: a summary per question (bar charts in SVG, grid tables, lists
+  of text answers, mean and median), individual responses, grading, and
+  statistics (mean, median, lowest and highest score, standard deviation,
+  histogram, share of correct answers per question). Export to CSV or XLSX,
+  or *Open in Ofimeo Sheets*, which creates a new spreadsheet.
+- **Templates**: self-assessment, review quiz (with answer key), family
+  survey, and peer-assessment rubric.
+
+**Who can see responses (security model).**
+- The form definition lives in the document. It is signed with the edit key,
+  like every protected document. Respondents open the view link, so they cannot
+  change the form, and they see an *owner code*: a short fingerprint of the
+  signing key that the teacher can confirm.
+- Answer keys and responses are kept in a separate *private* Yjs document.
+  Only editors have it: it is synced between editors over the room,
+  AES-GCM-encrypted with a key derived from the edit seed.
+- Each response is encrypted in the respondent's browser (X25519 ECDH with an
+  ephemeral key, then HKDF and AES-GCM). It is encrypted to the form's public
+  key, which is derived from the edit seed and published, signed, in the form.
+- Other respondents, viewers and the relays receive only ciphertext, and they
+  store nothing of other respondents' answers. Their stored form document
+  holds only receipts (response id and time) and grades that each respondent
+  alone can decrypt.
+- Responses are stored in the private document of the editors who were
+  online, and in the private document of any editor who syncs with them later.
+
+The e2e test (`tests/e2e/forms.spec.ts`) records every WebRTC message and every
+IndexedDB value in a second student's browser, and checks that the first
+student's answers never appear there.
+
+Files: `src/apps/forms/` has these modules:
+- `model.ts`: data
+- `crypto.ts`: keys, sealing
+- `transport.ts`: the `form` room action (encrypted responses and the private
+  document sync)
+- `state.ts`: receiving, receipts, releasing grades
+- `editor.ts`, `respond.ts`, `results.ts`, `charts.ts`, `export.ts`, `app.ts`
+
+The app uses one additive hook in core: `RoomProvider.makeAction()` in
+`network.ts`.
+
+Limitations:
+- An editor must be online, or must import the response files, to collect
+  responses.
+- "One response per browser" is not a hard limit.
+- A copy of a form ("Make a copy", template links) does not include the answer
+  key: export and import an `.oform` file to keep it.
+- The private document is not removed when the form is deleted from the
+  trash.
+
+## PDF correction
+
+Ofimeo PDF is for correcting students' PDFs. Open a PDF from the home screen
+(Open, drag and drop, Nextcloud), from File ▸ Open… in the app, or from a
+hand-in ZIP (the app lists the PDFs inside). The file is stored once in the
+document (as binary chunks in Yjs) and travels to collaborators with it; above
+20 MB the app asks first.
+
+- Viewing: pdf.js (`pdfjs-dist`, legacy build, loaded on demand, worker bundled
+  as a chunk) renders the visible pages only, with a text layer for selection
+  and Find (Ctrl+F), thumbnails, zoom and fit width.
+- Annotations (shared live, undo and redo): highlight, underline and strikeout
+  on selected text (tool or the bubble that appears over a selection), pen with
+  stylus pressure and eraser, text boxes, rectangles, ellipses, lines, arrows,
+  stamps (check, cross, "Good", "Revise", grade "Grade: …", custom text) and a
+  signature drawn once and kept in this browser. Blank pages can be inserted.
+- Sticky notes with replies and resolving, like the writer's comments; they live
+  in the comments channel, so comment links can add them.
+- Collaborators' pointers are shown on the pages.
+- Keyboard: V select, H highlight, U underline, K strikeout, P pen, E eraser,
+  T text box, N note, R, O, L, A shapes, S stamp, G signature, Esc back to
+  Select. Annotations are focusable (Tab): arrows move them, Enter edits the
+  text, Delete removes them. Stamps and signatures have alternative text
+  (Format ▸ Alternative text…).
+- Export (pdf-lib): File ▸ Download as ▸ "PDF with annotations (editable)"
+  writes real annotation objects (Highlight, Underline, StrikeOut, Ink, Square,
+  Circle, Line, FreeText, Stamp, Text with Popup and replies) with appearance
+  streams, so they show and stay editable in Acrobat and other readers;
+  "flattened" draws them into the page content (vector; highlights use the
+  Multiply blend mode) and keeps the notes. Hand in includes both; Save to
+  Nextcloud uses the editable one.
+- Import: annotations of those types in an opened PDF become editable
+  annotations (and are removed from the stored file so they are not drawn
+  twice). Files exported by Ofimeo carry the exact records, so a round trip
+  loses nothing.
+
+Data (`src/apps/pdf/model.ts`): `pdf-file` (chunks), `pdf-meta`, `pdf-pages`
+(page order, original page or blank), `pdf-annots` (records in view space:
+points, top-left origin, page rotation applied) and `pdf-notes` in the comments
+channel. `draw.ts` turns an annotation into drawing primitives used by both the
+screen (SVG) and the PDF writer, so both look the same.
+
+Limitations:
+- Text in exported annotations uses the standard Helvetica font: characters
+  outside Latin-1 (e.g. Greek, CJK, emoji) become "?".
+- Encrypted PDFs are exported as page images plus vector annotations, and
+  their existing annotations are not imported.
+- Original pages cannot be deleted, reordered or rotated; only blank pages can
+  be added and removed.
+- PDF forms (fields) are shown but not filled in.
+- Large PDFs make sharing slower: every collaborator downloads the whole file.
 
 ## Templates
 
@@ -796,6 +927,7 @@ src/
   apps/
     registry.ts      App list: name, icon, loader, supported files
     draw/            Drawing (Excalidraw + Yjs element sync)
+    forms/           Forms and quizzes (encrypted responses over the room, grading, results)
     diagram/         Diagrams (maxGraph)
       app.ts         Diagram app: menus, toolbar, page tabs, files
       editor.ts      The editor without its frame (graph, sync, undo, zoom, clipboard,

@@ -4,6 +4,9 @@ import JSZip from 'jszip'
 import type { IBorderData, IBorderStyleData, ICellData, IRange, IStyleData, IWorkbookData, IWorksheetData } from '@univerjs/presets'
 import { attr, child, children, parseXml, toHex } from '../../../core/formats'
 import { t } from '../../../core/i18n'
+import { CHART_COMPONENT, DRAWING_TYPE_DOM, DRAWING_TYPE_IMAGE } from '../charts/model'
+import { DrawingCollector } from './drawings'
+import { odsFrames, pxToAnchor, readOdsCharts, type OdsFrame } from './ods-charts'
 
 // Limits against huge repeats (LibreOffice pads sheets to 1M rows × 16K columns).
 const MAX_ROWS = 100_000
@@ -48,7 +51,49 @@ export async function importOds(buf: ArrayBuffer): Promise<Partial<IWorkbookData
   }
   const content = await read('content.xml')
   if (!content) throw new Error(t('Not an OpenDocument spreadsheet (content.xml missing)'))
-  return convertOds(content, await read('styles.xml'), await read('settings.xml'))
+  const data = convertOds(content, await read('styles.xml'), await read('settings.xml'))
+  try {
+    await importDrawings(zip, content, data)
+  } catch (err) {
+    console.warn('Could not read the charts and images', err)
+  }
+  return data
+}
+
+// Charts and images (draw:frame) become Univer drawings at the same place.
+async function importDrawings(zip: JSZip, content: Document, data: Partial<IWorkbookData>): Promise<void> {
+  const sheets = data.sheets ?? {}
+  const idOf = new Map(Object.entries(sheets).map(([id, s]) => [s.name ?? '', id]))
+  const drawings = new DrawingCollector(sheets as IWorkbookData['sheets'])
+  const place = (f: OdsFrame, sheetId: string, fields: Record<string, unknown>) => {
+    const s = sheets[sheetId]
+    const colWidth = (c: number) => s?.columnData?.[c]?.w ?? s?.defaultColumnWidth ?? DEFAULT_COL_PX
+    const rowHeight = (r: number) => s?.rowData?.[r]?.h ?? s?.defaultRowHeight ?? DEFAULT_ROW_PX
+    // Frames anchored to a cell are positioned from that cell's corner.
+    let x = f.x
+    let y = f.y
+    for (let c = 0; c < f.col; c++) x += colWidth(c)
+    for (let r = 0; r < f.row; r++) y += rowHeight(r)
+    const w = f.width || 100
+    const h = f.height || 100
+    drawings.add(sheetId, pxToAnchor(x, y, colWidth, rowHeight), pxToAnchor(x + w, y + h, colWidth, rowHeight), fields)
+  }
+  for (const c of await readOdsCharts(zip, content)) {
+    const host = idOf.get(c.table)
+    const source = idOf.get(c.sourceSheet)
+    if (host && source) place(c, host, { drawingType: DRAWING_TYPE_DOM, componentKey: CHART_COMPONENT, allowTransform: true, data: { ...c.spec, sheetId: source } })
+  }
+  for (const f of odsFrames(content)) {
+    const host = idOf.get(f.table)
+    const href = attr(child(f.frame, 'image'), 'href')
+    const file = href && zip.file(href.replace(/^\.\//, ''))
+    // Chart frames also hold a replacement picture of the chart.
+    if (!host || !href || !file || child(f.frame, 'object')) continue
+    const ext = href.split('.').pop()!.toLowerCase()
+    const mime = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : ext === 'gif' ? 'image/gif' : ext === 'svg' ? 'image/svg+xml' : 'image/png'
+    place(f, host, { drawingType: DRAWING_TYPE_IMAGE, imageSourceType: 'URL', source: `data:${mime};base64,${await file.async('base64')}` })
+  }
+  if (!drawings.empty) data.resources = [...(data.resources ?? []), drawings.resource()]
 }
 
 // Also used for flat .fods documents, where all three parts are the same document.

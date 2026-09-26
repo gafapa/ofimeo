@@ -4,7 +4,8 @@ import * as ExcelJSModule from 'exceljs'
 import JSZip from 'jszip'
 import type { Alignment, Borders, Cell, Color, Fill, Font, Style, Workbook, Worksheet } from 'exceljs'
 import type { ICellData, IColumnData, IRange, IRowData, IStyleData, IWorkbookData, IWorksheetData } from '@univerjs/presets'
-import { CHART_COMPONENT, DRAWING_RESOURCE, DRAWING_TYPE_DOM, DRAWING_TYPE_IMAGE, type CellAnchor } from '../charts/model'
+import { CHART_COMPONENT, DRAWING_TYPE_DOM, DRAWING_TYPE_IMAGE } from '../charts/model'
+import { DrawingCollector } from './drawings'
 import { readXlsxCharts } from './xlsx-charts'
 
 // The browser build of ExcelJS is a UMD bundle; Vite exposes it as a default export.
@@ -327,11 +328,11 @@ export async function importXlsx(buf: ArrayBuffer): Promise<Partial<IWorkbookDat
     for (const image of ws.getImages()) {
       const media = wb.getImage(Number(image.imageId)) as { buffer?: ArrayBuffer; base64?: string; extension?: string }
       const base64 = media.base64 ?? (media.buffer ? bytesToBase64(new Uint8Array(media.buffer)) : '')
-      const { tl, br } = image.range as unknown as { tl: { nativeCol: number; nativeColOff: number; nativeRow: number; nativeRowOff: number }; br?: { nativeCol: number; nativeColOff: number; nativeRow: number; nativeRowOff: number } }
-      if (!base64 || !tl || !br) continue
+      const { tl, br, ext } = image.range as unknown as { tl: { nativeCol: number; nativeColOff: number; nativeRow: number; nativeRowOff: number }; br?: { nativeCol: number; nativeColOff: number; nativeRow: number; nativeRowOff: number }; ext?: { width: number; height: number } }
+      if (!base64 || !tl || (!br && !ext)) continue
       const anchor = (a: typeof tl) => ({ column: a.nativeCol, columnOffset: Math.round(a.nativeColOff / 9525), row: a.nativeRow, rowOffset: Math.round(a.nativeRowOff / 9525) })
       const source = base64.startsWith('data:') ? base64 : `data:image/${media.extension === 'jpeg' ? 'jpeg' : media.extension ?? 'png'};base64,${base64}`
-      drawings.add(`sheet-${i + 1}`, anchor(tl), anchor(br), { drawingType: DRAWING_TYPE_IMAGE, imageSourceType: 'URL', source })
+      drawings.add(`sheet-${i + 1}`, anchor(tl), br ? anchor(br) : { width: ext!.width, height: ext!.height }, { drawingType: DRAWING_TYPE_IMAGE, imageSourceType: 'URL', source })
     }
   })
   try {
@@ -367,48 +368,6 @@ function bytesToBase64(bytes: Uint8Array): string {
   let s = ''
   for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
   return btoa(s)
-}
-
-// Builds Univer's drawing resource: cell anchors plus scene pixels (which include
-// the default row/column header sizes).
-export class DrawingCollector {
-  private data: Record<string, { data: Record<string, unknown>; order: string[] }> = {}
-  private n = 0
-  constructor(private readonly sheets: IWorkbookData['sheets']) {}
-  get empty() {
-    return !Object.keys(this.data).length
-  }
-  add(sheetId: string, from: CellAnchor, to: CellAnchor, fields: Record<string, unknown>) {
-    const sheet = this.sheets[sheetId]
-    const colWidth = (c: number) => sheet?.columnData?.[c]?.w ?? sheet?.defaultColumnWidth ?? 88
-    const rowHeight = (r: number) => sheet?.rowData?.[r]?.h ?? sheet?.defaultRowHeight ?? 24
-    const x = (a: CellAnchor) => {
-      let v = 46 + a.columnOffset
-      for (let c = 0; c < a.column; c++) v += colWidth(c)
-      return v
-    }
-    const y = (a: CellAnchor) => {
-      let v = 20 + a.rowOffset
-      for (let r = 0; r < a.row; r++) v += rowHeight(r)
-      return v
-    }
-    const drawingId = `imported-${++this.n}`
-    const sheetTransform = { from, to, flipY: false, flipX: false, angle: 0, skewX: 0, skewY: 0 }
-    const entry = (this.data[sheetId] ??= { data: {}, order: [] })
-    entry.data[drawingId] = {
-      unitId: 'workbook',
-      subUnitId: sheetId,
-      drawingId,
-      ...fields,
-      sheetTransform,
-      axisAlignSheetTransform: sheetTransform,
-      transform: { left: x(from), top: y(from), width: Math.max(1, x(to) - x(from)), height: Math.max(1, y(to) - y(from)), flipY: false, flipX: false, angle: 0, skewX: 0, skewY: 0 },
-    }
-    entry.order.push(drawingId)
-  }
-  resource() {
-    return { name: DRAWING_RESOURCE, data: JSON.stringify(this.data) }
-  }
 }
 
 type InternalLink = { ref: string; location: string }

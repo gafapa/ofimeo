@@ -46,15 +46,20 @@ export function fontStack(name: string): string {
     : /times|georgia|garamond|cambria|serif|book|palatino/i.test(name) && !/sans/i.test(name)
       ? 'serif'
       : 'sans-serif'
-  const metricCompatible: Record<string, string> = {
-    calibri: 'Carlito',
-    cambria: 'Caladea',
-    arial: 'Liberation Sans',
-    'times new roman': 'Liberation Serif',
-    'courier new': 'Liberation Mono',
+  // Installed metric-compatible fonts first, then the ones shipped with the app (fonts.ts).
+  const metricCompatible: Record<string, string[]> = {
+    calibri: ['Carlito'],
+    cambria: ['Caladea'],
+    arial: ['Liberation Sans', 'Arimo'],
+    helvetica: ['Liberation Sans', 'Arimo'],
+    'times new roman': ['Liberation Serif', 'Tinos'],
+    'courier new': ['Liberation Mono', 'Cousine'],
+    'liberation sans': ['Arimo'],
+    'liberation serif': ['Tinos'],
+    'liberation mono': ['Cousine'],
   }
-  const alt = metricCompatible[name.toLowerCase()]
-  return [`"${name}"`, alt && `"${alt}"`, generic].filter(Boolean).join(', ')
+  const alts = metricCompatible[name.toLowerCase()] ?? []
+  return [`"${name}"`, ...alts.map((a) => `"${a}"`), generic].join(', ')
 }
 
 interface Options {

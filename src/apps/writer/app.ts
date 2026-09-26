@@ -36,6 +36,7 @@ import { authorColor } from './formats/review'
 import { SpellController, spellExtension } from './spell/plugin'
 import { languageButton, openSpellDialog } from './spell/ui'
 import { ReferenceStore } from './references/store'
+import { installDocumentFonts } from './fonts'
 
 const UNTITLED = t('Untitled document')
 const ZOOM_KEY = 'words-online:zoom'
@@ -114,6 +115,7 @@ export function mountWriter(session: Session, root: HTMLElement): WriterContext 
   const access = session.access
   const editable = session.canEdit
   const meta = doc.getMap<unknown>('meta')
+  installDocumentFonts()
   const shell = renderShell(appInfo('writer'), root)
   shell.main.innerHTML = MAIN_HTML
   for (const [sel, node] of [['[data-prev]', ChevronUp], ['[data-next]', ChevronDown], ['[data-close]', X]] as const) shell.main.querySelector(sel)!.append(icon(node, 16))
@@ -414,6 +416,7 @@ export function mountWriter(session: Session, root: HTMLElement): WriterContext 
     { ext: 'odt', label: t('OpenDocument text (.odt)'), build: exportBlob('odt') },
     { ext: 'html', label: t('Web page (.html)'), build: exportBlob('html') },
     { ext: 'txt', label: t('Plain text (.txt)'), build: exportBlob('txt') },
+    { ext: 'pdf', label: t('PDF document (.pdf)'), build: () => import('./pdf').then((m) => m.exportPdf(ctx)) },
   ]
 
   const print = async () => {
@@ -568,7 +571,7 @@ export function mountWriter(session: Session, root: HTMLElement): WriterContext 
   })
 
   // Handle for automated browser tests in development builds only.
-  if (import.meta.env.DEV) Object.assign(window, { editor, spell })
+  if (import.meta.env.DEV) Object.assign(window, { editor, spell, writer: ctx })
 
   updateStatus()
   updateZoomBox()

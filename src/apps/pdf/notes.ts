@@ -105,7 +105,11 @@ export class Notes {
   }
 
   private focusEditor(id: string): void {
-    requestAnimationFrame(() => this.list.querySelector<HTMLTextAreaElement>(`[data-note="${id}"] textarea`)?.focus())
+    // Right away, so typing that follows the click lands in the note.
+    const input = () => this.list.querySelector<HTMLTextAreaElement>(`[data-note="${id}"] textarea`)
+    const box = input()
+    if (box) box.focus()
+    else requestAnimationFrame(() => input()?.focus())
   }
 
   select(id: string): void {

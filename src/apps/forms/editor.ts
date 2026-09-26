@@ -242,7 +242,7 @@ export function createEditor(state: FormState): FormEditor {
         const fb = text(`${item.id}:ofb:${o.id}`, key.optionFeedback[o.id] ?? '', t('Feedback when this option is chosen (optional)'), (v) =>
           setKey(item.id, { optionFeedback: { ...readKey(priv, item.id).optionFeedback, [o.id]: v } }),
         )
-        box.append(el('div', { class: 'fm-opt-feedback' }, fb))
+        box.append(el('div', { class: `fm-opt-feedback${key.optionFeedback[o.id] ? ' filled' : ''}` }, fb))
       }
     })
     const add = el('button', { type: 'button', class: 'fm-link', textContent: field === 'rows' ? t('Add row') : item.type === 'grid' ? t('Add column') : t('Add option') })

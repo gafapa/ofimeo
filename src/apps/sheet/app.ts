@@ -44,7 +44,7 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
   const commands = univer.__getInjector().get(ICommandService)
   const cmds = createCommands(univer, univerAPI)
   const canEdit = () => session.canEdit
-  registerFunctionAliases(univer)
+  void registerFunctionAliases(univer, univerAPI)
 
   // Charts: registered before the first workbook is created (it may contain charts).
   const charts = registerCharts(univer, {
@@ -228,7 +228,7 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
   // Handles for automated browser tests in development builds only.
   if (import.meta.env.DEV) {
     const chartsApi = await import('./charts/view')
-    Object.assign(window, { univer, univerAPI, sheetSync: sync, awareness: session.awareness, sheetCharts: chartsApi, sheetCommands: cmds })
+    Object.assign(window, { univer, univerAPI, sheetSync: sync, awareness: session.awareness, sheetCharts: chartsApi, sheetCommands: cmds, sheetShareUrl: (a: 'view' | 'comment' | 'edit') => session.shareUrl(a) })
   }
 }
 

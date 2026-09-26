@@ -38,7 +38,9 @@ export const LOCAL = Symbol('forms-local')
 export async function openFormState(session: Session): Promise<FormState> {
   const code = session.keys.link.verify ? await fingerprint(session.keys.link.verify) : ''
   if (!session.canEdit || !session.keys.link.edit) {
-    return { session, priv: null, keys: null, transport: new FormsTransport(session), fingerprint: code }
+    const state: FormState = { session, priv: null, keys: null, transport: new FormsTransport(session), fingerprint: code }
+    if (import.meta.env.DEV) Object.assign(window, { formState: state })
+    return state
   }
   const keys = await editorKeys(session.keys.link.edit)
   const priv = new Y.Doc()

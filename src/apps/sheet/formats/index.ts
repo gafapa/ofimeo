@@ -3,6 +3,7 @@
 
 import type { IWorkbookData } from '@univerjs/presets'
 import { t } from '../../../core/i18n'
+import { canonicalWorkbook } from '../functions'
 
 export type SheetExportFormat = 'xlsx' | 'ods' | 'csv'
 
@@ -28,7 +29,9 @@ export async function importSheetFile(file: File): Promise<Partial<IWorkbookData
 }
 
 // `sheetId` selects the sheet for single-sheet formats (CSV).
-export async function exportSheetFile(format: SheetExportFormat, data: IWorkbookData, sheetId?: string): Promise<Blob> {
+export async function exportSheetFile(format: SheetExportFormat, snapshot: IWorkbookData, sheetId?: string): Promise<Blob> {
+  // Spanish function names typed in formulas are saved with their English names.
+  const data = canonicalWorkbook(snapshot)
   switch (format) {
     case 'xlsx':
       return (await load('xlsx-export')).exportXlsx(data)

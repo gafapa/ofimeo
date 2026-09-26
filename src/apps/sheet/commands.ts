@@ -73,6 +73,7 @@ export const UNIVER_COMMANDS = {
   protectRange: 'sheet.command.add-range-protection-from-toolbar',
   // Drawings (charts are float DOM drawings)
   deleteDrawing: 'sheet.command.delete-drawing',
+  removeDrawings: 'sheet.command.remove-sheet-image',
   // Observed ids (not executed by menus)
   setSelections: 'sheet.operation.set-selections',
   setZoom: 'sheet.operation.set-zoom-ratio',

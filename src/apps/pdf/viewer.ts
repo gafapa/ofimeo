@@ -140,7 +140,9 @@ export class Viewer {
   }
 
   applyFit(): void {
-    const widest = Math.max(1, ...this.views.map((v) => v.entry.w))
+    // The usual page width (a few landscape pages should not shrink the others).
+    const widths = this.views.map((v) => v.entry.w).sort((a, b) => a - b)
+    const widest = widths[Math.floor(widths.length / 2)] ?? 1
     const width = this.scroller.clientWidth - 32
     if (width <= 0) return
     this.zoom = Math.min(5, Math.max(0.25, width / (widest * CSS_UNITS)))

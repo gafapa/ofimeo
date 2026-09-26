@@ -100,6 +100,10 @@ const ENTRIES: Entry[] = [
     ['Lluvia de ideas', 'Chuvia de ideas', 'Remue-méninges', 'Brainstorming'],
     ['Pizarra con tema central y notas de colores para generar ideas.', 'Lousa con tema central e notas de cores para xerar ideas.', 'Tableau avec thème central et notes de couleur pour générer des idées.', 'Tafel mit zentralem Thema und farbigen Notizen zum Sammeln von Ideen.'],
   ],
+  ['form-self-assessment', 'forms', ['Autoevaluación', 'Autoavaliación', 'Autoévaluation', 'Selbsteinschätzung'], ['Cuadrícula de frecuencia, escala de aprendizaje y preguntas de reflexión.', 'Cuadrícula de frecuencia, escala de aprendizaxe e preguntas de reflexión.', 'Grille de fréquence, échelle d’apprentissage et questions de réflexion.', 'Häufigkeitsraster, Lernskala und Reflexionsfragen.']],
+  ['form-review-quiz', 'forms', ['Cuestionario de repaso', 'Cuestionario de repaso', 'Quiz de révision', 'Wiederholungsquiz'], ['Autocorregible: respuestas correctas, puntos, retroalimentación y nota automática.', 'Autocorrixible: respostas correctas, puntos, retroalimentación e nota automática.', 'Autocorrigé : bonnes réponses, points, commentaires et note automatique.', 'Selbstkorrigierend: richtige Antworten, Punkte, Rückmeldung und automatische Note.']],
+  ['form-family-survey', 'forms', ['Encuesta a las familias', 'Enquisa ás familias', 'Enquête auprès des familles', 'Elternumfrage'], ['Satisfacción, canales de comunicación, actividades y sugerencias.', 'Satisfacción, canles de comunicación, actividades e suxestións.', 'Satisfaction, moyens de communication, activités et suggestions.', 'Zufriedenheit, Kommunikationswege, Aktivitäten und Anregungen.']],
+  ['form-peer-rubric', 'forms', ['Rúbrica de coevaluación', 'Rúbrica de coavaliación', 'Grille d’évaluation par les pairs', 'Peer-Bewertungsraster'], ['El alumnado evalúa a un compañero con criterios y niveles de logro.', 'O alumnado avalía a un compañeiro con criterios e niveis de logro.', 'Les élèves évaluent un camarade selon des critères et des niveaux.', 'Schüler bewerten eine Mitschülerin oder einen Mitschüler nach Kriterien und Stufen.']],
 ]
 
 async function create(id: string, app: DocType, lang: Lang, name: string): Promise<string> {
@@ -114,6 +118,8 @@ async function create(id: string, app: DocType, lang: Lang, name: string): Promi
       return (await import('./draw')).createDrawTemplate(id, lang, name)
     case 'slides':
       return (await import('./slides')).createSlidesTemplate(id, lang, name)
+    case 'forms':
+      return (await import('./forms')).createFormTemplate(id, lang, name)
     default:
       throw new Error(`No templates for ${app}`)
   }

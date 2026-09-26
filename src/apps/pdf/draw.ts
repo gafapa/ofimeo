@@ -135,7 +135,12 @@ export function prims(a: Annot, measure: Measure): Prim[] {
       const { x = 0, y = 0, w = 0, h = 0 } = a
       if (!a.text) return [{ k: 'path', d: glyphCmds(a.glyph ?? 'check', x, y, Math.min(w, h)), stroke: color, width: Math.min(w, h) * 0.13, opacity }]
       const size = a.size ?? 16
-      const out: Prim[] = [{ k: 'path', d: roundRectCmds(x + 1, y + 1, w - 2, h - 2, h * 0.2), stroke: color, width: Math.max(1, size * 0.1), fill: undefined, opacity }]
+      const frame = roundRectCmds(x + 1, y + 1, w - 2, h - 2, h * 0.2)
+      // A light background keeps the stamp readable over the page's text.
+      const out: Prim[] = [
+        { k: 'path', d: frame, fill: '#ffffff', opacity: 0.85 },
+        { k: 'path', d: frame, stroke: color, width: Math.max(1, size * 0.1), opacity },
+      ]
       let tx = x + size * 0.6
       if (a.glyph) {
         const g = h * 0.6

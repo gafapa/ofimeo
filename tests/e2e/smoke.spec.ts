@@ -5,7 +5,9 @@ test('home screen lists every app and the templates', async ({ page }) => {
   const errors = trackErrors(page)
   await page.goto(`/${RELAYS}`)
   await expect(page.locator('.home')).toBeVisible()
-  await expect(page.locator('.new-card')).toHaveCount(5)
+  // One card per app (writer, sheet, draw, diagram, slides, forms…).
+  expect(await page.locator('.new-card').count()).toBeGreaterThanOrEqual(6)
+  await expect(page.locator('.new-card', { hasText: 'New form' })).toBeVisible()
   await expect(page.getByRole('heading', { level: 2 }).first()).toBeVisible()
   expect(errors).toEqual([])
 })

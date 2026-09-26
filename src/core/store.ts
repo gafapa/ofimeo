@@ -9,8 +9,8 @@ const DOCS_KEY = 'words-online:docs'
 const USER_KEY = 'words-online:user'
 const COLORS = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#469990', '#f032e6', '#9a6324', '#800000', '#000075']
 
-export type DocType = 'writer' | 'sheet' | 'draw' | 'diagram' | 'slides' | 'forms'
-export const DOC_TYPES: DocType[] = ['writer', 'sheet', 'draw', 'diagram', 'slides', 'forms']
+export type DocType = 'writer' | 'sheet' | 'draw' | 'diagram' | 'slides' | 'forms' | 'pdf'
+export const DOC_TYPES: DocType[] = ['writer', 'sheet', 'draw', 'diagram', 'slides', 'forms', 'pdf']
 
 export interface DocEntry {
   id: string

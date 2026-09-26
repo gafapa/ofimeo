@@ -4,7 +4,9 @@ import JSZip from 'jszip'
 import { getSchema, type JSONContent } from '@tiptap/core'
 import type { Schema } from '@tiptap/pm/model'
 import { allExtensions } from '../editor/extensions'
-import { DEFAULT_FONT, DEFAULT_FONT_SIZE_PT, DEFAULT_PAGE, PAGE_SIZES_MM, langCode, type CommentData, type ImportedDocument, type PageSettings, type PageSize } from './types'
+import { DEFAULT_FONT, DEFAULT_FONT_SIZE_PT, DEFAULT_PAGE, PAGE_SIZES_MM, langCode, normalizeColumns, sectionAttrs, type Columns, type CommentData, type ImportedDocument, type PageSettings, type PageSize } from './types'
+import { clean } from '../references/parse'
+import { CITE_LANGS, CITE_STYLES, newSourceId, type CiteSettings, type Person, type Source, type SourceType } from '../references/types'
 import { attr, bytesToDataUrl, child, children, mimeFromPath, parseXml, toHex } from '../../../core/formats'
 import { mathmlToLatex } from './math'
 import { authorColor } from './review'
@@ -38,6 +40,18 @@ interface Ctx {
   // Last number of top-level ordered lists, for continued numbering.
   listEnds: Map<string, number>
   review: Review
+  refs: Refs
+}
+
+// Sections and bibliography state shared by the body walk.
+interface Refs {
+  // Bibliography mark identifier → source id; sources found in marks or meta.
+  marks: Map<string, string>
+  sources: Source[]
+  // Master pages: name → page settings and columns.
+  masters: Map<string, { page: PageSettings; columns: Columns }>
+  master: string | null
+  started: boolean
 }
 
 interface Change {
@@ -102,7 +116,10 @@ export async function importOdt(file: ArrayBuffer): Promise<ImportedDocument> {
   for (const root of [content, stylesRoot]) if (root) await loadImages(root, zip, images)
 
   const review: Review = { comments: [], open: new Set(), points: new Set(), changes: readChanges(content), inserting: [], deleting: null, formulas: await loadFormulas(content, zip) }
-  const common: Ctx = { styles: new Map(), defaults: new Map(), lists: new Map(), fonts: new Map(), images, listEnds: new Map(), review }
+  const meta = await readMeta(zip)
+  const refs: Refs = { marks: new Map(), sources: meta.sources, masters: new Map(), master: null, started: false }
+  for (const [label, id] of Object.entries(meta.marks)) if (meta.sources.some((src) => src.id === id)) refs.marks.set(label, id)
+  const common: Ctx = { styles: new Map(), defaults: new Map(), lists: new Map(), fonts: new Map(), images, listEnds: new Map(), review, refs }
   for (const root of [stylesRoot, content]) readFonts(child(root, 'font-face-decls'), common)
   readStyles(child(stylesRoot, 'styles'), common, false)
   const scope = (auto: Element | null): Ctx => {
@@ -120,11 +137,18 @@ export async function importOdt(file: ArrayBuffer): Promise<ImportedDocument> {
     ctx.lang = languageOf(styleChain(ctx, 'Standard', 'paragraph'), ctx) ?? undefined
   }
 
+  // Master pages with their page layouts (a change of master page starts a new section).
+  const masters = kids(child(stylesRoot, 'master-styles'), 'master-page')
+  for (const m of masters) {
+    const l = kids(child(stylesRoot, 'automatic-styles'), 'page-layout').find((x) => attr(x, 'name') === attr(m, 'page-layout-name'))
+    if (l) refs.masters.set(attr(m, 'name') ?? '', { page: pageSettings(l, !!child(m, 'header'), !!child(m, 'footer')), columns: columnsOf(child(l, 'page-layout-properties')) })
+  }
   const text = child(child(content, 'body'), 'text')
-  const body = text ? walkBlocks(text, bodyCtx, { depth: 0, listStyle: null, top: true }) : []
+  const walked = text ? walkBlocks(text, bodyCtx, { depth: 0, listStyle: null, top: true }) : []
+  // A section break right before another one leaves an empty section: keep the later one.
+  const body = walked.filter((n, i) => !(n.type === 'sectionBreak' && walked[i + 1]?.type === 'sectionBreak'))
 
   // Header, footer and page layout come from the master page of the first paragraph.
-  const masters = kids(child(stylesRoot, 'master-styles'), 'master-page')
   const first = text ? firstBlock(text) : null
   const masterName = first
     ? styleChain(bodyCtx, attr(first, 'style-name'), first.localName === 'table' ? 'table' : 'paragraph')
@@ -146,9 +170,118 @@ export async function importOdt(file: ArrayBuffer): Promise<ImportedDocument> {
     header: header ? normalize(header) : null,
     footer: footer ? normalize(footer) : null,
     page: layout ? pageSettings(layout, !!header, !!footer) : DEFAULT_PAGE,
+    columns: layout ? columnsOf(child(layout, 'page-layout-properties')) : undefined,
     lang: bodyCtx.lang,
     comments: review.comments,
+    sources: refs.sources,
+    citeStyle: meta.cite,
   }
+}
+
+// Our sources, citation style and mark identifiers, kept in meta.xml user fields.
+async function readMeta(zip: JSZip): Promise<{ sources: Source[]; cite?: CiteSettings; marks: Record<string, string> }> {
+  const xml = await zip.file('meta.xml')?.async('text')
+  const out: { sources: Source[]; cite?: CiteSettings; marks: Record<string, string> } = { sources: [], marks: {} }
+  if (!xml) return out
+  for (const f of parseXml(xml).getElementsByTagNameNS('*', 'user-defined')) {
+    try {
+      const value = JSON.parse(f.textContent ?? '')
+      const name = attr(f, 'name')
+      if (name === 'OfimeoSources' && Array.isArray(value)) out.sources = value
+      else if (name === 'OfimeoCitationStyle' && CITE_STYLES.includes(value.style) && CITE_LANGS.includes(value.lang)) out.cite = value
+      else if (name === 'OfimeoMarks' && value && typeof value === 'object') out.marks = value
+    } catch {
+      // Not ours.
+    }
+  }
+  return out
+}
+
+function columnsOf(props: Element | null): Columns {
+  const cols = child(props, 'columns')
+  const count = Number(attr(cols, 'column-count')) || 1
+  return normalizeColumns({ count, gap: attr(cols, 'column-gap') ? toCm(attr(cols, 'column-gap')) * 10 : 12.5, separator: !!child(cols, 'column-sep') && attr(child(cols, 'column-sep'), 'style') !== 'none' })
+}
+
+const FROM_ODF: Record<string, SourceType> = {
+  book: 'book',
+  booklet: 'book',
+  manual: 'book',
+  proceedings: 'book',
+  inbook: 'chapter',
+  incollection: 'chapter',
+  inproceedings: 'chapter',
+  conference: 'chapter',
+  article: 'article',
+  journal: 'article',
+  techreport: 'report',
+  phdthesis: 'thesis',
+  mastersthesis: 'thesis',
+  www: 'web',
+}
+
+function odfPeople(value: string | null): Person[] {
+  if (!value) return []
+  return value
+    .split(/;|\s+and\s+/)
+    .map((v) => v.trim())
+    .filter(Boolean)
+    .map((v) => {
+      const comma = v.indexOf(',')
+      return comma > 0 ? { family: v.slice(0, comma).trim(), given: v.slice(comma + 1).trim() || undefined } : { family: v }
+    })
+}
+
+// The source of a bibliography mark (by identifier, created from the mark's fields the first time).
+function markSource(el: Element, ctx: Ctx): string {
+  const identifier = attr(el, 'identifier') ?? ''
+  const known = ctx.refs.marks.get(identifier)
+  if (known) return known
+  const a = (name: string) => attr(el, name) || undefined
+  const type = FROM_ODF[a('bibliography-type') ?? ''] ?? (a('url') ? 'web' : 'other')
+  const year = a('year')
+  const month = a('month')
+  const src = clean({
+    id: newSourceId() + ctx.refs.sources.length,
+    key: identifier || undefined,
+    type,
+    authors: odfPeople(attr(el, 'author')),
+    editors: odfPeople(attr(el, 'editor')),
+    title: a('title') ?? '',
+    container: a('journal') ?? a('booktitle') ?? a('howpublished') ?? a('series'),
+    date: year ? (month && /^\d{1,2}$/.test(month) ? `${year}-${month.padStart(2, '0')}` : year) : undefined,
+    publisher: a('publisher') ?? a('school') ?? a('institution') ?? a('organizations'),
+    place: a('address'),
+    edition: a('edition'),
+    volume: a('volume'),
+    issue: type === 'report' ? undefined : a('number'),
+    number: type === 'report' ? a('number') : undefined,
+    pages: a('pages'),
+    url: a('url'),
+    doi: a('custom4'),
+    accessed: a('custom3'),
+  })
+  ctx.refs.sources.push(src)
+  ctx.refs.marks.set(identifier, src.id)
+  return src.id
+}
+
+function tocNode(el: Element, ctx: Ctx): JSONContent {
+  const source = child(el, 'table-of-content-source')
+  const maxLevel = Math.min(6, Math.max(1, Number(attr(source, 'outline-level')) || 3))
+  const bodyEl = child(el, 'index-body')
+  const title = plainText(child(child(bodyEl, 'index-title'), 'p') ?? child(child(bodyEl, 'index-title'), 'h') ?? document.createElement('x')).trim() || (child(source, 'index-title-template')?.textContent ?? '').trim()
+  const entries: { level: number; text: string; page?: number }[] = []
+  for (const p of kids(bodyEl, 'p')) {
+    const chain = styleChain(ctx, attr(p, 'style-name'), 'paragraph')
+    const level = chain.map((st) => /^contents (\d+)$/.exec(st.displayName.toLowerCase())).find(Boolean)
+    const text = plainText(p)
+    const tab = text.lastIndexOf('\t')
+    const label = (tab >= 0 ? text.slice(0, tab) : text).replace(/\t/g, ' ').trim()
+    const page = tab >= 0 ? Number(text.slice(tab + 1).trim()) : NaN
+    if (label) entries.push({ level: level ? Math.min(6, Number(level[1])) : 1, text: label, ...(Number.isFinite(page) && page > 0 ? { page } : {}) })
+  }
+  return { type: 'tableOfContents', attrs: { maxLevel, title, entries } }
 }
 
 // ---- Review: tracked changes, comments, formulas ----
@@ -285,15 +418,31 @@ function walkItems(parent: Element, ctx: Ctx, walk: Walk): Item[] {
         if (content.length) items.push({ node: { type: 'paragraph', content } })
         break
       }
-      case 'section':
-      case 'index-body':
       case 'table-of-content':
+        items.push({ node: tocNode(el, ctx) })
+        break
+      case 'bibliography':
+        items.push({ node: { type: 'bibliography' } })
+        break
+      case 'section': {
+        // Sections with text columns become continuous section breaks around their content.
+        const props = child(styleChain(ctx, attr(el, 'style-name'), 'section')[0]?.el ?? null, 'section-properties')
+        const columns = columnsOf(props)
+        const master = ctx.refs.masters.get(ctx.refs.master ?? 'Standard') ?? ctx.refs.masters.values().next().value
+        const page = master?.page ?? DEFAULT_PAGE
+        if (walk.top && columns.count > 1) {
+          items.push({ node: { type: 'sectionBreak', attrs: sectionAttrs({ start: 'continuous', page, columns }) } })
+          items.push(...walkItems(el, ctx, walk))
+          items.push({ node: { type: 'sectionBreak', attrs: sectionAttrs({ start: 'continuous', page, columns: normalizeColumns(master?.columns) }) } })
+        } else items.push(...walkItems(el, ctx, walk))
+        break
+      }
+      case 'index-body':
       case 'alphabetical-index':
       case 'illustration-index':
       case 'table-index':
       case 'object-index':
       case 'user-index':
-      case 'bibliography':
       case 'numbered-paragraph':
         items.push(...walkItems(el, ctx, walk))
         break
@@ -331,7 +480,17 @@ function paragraph(p: Element, ctx: Ctx, walk: Walk): Item[] {
   const chain = styleChain(ctx, attr(p, 'style-name'), 'paragraph')
   const names = chain.map((s) => s.displayName.toLowerCase())
   const items: Item[] = []
-  const breakBefore = walk.top && prop(chain, 'paragraph-properties', 'break-before') === 'page'
+  // A different master page starts a new section on a new page.
+  if (walk.top) {
+    const master = chain.map((st) => attr(st.el, 'master-page-name')).find((m) => m !== null && m !== undefined)
+    if (master && ctx.refs.started && master !== ctx.refs.master && ctx.refs.masters.has(master)) {
+      const m = ctx.refs.masters.get(master)!
+      items.push({ node: { type: 'sectionBreak', attrs: sectionAttrs({ start: 'nextPage', page: m.page, columns: m.columns }) } })
+    }
+    if (master && ctx.refs.masters.has(master)) ctx.refs.master = master
+    ctx.refs.started = true
+  }
+  const breakBefore = walk.top && prop(chain, 'paragraph-properties', 'break-before') === 'page' && !items.length
   const breakAfter = walk.top && prop(chain, 'paragraph-properties', 'break-after') === 'page'
   if (breakBefore) items.push({ node: { type: 'pageBreak' } })
 
@@ -550,10 +709,13 @@ function table(el: Element, ctx: Ctx): JSONContent {
 
 class InlineBuilder {
   nodes: JSONContent[] = []
+  // The last node is a citation with nothing after it (next marks join it).
+  adjacentCitation = false
   // Whether the last character was a collapsible space (true at paragraph start).
   private space = true
 
   text(text: string, fmt: Fmt, ctx: Ctx, literal: boolean): void {
+    if (text) this.adjacentCitation = false
     if (literal) {
       // ODF collapses XML whitespace; explicit spaces use <text:s/>.
       text = text.replace(/[\t\n\r ]+/g, ' ')
@@ -571,6 +733,7 @@ class InlineBuilder {
   }
 
   node(node: JSONContent, ctx?: Ctx): void {
+    this.adjacentCitation = false
     if (ctx && node.type !== 'hardBreak') {
       const review = reviewMarks(ctx)
       if (review.length) node.marks = [...(node.marks ?? []), ...review]
@@ -689,6 +852,23 @@ function inlineElement(el: Element, ctx: Ctx, fmt: Fmt, out: InlineBuilder): voi
         })
         ctx.review.deleting = null
       }
+      break
+    }
+    case 'bibliography-mark': {
+      // Word citations kept by LibreOffice ("CITATION tag \l 1033"): without their sources, keep the text.
+      if (/^\s*CITATION\b/.test(attr(el, 'identifier') ?? '') && !ctx.refs.marks.has(attr(el, 'identifier') ?? '')) {
+        inline(el, ctx, fmt, out)
+        break
+      }
+      // Adjacent marks (one per source) form one citation.
+      const id = markSource(el, ctx)
+      const last = out.nodes[out.nodes.length - 1]
+      const locator = attr(el, 'custom5') ?? ''
+      if (last?.type === 'citation' && out.adjacentCitation) {
+        last.attrs!.ids = [...(last.attrs!.ids as string[]), id]
+        if (locator) last.attrs!.locator = locator
+      } else out.node({ type: 'citation', attrs: { ids: [id], locator } }, ctx)
+      out.adjacentCitation = true
       break
     }
     case 'bookmark':

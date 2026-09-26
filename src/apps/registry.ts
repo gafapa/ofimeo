@@ -93,6 +93,31 @@ export const APPS: AppInfo[] = [
     accept: '.pptx',
     load: () => import('./slides'),
   },
+  {
+    type: 'forms',
+    name: t('Form'),
+    product: t('Ofimeo Forms'),
+    plural: t('Forms'),
+    newLabel: t('New form'),
+    untitled: t('Untitled form'),
+    letter: 'F',
+    color: '#00897b',
+    accept: '.oform',
+    load: () => import('./forms'),
+  },
+  {
+    type: 'pdf',
+    name: t('PDF'),
+    product: t('Ofimeo PDF'),
+    plural: t('PDFs'),
+    newLabel: t('Correct a PDF'),
+    untitled: t('Untitled PDF'),
+    letter: 'A',
+    color: '#b3261e',
+    // Hand-in ZIPs open the PDF inside them.
+    accept: '.pdf,.zip',
+    load: () => import('./pdf'),
+  },
 ]
 
 // Name of the suite (a brand: never translated).

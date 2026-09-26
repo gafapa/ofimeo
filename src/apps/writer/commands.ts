@@ -208,7 +208,7 @@ export function writerFrame(ctx: WriterContext): Pick<FrameSpec, 'file' | 'edit'
   const file: FileMenuOptions = {
     openFile: ctx.openFile,
     print: ctx.print,
-    download: [{ label: t('PDF (via Print)'), run: ctx.print }],
+    download: [],
     slots: { print: [{ label: t('Page setup…'), run: () => dialogs().then((d) => d.pageSetup(ctx)), enabled: editable }] },
     details: () => [
       [t('Pages'), String(ctx.pages())],

@@ -41,7 +41,7 @@ import {
 } from 'docx'
 import { DEFAULT_FONT, DEFAULT_FONT_SIZE_PT, HEADING_SIZES_PT, PAGE_SIZES_MM, SUBTITLE_SIZE_PT, TITLE_SIZE_PT, documentSections, langTag, type CommentData, type DocumentData, type Section } from './types'
 import { escapeXml } from '../../../core/formats'
-import { tocHeadingsJSON } from '../editor/toc'
+import { tocBookmarks, tocHeadingsJSON } from '../editor/toc'
 import { citedIdsJSON, idsOf } from '../references/nodes'
 import { citationText, formatBibliography, yearSuffixes } from '../references/format'
 import { DEFAULT_CITE, type CiteSettings, type Run, type Source } from '../references/types'
@@ -273,19 +273,6 @@ function sectionProperties(section: Section) {
     },
     column: columns.count > 1 ? { count: columns.count, space: Math.round(columns.gap * MM_TO_TWIPS), separate: columns.separator, equalWidth: true } : undefined,
   }
-}
-
-// Bookmark names for the headings of every table of contents in the body.
-function tocBookmarks(body: JSONContent): Map<JSONContent, string> {
-  const out = new Map<JSONContent, string>()
-  let max = 0
-  const walk = (n: JSONContent) => {
-    if (n.type === 'tableOfContents') max = Math.max(max, Number(n.attrs?.maxLevel) || 3)
-    n.content?.forEach(walk)
-  }
-  walk(body)
-  if (max) tocHeadingsJSON(body, max).forEach((h, i) => out.set(h, `_Toc${String(i + 1).padStart(9, '0')}`))
-  return out
 }
 
 // Adds the Word bibliography part (customXml with b:Sources) to a finished package.

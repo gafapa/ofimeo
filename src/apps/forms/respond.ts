@@ -65,7 +65,8 @@ export async function mountRespond(state: FormState, container: HTMLElement, opt
   } catch {
     // No storage.
   }
-  if (!draft.name && !preview && !/^Guest \d+$/.test(session.user.name) && !/\d+$/.test(session.user.name)) draft.name = session.user.name
+  // Automatic names ("Guest 123") are not used.
+  if (!draft.name && !preview && !/\d+$/.test(session.user.name)) draft.name = session.user.name
   const saveDraft = () => {
     try {
       if (!preview) localStorage.setItem(draftKey(docId), JSON.stringify(draft))

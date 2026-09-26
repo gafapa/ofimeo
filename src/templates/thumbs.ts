@@ -26,7 +26,17 @@ const grid = (x: number, y: number, cols: number, rows: number, cw: number, rh: 
 // Sheet thumbnails: a full-bleed grid.
 const sheet = (body: string) => svg(body, '#fff')
 
+// Form thumbnails: a header card and question cards with options.
+const form = (body: string) => svg(rect(34, 4, 92, 24, '#fff', '#dadce0', 3) + rect(34, 4, 92, 3, '#00897b') + line(40, 14, 90, 14, '#202124', 3) + line(40, 21, 104, 21) + body, '#e8eaed')
+const card = (y: number, h: number, body: string) => rect(34, y, 92, h, '#fff', '#dadce0', 3) + line(40, y + 7, 84, y + 7, '#5f6368', 2) + body
+const choices = (y: number, n: number, square = false) =>
+  Array.from({ length: n }, (_, i) => (square ? rect(40, y + i * 7 - 2, 4, 4, '#fff', '#5f6368') : circle(42, y + i * 7, 2.2, '#fff', '#5f6368')) + line(48, y + i * 7, 76, y + i * 7, '#dadce0', 2)).join('')
+
 export const THUMBS: Record<string, () => string> = {
+  'form-self-assessment': () => form(card(32, 34, grid(40, 43, 5, 3, 16, 7, '#e0f2f1')) + card(70, 26, [0, 1, 2, 3, 4].map((i) => circle(48 + i * 16, 86, 2.5, '#fff', '#5f6368')).join(''))),
+  'form-review-quiz': () => form(card(32, 32, choices(44, 3) + rect(96, 40, 22, 7, '#e6f4ea', '#188038', 3)) + card(68, 30, choices(80, 3, true))),
+  'form-family-survey': () => form(card(32, 26, [0, 1, 2, 3, 4].map((i) => circle(48 + i * 16, 48, 2.5, i === 3 ? '#00897b' : '#fff', '#5f6368')).join('')) + card(62, 34, choices(74, 3, true))),
+  'form-peer-rubric': () => form(card(32, 18, line(40, 44, 110, 44, '#dadce0', 1)) + card(54, 44, grid(40, 64, 5, 4, 16, 7, '#e0f2f1'))),
   'learning-situation': () => page(heading(14, '#174ea6', 56) + grid(48, 20, 2, 4, 32, 5, '#f1f3f4') + heading(46) + textLines(52, 2) + heading(66) + grid(48, 71, 3, 3, 21.3, 6)),
   rubric: () =>
     page(heading(14, '#174ea6', 44) + grid(48, 22, 5, 6, 12.8, 11, '#dbe7f7', (_r, c) => (c === 0 ? '#f1f3f4' : null)) + textLines(92, 1)),

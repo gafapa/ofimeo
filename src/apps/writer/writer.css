@@ -270,3 +270,14 @@
 .source-row button, .source-tools button { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: var(--radius-s); padding: 3px 10px; }
 .source-tools { display: flex; flex-wrap: wrap; gap: 6px; }
 .source-form textarea { resize: vertical; }
+
+/* PDF export: what should not be in the file (like printing). */
+.pdf-export .collaboration-carets__caret, .pdf-export .collaboration-carets__label { display: none; }
+.pdf-export .ProseMirror .comment-hl { background: none; border: 0; }
+.pdf-export .ProseMirror :is(.spell-error, .grammar-error, .style-error) { text-decoration: none; }
+.pdf-export .ProseMirror :is(.page-break, .section-break) { border-color: transparent; }
+.pdf-export .ProseMirror :is(.page-break, .section-break)::after { display: none; }
+.pdf-export .find-match { background: none; }
+.pdf-export .ProseMirror sup.footnote-ref { color: inherit; }
+.pdf-export .ProseMirror :is(.toc, .bibliography).ProseMirror-selectednode, .pdf-export .ProseMirror.paged :is(.toc, .bibliography).ProseMirror-selectednode > * { outline: 0; }
+.pdf-export .page-header, .pdf-export .page-footer { outline: 0 !important; background: none !important; }

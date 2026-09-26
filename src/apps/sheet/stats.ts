@@ -8,123 +8,51 @@
 // Univer localizes function descriptions, not names.
 
 import type { FUniver, Univer } from '@univerjs/presets'
-import { IFunctionService, type BaseFunction } from '@univerjs/preset-sheets-core'
-import { language, t } from '../../core/i18n'
+import { IDescriptionService, IFunctionService, type BaseFunction } from '@univerjs/preset-sheets-core'
+import { t } from '../../core/i18n'
 import { el, showDialog, toast } from '../../ui/widgets'
 import { detectHeaders, parseA1, toA1, colName, type Cell, type CellRange } from './charts/model'
 import { defaultRange } from './charts/dialog'
+import { SPANISH_FUNCTIONS } from './functions'
 
-export const SPANISH_FUNCTIONS: Record<string, string> = {
-  MEDIA: 'AVERAGE',
-  PROMEDIO: 'AVERAGE',
-  MEDIANA: 'MEDIAN',
-  'MODA.UNO': 'MODE.SNGL',
-  MODA: 'MODE',
-  'DESVEST.M': 'STDEV.S',
-  'DESVEST.P': 'STDEV.P',
-  DESVEST: 'STDEV',
-  'CUARTIL.INC': 'QUARTILE.INC',
-  CUARTIL: 'QUARTILE',
-  'PERCENTIL.INC': 'PERCENTILE.INC',
-  PERCENTIL: 'PERCENTILE',
-  'COEF.DE.CORREL': 'CORREL',
-  'COEFICIENTE.R2': 'RSQ',
-  PENDIENTE: 'SLOPE',
-  'INTERSECCION.EJE': 'INTERCEPT',
-  'PRONOSTICO.LINEAL': 'FORECAST.LINEAR',
-  PRONOSTICO: 'FORECAST',
-  TENDENCIA: 'TREND',
-  'DISTR.NORM.N': 'NORM.DIST',
-  'INV.NORM': 'NORM.INV',
-  'DISTR.NORM.ESTAND.N': 'NORM.S.DIST',
-  'INV.NORM.ESTAND': 'NORM.S.INV',
-  NORMALIZACION: 'STANDARDIZE',
-  'DISTR.BINOM.N': 'BINOM.DIST',
-  'POISSON.DIST': 'POISSON.DIST',
-  'DISTR.T.N': 'T.DIST',
-  'INV.T': 'T.INV',
-  'INV.T.2C': 'T.INV.2T',
-  'INTERVALO.CONFIANZA.NORM': 'CONFIDENCE.NORM',
-  'COVARIANZA.M': 'COVARIANCE.S',
-  'COVARIANZA.P': 'COVARIANCE.P',
-  CURTOSIS: 'KURT',
-  'COEFICIENTE.ASIMETRIA': 'SKEW',
-  DESVPROM: 'AVEDEV',
-  'MEDIA.ACOTADA': 'TRIMMEAN',
-  'MEDIA.GEOM': 'GEOMEAN',
-  'MEDIA.ARMO': 'HARMEAN',
-  'K.ESIMO.MAYOR': 'LARGE',
-  'K.ESIMO.MENOR': 'SMALL',
-  'CONTAR.SI.CONJUNTO': 'COUNTIFS',
-  'CONTAR.SI': 'COUNTIF',
-  CONTAR: 'COUNT',
-  CONTARA: 'COUNTA',
-  'CONTAR.BLANCO': 'COUNTBLANK',
-  FRECUENCIA: 'FREQUENCY',
-  'JERARQUIA.EQV': 'RANK.EQ',
-  'JERARQUIA.MEDIA': 'RANK.AVG',
-  JERARQUIA: 'RANK',
-  COMBINAT: 'COMBIN',
-  PERMUTACIONES: 'PERMUT',
-  'ALEATORIO.ENTRE': 'RANDBETWEEN',
-  ALEATORIO: 'RAND',
-  SUMA: 'SUM',
-  'SUMAR.SI': 'SUMIF',
-  'SUMAR.SI.CONJUNTO': 'SUMIFS',
-  SUMAPRODUCTO: 'SUMPRODUCT',
-  'PROMEDIO.SI': 'AVERAGEIF',
-  'PROMEDIO.SI.CONJUNTO': 'AVERAGEIFS',
-  'MAX.SI.CONJUNTO': 'MAXIFS',
-  'MIN.SI.CONJUNTO': 'MINIFS',
-  SI: 'IF',
-  'SI.ERROR': 'IFERROR',
-  Y: 'AND',
-  O: 'OR',
-  REDONDEAR: 'ROUND',
-  'REDONDEAR.MAS': 'ROUNDUP',
-  'REDONDEAR.MENOS': 'ROUNDDOWN',
-  ENTERO: 'INT',
-  RESIDUO: 'MOD',
-  RAIZ: 'SQRT',
-  POTENCIA: 'POWER',
-  HOY: 'TODAY',
-  AHORA: 'NOW',
-  BUSCARV: 'VLOOKUP',
-  BUSCARH: 'HLOOKUP',
-  CONCATENAR: 'CONCATENATE',
+// Registers the aliases in the formula engine: the same executor class under
+// the alias name plus a copy of the description (the parser only accepts
+// described functions; the help text stays localized by Univer).
+// The engine registers its functions late in Univer's lifecycle, so this waits
+// for them, then recalculates the formulas that were waiting for an alias.
+export function registerFunctionAliases(univer: Univer, univerAPI: FUniver): Promise<string[]> {
+  const injector = univer.__getInjector()
+  const functions = injector.get(IFunctionService)
+  return new Promise((resolve) => {
+    let tries = 0
+    const attempt = () => {
+      if (!functions.hasExecutor('MEDIAN') && tries++ < 100) return void setTimeout(attempt, 100)
+      const added = addAliases(univer)
+      if (added.length) void univerAPI.getFormula().executeCalculation()
+      resolve(added)
+    }
+    attempt()
+  })
 }
 
-// Registers the aliases in the formula engine (descriptions only in Spanish and Galician).
-export function registerFunctionAliases(univer: Univer): string[] {
-  const functions = univer.__getInjector().get(IFunctionService)
+function addAliases(univer: Univer): string[] {
+  const injector = univer.__getInjector()
+  const functions = injector.get(IFunctionService)
+  const descriptions = injector.get(IDescriptionService)
   const added: string[] = []
-  const describe = language === 'es' || language === 'gl'
+  const infos = []
   for (const [alias, name] of Object.entries(SPANISH_FUNCTIONS)) {
     if (alias === name || functions.hasExecutor(alias)) continue
     const executor = functions.getExecutor(name)
-    if (!executor) continue
+    const info = descriptions.getFunctionInfo(name)
+    if (!executor || !info) continue
     const Executor = executor.constructor as new (name: string) => BaseFunction
     functions.registerExecutors(new Executor(alias))
-    const description = functions.getDescription(name)
-    if (describe && description) functions.registerDescriptions({ ...description, functionName: alias })
+    infos.push({ ...info, functionName: alias })
     added.push(alias)
   }
+  descriptions.registerDescriptions(infos)
   return added
-}
-
-// Rewrites Spanish aliases to the English names (outside string literals).
-const ALIAS_RE = new RegExp(
-  `(^|[^A-Za-z0-9_.\\u00C0-\\u024F])(${Object.keys(SPANISH_FUNCTIONS)
-    .sort((a, b) => b.length - a.length)
-    .map((n) => n.replace(/\./g, '\\.'))
-    .join('|')})(?=\\s*\\()`,
-  'gi',
-)
-export function canonicalFormula(formula: string): string {
-  return formula
-    .split(/("(?:[^"]|"")*")/)
-    .map((part, i) => (i % 2 ? part : part.replace(ALIAS_RE, (_, pre: string, name: string) => pre + (SPANISH_FUNCTIONS[name.toUpperCase()] ?? name))))
-    .join('')
 }
 
 // ---------- Helpers shared with the pivot table ----------

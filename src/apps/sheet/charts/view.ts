@@ -10,7 +10,7 @@ import { ICommandService, type FUniver, type IDisposable, type Univer } from '@u
 import { handleDefaultRangeChangeWithEffectRefCommands, RefRangeService } from '@univerjs/preset-sheets-core'
 import { locale, t } from '../../../core/i18n'
 import { UNIVER_COMMANDS } from '../commands'
-import { CHART_COMPONENT, chartData, isChartSpec, normalizeSpec, parseA1, toA1, type Cell, type ChartSpec } from './model'
+import { CHART_COMPONENT, chartData, DRAWING_TYPE_DOM, isChartSpec, normalizeSpec, parseA1, toA1, type Cell, type ChartSpec } from './model'
 import { chartOption, type ChartColors } from './option'
 
 export interface ChartInfo {
@@ -96,23 +96,26 @@ export function registerCharts(univer: Univer, host: ChartHost): { redraw: () =>
         resize?.disconnect()
         chart?.dispose()
       }
-    }, [key])
-    const id = props.floatDomId ?? ''
-    return createElement('div', {
-      ref,
-      className: 'ofimeo-chart',
-      role: 'img',
-      'aria-label': spec?.title || t('Chart'),
-      'data-chart-id': id,
-      onDoubleClick: () => host.canEdit() && host.onEdit(id),
-      onContextMenu: (e: MouseEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-        host.onContextMenu(id, e.clientX, e.clientY)
-      },
-    })
+    }, [key, props.floatDomId])
+    return createElement('div', { ref, className: 'ofimeo-chart', role: 'img', 'aria-label': spec?.title || t('Chart'), 'data-chart-id': props.floatDomId ?? '' })
   }
   univerAPI.registerComponent(CHART_COMPONENT, ChartView as never)
+  // Double click and right click on a chart. Univer re-renders the float DOM when
+  // the drawing gets selected, so the chart is found under the pointer instead
+  // of listening on its element.
+  const chartAt = (e: MouseEvent) =>
+    (document.elementsFromPoint(e.clientX, e.clientY).find((n) => n.classList.contains('ofimeo-chart')) as HTMLElement | undefined)?.dataset.chartId
+  window.addEventListener('dblclick', (e) => {
+    const id = chartAt(e)
+    if (id && host.canEdit()) host.onEdit(id)
+  }, true)
+  window.addEventListener('contextmenu', (e) => {
+    const id = chartAt(e)
+    if (!id) return
+    e.preventDefault()
+    e.stopPropagation()
+    host.onContextMenu(id, e.clientX, e.clientY)
+  }, true)
   followRanges(univer, univerAPI)
   return { redraw }
 }
@@ -169,7 +172,9 @@ export function updateChart(univerAPI: FUniver, id: string, spec: ChartSpec): vo
 export function deleteChart(univerAPI: FUniver, id: string): void {
   const info = findChart(univerAPI, id)
   if (!info) return
-  univerAPI.getActiveWorkbook()!.getSheetBySheetId(info.hostSheetId)!.removeFloatDom(id)
+  // Univer's own removal command, so the deletion is undoable like any drawing's.
+  const unitId = univerAPI.getActiveWorkbook()!.getId()
+  void univerAPI.executeCommand(UNIVER_COMMANDS.removeDrawings, { unitId, drawings: [{ unitId, subUnitId: info.hostSheetId, drawingId: id, drawingType: DRAWING_TYPE_DOM }] })
 }
 
 // Keeps every chart's source range on the same cells when rows or columns are

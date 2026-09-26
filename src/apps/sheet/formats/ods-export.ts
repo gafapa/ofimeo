@@ -3,6 +3,8 @@
 import JSZip from 'jszip'
 import type { IBorderStyleData, ICellData, IStyleData, IWorkbookData, IWorksheetData } from '@univerjs/presets'
 import { escapeXml, toHex } from '../../../core/formats'
+import { DRAWING_TYPE_IMAGE, isChartSpec, normalizeSpec, snapshotDrawings, type CellAnchor } from '../charts/model'
+import { odsChartContent, odsChartFrame, odsChartManifest, odsImageFrame } from './ods-charts'
 
 const MIME = 'application/vnd.oasis.opendocument.spreadsheet'
 
@@ -15,6 +17,8 @@ const NS = [
   'xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"',
   'xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"',
   'xmlns:of="urn:oasis:names:tc:opendocument:xmlns:of:1.2"',
+  'xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0"',
+  'xmlns:xlink="http://www.w3.org/1999/xlink"',
   'xmlns:dc="http://purl.org/dc/elements/1.1/"',
   'xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0"',
   'xmlns:tableooo="http://openoffice.org/2009/table"',
@@ -33,12 +37,56 @@ const EPOCH_1899 = Date.UTC(1899, 11, 30)
 
 export async function exportOds(data: IWorkbookData): Promise<Blob> {
   const writer = new ContentWriter(data)
+  const zip = new JSZip()
+  // Charts and images: frames in each table's <table:shapes>, positioned in the sheet.
+  const drawings = snapshotDrawings(data.resources)
+  const manifestExtra: string[] = []
+  let objects = 0
+  const shapes = (id: string): string => {
+    const sheet = data.sheets[id]
+    const colWidth = (c: number) => sheet.columnData?.[c]?.w ?? sheet.defaultColumnWidth ?? DEFAULT_COL_PX
+    const rowHeight = (r: number) => sheet.rowData?.[r]?.h ?? sheet.defaultRowHeight ?? DEFAULT_ROW_PX
+    const pos = (a: CellAnchor) => {
+      let x = a.columnOffset
+      let y = a.rowOffset
+      for (let c = 0; c < a.column; c++) x += colWidth(c)
+      for (let r = 0; r < a.row; r++) y += rowHeight(r)
+      return { x, y }
+    }
+    let xml = ''
+    for (const d of drawings.filter((d) => d.hostSheetId === id)) {
+      const { x, y } = pos(d.from)
+      const { width, height } = d.transform
+      if (isChartSpec(d.raw.data)) {
+        const spec = normalizeSpec(d.raw.data)
+        const source = data.sheets[spec.sheetId]
+        if (!source) continue
+        const n = ++objects
+        zip.file(`Object ${n}/content.xml`, odsChartContent(spec, source.name || 'Sheet', width, height))
+        manifestExtra.push(odsChartManifest(n))
+        xml += odsChartFrame(n, spec.title || `Chart ${n}`, x, y, width, height)
+      } else if (d.drawingType === DRAWING_TYPE_IMAGE) {
+        const m = /^data:image\/(png|jpe?g|gif|svg\+xml);base64,(.+)$/i.exec(String(d.raw.source ?? ''))
+        if (!m) continue
+        const n = ++objects
+        const ext = m[1].toLowerCase().replace('jpeg', 'jpg').replace('svg+xml', 'svg')
+        const path = `Pictures/image${n}.${ext}`
+        zip.file(path, m[2], { base64: true })
+        manifestExtra.push(`<manifest:file-entry manifest:full-path="${path}" manifest:media-type="image/${m[1].toLowerCase()}"/>`)
+        xml += odsImageFrame(n, path, x, y, width, height)
+      }
+    }
+    return xml ? `<table:shapes>${xml}</table:shapes>` : ''
+  }
   const body = data.sheetOrder
     .filter((id) => data.sheets[id])
-    .map((id) => writer.table(data.sheets[id]))
+    .map((id) => {
+      const table = writer.table(data.sheets[id])
+      const extra = shapes(id)
+      return extra ? table.replace(/^(<table:table [^>]*>)/, `$1${extra}`) : table
+    })
     .join('')
 
-  const zip = new JSZip()
   // The mimetype entry must be first and uncompressed.
   zip.file('mimetype', MIME, { compression: 'STORE' })
   zip.file(
@@ -53,7 +101,7 @@ export async function exportOds(data: IWorkbookData): Promise<Blob> {
   zip.file('styles.xml', stylesXml(writer.fontDecls()))
   zip.file('meta.xml', metaXml())
   zip.file('settings.xml', settingsXml(data))
-  zip.file('META-INF/manifest.xml', manifestXml())
+  zip.file('META-INF/manifest.xml', manifestXml().replace('</manifest:manifest>', `${manifestExtra.join('')}</manifest:manifest>`))
   return zip.generateAsync({ type: 'blob', mimeType: MIME, compression: 'DEFLATE' })
 }
 

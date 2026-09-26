@@ -59,12 +59,13 @@ export function snapshotState(doc: Y.Doc): Uint8Array {
   return state
 }
 
-export function saveVersion(session: Session, label?: string, auto = false): Version | null {
+// `authorName` defaults to this browser's user (the AI assistant's changes use their own).
+export function saveVersion(session: Session, label?: string, auto = false, authorName = session.user.name): Version | null {
   if (!session.canEdit) return null
   const version: Version = {
     id: crypto.getRandomValues(new Uint32Array(2)).join('-'),
     time: Date.now(),
-    authorName: session.user.name,
+    authorName,
     ...(label ? { label } : {}),
     ...(auto ? { auto: true } : {}),
     state: snapshotState(session.doc),

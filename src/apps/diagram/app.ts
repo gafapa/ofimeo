@@ -1,18 +1,21 @@
-// Diagram app: our own editor on maxGraph inside the common shell, synced over
-// Yjs. Files are compatible with draw.io (.drawio / mxGraphModel XML).
-// The editor itself (graph, commands, panels, keyboard) lives in editor.ts.
+// Diagram app: our own editor on maxGraph inside the shared app frame
+// (src/ui/frame.ts: menu bar, keys, toolbar, status bar with page tabs, save
+// state and zoom), synced over Yjs. Files are compatible with draw.io
+// (.drawio / mxGraphModel XML). The editor itself (graph, commands, panels,
+// keyboard, find) lives in editor.ts and is shared with the slides app.
 
-import { Grid3x3, PaintBucket, PanelLeft, PanelRight, Pencil, Plus, Redo2, SendToBack, BringToFront, Trash2, Undo2 } from 'lucide'
+import { BringToFront, Grid3x3, PaintBucket, PanelLeft, PanelRight, Pencil, Plus, Redo2, SendToBack, Trash2, Undo2 } from 'lucide'
 import { appInfo } from '../registry'
-import { homePath, newDocPath } from '../../core/router'
 import type { Session } from '../../core/session'
 import { t } from '../../core/i18n'
 import { setupChrome } from '../../ui/chrome'
+import { mountFrame } from '../../ui/frame'
 import { renderShell } from '../../ui/shell'
-import { documentMenuItems } from '../../ui/versions'
-import { createMenuBar, el, icon, promptText, showContextMenu, showDialog, toast, type MenuEntry } from '../../ui/widgets'
-import { createDiagramEditor, mod, showShortcuts } from './editor'
+import { mod } from '../../ui/shortcuts'
+import { colorPalette, confirmDialog, el, icon, openPopover, promptText, showContextMenu, toast, type Menu, type MenuEntry } from '../../ui/widgets'
+import { createDiagramEditor, shortcutSections } from './editor'
 import { renderSvg, svgToPng, svgToString } from './export'
+import { emptyPage } from './model'
 import { DiagramSync } from './sync'
 import { createPageSettings, type PageSettings } from './page'
 
@@ -29,7 +32,8 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
   const body = el('div', { class: 'diagram-body' })
   const printArea = el('div', { class: 'diagram-print' })
   const fileInput = el('input', { type: 'file', accept: DIAGRAM_ACCEPT, hidden: true })
-  document.body.append(printArea, fileInput)
+  const imageInput = el('input', { type: 'file', accept: 'image/*', hidden: true })
+  document.body.append(printArea, fileInput, imageInput)
 
   const meta = session.doc.getMap<unknown>('meta')
   const title = () => String(meta.get('title') || info.untitled).replace(/[\\/:*?"<>|]+/g, '_')
@@ -43,6 +47,7 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
       toast(t('Could not open the file: {error}', { error: (err as Error).message }))
     }
   }
+  // Print (Ctrl+P, File ▸ Print…, and "Hand in" through session.hooks.print): the current page.
   const print = () => {
     graph.clearSelection()
     printArea.replaceChildren(renderSvg(graph, { border: 0, background: page?.background() ?? '#ffffff' }))
@@ -57,16 +62,14 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
     // Links with view or comment access open the diagram read-only.
     readOnly: !session.canEdit,
     openFile: (file) => void openFile(file),
-    print,
     onPagesChange: () => {
       renderTabs()
       page?.update()
     },
     onPageShown: () => page?.update(),
+    blankPage: (id, name) => emptyPage(id, name ?? t('Page {n}', { n: 1 })),
   })
-  const { graph, sync, readOnly } = editor
-  // "Hand in" → print uses the same page rendering.
-  session.hooks.print = print
+  const { graph, sync, readOnly, sidebar, format, hasSelection } = editor
   const editable = editor.editable
   page = createPageSettings(editor, canvas)
   const background = () => page!.background() ?? '#ffffff'
@@ -78,15 +81,10 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
     a.click()
     setTimeout(() => URL.revokeObjectURL(a.href), 1000)
   }
-  const downloadDrawio = async () => {
-    const { serializeDrawio } = await formats()
-    download(new Blob([serializeDrawio(DiagramSync.readPages(session.doc))], { type: 'application/vnd.jgraph.mxfile' }), 'drawio')
-  }
-  const exportSvg = () => renderSvg(graph, { cells: editor.hasSelection() ? editor.selection() : undefined, background: background() })
-  const downloadSvg = () => download(new Blob([svgToString(exportSvg())], { type: 'image/svg+xml' }), 'svg')
-  const downloadPng = async () => {
+  const selectionSvg = () => renderSvg(graph, { cells: editor.selection(), background: background() })
+  const downloadSelectionPng = async () => {
     try {
-      download(await svgToPng(exportSvg()), 'png')
+      download(await svgToPng(selectionSvg()), 'png')
     } catch (err) {
       toast(t('PNG export failed: {error}', { error: (err as Error).message }))
     }
@@ -96,23 +94,39 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
     fileInput.value = ''
     if (file) void openFile(file)
   })
-  // Formats for "Save to Nextcloud" (the whole current page for images).
+  imageInput.addEventListener('change', () => {
+    const file = imageInput.files?.[0]
+    imageInput.value = ''
+    if (file) editor.insertImage(file)
+  })
+  // File ▸ Download as and "Save to Nextcloud" (the whole current page for images).
   session.hooks.exportFormats = () => [
     { ext: 'drawio', label: t('draw.io diagram (.drawio)'), build: async () => new Blob([(await formats()).serializeDrawio(DiagramSync.readPages(session.doc))], { type: 'application/vnd.jgraph.mxfile' }) },
     { ext: 'svg', label: t('SVG image (current page)'), build: async () => new Blob([svgToString(renderSvg(graph, { background: background() }))], { type: 'image/svg+xml' }) },
     { ext: 'png', label: t('PNG image (current page)'), build: () => svgToPng(renderSvg(graph, { background: background() })) },
   ]
+  // Document details: pages, shapes and connectors of the whole diagram.
+  const details = (): [string, string][] => {
+    const pages = DiagramSync.readPages(session.doc)
+    const cells = pages.flatMap((p) => p.cells)
+    return [
+      [t('Pages'), String(pages.length)],
+      [t('Shapes'), String(cells.filter((c) => c.vertex).length)],
+      [t('Connectors'), String(cells.filter((c) => c.edge).length)],
+    ]
+  }
 
   // ---------- Pages ----------
 
   const pageTabs = el('div', { class: 'page-tabs', role: 'tablist' })
+  pageTabs.setAttribute('aria-label', t('Pages'))
   const addPage = () => {
-    const id = sync.addPage(`Page-${sync.pageList().length + 1}`)
+    const id = sync.addPage(t('Page {n}', { n: sync.pageList().length + 1 }))
     sync.showPage(id)
   }
   const duplicatePage = () => {
     const current = sync.pageList().find((p) => p.id === sync.page)!
-    const id = sync.addPage(`${current.name} (copy)`, sync.pageRecords(sync.page), sync.pageAttrs(sync.page))
+    const id = sync.addPage(`${current.name} (${t('copy')})`, sync.pageRecords(sync.page), sync.pageAttrs(sync.page))
     sync.showPage(id)
   }
   const renamePage = async (id = sync.page) => {
@@ -124,11 +138,7 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
   }
   const deletePage = async (id = sync.page) => {
     if (sync.pageList().length <= 1) return
-    const ok = await showDialog(t('Delete page'), el('p', { textContent: t('Delete this page for everyone?') }), [
-      { label: t('Cancel'), value: 'cancel' },
-      { label: t('Delete'), value: 'ok', primary: true },
-    ])
-    if (ok === 'ok') sync.deletePage(id)
+    if (await confirmDialog(t('Delete page'), t('Delete this page for everyone?'), { confirmLabel: t('Delete'), danger: true })) sync.deletePage(id)
   }
   const movePage = (dir: -1 | 1) => {
     const list = sync.pageList()
@@ -159,6 +169,7 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
     }
     if (readOnly) return
     const add = el('button', { type: 'button', class: 'page-add', title: t('New page') }, icon(Plus, 16))
+    add.setAttribute('aria-label', t('New page'))
     add.addEventListener('click', addPage)
     pageTabs.append(add)
   }
@@ -176,67 +187,107 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
 
   // ---------- Menus ----------
 
-  createMenuBar(shell.menubar, [
-    {
-      label: t('File'),
-      items: [
-        { label: t('New diagram'), run: () => window.open(newDocPath('diagram'), '_blank') },
-        { label: t('Open file (.drawio, .vsdx)…'), run: () => fileInput.click() },
-        { label: t('All documents'), run: () => (location.href = homePath()) },
-        { label: t('Share…'), run: () => document.getElementById('btn-share')!.click() },
-        '-',
-        { label: t('Download .drawio'), run: () => void downloadDrawio() },
-        { label: t('Download SVG'), run: downloadSvg },
-        { label: t('Download PNG'), run: () => void downloadPng() },
-        '-',
-        ...documentMenuItems(session),
-        '-',
-        { label: t('Print'), shortcut: mod('P'), run: print },
+  // Color menus open their palette under the matching toolbar button (or the toolbar).
+  const colorAnchor = (selector: string) => shell.toolbar.querySelector<HTMLElement>(`${selector}:not(.tb-overflowed *)`) ?? shell.toolbar
+  const chooseColor = (selector: string, apply: (c: string | null) => void, reset: string) => openPopover(colorAnchor(selector), colorPalette(apply, reset))
+  const fontItem = (label: string, bit: number, shortcut?: string): MenuEntry => ({
+    label,
+    shortcut,
+    run: () => editor.toggleFontStyle(bit),
+    active: () => editor.hasFontStyle(bit),
+    enabled: editable(hasSelection),
+  })
+  const view: Menu = { label: t('View'), items: [...editor.panelMenu(), ...page.viewMenu(), '-', ...editor.zoomMenu()] }
+  const insert: Menu = {
+    label: t('Insert'),
+    items: [
+      { label: t('Text'), run: editor.insertText, enabled: editable() },
+      { label: t('Image…'), run: () => imageInput.click(), enabled: editable() },
+      '-',
+      { label: t('Shapes'), run: () => (sidebar.element.hidden ? editor.togglePanel(sidebar.element) : undefined), enabled: editable() },
+      { label: t('More shapes…'), run: editor.moreShapes, enabled: editable() },
+      '-',
+      { label: t('New page'), run: addPage, enabled: editable() },
+    ],
+  }
+  const formatMenu: Menu = {
+    label: t('Format'),
+    items: [
+      fontItem(t('Bold'), 1),
+      fontItem(t('Italic'), 2),
+      fontItem(t('Underline'), 4),
+      fontItem(t('Strikethrough'), 8),
+      '-',
+      { label: t('Fill color…'), run: () => chooseColor('.diagram-fill', editor.setFill, t('No fill')), enabled: editable(hasSelection) },
+      { label: t('Line color…'), run: () => chooseColor('.diagram-line', editor.setStroke, t('No line')), enabled: editable(hasSelection) },
+      '-',
+      { label: t('Edit style…'), run: editor.editStyle, enabled: editable(hasSelection) },
+      { label: t('Format panel'), run: () => editor.togglePanel(format.element), active: () => !format.element.hidden, enabled: editable() },
+    ],
+  }
+  const frame = mountFrame({
+    session,
+    shell,
+    file: {
+      openFile: () => fileInput.click(),
+      print,
+      download: [
+        { label: t('SVG image (selection)'), visible: hasSelection, run: () => download(new Blob([svgToString(selectionSvg())], { type: 'image/svg+xml' }), 'svg') },
+        { label: t('PNG image (selection)'), visible: hasSelection, run: () => void downloadSelectionPng() },
       ],
+      details,
     },
-    { label: t('Edit'), items: editor.editMenu() },
-    { label: t('View'), items: [...editor.panelMenu(), ...page.viewMenu(), '-', ...editor.zoomMenu()] },
-    { label: t('Arrange'), items: editor.arrangeMenu() },
-    { label: t('Page'), items: pageMenu() },
-    { label: t('Help'), items: [{ label: t('Keyboard shortcuts'), run: () => showShortcuts() }] },
-  ])
+    edit: { label: t('Edit'), items: editor.editMenu() },
+    menus: { view, insert, format: formatMenu, app: [{ label: t('Arrange'), items: editor.arrangeMenu() }, { label: t('Page'), items: pageMenu() }] },
+    help: { sections: () => shortcutSections(t('Diagram')) },
+    keys: { find: editor.find },
+    zoom: editor.zoomTarget,
+  })
 
   // ---------- Toolbar ----------
 
-  const tbGroup = (...items: HTMLElement[]) => shell.toolbar.append(el('div', { class: 'tb-group' }, ...items))
-  const { tbButton, colorTool, hasSelection } = editor
-  const { sidebar, format } = editor
-  const canEdit = (fn?: () => boolean) => editable(fn)
-  if (!readOnly) {
-    tbGroup(
-      tbButton(PanelLeft, t('Shapes panel'), () => editor.togglePanel(sidebar.element), undefined, () => !sidebar.element.hidden),
-      tbButton(PanelRight, t('Format panel'), () => editor.togglePanel(format.element), undefined, () => !format.element.hidden),
+  const tb = frame.toolbar
+  const styleColor = (key: string) => () => {
+    const cell = editor.selection()[0]
+    const value = cell ? String((graph.getCellStyle(cell) as Record<string, unknown>)[key] ?? '') : ''
+    return value && value !== 'none' ? value : undefined
+  }
+  const colorTool = (node: typeof PaintBucket, label: string, key: string, apply: (c: string | null) => void, reset: string, className: string) => {
+    const b = tb.colorButton(node, label, styleColor(key), apply, reset)
+    b.classList.add(className)
+    tb.onRefresh(() => (b.disabled = !editable(hasSelection)()))
+    return b
+  }
+  if (readOnly) shell.toolbar.hidden = true
+  else {
+    tb.group(
+      tb.button(PanelLeft, t('Shapes panel'), () => editor.togglePanel(sidebar.element), { active: () => !sidebar.element.hidden }),
+      tb.button(PanelRight, t('Format panel'), () => editor.togglePanel(format.element), { active: () => !format.element.hidden }),
     )
-    tbGroup(
-      tbButton(Undo2, `${t('Undo')} (${mod('Z')})`, editor.undo, canEdit(() => editor.undoManager.canUndo())),
-      tbButton(Redo2, `${t('Redo')} (${mod('Y')})`, editor.redo, canEdit(() => editor.undoManager.canRedo())),
+    tb.group(
+      tb.button(Undo2, t('Undo'), editor.undo, { shortcut: mod('Z'), enabled: editable(() => editor.undoManager.canUndo()) }),
+      tb.button(Redo2, t('Redo'), editor.redo, { shortcut: mod('Y'), enabled: editable(() => editor.undoManager.canRedo()) }),
+    )
+    tb.group(
+      tb.button(Trash2, t('Delete'), editor.remove, { shortcut: t('Del'), enabled: editable(hasSelection) }),
+      tb.button(BringToFront, t('To front'), editor.toFront, { shortcut: mod('Shift+F'), enabled: editable(hasSelection) }),
+      tb.button(SendToBack, t('To back'), editor.toBack, { shortcut: mod('Shift+B'), enabled: editable(hasSelection) }),
+    )
+    tb.group(
+      colorTool(PaintBucket, t('Fill color'), 'fillColor', editor.setFill, t('No fill'), 'diagram-fill'),
+      colorTool(Pencil, t('Line color'), 'strokeColor', editor.setStroke, t('No line'), 'diagram-line'),
+      tb.button(Grid3x3, t('Grid'), () => editor.setGridVisible(!editor.isGridVisible()), { active: () => editor.isGridVisible() }),
     )
   }
-  tbGroup(...editor.zoomTools())
-  if (!readOnly) {
-    tbGroup(
-      tbButton(Trash2, t('Delete (Del)'), editor.remove, canEdit(hasSelection)),
-      tbButton(BringToFront, t('To front'), editor.toFront, canEdit(hasSelection)),
-      tbButton(SendToBack, t('To back'), editor.toBack, canEdit(hasSelection)),
-    )
-    tbGroup(
-      colorTool(PaintBucket, t('Fill color'), editor.setFill, t('No fill')),
-      colorTool(Pencil, t('Line color'), editor.setStroke, t('No line')),
-      tbButton(Grid3x3, t('Grid'), () => editor.setGridVisible(!editor.isGridVisible()), undefined, () => editor.isGridVisible()),
-    )
-  }
+  editor.onToolbar(tb.refresh)
 
-  // ---------- Layout ----------
+  // ---------- Layout and status bar ----------
 
   body.append(sidebar.element, canvas, format.element)
   shell.main.append(body)
-  shell.statusbar.append(pageTabs, el('span', { class: 'spacer' }), editor.selectionLabel, editor.zoomLabel)
-  editor.zoomLabel.addEventListener('click', editor.actualSize)
+  frame.status?.left.append(pageTabs)
+  frame.status?.addRight(editor.selectionLabel)
+  editor.onZoom(() => frame.status?.zoom?.update())
 
   editor.start(() => {
     // Show the diagram at 100% when it fits, else fit it.
@@ -245,14 +296,5 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
     if (b.width && (b.width > rect.width - 40 || b.height > rect.height - 40)) editor.fit()
     else graph.view.scaleAndTranslate(1, b.width ? 20 - (b.x - 0) : 20, b.width ? 20 - b.y : 20)
   })
-
-  // Save indicator: changes are stored locally as they happen.
-  const saveState = document.getElementById('save-state')!
-  let saveTimer = 0
-  session.doc.on('update', () => {
-    saveState.textContent = t('Saving…')
-    clearTimeout(saveTimer)
-    saveTimer = window.setTimeout(() => (saveState.textContent = t('Saved in this browser')), 600)
-  })
-  saveState.textContent = t('Saved in this browser')
+  tb.refresh()
 }

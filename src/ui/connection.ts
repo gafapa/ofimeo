@@ -440,7 +440,7 @@ export async function openConnectionTest(_session?: Session): Promise<void> {
     el('div', { class: 'conn-actions' }, copy, rerun),
     relaySettings(() => void run()),
   )
-  const shown = showDialog(t('Connection test'), body, [{ label: t('Close'), value: 'close', primary: true }], true)
+  const shown = showDialog(t('Connection test'), body, [{ label: t('Close'), value: 'close', primary: true }], true, 'network')
   void run()
   await shown
   open = false

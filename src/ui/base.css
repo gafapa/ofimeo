@@ -164,6 +164,13 @@ dialog.dlg.wide { width: min(680px, calc(100vw - 32px)); }
 dialog.dlg::backdrop { background: var(--overlay); }
 dialog.dlg form { padding: 20px 24px; }
 dialog.dlg h2 { margin: 0 0 14px; font-size: var(--fs-xxl); font-weight: 500; }
+.dlg-head { display: flex; align-items: flex-start; gap: 8px; }
+.dlg-head h2 { flex: 1; min-width: 0; }
+.dlg-help {
+  flex: none; width: 28px; height: 28px; margin-top: 1px; border: 1px solid var(--border); border-radius: 50%;
+  background: var(--surface); color: var(--muted); font-weight: 600; font-size: var(--fs-base); cursor: pointer;
+}
+.dlg-help:hover { background: var(--hover); color: var(--text); }
 .dlg-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
 .dlg-actions button.primary.danger { background: var(--danger-strong); border-color: var(--danger-strong); color: var(--on-danger); }
 .dlg-actions button:not(.primary) { border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-m); padding: 6px 14px; }

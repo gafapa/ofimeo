@@ -15,7 +15,8 @@
 //   [slots.end]
 // Edit (editMenu): Undo · Redo ─ Cut · Copy · Paste [slots.clipboard] ─ Select all [slots.select]
 //   ─ Find… · Find and replace… [slots.end]
-// Help (helpMenu / helpMenuItems): Keyboard shortcuts Ctrl+/ · Accessibility… Alt+Shift+A
+// Help (helpMenu / helpMenuItems): Help center · Getting started (src/help)
+//   ─ Keyboard shortcuts Ctrl+/ · Accessibility… Alt+Shift+A
 //   · Connection test… (when src/ui/connection.ts exists) [extra] ─ About Ofimeo
 
 import { APPS, appInfo, SUITE } from '../apps/registry'
@@ -175,8 +176,15 @@ export interface HelpMenuOptions {
   extra?: MenuEntry[]
 }
 
+const helpCenter = () => import('../help/center')
+const onboarding = () => import('../help/tour')
+
 export function helpMenuItems(session: Session | undefined, options: HelpMenuOptions): MenuEntry[] {
   return [
+    { label: t('Help center'), run: () => void helpCenter().then((m) => m.openHelp(m.appArticle(session), { session, shortcuts: options.shortcuts })) },
+    // In an app: its quick start tips; on the home screen: the welcome tour.
+    { label: t('Getting started'), run: () => void onboarding().then((m) => (session ? m.showQuickStart(session) : m.showWelcomeTour())) },
+    '-',
     { label: t('Keyboard shortcuts'), shortcut: mod('/'), run: options.shortcuts },
     { label: t('Accessibility…'), shortcut: 'Alt+Shift+A', run: () => togglePanel(true) },
     ...(connectionModule ? [{ label: t('Connection test…'), run: () => void openConnectionTest(session) }] : []),

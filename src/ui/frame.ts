@@ -19,6 +19,7 @@
 //   frame.status?.left.append(pageInfo)
 //
 // Menu bar order: File · Edit · View · Insert · Format · ‹app menus› · Tools · ‹review menus› · Help.
+// Tools always ends with "Allow AI assistants (WebMCP)…" (webmcp.ts), which also adds the app bar indicator.
 // Keys (shortcuts.ts): Ctrl+O file.openFile, Ctrl+S save, Ctrl+P file.print, Ctrl+F edit.find,
 // Ctrl+H edit.replace, Ctrl+/ and F1 shortcuts dialog; Ctrl++/-/0 only with zoom.keys.
 //
@@ -32,6 +33,7 @@
 //   about.ts      aboutDialog, documentDetails
 //   chrome.ts     setupChrome (includes setupSaveState), openShareDialog, handIn
 
+import { t } from '../core/i18n'
 import type { Session } from '../core/session'
 import { editMenu, fileMenu, helpMenu, type EditMenuOptions, type FileMenuOptions } from './menus'
 import type { Shell } from './shell'
@@ -40,6 +42,7 @@ import { createStatusBar, type StatusBar, type StatusBarOptions } from './status
 import { createToolbar, type Toolbar } from './toolbar'
 import { createMenuBar, type Menu, type MenuEntry } from './widgets'
 import { stepZoom, type ZoomTarget } from './zoom'
+import { setupWebMcp, webMcpMenuItem } from './webmcp'
 
 // Breakpoints of tokens.css (CSS variables cannot be used in media queries).
 export const BREAKPOINTS = { phone: 600, narrow: 760, tablet: 900 } as const
@@ -96,7 +99,8 @@ export function mountFrame(spec: FrameSpec): Frame {
     m.insert,
     m.format,
     ...(m.app ?? []),
-    m.tools,
+    // Tools always ends with the AI assistants (WebMCP) switch.
+    { label: m.tools?.label ?? t('Tools'), items: [...(m.tools?.items ?? []), ...(m.tools?.items.length ? ['-' as const] : []), webMcpMenuItem(session)] },
     ...(m.review ?? []),
     helpMenu(session, { shortcuts, extra: spec.help?.extra }),
   ].filter((x): x is Menu => !!x)
@@ -125,5 +129,6 @@ export function mountFrame(spec: FrameSpec): Frame {
     ...spec.keys,
   })
   if (!session.hooks.print) session.hooks.print = spec.file.print
+  setupWebMcp(session)
   return { menus, toolbar, status, shortcuts }
 }

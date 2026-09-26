@@ -20,6 +20,7 @@ Die gesamte Speicherung ist eigene Speicherung (keine Speicherung Dritter), lieg
 | Relay der Schule | localStorage `words-online:school-relay` | Adresse des Schul-Relays und die von ihm bereitgestellten Verbindungseinstellungen |
 | Identität | localStorage `words-online:user`, `words-online:writer-user-id` | Name und Farbe, die Ihre Mitwirkenden sehen; technische Kennung für die Urheberschaft |
 | Einstellungen | localStorage `words-online:language`, `words-online:a11y`, `words-online:spelling`, `words-online:spelling-dictionary:<Sprache>`, `words-online:zoom`, `words-online:home-view`, `wo-template-lang`, `diagram-libraries` | Sprache, Barrierefreiheit, Rechtschreibung und persönliches Wörterbuch, Zoom, Sprache der Vorlagen und gewählte Formenbibliotheken |
+| KI-Assistenten (nur wenn Sie es einschalten) | localStorage `words-online:webmcp` | Dass Sie KI-Assistenten erlaubt haben, die in diesem Browser geöffneten Dokumente zu verwenden (WebMCP; standardmäßig aus). Siehe den [Hinweis zu künstlicher Intelligenz](ai.md) |
 | Nextcloud (nur wenn eingerichtet) | localStorage `words-online:nextcloud`, `words-online:nextcloud-server`, `words-online:nextcloud-folder`, `words-online:nextcloud-format`, `words-online:nextcloud-share` | Server, Benutzername und App-Passwort, zuletzt verwendeter Ordner und Format |
 | Offline-Betrieb | Service Worker und Cache Storage `workbox-precache-*`, `excalidraw-fonts`, `spelling`, `diagram-libs-*` | Dateien der Anwendung, Schriftarten, Wörterbücher und Formen für die Offline-Nutzung |
 

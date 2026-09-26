@@ -23,7 +23,6 @@
     "@fontsource/opendyslexic": "^5.3.0",
     "@maxgraph/core": "^0.24.0",
     "@mcp-b/global": "5.1.0",
-    "@mcp-b/webmcp-types": "5.1.0",
     "@tiptap/core": "^3.31.3",
     "@tiptap/extension-collaboration": "^3.31.3",
     "@tiptap/extension-collaboration-caret": "^3.31.3",
@@ -85,6 +84,7 @@
     "yjs": "^13.6.33"
   },
   "devDependencies": {
+    "@mcp-b/webmcp-types": "5.1.0",
     "@playwright/test": "1.56.1",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.3.0",

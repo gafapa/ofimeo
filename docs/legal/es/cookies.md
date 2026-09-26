@@ -20,6 +20,7 @@ Todo el almacenamiento es propio (no hay almacenamiento de terceros), se guarda 
 | Relay del centro | localStorage `words-online:school-relay` | Dirección del relay del centro y configuración de conexión que este facilita |
 | Identidad | localStorage `words-online:user`, `words-online:writer-user-id` | Nombre y color que ven tus colaboradores; identificador técnico para la autoría |
 | Preferencias | localStorage `words-online:language`, `words-online:a11y`, `words-online:spelling`, `words-online:spelling-dictionary:<idioma>`, `words-online:zoom`, `words-online:home-view`, `wo-template-lang`, `diagram-libraries` | Idioma, accesibilidad, ortografía y diccionario personal, zoom, idioma de las plantillas y bibliotecas de formas elegidas |
+| Asistentes de IA (solo si lo activas) | localStorage `words-online:webmcp` | Que has permitido a los asistentes de IA usar los documentos abiertos en este navegador (WebMCP; desactivado por defecto). Ver la [Nota sobre inteligencia artificial](ai.md) |
 | Nextcloud (solo si lo configuras) | localStorage `words-online:nextcloud`, `words-online:nextcloud-server`, `words-online:nextcloud-folder`, `words-online:nextcloud-format`, `words-online:nextcloud-share` | Servidor, usuario y contraseña de aplicación, última carpeta y formato usados |
 | Funcionamiento sin conexión | Service worker y Cache Storage `workbox-precache-*`, `excalidraw-fonts`, `spelling`, `diagram-libs-*` | Archivos de la aplicación, tipos de letra, diccionarios y formas para usarla sin conexión |
 

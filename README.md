@@ -391,7 +391,9 @@ replicas the same log order, so replaying it always yields the same workbook.
   (tree, hierarchical, circle, organic), multiple pages, in-place label editing.
 - Format panel (fill, gradient, line, pattern, opacity, shadow, text, arrows,
   position and size, raw style editing), context menu, keyboard shortcuts,
-  copy/paste between diagrams (and images or text from other apps), zoom and pan.
+  copy/paste between diagrams (and images or text from other apps), zoom and pan,
+  and *Edit → Find…* (Ctrl+F), which searches the labels of every page (also in
+  presentations).
 - Download SVG and PNG (the selection or the whole page) and print / PDF.
 - Collaborators' selections are highlighted, their pointers shown, and the page
   tabs show who is on each page.

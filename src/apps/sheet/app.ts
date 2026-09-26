@@ -22,6 +22,7 @@ import { createSpreadsheet, WORKBOOK_ID } from './univer'
 import { deleteChart, findChart, insertChart, listCharts, liveOption, registerCharts, updateChart } from './charts/view'
 import { snapshotCharts } from './charts/model'
 import { registerFunctionAliases } from './stats'
+import { provideWebMcpTools } from '../../core/webmcp'
 
 // Live workbook access of each open session (for hand in).
 export const sheetHandles = new WeakMap<Session, { snapshot: () => IWorkbookData; activeSheetId: () => string }>()
@@ -214,6 +215,8 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
   })
   // Univer's one-row tool bar is the spreadsheet's toolbar.
   shell.toolbar.hidden = true
+  // AI assistants (WebMCP, off by default): the tool module loads only when turned on.
+  provideWebMcpTools(session, () => import('./webmcp').then((m) => m.sheetTools(session, univerAPI)))
 
   const stats = el('span', { class: 'sheet-stats' })
   stats.setAttribute('aria-live', 'polite')

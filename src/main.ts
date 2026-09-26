@@ -7,6 +7,7 @@ import { t } from './core/i18n'
 import { parseRoute } from './core/router'
 import { registerServiceWorker } from './core/offline'
 import { openSession } from './core/session'
+import { onboardingOff } from './help/prefs'
 
 registerServiceWorker()
 
@@ -44,6 +45,8 @@ if (route.kind === 'home') {
       // Handle for automated browser tests in development builds only.
       if (import.meta.env.DEV) Object.assign(window, { session })
       await module.mount(session)
+      // First time this app is opened in this browser: its quick start tips (src/help).
+      if (!onboardingOff()) void import('./help/tour').then((m) => m.maybeQuickStart(session)).catch(() => {})
     } catch (err) {
       console.error(err)
       notice(t('This document cannot be opened'), (err as Error).message)

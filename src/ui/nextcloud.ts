@@ -422,7 +422,7 @@ export async function openAccountDialog(): Promise<NcAccount | undefined> {
     body.replaceChildren(account ? connectedView(account) : signInView())
   }
   render()
-  await showDialog(t('Nextcloud'), body, [{ label: t('Close'), value: 'close', primary: true }], true)
+  await showDialog(t('Nextcloud'), body, [{ label: t('Close'), value: 'close', primary: true }], true, 'nextcloud')
   polling?.abort()
   return nc.currentAccount()
 }
@@ -614,7 +614,7 @@ async function browseDialog(
   const shown = showDialog(mode === 'open' ? t('Open from Nextcloud') : t('Save to Nextcloud'), body, [
     { label: t('Cancel'), value: 'cancel' },
     { label: mode === 'open' ? t('Open') : t('Save'), value: 'ok', primary: true },
-  ], true)
+  ], true, 'nextcloud')
   const dialog = body.closest('dialog')!
   dialog.classList.add('nc-dialog')
   // Validate before the dialog closes with "Open" / "Save".
@@ -1059,5 +1059,5 @@ export async function handInToShare(session: Session, file: { name: string; blob
     el('div', { class: 'nc-row-buttons' }, upload),
     result,
   )
-  await showDialog(t('Upload to a Nextcloud share link'), body, [{ label: t('Close'), value: 'ok' }], true)
+  await showDialog(t('Upload to a Nextcloud share link'), body, [{ label: t('Close'), value: 'ok' }], true, 'handin')
 }

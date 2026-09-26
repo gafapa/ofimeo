@@ -37,6 +37,7 @@ import { SpellController, spellExtension } from './spell/plugin'
 import { languageButton, openSpellDialog } from './spell/ui'
 import { ReferenceStore } from './references/store'
 import { installDocumentFonts } from './fonts'
+import { provideWebMcpTools } from '../../core/webmcp'
 
 const UNTITLED = t('Untitled document')
 const ZOOM_KEY = 'words-online:zoom'
@@ -504,6 +505,8 @@ export function mountWriter(session: Session, root: HTMLElement): WriterContext 
   frame.status?.addRight(...statusItems.filter((n) => n.matches('.status-mode, .status-comments')))
   buildToolbar(ctx, frame.toolbar)
   setupContextMenu(ctx)
+  // AI assistants (WebMCP, off by default): the tool module loads only when turned on.
+  provideWebMcpTools(session, () => import('./webmcp').then((m) => m.writerTools(ctx)))
   document.addEventListener('keydown', (e) => {
     if (e.key === 'F7' && !e.ctrlKey && !e.metaKey && !e.altKey) {
       e.preventDefault()

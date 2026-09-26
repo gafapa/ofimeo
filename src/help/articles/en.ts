@@ -86,7 +86,7 @@ Open [Nextcloud account](action:nextcloud) (Nextcloud button on the home screen,
 
 ## Open and save
 - **Open from Nextcloud…** (home screen and File menu) opens a file as a new document **linked** to it.
-- **Save to Nextcloud** (`Ctrl+S`) updates the linked file. **Save to Nextcloud as…** chooses the folder, name and format.
+- **Save to Nextcloud** (\`Ctrl+S\`) updates the linked file. **Save to Nextcloud as…** chooses the folder, name and format.
 - If the file was changed in Nextcloud meanwhile, you choose to overwrite it, save a copy or cancel.
 - Optional autosave every few minutes.
 

@@ -15,7 +15,6 @@ import { mod } from '../../ui/shortcuts'
 import { colorPalette, confirmDialog, el, icon, openPopover, promptText, showContextMenu, toast, type Menu, type MenuEntry } from '../../ui/widgets'
 import { createDiagramEditor, shortcutSections } from './editor'
 import { renderSvg, svgToPng, svgToString } from './export'
-import { emptyPage } from './model'
 import { DiagramSync } from './sync'
 import { createPageSettings, type PageSettings } from './page'
 
@@ -67,7 +66,6 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
       page?.update()
     },
     onPageShown: () => page?.update(),
-    blankPage: (id, name) => emptyPage(id, name ?? t('Page {n}', { n: 1 })),
   })
   const { graph, sync, readOnly, sidebar, format, hasSelection } = editor
   const editable = editor.editable
@@ -120,6 +118,8 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
 
   const pageTabs = el('div', { class: 'page-tabs', role: 'tablist' })
   pageTabs.setAttribute('aria-label', t('Pages'))
+  // New pages get a translated name; the first page of a new document keeps the
+  // fixed name "Page-1" so collaborators who create it at the same time agree.
   const addPage = () => {
     const id = sync.addPage(t('Page {n}', { n: sync.pageList().length + 1 }))
     sync.showPage(id)

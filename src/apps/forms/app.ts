@@ -23,6 +23,7 @@ import { createEditor } from './editor'
 import { resultsTable, toCsv, toXlsx } from './export'
 import { formFile, itemsArray, parseFormFile, createForm, QUESTION_TYPES, readSettings, settingsMap, typeLabel, type QuestionType } from './model'
 import { mountRespond, mountRespondentPage, privacyNote, verifiedBadge } from './respond'
+import { provideWebMcpTools } from '../../core/webmcp'
 import { createResults, whoSeesResponses } from './results'
 import { LOCAL, openFormState, type FormState } from './state'
 
@@ -198,6 +199,8 @@ function mountEditorApp(state: FormState, root: HTMLElement): void {
     help: { extra: [{ label: t('Who can see the responses?'), run: () => void showDialog(t('Who can see the responses?'), el('div', {}, el('p', { textContent: whoSeesResponses() }), el('p', { textContent: t('Owner code of this form: {code}', { code: state.fingerprint }) })), [{ label: t('OK'), value: 'ok', primary: true }]) }] },
   })
   const tb = frame.toolbar
+  // AI assistants (WebMCP, off by default; editors only): the tool module loads only when turned on.
+  provideWebMcpTools(session, () => import('./webmcp').then((m) => m.formsTools(session, state)))
   tb.group(
     tb.button(Undo2, t('Undo'), () => undo.undo(), { shortcut: mod('Z'), enabled: () => undo.canUndo() }),
     tb.button(Redo2, t('Redo'), () => undo.redo(), { shortcut: mod('Y'), enabled: () => undo.canRedo() }),

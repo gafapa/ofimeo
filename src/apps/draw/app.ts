@@ -21,6 +21,7 @@ import { el, toast } from '../../ui/widgets'
 import type { ZoomTarget } from '../../ui/zoom'
 import { drawFrame, redo } from './menus'
 import { DrawSync } from './sync'
+import { provideWebMcpTools } from '../../core/webmcp'
 
 export const DRAW_ACCEPT = '.excalidraw'
 
@@ -124,6 +125,8 @@ export function mountDraw(session: Session, root: HTMLElement): void {
   })
   // Excalidraw's tool island is the drawing's toolbar.
   shell.toolbar.hidden = true
+  // AI assistants (WebMCP, off by default): the tool module loads only when turned on.
+  provideWebMcpTools(session, () => import('./webmcp').then((m) => m.drawTools(session, api)))
   const selection = el('span', { class: 'draw-selection' })
   frame.status?.left.append(selection)
 

@@ -14,6 +14,7 @@ import { openAccountDialog, openFromNextcloud } from '../ui/nextcloud'
 import { registerShortcuts, showShortcuts } from '../ui/shortcuts'
 import { el, icon, showContextMenu, toast, uiZoom } from '../ui/widgets'
 import { CircleHelp, Cloud, HardDrive } from 'lucide'
+import { onboardingOff, welcomeSeen } from '../help/prefs'
 import { documentsSection } from './docs'
 import { backupReminder, openStorageDialog, setChangeListener } from './storage'
 import './home.css'
@@ -132,6 +133,8 @@ export function mountHome(root: HTMLElement): void {
   )
   handleLaunchedFiles()
   void housekeeping(docs.refresh)
+  // First visit in this browser: the welcome tour (src/help, loaded only then).
+  if (!welcomeSeen() && !onboardingOff()) void import('../help/tour').then((m) => m.maybeShowWelcome())
   // The same keys as in the apps: Ctrl+O opens a file, Ctrl+/ and F1 the shortcuts.
   registerShortcuts({ open: () => fileInput.click(), save: null, help: () => void showShortcuts() })
   // Titles and new documents from other tabs.
@@ -165,7 +168,7 @@ async function housekeeping(refresh: () => void): Promise<void> {
   }
 }
 
-// Help menu of the home screen: the apps' Help items (shortcuts, accessibility, connection test, about).
+// Help menu of the home screen: the apps' Help items (help center, welcome tour, shortcuts, accessibility, connection test, about).
 function helpButton(): HTMLButtonElement {
   const button = el('button', { type: 'button', class: 'home-help', title: t('Help') }, icon(CircleHelp, 20))
   button.setAttribute('aria-label', t('Help'))

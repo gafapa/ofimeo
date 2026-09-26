@@ -420,7 +420,8 @@ export interface DialogButton {
 let dialogCount = 0
 
 // Shows a modal dialog; resolves with the pressed button value ('' when dismissed).
-export function showDialog(title: string, body: HTMLElement, buttons: DialogButton[], wide = false): Promise<string> {
+// help: a help center article id (src/help/articles/types.ts) for a "?" button next to the title.
+export function showDialog(title: string, body: HTMLElement, buttons: DialogButton[], wide = false, help?: string): Promise<string> {
   return new Promise((resolve) => {
     const dialog = el('dialog', { class: wide ? 'dlg wide' : 'dlg' })
     const form = el('form', { method: 'dialog' })
@@ -428,7 +429,7 @@ export function showDialog(title: string, body: HTMLElement, buttons: DialogButt
     for (const b of buttons) actions.append(el('button', { value: b.value, textContent: b.label, class: [b.primary ? 'primary' : '', b.danger ? 'danger' : ''].join(' ').trim() }))
     const heading = el('h2', { textContent: title, id: `dlg-title-${++dialogCount}` })
     dialog.setAttribute('aria-labelledby', heading.id)
-    form.append(heading, body, actions)
+    form.append(help ? el('div', { class: 'dlg-head' }, heading, helpButton(help)) : heading, body, actions)
     dialog.append(form)
     document.body.append(dialog)
     dialog.addEventListener('close', () => {
@@ -438,6 +439,14 @@ export function showDialog(title: string, body: HTMLElement, buttons: DialogButt
     dialog.showModal()
     body.querySelector<HTMLElement>('input, textarea, select')?.focus()
   })
+}
+
+// "?" button of a dialog: opens the help center at an article (loaded on demand).
+function helpButton(article: string): HTMLButtonElement {
+  const button = el('button', { type: 'button', class: 'dlg-help', textContent: '?', title: t('Help') })
+  button.setAttribute('aria-label', t('Help about this'))
+  button.addEventListener('click', () => void import('../help/center').then((m) => m.openHelp(article)))
+  return button
 }
 
 export async function promptText(title: string, label: string, value = '', multiline = false): Promise<string | null> {

@@ -20,6 +20,7 @@ All storage is first-party (there is no third-party storage), is kept only in yo
 | School relay | localStorage `words-online:school-relay` | Address of the school relay and the connection settings it provides |
 | Identity | localStorage `words-online:user`, `words-online:writer-user-id` | Name and colour your collaborators see; technical identifier for authorship |
 | Preferences | localStorage `words-online:language`, `words-online:a11y`, `words-online:spelling`, `words-online:spelling-dictionary:<language>`, `words-online:zoom`, `words-online:home-view`, `wo-template-lang`, `diagram-libraries` | Language, accessibility, spelling and personal dictionary, zoom, template language and chosen shape libraries |
+| AI assistants (only if you turn it on) | localStorage `words-online:webmcp` | That you allowed AI assistants to use the documents open in this browser (WebMCP; off by default). See the [Note on artificial intelligence](ai.md) |
 | Nextcloud (only if you set it up) | localStorage `words-online:nextcloud`, `words-online:nextcloud-server`, `words-online:nextcloud-folder`, `words-online:nextcloud-format`, `words-online:nextcloud-share` | Server, user name and app password, last folder and format used |
 | Offline use | Service worker and Cache Storage `workbox-precache-*`, `excalidraw-fonts`, `spelling`, `diagram-libs-*` | Application files, fonts, dictionaries and shapes for offline use |
 

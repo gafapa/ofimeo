@@ -13,6 +13,7 @@
 
 WebMCP is a standard way for a web page to offer "tools" to an AI assistant running in the browser (for example, an extension or an agent chosen by the user). When this feature is available and you expressly enable it (it is **off by default**), the assistant you choose can read the open document and propose or make changes to it through those tools.
 
+- It is turned on per browser from *Tools → Allow AI assistants (WebMCP)*; while it is on, an indicator is shown in the top bar. What the assistant can do depends on the link: with a view link it can only read; with a comment link it can also comment; with an edit link it can also make changes. It never receives share links, access keys or other documents.
 - {{siteName}} does not choose, include or recommend any assistant. The assistant's provider is the provider of the AI system for the purposes of the AI Act and processes the content it reads under its own terms and privacy policy.
 - Whoever decides to use an assistant (the user or, in schools, the school) may be considered a deployer, with the corresponding obligations (for example, AI literacy, Art. 4, and transparency, Art. 50).
 - Changes made by an assistant are recorded as suggestions or under its own authorship, so that other people can tell them apart, review them and accept or reject them. The version history allows returning to an earlier state.

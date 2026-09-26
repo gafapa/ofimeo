@@ -101,7 +101,7 @@ export async function openStorageDialog(): Promise<void> {
     )
   }
   await render()
-  await showDialog(t('Storage and backup'), body, [{ label: t('Close'), value: 'close', primary: true }], true)
+  await showDialog(t('Storage and backup'), body, [{ label: t('Close'), value: 'close', primary: true }], true, 'backup')
 }
 
 async function autoSection(settings: backup.BackupSettings, render: () => Promise<void>): Promise<HTMLElement> {
@@ -170,7 +170,7 @@ export async function backupFlow(ids?: string[]): Promise<boolean> {
     const answer = await showDialog(ids ? t('Back up selected documents') : t('Back up all documents'), body, [
       { label: t('Cancel'), value: 'cancel' },
       { label: t('Back up'), value: 'ok', primary: true },
-    ])
+    ], false, 'backup')
     if (answer !== 'ok') return false
     if (password.value === repeat.value) break
     error.textContent = t('The passwords do not match.')

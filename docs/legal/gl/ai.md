@@ -13,6 +13,7 @@
 
 WebMCP é unha forma estándar de que unha páxina web ofreza «ferramentas» a un asistente de IA que funciona no navegador (por exemplo, unha extensión ou un axente escollido pola persoa usuaria). Cando esta función está dispoñible e a activas expresamente (está **desactivada por defecto**), o asistente que ti escollas pode ler o documento aberto e propor ou realizar cambios nel a través desas ferramentas.
 
+- Actívase en cada navegador desde *Ferramentas → Permitir asistentes de IA (WebMCP)*; mentres está activo móstrase un indicador na barra superior. O que o asistente pode facer depende da ligazón: cunha ligazón de lectura só pode ler; cunha de comentarios, tamén comentar; cunha de edición, tamén facer cambios. Nunca recibe as ligazóns para compartir, as claves de acceso nin outros documentos.
 - {{siteName}} non escolle, non inclúe nin recomenda ningún asistente. O provedor do asistente é o provedor do sistema de IA para efectos do Regulamento de IA e trata o contido que le conforme ás súas propias condicións e política de privacidade.
 - Quen decide usar un asistente (a persoa usuaria ou, no ámbito escolar, o centro) pode ter a consideración de responsable do despregamento, coas obrigas que correspondan (por exemplo, alfabetización en IA, art. 4, e transparencia, art. 50).
 - Os cambios que realiza un asistente rexístranse como suxestións ou coa súa propia autoría, de modo que as demais persoas poden distinguilos, revisalos e aceptalos ou rexeitalos. O historial de versións permite volver a un estado anterior.

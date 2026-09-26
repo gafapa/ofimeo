@@ -186,7 +186,7 @@ export async function openShareDialog(session: Session): Promise<void> {
       : t('This document was created before permission links existed, so every link can edit. To share it as view only, make a copy (File → Make a copy) and share the copy.'),
   })
   const body = el('div', {}, tabs, desc, el('div', { class: 'code-row' }, input, copyBtn), canvas, notes)
-  const shown = showDialog(t('Share'), body, [{ label: t('Done'), value: 'ok', primary: true }])
+  const shown = showDialog(t('Share'), body, [{ label: t('Done'), value: 'ok', primary: true }], false, 'sharing')
   select(choices[0])
   await shown
 }
@@ -229,7 +229,7 @@ export async function handIn(session: Session, untitled: string): Promise<void> 
     { label: t('Upload to a Nextcloud share link…'), value: 'nextcloud' },
     { label: t('Print / Save as PDF'), value: 'print' },
     { label: t('Done'), value: 'ok', primary: true },
-  ])
+  ], false, 'handin')
   if (choice === 'print') setTimeout(() => printDocument(session), 100)
   if (choice === 'nextcloud') await handInToShare(session, zip)
 }

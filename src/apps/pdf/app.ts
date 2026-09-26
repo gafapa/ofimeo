@@ -12,6 +12,7 @@ import { t, tn } from '../../core/i18n'
 import type { Session } from '../../core/session'
 import { setupChrome } from '../../ui/chrome'
 import { mountFrame } from '../../ui/frame'
+import { provideWebMcpTools } from '../../core/webmcp'
 import { renderShell } from '../../ui/shell'
 import { isMac, mod, type ShortcutSection } from '../../ui/shortcuts'
 import { closePopover, colorPalette, confirmDialog, el, icon, openPopover, toast, type Menu, type MenuEntry } from '../../ui/widgets'
@@ -632,6 +633,8 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
   editor.annots.observe(() => scheduleThumbs())
   await reload()
   tb.refresh()
+  // AI assistants (WebMCP, off by default): the tool module loads only when turned on.
+  provideWebMcpTools(session, () => import('./webmcp').then((m) => m.pdfTools(session, viewer, editor)))
   if (import.meta.env.DEV) Object.assign(window, { pdfApp: { editor, viewer, notes, exportBytes } })
 }
 

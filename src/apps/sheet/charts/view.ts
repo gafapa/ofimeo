@@ -48,8 +48,8 @@ export function readValues(univerAPI: FUniver, spec: ChartSpec): Cell[][] {
   return sheet.getRange(range.startRow, range.startColumn, range.endRow - range.startRow + 1, range.endColumn - range.startColumn + 1).getValues() as Cell[][]
 }
 
-export function liveOption(univerAPI: FUniver, spec: ChartSpec, colors = screenColors()) {
-  return chartOption(spec, chartData(spec, readValues(univerAPI, spec), seriesLabel), colors, formatChartNumber)
+export function liveOption(univerAPI: FUniver, spec: ChartSpec, colors = screenColors(), width = 480) {
+  return chartOption(spec, chartData(spec, readValues(univerAPI, spec), seriesLabel), colors, formatChartNumber, width)
 }
 
 type EChartsModule = typeof import('./echarts')
@@ -81,12 +81,15 @@ export function registerCharts(univer: Univer, host: ChartHost): { redraw: () =>
       let disposed = false
       let chart: import('echarts/core').ECharts | null = null
       let resize: ResizeObserver | null = null
-      const render = () => chart?.setOption(liveOption(univerAPI, spec) as never, true)
+      const render = () => chart?.setOption(liveOption(univerAPI, spec, screenColors(), node.clientWidth || 480) as never, true)
       loadECharts().then(({ echarts }) => {
         if (disposed) return
         chart = echarts.init(node, null, { renderer: 'canvas' })
         render()
-        resize = new ResizeObserver(() => chart?.resize())
+        resize = new ResizeObserver(() => {
+          chart?.resize()
+          render()
+        })
         resize.observe(node)
         listeners.add(render)
       })
@@ -109,6 +112,12 @@ export function registerCharts(univer: Univer, host: ChartHost): { redraw: () =>
     const id = chartAt(e)
     if (id && host.canEdit()) host.onEdit(id)
   }, true)
+  // A right button press on a chart opens our menu, not Univer's drawing menu.
+  for (const type of ['pointerdown', 'mousedown'] as const) {
+    window.addEventListener(type, (e) => {
+      if (e.button === 2 && chartAt(e)) e.stopPropagation()
+    }, true)
+  }
   window.addEventListener('contextmenu', (e) => {
     const id = chartAt(e)
     if (!id) return

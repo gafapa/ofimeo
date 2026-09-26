@@ -7,10 +7,10 @@ import { canonicalWorkbook } from '../functions'
 
 export type SheetExportFormat = 'xlsx' | 'ods' | 'csv'
 
-export const SHEET_ACCEPT = '.xlsx,.ods,.csv,.tsv'
+export const SHEET_ACCEPT = '.xlsx,.ods,.csv,.tsv,.xls'
 
 // Lazy loaders keyed by file name ('./xlsx-import.ts', …).
-const converters = import.meta.glob(['./xlsx-*.ts', './ods-*.ts', './csv.ts'])
+const converters = import.meta.glob(['./xlsx-*.ts', './xls-import.ts', './ods-*.ts', './csv.ts'])
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function load(name: string): Promise<any> {
@@ -24,7 +24,7 @@ export async function importSheetFile(file: File): Promise<Partial<IWorkbookData
   if (ext === 'xlsx') return (await load('xlsx-import')).importXlsx(await file.arrayBuffer())
   if (ext === 'ods') return (await load('ods-import')).importOds(await file.arrayBuffer())
   if (ext === 'csv' || ext === 'tsv') return (await load('csv')).importCsv(await file.text(), ext === 'tsv' ? '\t' : undefined)
-  if (ext === 'xls') throw new Error(t('Legacy .xls files are not supported; save them as .xlsx first'))
+  if (ext === 'xls') return (await load('xls-import')).importXls(await file.arrayBuffer())
   throw new Error(t('Unsupported file type'))
 }
 

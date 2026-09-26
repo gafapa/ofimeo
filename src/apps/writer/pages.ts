@@ -21,6 +21,9 @@ const NOTES_SEPARATOR = 16
 export interface PageGeometry {
   width: number // px
   height: number
+  // Exact size in PDF points (px values are rounded).
+  widthPt: number
+  heightPt: number
   margins: { top: number; right: number; bottom: number; left: number }
 }
 
@@ -77,6 +80,8 @@ export function pageGeometry(page: PageSettings): PageGeometry {
   return {
     width: Math.round(mmToPx(width)),
     height: Math.round(mmToPx(height)),
+    widthPt: (width / 25.4) * 72,
+    heightPt: (height / 25.4) * 72,
     margins: { top: Math.round(mmToPx(m.top)), right: Math.round(mmToPx(m.right)), bottom: Math.round(mmToPx(m.bottom)), left: Math.round(mmToPx(m.left)) },
   }
 }

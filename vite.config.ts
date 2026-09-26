@@ -59,7 +59,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,woff2,svg,png,ico,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,woff,woff2,svg,png,ico,webmanifest}'],
         globIgnores: ['excalidraw/fonts/Xiaolai/**', 'diagram-libs/**'],
         additionalManifestEntries: libsRevision ? [{ url: 'diagram-libs/catalog.json', revision: libsRevision }] : [],
         // The spreadsheet engine is a single large chunk.

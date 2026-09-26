@@ -211,7 +211,7 @@ export async function columnsDialog(ctx: WriterContext, preset?: number): Promis
   const count = el('select', { class: 'field' })
   for (let n = 1; n <= MAX_COLUMNS; n++) count.append(el('option', { value: String(n), textContent: String(n) }))
   count.value = String(current.count)
-  const gap = el('input', { type: 'number', min: '0', max: '5', step: '0.1', value: String(Math.round(current.gap) / 10), class: 'field' })
+  const gap = el('input', { type: 'number', min: '0', max: '5', step: '0.1', value: String(current.gap / 10), class: 'field' })
   const line = el('input', { type: 'checkbox' })
   line.checked = current.separator
   const apply = applyToField(ctx, sections.length)

@@ -299,7 +299,7 @@ function gradebook(lang: Lang): Partial<IWorkbookData> {
 
   // Grade distribution of the final grades (qualitative levels) and its chart.
   const dist = last + 7
-  g.row(dist, 1, [L('Distribución de calificaciones', 'Distribución de cualificacións', 'Répartition des appréciations', 'Notenverteilung'), L('Alumnos', 'Alumnado', 'Élèves', 'Schüler/innen')], S.head)
+  g.row(dist, 1, [L('Distribución de calificaciones', 'Distribución de cualificacións', 'Répartition des appréciations', 'Notenverteilung'), L('Alumnos', 'Alumnado', 'Élèves', 'Schüler/innen')], S.head).height(dist, 40)
   GRADE_NAMES[lang].forEach(([name, abbr], k) => {
     g.set(dist + 1 + k, 1, `${name} (${abbr})`, S.side)
     g.set(dist + 1 + k, 2, `=COUNTIF($P$${first + 1}:$P$${last + 1},"${name}")`, S.center)

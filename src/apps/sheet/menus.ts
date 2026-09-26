@@ -7,7 +7,7 @@ import type { Session } from '../../core/session'
 import type { FrameSpec } from '../../ui/frame'
 import type { EditMenuOptions } from '../../ui/menus'
 import { mod, type ShortcutSection } from '../../ui/shortcuts'
-import { el, showDialog, type Menu, type MenuEntry } from '../../ui/widgets'
+import { el, showDialog, toast, type Menu, type MenuEntry } from '../../ui/widgets'
 import { zoomMenuItems, type ZoomTarget } from '../../ui/zoom'
 import type { FUniver } from '@univerjs/presets'
 import type { CommandName, SheetCommands } from './commands'
@@ -38,9 +38,20 @@ const WRAP = 3
 
 export function sheetFrame(ctx: SheetContext): Pick<FrameSpec, 'file' | 'edit' | 'menus' | 'help'> {
   const { cmds, univerAPI } = ctx
-  const run = (name: CommandName, params?: object) => () => void cmds.run(name, params)
+  type Params = object | (() => object)
+  const run = (name: CommandName, params?: Params) => () => void cmds.run(name, typeof params === 'function' ? params() : params)
   // Changing items are disabled for view and comment links.
-  const edit = (label: string, name: CommandName, params?: object, shortcut?: string): MenuEntry => ({ label, shortcut, run: run(name, params), enabled: ctx.canEdit })
+  const edit = (label: string, name: CommandName, params?: Params, shortcut?: string): MenuEntry => ({ label, shortcut, run: run(name, params), enabled: ctx.canEdit })
+  // Insert as many rows / columns as are selected.
+  const selection = () => univerAPI.getActiveWorkbook()?.getActiveSheet()?.getSelection()?.getActiveRange()?.getRange()
+  const rowCount = () => {
+    const r = selection()
+    return { value: r ? r.endRow - r.startRow + 1 : 1 }
+  }
+  const colCount = () => {
+    const r = selection()
+    return { value: r ? r.endColumn - r.startColumn + 1 : 1 }
+  }
   const action = (label: string, fn: () => void, shortcut?: string): MenuEntry => ({ label, shortcut, run: fn, enabled: ctx.canEdit })
   const sheet = () => univerAPI.getActiveWorkbook()?.getActiveSheet()
   const chart = () => ctx.selectedChart()
@@ -107,10 +118,10 @@ export function sheetFrame(ctx: SheetContext): Pick<FrameSpec, 'file' | 'edit' |
   const insert: Menu = {
     label: t('Insert'),
     items: [
-      edit(t('Row above'), 'insertRowBefore'),
-      edit(t('Row below'), 'insertRowAfter'),
-      edit(t('Column left'), 'insertColBefore'),
-      edit(t('Column right'), 'insertColAfter'),
+      edit(t('Row above'), 'insertRowBefore', rowCount),
+      edit(t('Row below'), 'insertRowAfter', rowCount),
+      edit(t('Column left'), 'insertColBefore', colCount),
+      edit(t('Column right'), 'insertColAfter', colCount),
       { label: t('Cells'), enabled: ctx.canEdit, submenu: [edit(t('Shift cells down'), 'insertCellsDown'), edit(t('Shift cells right'), 'insertCellsRight')] },
       edit(t('Sheet'), 'insertSheet'),
       '-',
@@ -177,7 +188,16 @@ export function sheetFrame(ctx: SheetContext): Pick<FrameSpec, 'file' | 'edit' |
         submenu: [edit(t('Merge all'), 'mergeAll'), edit(t('Merge horizontally'), 'mergeHorizontal'), edit(t('Merge vertically'), 'mergeVertical'), '-', edit(t('Unmerge'), 'unmerge')],
       },
       '-',
-      edit(t('Conditional formatting…'), 'conditionalFormatting'),
+      {
+        label: t('Conditional formatting'),
+        enabled: ctx.canEdit,
+        submenu: [
+          edit(t('New rule…'), 'conditionalFormatting', { value: 1 }),
+          edit(t('Manage rules…'), 'conditionalFormatting', { value: 2 }),
+          '-',
+          edit(t('Clear rules from selection'), 'conditionalFormatting', { value: 9 }),
+        ],
+      },
       edit(t('Fit column width'), 'autoWidth'),
       edit(t('Paint format'), 'formatPainter'),
       edit(t('Clear formatting'), 'clearFormat'),
@@ -195,9 +215,13 @@ export function sheetFrame(ctx: SheetContext): Pick<FrameSpec, 'file' | 'edit' |
       edit(t('Clear filter'), 'clearFilter'),
       edit(t('Reapply filter'), 'reapplyFilter'),
       '-',
-      edit(t('Data validation…'), 'validation'),
-      edit(t('Split text to columns'), 'splitText'),
-      edit(t('Named ranges…'), 'namedRanges'),
+      {
+        label: t('Data validation'),
+        enabled: ctx.canEdit,
+        submenu: [edit(t('New rule…'), 'addValidation'), edit(t('Manage rules…'), 'validation', {})],
+      },
+      action(t('Split text to columns…'), () => void splitText(cmds)),
+      edit(t('Named ranges…'), 'namedRanges', { value: 'open' }),
       edit(t('Protect range…'), 'protectRange'),
       '-',
       action(t('Pivot table…'), ctx.pivotTable),
@@ -248,7 +272,7 @@ function shortcutSections(): ShortcutSection[] {
 const statHelp = (): [string, string, string][] => [
   ['AVERAGE', 'MEDIA · PROMEDIO', t('Mean')],
   ['MEDIAN', 'MEDIANA', t('Median')],
-  ['MODE.SNGL', 'MODA.UNO', t('Mode')],
+  ['MODE.SNGL', 'MODA.UNO', t('Mode (most frequent value)')],
   ['STDEV.S / STDEV.P', 'DESVEST.M / DESVEST.P', t('Standard deviation (sample / population)')],
   ['VAR.S / VAR.P', 'VAR.S / VAR.P', t('Variance (sample / population)')],
   ['QUARTILE.INC', 'CUARTIL.INC', t('Quartile')],
@@ -292,4 +316,20 @@ async function chartsHelp(): Promise<void> {
     el('p', { textContent: PIVOT_LIMITATIONS() }),
   )
   await showDialog(t('Charts and pivot tables'), body, [{ label: t('Close'), value: 'ok', primary: true }], true)
+}
+
+// Data ▸ Split text to columns… (Univer's command, with our delimiter dialog).
+async function splitText(cmds: SheetCommands): Promise<void> {
+  const range = cmds.api.getActiveWorkbook()?.getActiveSheet()?.getSelection()?.getActiveRange()?.getRange()
+  if (!range) return
+  if (range.startColumn !== range.endColumn) return toast(t('Select cells of a single column'))
+  const DELIMITERS: [number, string][] = [[2, t('Comma')], [4, t('Semicolon')], [8, t('Space')], [1, t('Tab')], [16, t('Other')]]
+  const kind = el('select', { class: 'field' }, ...DELIMITERS.map(([v, l]) => el('option', { value: String(v), textContent: l })))
+  const other = el('input', { class: 'field', maxLength: 1, hidden: true })
+  kind.addEventListener('change', () => (other.hidden = kind.value !== '16'))
+  const body = el('div', { class: 'form' }, el('label', { class: 'field-label' }, t('Separator'), kind, other))
+  if ((await showDialog(t('Split text to columns'), body, [{ label: t('Cancel'), value: 'cancel' }, { label: t('Split'), value: 'ok', primary: true }])) !== 'ok') return
+  const delimiter = Number(kind.value)
+  if (delimiter === 16 && !other.value) return
+  await cmds.run('splitText', { range, delimiter, ...(delimiter === 16 ? { customDelimiter: other.value } : {}) })
 }

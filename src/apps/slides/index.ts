@@ -20,9 +20,10 @@ export function mount(session: Session): void {
 
 // Imports a PowerPoint file into a new local presentation; returns its path.
 export async function importFile(file: File): Promise<string> {
-  const { parsePptx } = await import('./formats/pptx-import')
-  const data = await parsePptx(await file.arrayBuffer())
-  const title = file.name.replace(/\.pptx$/i, '')
+  const buffer = await file.arrayBuffer()
+  // PowerPoint 97-2003 files (.ppt) have their own importer.
+  const data = /\.ppt$/i.test(file.name) ? await (await import('./formats/ppt-import')).parsePpt(buffer) : await (await import('./formats/pptx-import')).parsePptx(buffer)
+  const title = file.name.replace(/\.pptx?$/i, '')
   return createLocalDocument('slides', title, (doc) => writePresentation(doc, data, DiagramSync.setPages))
 }
 

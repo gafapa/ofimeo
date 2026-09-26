@@ -94,7 +94,7 @@ class Renderer {
     const { paper, layout } = this.o
     const rect = paper.getBoundingClientRect()
     this.origin = { x: rect.left, y: rect.top }
-    for (const p of layout.pages) this.doc.addPage(p.geo.width * PT, p.geo.height * PT)
+    for (const p of layout.pages) this.doc.addPage(p.geo.widthPt, p.geo.heightPt)
     this.collectHeadingTargets()
     const editor = paper.querySelector('#editor')
     const chrome = paper.querySelector('#page-chrome')
@@ -120,7 +120,7 @@ class Renderer {
 
   // Page-relative PDF coordinates of a paper point.
   private pt(p: PageBox, x: number, y: number): [number, number] {
-    return [(x - p.x) * PT, (p.geo.height - (y - p.y)) * PT]
+    return [(x - p.x) * PT, p.geo.heightPt - (y - p.y) * PT]
   }
 
   private style(el: Element): CSSStyleDeclaration {
@@ -608,7 +608,7 @@ class Renderer {
           const dom = editor.view.nodeDOM(p)
           const b = dom instanceof HTMLElement ? this.box(dom.getBoundingClientRect()) : null
           const at = b ? this.pageAt(b.y) : null
-          return at && b ? { page: at.box.index, y: (at.box.geo.height - (b.y - at.box.y)) * PT } : { page: 0, y: 0 }
+          return at && b ? { page: at.box.index, y: at.box.geo.heightPt - (b.y - at.box.y) * PT } : { page: 0, y: 0 }
         }),
       )
     }
@@ -644,7 +644,7 @@ class Renderer {
     const b = this.box(h.getBoundingClientRect())
     const at = this.pageAt(b.y + 1)
     if (!at) return
-    this.doc.outline.push({ title, level: Number(h.tagName[1]), page: at.box.index, y: (at.box.geo.height - (b.y - at.box.y)) * PT + 4 })
+    this.doc.outline.push({ title, level: Number(h.tagName[1]), page: at.box.index, y: at.box.geo.heightPt - (b.y - at.box.y) * PT + 4 })
   }
 }
 

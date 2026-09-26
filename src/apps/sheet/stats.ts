@@ -94,7 +94,7 @@ const STATISTICS: [() => string, (ref: string) => string][] = [
   [() => t('Count (n)'), (x) => `=COUNT(${x})`],
   [() => t('Mean'), (x) => `=AVERAGE(${x})`],
   [() => t('Median'), (x) => `=MEDIAN(${x})`],
-  [() => t('Mode'), (x) => `=IFERROR(MODE.SNGL(${x}),"—")`],
+  [() => t('Mode (most frequent value)'), (x) => `=IFERROR(MODE.SNGL(${x}),"—")`],
   [() => t('Standard deviation (sample)'), (x) => `=STDEV.S(${x})`],
   [() => t('Standard deviation (population)'), (x) => `=STDEV.P(${x})`],
   [() => t('Variance (sample)'), (x) => `=VAR.S(${x})`],

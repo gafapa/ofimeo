@@ -26,7 +26,7 @@ before the rename keep working.
   and margins, page breaks, header and footer with page number / page count,
   footnotes at the foot of each page, zoom, and printing / PDF that matches the
   screen.
-- Menu bar (File, Edit, View, Insert, Format, Table, Tools, Review, Help), classic toolbar,
+- Menu bar (File, Edit, View, Insert, Format, Table, References, Tools, Review, Help), classic toolbar,
   context menu, status bar (page X of Y, words, characters) and keyboard shortcuts.
 - Paragraph styles (Normal, Title, Subtitle, Headings), fonts, sizes in points,
   bold/italic/underline/strike, sub/superscript, text and highlight colors,
@@ -38,6 +38,77 @@ before the rename keep working.
   styles, lists, tables (merged cells, widths), images, footnotes, header/footer
   fields and page setup. Also opens `.html`, `.txt` and `.md`.
 - Real-time collaboration with live cursors, presence and offline editing.
+
+### Schoolwork: contents, citations, columns, PDF
+
+- **Table of contents** (*Insert* or *References → Table of contents*, headings
+  1–3 or 1–6): entries with dot leaders and page numbers from the page layout;
+  clicking an entry jumps to its heading. The table follows the headings by
+  itself a moment after local edits (remote edits are left to whoever made them,
+  so collaborators with other fonts do not rewrite each other's page numbers)
+  and with *Update table*. Word files get a real TOC field (`w:sdt` +
+  `TOC \o` with cached entries, hyperlinks and `PAGEREF`s to `_Toc` bookmarks on
+  the headings), OpenDocument files a `text:table-of-content` index; both are
+  read back, also from LibreOffice and Word.
+- **Citations and bibliography** (*References* menu): a source list per
+  document (Y.Map `sources`: book, chapter, journal article, web page, report,
+  thesis, other), *Insert citation…* (several sources, page or other locator),
+  *Insert bibliography* (a heading plus the sorted list of the cited sources,
+  kept up to date). Styles: APA 7 (default), MLA 9 and Chicago author-date, with
+  terms in Spanish, Galician, English, French and German (y / e / and / et / und,
+  s.f. / s.d. / n.d. / o. J., p. / S., ed., «comillas»…), following the document
+  language or chosen in *Citation language*; same-author same-year letters
+  (2020a, 2020b). Sources can be typed or imported from BibTeX, RIS and
+  CSL-JSON (Zotero, Mendeley, Google Scholar), and exported as BibTeX.
+  Word: citations are `CITATION` fields inside `w:sdt`, the bibliography a
+  `BIBLIOGRAPHY` field, and the sources Word's own `b:Sources` part, so Word
+  lists them in its source manager; Zotero/Mendeley citation fields
+  (`ADDIN … CSL_CITATION`) are imported with their sources. OpenDocument:
+  `text:bibliography-mark` per source (LibreOffice shows them as
+  "(Author, year)") and a `text:bibliography` index; the full source list and
+  style travel in the file's metadata.
+- **Columns and sections**: *Format → Columns* (1–3 columns, spacing, line
+  between) for the section at the cursor or the whole document; *Insert →
+  Section break* (next page or continuous). Each section has its own page setup
+  (*Page setup… → Apply to*), so portrait and landscape pages can be mixed.
+  Columns before a continuous break are balanced, as in Word. The pagination
+  (`pages.ts`) places every block absolutely (node decorations) on its page and
+  column; sheets, headers, footers, footnotes and column lines are drawn in
+  layers around the editor. Word: one `w:sectPr` per section (`w:type`,
+  `w:pgSz`/`w:pgMar`, `w:cols` with `w:sep`); OpenDocument: master pages for
+  page changes and `text:section`s with `style:columns`. Printing uses the same
+  layout without gaps; documents that mix page sizes are printed through the
+  PDF.
+- **PDF (.pdf)** in *File → Download as* (no print dialog): the paged layout is
+  drawn into a PDF by our own writer (`pdf/`): real, selectable text with
+  embedded subset TrueType fonts and a ToUnicode map (each word is placed and
+  scaled to the width the browser gave it), headings as bookmarks, links (web
+  and table of contents), images, list markers, tables and borders,
+  equations (KaTeX fonts and SVG paths), pages of different sizes, and a
+  structure tree (tagged PDF: headings, paragraphs, lists, tables, figures with
+  their alternative text; headers and footers as artifacts). Fonts: the app
+  ships open, metric-compatible fonts (`fonts/`, OFL: Carlito for Calibri,
+  Caladea for Cambria, Arimo for Arial/Helvetica, Tinos for Times New Roman,
+  Cousine for Courier New; Latin and Latin Extended). They are also used on
+  screen (so pages break the same everywhere) and are embedded in the PDF; the
+  accessibility fonts and KaTeX's fonts are embedded when used. Other fonts are
+  replaced by the closest shipped family.
+- **Legacy files**: Word 97-2003 `.doc` (text, headings, title, bold / italic /
+  underline / strike / size / color / super- and subscript, alignment, lists,
+  tables, footnotes, hyperlinks, page breaks, inline JPEG/PNG pictures, table
+  of contents fields, page size and margins), Excel 97-2003 `.xls` in the
+  spreadsheet (values, shared strings, number formats and dates, common
+  formulas including shared formulas and sheet references — others keep their
+  value —, fonts, fills, alignment, merged cells, column widths, row heights)
+  and PowerPoint 97-2003 `.ppt` in presentations (slides, text boxes and
+  placeholders with size, bold, color, alignment and bullets, filled
+  rectangles). They are read in the browser by our own small parsers
+  (`src/core/cfb.ts` for the OLE container, `writer/formats/doc-import.ts`,
+  `sheet/formats/xls-import.ts`, `slides/formats/ppt-import.ts`, together about
+  60 kB before compression, loaded only when such a file is opened) instead of a
+  LibreOffice WebAssembly build (tens of MB). Not read: headers and footers,
+  comments and tracked changes in `.doc`; charts and pictures in `.xls`;
+  pictures, notes and animations in `.ppt`; encrypted files.
 
 ### Reviewing (teachers correcting student work)
 
@@ -201,7 +272,44 @@ Galician, English, French and German.
 - Real-time collaboration without a server (see below), with collaborators'
   selections shown in their color.
 - Open and download **Excel (.xlsx)**, **OpenDocument (.ods)** and **CSV**;
-  print / PDF of the current sheet.
+  print / PDF of the current sheet (with its charts).
+- On the shared Ofimeo frame: our File · Edit · View · Insert · Format · Data ·
+  Tools · Help menus call Univer commands through one adapter
+  (`sheet/commands.ts`, the only place with Univer command ids; Univer is pinned
+  to an exact version), Univer's tool bar is a single row without its ribbon
+  tabs, and the status bar shows the selection's sum, average and count, the
+  language, the save state and the zoom. Univer is themed from our tokens
+  (`sheet/theme.ts`), including dark and high contrast, and its interface
+  follows our language (es/gl → es-ES, fr-FR, de-DE, en-US).
+- **Charts** (Insert ▸ Chart…): column, bar, line, area, pie, doughnut and
+  scatter (with an optional linear trendline showing its equation and R²),
+  from a range with detected headers, series in rows or columns, title,
+  legend, axis titles and palettes (including a colorblind-safe one). A chart
+  is a Univer float DOM drawing whose data is the chart definition; it is drawn
+  with [Apache ECharts](https://echarts.apache.org) (Apache-2.0, ~200 KB
+  gzipped, loaded only when a chart is shown). Charts update live from cell
+  values and formulas, sync through the mutation log, follow their range when
+  rows or columns are inserted or deleted (also for concurrent edits, see
+  below), are read-only for view links, print as SVG, and are saved as
+  **native charts** in .xlsx (DrawingML, with value caches) and .ods (chart
+  objects), which Excel and LibreOffice open as live charts; both are read back
+  on import. Floating images are also written to and read from .xlsx and .ods.
+  Double click (or right click) a chart to edit or delete it.
+- **Pivot tables** (Data ▸ Pivot table…): rows, optional columns, values with
+  SUM / AVERAGE / COUNT / MIN / MAX and an optional filter cell, written as
+  ordinary SUMIFS / AVERAGEIFS / COUNTIFS / MINIFS / MAXIFS formulas on a new
+  sheet or at a chosen cell, so values stay live and export anywhere. New
+  keys appear with Data ▸ Refresh pivot tables (the definition is stored as
+  custom metadata of the table's first cell).
+- **Statistics** for secondary school: the usual functions work (AVERAGE,
+  MEDIAN, MODE.SNGL, STDEV.S/P, VAR.S/P, QUARTILE.INC, PERCENTILE.INC, CORREL,
+  SLOPE, INTERCEPT, FORECAST.LINEAR, NORM.DIST, NORM.INV, BINOM.DIST,
+  COUNTIFS, FREQUENCY, RANK.EQ, COMBIN, PERMUT, RANDBETWEEN…) and their Spanish
+  names are accepted as aliases (MEDIA, MEDIANA, MODA.UNO, DESVEST.M,
+  CUARTIL.INC, PENDIENTE, DISTR.NORM.N…, `sheet/functions.ts`); files are
+  always written with the English names. Data ▸ Descriptive statistics… writes
+  a live summary table (n, mean, median, mode, standard deviations, variances,
+  min, quartiles, max, range). Univer localizes function help, not names.
 
 ### How spreadsheet sync works
 
@@ -215,7 +323,8 @@ replicas the same log order, so replaying it always yields the same workbook.
   the shared order, so replicas never diverge.
 - Each entry records which changes its author had seen. An edit made without
   knowing about a concurrent row/column insertion or deletion is shifted before
-  replaying, so it lands on the cell its author meant.
+  replaying, so it lands on the cell its author meant. The same applies to the
+  source range of a chart edited concurrently.
 - Checkpoints (snapshot + covered entries) every 300 changes keep loading fast.
 
 ## Drawing
@@ -486,7 +595,7 @@ created and opened.
 | App | Templates |
 | --- | --- |
 | Document | Situación de aprendizaje (identification, justification, specific competences, evaluation criteria, basic knowledge, activity sequence, UDL/DUA, evaluation), rubric, student worksheet, student report (cover, index, sections, APA bibliography), meeting minutes, letter to families with a consent slip |
-| Spreadsheet | Gradebook (weighted averages per term from a weights sheet, final grade, IN/SU/BI/NT/SB level, pass/fail colors, group statistics), weekly timetable, monthly attendance register (weekdays from month/year, F/J/R codes, totals and attendance %), rubric with automatic score |
+| Spreadsheet | Gradebook (weighted averages per term from a weights sheet, final grade, IN/SU/BI/NT/SB level, pass/fail colors, group statistics, grade distribution chart), weekly timetable, monthly attendance register (weekdays from month/year, F/J/R codes, totals and attendance %), rubric with automatic score |
 | Diagram | Concept map, timeline, process flowchart, graphic organizers (KWL, Venn, cause and effect) |
 | Drawing | Brainstorm board |
 | Presentation | Learning situation presentation, student oral presentation |
@@ -952,8 +1061,12 @@ src/
       formats/       PPTX / ODP export (elements.ts turns slides into neutral elements),
                      PPTX import (loaded on demand)
     sheet/           Spreadsheet
-      app.ts         Univer in the shell: menus, file actions, presence, printing
+      app.ts         Univer in the Ofimeo frame: file actions, status bar, presence, printing
+      menus.ts       Menus and shortcut rows; commands.ts: Univer command id adapter
+      theme.ts       Univer theme from our tokens
       univer.ts      Univer presets and locales
+      charts/        Chart model, ECharts options and loader, live view, chart dialog
+      pivot.ts       Pivot tables as formulas; stats.ts: descriptive statistics, function aliases
       sync.ts        Mutation log over Yjs, rebuilds and checkpoints
       transform.ts   Shifts concurrent edits through row/column changes
       print.ts       Print layout of the current sheet
@@ -962,15 +1075,26 @@ src/
       app.ts         Editor, print layout, zoom, status bar, file actions
       commands.ts    Menus, toolbar, context menu
       dialogs.ts     Page setup, header/footer, footnotes, links, tables…
-      pages.ts       Pagination (pages, headers/footers, footnotes)
+      pages.ts       Pagination: pages per section (size, orientation, margins),
+                     columns, footnotes; blocks placed with node decorations
+      sections.ts    Section settings at the cursor (page setup, columns)
+      fonts.ts       Shipped document fonts (fonts/: Carlito, Caladea, Arimo, Tinos, Cousine)
+      pdf/           Direct PDF export: sfnt.ts (WOFF/TrueType, subsetting),
+                     document.ts (PDF objects, fonts, outline, tags), render.ts
+                     (draws the laid-out pages), loaded on demand
+      references/    Sources and citations: format.ts (APA, MLA, Chicago in five
+                     languages), parse.ts (BibTeX, RIS, CSL-JSON), nodes.ts
+                     (citation and bibliography nodes), store.ts, ui.ts (dialogs)
       find.ts        Find & replace
       review.ts      Comments and suggestions: highlights and the margin rail
       authorship.ts  Authorship colors and contributions per author
       ypos.ts        ProseMirror positions <-> Yjs (relative positions, item authors)
       collab.ts      Session helpers (comments channel, authors, user id)
-      editor/        TipTap extensions and custom nodes (equation, suggestions)
-      formats/       DOCX / ODT import and export (loaded on demand);
-                     math.ts converts MathML / OMML / LaTeX
+      editor/        TipTap extensions and custom nodes (equation, suggestions,
+                     toc.ts: table of contents)
+      formats/       DOCX / ODT import and export, DOC import (loaded on demand);
+                     math.ts converts MathML / OMML / LaTeX, bibliography-xml.ts
+                     Word's b:Sources
       spell/         Spelling and grammar: plugin.ts (decorations, incremental
                      checks), worker.ts + checker.ts (runs off the main thread),
                      hunspell.ts, tokenize.ts, rules/ (offline rules and tests),
@@ -1048,15 +1172,18 @@ The build uses relative paths, so any static host or subfolder works.
 - Public relays are community-run with no guarantees; several are used at once.
 - Some restrictive networks can block direct WebRTC connections between
   different networks. No TURN server is configured.
-- Pagination moves whole blocks to the next page (paragraphs are not split
-  across pages); a block taller than a page overflows.
-- Word/ODT: only the default header/footer, a single section, plain-text
-  footnotes; text boxes and floating shapes are not imported. Tracked
+- Pagination moves whole blocks to the next page or column (paragraphs are
+  not split across pages); a block taller than a page overflows. Tables of
+  contents and bibliographies are split entry by entry.
+- Word/ODT: only the default header/footer (the same on every section),
+  plain-text footnotes; text boxes and floating shapes are not imported. Tracked
   formatting changes are not imported; comments on header/footer text are
   dropped. Equations cover common constructs (fractions, roots, scripts,
   sums/integrals, matrices, accents, delimiters); exotic OMML/MathML may lose
-  structure.
-  Legacy `.doc` is not supported.
+  structure. Column breaks are not supported; a continuous section break that
+  changes the page size starts a new page. LibreOffice keeps its own text for
+  bibliography marks, so citations in `.odt` files show as "(Author, year)"
+  there, without the page. `.doc` / `.xls` / `.ppt`: see *Legacy files* above.
 - Documents created with the earlier Quill-based version are not migrated, nor
   diagrams made with the earlier embedded draw.io version.
 - Diagrams: draw.io's shape libraries are included except the few that need

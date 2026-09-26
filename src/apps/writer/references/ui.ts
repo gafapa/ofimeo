@@ -77,7 +77,7 @@ export async function editSource(ctx: WriterContext, source?: Source): Promise<S
   const type = el('select', { class: 'field' })
   for (const k of SOURCE_TYPES) type.append(el('option', { value: k, textContent: typeLabel(k) }))
   type.value = s.type
-  const authors = el('textarea', { class: 'field', rows: 3, value: peopleText(s.authors), placeholder: t('García Pérez, Ana\n{Ministry of Education}') })
+  const authors = el('textarea', { class: 'field', rows: 3, value: peopleText(s.authors), placeholder: t('García Pérez, Ana') })
   const title = el('input', { class: 'field', value: s.title })
   const date = el('input', { class: 'field', value: s.date ?? '', placeholder: t('2024 or 2024-05-17') })
   const inputs = new Map<keyof Source, HTMLInputElement | HTMLTextAreaElement>()

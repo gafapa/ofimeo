@@ -131,7 +131,7 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
       const [{ renderSvg }, { PAPER_COLORS }] = await Promise.all([import('./charts/echarts'), import('./charts/option')])
       for (const c of onSheet) {
         const { width, height } = c.transform
-        overlays.push({ from: c.from, width, height, svg: renderSvg(liveOption(univerAPI, c.spec, PAPER_COLORS), width, height) })
+        overlays.push({ from: c.from, width, height, svg: renderSvg(liveOption(univerAPI, c.spec, PAPER_COLORS, width), width, height) })
       }
     }
     printArea.innerHTML = renderPrintHtml(data, sheetId, (r, c) => sheet.getRange(r, c).getDisplayValue(), overlays)

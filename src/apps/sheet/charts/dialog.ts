@@ -149,7 +149,7 @@ export async function chartDialog(univerAPI: FUniver, current?: ChartSpec): Prom
     const { spec, message } = resolve()
     error.textContent = message
     if (!spec || !chart) return
-    chart.setOption(chartOption(spec, chartData(spec, readValues(univerAPI, spec), seriesLabel), screenColors(), formatChartNumber) as never, true)
+    chart.setOption(chartOption(spec, chartData(spec, readValues(univerAPI, spec), seriesLabel), screenColors(), formatChartNumber, preview.clientWidth || 480) as never, true)
   }
   const detect = () => {
     const { spec } = resolve()

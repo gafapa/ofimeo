@@ -8,7 +8,7 @@ import { t } from '../../../core/i18n'
 
 export type ExportFormat = 'docx' | 'odt' | 'html' | 'txt'
 
-export const OPEN_ACCEPT = '.docx,.odt,.html,.htm,.txt,.md'
+export const OPEN_ACCEPT = '.docx,.odt,.doc,.html,.htm,.txt,.md'
 
 export type Imported = Omit<DocumentData, 'title'>
 
@@ -16,7 +16,14 @@ export async function importFile(file: File): Promise<Imported> {
   const ext = file.name.split('.').pop()?.toLowerCase()
   if (ext === 'docx') return (await import('./docx-import')).importDocx(await file.arrayBuffer())
   if (ext === 'odt') return (await import('./odt-import')).importOdt(await file.arrayBuffer())
-  if (ext === 'doc') throw new Error(t('Legacy .doc files are not supported; save them as .docx first'))
+  if (ext === 'doc') {
+    const buffer = await file.arrayBuffer()
+    const head = new Uint8Array(buffer.slice(0, 8))
+    // Some ".doc" files are really RTF, HTML or DOCX.
+    if (head[0] === 0x50 && head[1] === 0x4b) return (await import('./docx-import')).importDocx(buffer)
+    if (head[0] !== 0xd0) throw new Error(t('This .doc file is not a Word 97-2003 document; save it as .docx first'))
+    return (await import('./doc-import')).importDoc(buffer)
+  }
   const text = await file.text()
   const body: JSONContent =
     ext === 'html' || ext === 'htm'

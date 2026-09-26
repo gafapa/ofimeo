@@ -15,7 +15,8 @@ export const PAPER_COLORS: ChartColors = { background: '#ffffff', text: '#202124
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Option = Record<string, any>
 
-export function chartOption(spec: ChartSpec, data: ChartData, colors: ChartColors, format: (n: number) => string): Option {
+// `width`: the chart's width in pixels (category labels wrap to fit their slot).
+export function chartOption(spec: ChartSpec, data: ChartData, colors: ChartColors, format: (n: number) => string, width = 480): Option {
   const palette = PALETTES[spec.palette] ?? PALETTES.ofimeo
   const textStyle = { color: colors.text, fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif' }
   const legend =
@@ -39,7 +40,7 @@ export function chartOption(spec: ChartSpec, data: ChartData, colors: ChartColor
     left: (horizontal ? 76 : 44) + (spec.yTitle ? 22 : 0),
     right: spec.legend === 'right' ? 130 : 20,
     top,
-    bottom: (spec.legend === 'bottom' ? 54 : 28) + (spec.xTitle ? 24 : 0),
+    bottom: (spec.legend === 'bottom' ? 60 : 40) + (spec.xTitle ? 24 : 0),
   }
   const axisCommon = {
     axisLine: { lineStyle: { color: colors.muted } },
@@ -102,7 +103,15 @@ export function chartOption(spec: ChartSpec, data: ChartData, colors: ChartColor
     }
   }
 
-  const categoryAxis = { type: 'category', data: data.categories, ...axisCommon, splitLine: { show: false } }
+  // Every category label is shown, wrapped to its slot on vertical charts.
+  const slot = Math.max(40, (width - grid.left - grid.right) / Math.max(1, data.categories.length) - 6)
+  const categoryAxis = {
+    type: 'category',
+    data: data.categories,
+    ...axisCommon,
+    axisLabel: { color: colors.muted, interval: 0, ...(horizontal ? { width: 70, overflow: 'truncate' } : { width: slot, overflow: 'break' }) },
+    splitLine: { show: false },
+  }
   const valueAxis = { type: 'value', ...axisCommon }
   return {
     ...base,

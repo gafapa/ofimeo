@@ -68,6 +68,7 @@ export const UNIVER_COMMANDS = {
   clearFilter: 'sheet.command.clear-filter-criteria',
   reapplyFilter: 'sheet.command.re-calc-filter',
   validation: 'data-validation.operation.open-validation-panel',
+  addValidation: 'data-validation.command.addRuleAndOpen',
   splitText: 'sheet.command.split-text-to-columns',
   namedRanges: 'sidebar.operation.defined-name',
   protectRange: 'sheet.command.add-range-protection-from-toolbar',

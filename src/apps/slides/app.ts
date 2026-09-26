@@ -75,7 +75,7 @@ import { AnimationPane } from './animpane'
 import { CommentsPane } from './comments'
 import type { PlayableSlide } from './player'
 
-export const SLIDES_ACCEPT = '.pptx'
+export const SLIDES_ACCEPT = '.pptx,.ppt'
 const THUMB_WIDTH = 176
 
 type Style = Record<string, unknown>

@@ -42,7 +42,7 @@ export const APPS: AppInfo[] = [
     untitled: t('Untitled document'),
     letter: 'W',
     color: '#1a73e8',
-    accept: '.docx,.odt,.html,.htm,.txt,.md',
+    accept: '.docx,.odt,.doc,.html,.htm,.txt,.md',
     load: () => import('./writer'),
   },
   {
@@ -54,7 +54,7 @@ export const APPS: AppInfo[] = [
     untitled: t('Untitled spreadsheet'),
     letter: 'S',
     color: '#188038',
-    accept: '.xlsx,.ods,.csv,.tsv',
+    accept: '.xlsx,.ods,.csv,.tsv,.xls',
     load: () => import('./sheet'),
   },
   {
@@ -90,7 +90,7 @@ export const APPS: AppInfo[] = [
     untitled: t('Untitled presentation'),
     letter: 'P',
     color: '#d24726',
-    accept: '.pptx',
+    accept: '.pptx,.ppt',
     load: () => import('./slides'),
   },
   {

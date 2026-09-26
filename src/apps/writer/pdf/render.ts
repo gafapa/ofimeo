@@ -181,6 +181,9 @@ class Renderer {
 
   private skip(el: Element, s: CSSStyleDeclaration): boolean {
     if (s.display === 'none') return true
+    // Visually hidden content (screen reader text, KaTeX's MathML copy).
+    if ((s.clip && s.clip !== 'auto') || /inset\(50%/.test(s.clipPath)) return true
+    if (s.position === 'absolute' && el.getBoundingClientRect().width <= 1 && el.getBoundingClientRect().height <= 1) return true
     const cls = el.classList
     return (
       cls.contains('collaboration-carets__caret') ||

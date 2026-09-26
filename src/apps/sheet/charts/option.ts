@@ -34,11 +34,12 @@ export function chartOption(spec: ChartSpec, data: ChartData, colors: ChartColor
     legend,
   }
   const top = (spec.title ? 38 : 14) + (spec.legend === 'top' ? 26 : 0)
+  const horizontal = spec.type === 'bar'
   const grid = {
-    left: spec.yTitle ? 56 : 40,
-    right: spec.legend === 'right' ? 120 : 20,
+    left: (horizontal ? 76 : 44) + (spec.yTitle ? 22 : 0),
+    right: spec.legend === 'right' ? 130 : 20,
     top,
-    bottom: (spec.legend === 'bottom' ? 34 : 10) + (spec.xTitle ? 26 : 0),
+    bottom: (spec.legend === 'bottom' ? 54 : 28) + (spec.xTitle ? 24 : 0),
   }
   const axisCommon = {
     axisLine: { lineStyle: { color: colors.muted } },
@@ -47,7 +48,7 @@ export function chartOption(spec: ChartSpec, data: ChartData, colors: ChartColor
     nameTextStyle: { color: colors.text, fontSize: 12 },
   }
   const xName = spec.xTitle ? { name: spec.xTitle, nameLocation: 'middle', nameGap: 28 } : {}
-  const yName = spec.yTitle ? { name: spec.yTitle, nameLocation: 'middle', nameGap: 44 } : {}
+  const yName = spec.yTitle ? { name: spec.yTitle, nameLocation: 'middle', nameGap: horizontal ? 66 : 40 } : {}
 
   if (spec.type === 'pie' || spec.type === 'doughnut') {
     const s = data.series[0] ?? { name: '', values: [] }
@@ -101,7 +102,6 @@ export function chartOption(spec: ChartSpec, data: ChartData, colors: ChartColor
     }
   }
 
-  const horizontal = spec.type === 'bar'
   const categoryAxis = { type: 'category', data: data.categories, ...axisCommon, splitLine: { show: false } }
   const valueAxis = { type: 'value', ...axisCommon }
   return {

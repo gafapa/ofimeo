@@ -15,6 +15,7 @@ import { CharacterCount, Placeholder } from '@tiptap/extensions'
 import { CellBackground, Footnote, PageBreak, PageBreakShortcut, PageNumber, ParagraphFormat, SectionBreak } from './nodes'
 import { Equation } from './equation'
 import { TableOfContents, type TocOptions } from './toc'
+import { Bibliography, Citation } from '../references/nodes'
 import { Suggesting } from './suggestions'
 import { CommentRange } from './comment-range'
 import { ParagraphLanguage } from '../spell/lang'
@@ -98,6 +99,8 @@ export function bodyExtensions(options: Options = {}): AnyExtension[] {
     PageBreakShortcut,
     SectionBreak,
     options.toc ? TableOfContents.configure(options.toc) : TableOfContents,
+    Citation,
+    Bibliography,
     Footnote,
     Equation,
     Suggesting,

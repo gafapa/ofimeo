@@ -10,10 +10,9 @@ const V_ALIGN: Record<number, string> = { 1: 'top', 2: 'middle', 3: 'bottom' }
 const DEFAULT_COL_WIDTH = 88
 const DEFAULT_ROW_HEIGHT = 24
 
-// A chart (or other drawing) in sheet pixels, relative to cell A1.
+// A chart anchored at a cell (Univer's sheetTransform.from), with its size in pixels.
 export interface PrintOverlay {
-  left: number
-  top: number
+  from: { column: number; columnOffset: number; row: number; rowOffset: number }
   width: number
   height: number
   svg: string
@@ -79,7 +78,14 @@ export function renderPrintHtml(data: IWorkbookData, sheetId: string, display: (
     html += '</tr>'
   }
   if (lastRow >= 0) html += '</table>'
-  for (const o of overlays) html += `<div class="sheet-print-chart" style="left:${o.left}px;top:${o.top}px;width:${o.width}px;height:${o.height}px">${o.svg}</div>`
+  const rowHeight = (r: number) => (sheet.rowData?.[r]?.hd ? 0 : (sheet.rowData?.[r]?.h ?? sheet.defaultRowHeight ?? DEFAULT_ROW_HEIGHT))
+  for (const o of overlays) {
+    let left = o.from.columnOffset
+    let top = o.from.rowOffset
+    for (let c = 0; c < o.from.column; c++) left += width(c)
+    for (let r = 0; r < o.from.row; r++) top += rowHeight(r)
+    html += `<div class="sheet-print-chart" style="left:${left}px;top:${top}px;width:${o.width}px;height:${o.height}px">${o.svg}</div>`
+  }
   return `${html}</div>`
 }
 

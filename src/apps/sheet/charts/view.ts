@@ -147,7 +147,9 @@ export function insertChart(univerAPI: FUniver, spec: ChartSpec, pos?: { x: numb
       for (let c = 0; c <= r.endColumn + 1; c++) x += sheet.getColumnWidth(c)
       for (let row = 0; row < r.startRow; row++) y += sheet.getRowHeight(row)
     }
-    p = { x: x + 8, y: y + 4, w: 480, h: 300 }
+    // Drawing positions are scene pixels, which include the row and column headers.
+    const skeleton = sheet.getSkeleton() as unknown as { rowHeaderWidth?: number; columnHeaderHeight?: number } | undefined
+    p = { x: x + 8 + (skeleton?.rowHeaderWidth ?? 46), y: y + 4 + (skeleton?.columnHeaderHeight ?? 20), w: 480, h: 300 }
   }
   const res = sheet.addFloatDomToPosition({
     componentKey: CHART_COMPONENT,

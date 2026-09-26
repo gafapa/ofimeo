@@ -35,6 +35,7 @@ import type { CommentData } from './formats/types'
 import { authorColor } from './formats/review'
 import { SpellController, spellExtension } from './spell/plugin'
 import { languageButton, openSpellDialog } from './spell/ui'
+import { ReferenceStore } from './references/store'
 
 const UNTITLED = t('Untitled document')
 const ZOOM_KEY = 'words-online:zoom'
@@ -103,6 +104,7 @@ export interface WriterContext {
   isSuggesting: () => boolean
   setSuggesting: (on: boolean) => void
   insertEquation: (display?: boolean) => void
+  references: ReferenceStore
   showContributions: () => void
   spell: SpellController
 }
@@ -187,6 +189,7 @@ export function mountWriter(session: Session, root: HTMLElement): WriterContext 
   let printing = false
   let review: Review | null = null
   const spell = new SpellController(meta, () => editor.isEditable)
+  const references = new ReferenceStore(doc, meta, () => spell.docLang())
 
   const editor = new Editor({
     element: document.getElementById('editor')!,
@@ -386,6 +389,8 @@ export function mountWriter(session: Session, root: HTMLElement): WriterContext 
       page: getPage(),
       columns: getColumns(),
       lang: langTag(spell.docLang()),
+      sources: references.sources(),
+      citeStyle: references.settings(),
     }
   }
 
@@ -468,6 +473,7 @@ export function mountWriter(session: Session, root: HTMLElement): WriterContext 
       if (!value) return
       editor.chain().focus().insertContentAt({ from, to }, { type: 'equation', attrs: value }).run()
     },
+    references,
     showContributions: () => void import('./authorship').then((a) => a.contributionsDialog(editor, session, authors)),
     spell,
   }
@@ -504,11 +510,15 @@ export function mountWriter(session: Session, root: HTMLElement): WriterContext 
     const target = e.target as HTMLElement
     if (editable && target.closest('.page-header, .page-footer')) import('./dialogs').then((d) => d.editHeaderFooter(ctx))
   })
-  // Click on a footnote reference to edit it.
+  // Click on a footnote reference to edit it; double click on a citation.
   editor.view.dom.addEventListener('click', (e) => {
     if (!editable) return
     const ref = (e.target as HTMLElement).closest('sup.footnote-ref')
     if (ref) import('./dialogs').then((d) => d.editFootnoteAt(ctx, editor.view.posAtDOM(ref, 0)))
+  })
+  editor.view.dom.addEventListener('dblclick', (e) => {
+    const cite = (e.target as HTMLElement).closest('span.citation')
+    if (editable && cite) import('./references/ui').then((m) => m.citationDialog(ctx, editor.view.posAtDOM(cite, 0)))
   })
   // Double click (or Enter) on an equation edits it.
   editor.view.dom.addEventListener('equation-edit', async (e) => {
@@ -599,6 +609,11 @@ export async function importFileAsDocument(file: File): Promise<string> {
     if (imported.footer && !isEmptyDoc(imported.footer)) prosemirrorJSONToYXmlFragment(schema, imported.footer, ydoc.getXmlFragment('footer'))
     ydoc.getMap<unknown>('meta').set('page', JSON.stringify(imported.page))
     if (imported.columns && imported.columns.count > 1) ydoc.getMap<unknown>('meta').set('columns', JSON.stringify(imported.columns))
+    if (imported.sources?.length) {
+      const map = ydoc.getMap<unknown>('sources')
+      for (const s of imported.sources) map.set(s.id, s)
+    }
+    if (imported.citeStyle) ydoc.getMap<unknown>('meta').set('cite', JSON.stringify(imported.citeStyle))
     const lang = langCode(imported.lang)
     if (lang) ydoc.getMap<unknown>('meta').set('lang', lang)
     // The new document has no comments channel yet: the first editor to open it moves them there.

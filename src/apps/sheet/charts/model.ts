@@ -181,3 +181,120 @@ export function equationText(reg: Regression, format: (n: number) => string): st
   const sign = reg.intercept < 0 ? '−' : '+'
   return `y = ${format(reg.slope)}x ${sign} ${format(Math.abs(reg.intercept))} · R² = ${format(reg.r2)}`
 }
+
+// ---------- Charts in a workbook snapshot (printing, exports) ----------
+
+export const DRAWING_RESOURCE = 'SHEET_DRAWING_PLUGIN'
+export const DRAWING_TYPE_DOM = 8
+export const DRAWING_TYPE_IMAGE = 0
+
+export interface CellAnchor {
+  column: number
+  columnOffset: number
+  row: number
+  rowOffset: number
+}
+
+export interface SnapshotDrawing {
+  id: string
+  hostSheetId: string
+  drawingType: number
+  from: CellAnchor
+  to: CellAnchor
+  // Scene pixels (they include Univer's row/column headers).
+  transform: { left: number; top: number; width: number; height: number }
+  raw: Record<string, unknown>
+}
+
+interface DrawingResource {
+  [sheetId: string]: { data?: Record<string, Record<string, unknown>>; order?: string[] }
+}
+
+export function snapshotDrawings(resources: { name: string; data: string }[] | undefined): SnapshotDrawing[] {
+  const res = resources?.find((r) => r.name === DRAWING_RESOURCE)
+  if (!res) return []
+  let parsed: DrawingResource
+  try {
+    parsed = JSON.parse(res.data)
+  } catch {
+    return []
+  }
+  const out: SnapshotDrawing[] = []
+  for (const [hostSheetId, sheet] of Object.entries(parsed)) {
+    for (const id of sheet.order ?? Object.keys(sheet.data ?? {})) {
+      const d = sheet.data?.[id] as Record<string, unknown> & { sheetTransform?: { from: CellAnchor; to: CellAnchor }; transform?: SnapshotDrawing['transform']; drawingType?: number }
+      if (!d?.sheetTransform) continue
+      out.push({ id, hostSheetId, drawingType: Number(d.drawingType ?? 0), from: d.sheetTransform.from, to: d.sheetTransform.to, transform: d.transform ?? { left: 0, top: 0, width: 0, height: 0 }, raw: d })
+    }
+  }
+  return out
+}
+
+export function snapshotCharts(resources: { name: string; data: string }[] | undefined): (SnapshotDrawing & { spec: ChartSpec })[] {
+  return snapshotDrawings(resources)
+    .filter((d) => isChartSpec(d.raw.data))
+    .map((d) => ({ ...d, spec: normalizeSpec(d.raw.data as ChartSpec) }))
+}
+
+// ---------- Series as cell blocks (native charts in .xlsx / .ods) ----------
+
+export interface SeriesRefs {
+  name: CellRange | null
+  categories: CellRange | null // scatter: x values
+  values: CellRange
+}
+
+// The cells of each series of a chart, following chartData's reading rules.
+export function seriesRefs(spec: ChartSpec): SeriesRefs[] {
+  const r = parseA1(spec.range)
+  if (!r) return []
+  const byColumns = spec.seriesIn === 'columns'
+  const headerRow = byColumns ? spec.headerRow : spec.headerCol
+  // In "rows" mode the roles of rows and columns swap.
+  const line = (a: number, b1: number, b2: number): CellRange =>
+    byColumns ? { startColumn: a, endColumn: a, startRow: b1, endRow: b2 } : { startRow: a, endRow: a, startColumn: b1, endColumn: b2 }
+  const cell = (a: number, b: number): CellRange => line(a, b, b)
+  const [a1, a2] = byColumns ? [r.startColumn, r.endColumn] : [r.startRow, r.endRow]
+  const [b1, b2] = byColumns ? [r.startRow, r.endRow] : [r.startColumn, r.endColumn]
+  const body = headerRow ? b1 + 1 : b1
+  if (body > b2) return []
+  const out: SeriesRefs[] = []
+  if (spec.type === 'scatter') {
+    if (a1 === a2) return [{ name: headerRow ? cell(a1, b1) : null, categories: null, values: line(a1, body, b2) }]
+    for (let a = a1 + 1; a <= a2; a++) out.push({ name: headerRow ? cell(a, b1) : null, categories: line(a1, body, b2), values: line(a, body, b2) })
+    return out
+  }
+  const labels = byColumns ? spec.headerCol : spec.headerRow
+  const first = labels ? a1 + 1 : a1
+  for (let a = first; a <= a2; a++) out.push({ name: headerRow ? cell(a, b1) : null, categories: labels ? line(a1, body, b2) : null, values: line(a, body, b2) })
+  return spec.type === 'pie' || spec.type === 'doughnut' ? out.slice(0, 1) : out
+}
+
+// Rebuilds a spec from series blocks read from a file.
+export function specFromSeries(base: Omit<ChartSpec, 'range' | 'seriesIn' | 'headerRow' | 'headerCol'>, series: SeriesRefs[]): ChartSpec | null {
+  if (!series.length) return null
+  const blocks = series.flatMap((s) => [s.name, s.categories, s.values].filter((b): b is CellRange => !!b))
+  const box = {
+    startRow: Math.min(...blocks.map((b) => b.startRow)),
+    endRow: Math.max(...blocks.map((b) => b.endRow)),
+    startColumn: Math.min(...blocks.map((b) => b.startColumn)),
+    endColumn: Math.max(...blocks.map((b) => b.endColumn)),
+  }
+  const v = series[0].values
+  const byColumns = !(v.startRow === v.endRow && v.startColumn !== v.endColumn)
+  const hasNames = series.some((s) => s.name)
+  const hasCats = series.some((s) => s.categories) && base.type !== 'scatter'
+  return {
+    ...base,
+    range: toA1(box),
+    seriesIn: byColumns ? 'columns' : 'rows',
+    headerRow: byColumns ? hasNames : hasCats,
+    headerCol: byColumns ? hasCats : hasNames,
+  }
+}
+
+// Value of a snapshot cell (the cached result for formulas).
+export function snapshotValue(cellData: Record<number, Record<number, { v?: unknown } | undefined> | undefined> | undefined, row: number, col: number): Cell {
+  const v = cellData?.[row]?.[col]?.v
+  return v === undefined ? null : (v as Cell)
+}

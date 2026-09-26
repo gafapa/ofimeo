@@ -16,6 +16,8 @@ import {
   T_NUMBER,
   V_ALIGN,
 } from './xlsx-import'
+import { addXlsxCharts, type XlsxChart } from './xlsx-charts'
+import { DRAWING_TYPE_IMAGE, snapshotCharts, snapshotDrawings, snapshotValue } from '../charts/model'
 
 type StyleRef = IStyleData | string | null | undefined
 
@@ -170,6 +172,7 @@ export async function exportXlsx(data: IWorkbookData): Promise<Blob> {
   const used = new Set<string>()
   const names = new Map(sheetIds.map((id) => [id, sanitizeName(data.sheets[id].name || id, used)]))
   const rules = parseResource(data, DV_RESOURCE)
+  const drawings = snapshotDrawings(data.resources)
 
   // Excel needs at least one visible sheet, which must also be the active one.
   const visible = sheetIds.filter((id) => !data.sheets[id].hidden)
@@ -181,6 +184,7 @@ export async function exportXlsx(data: IWorkbookData): Promise<Blob> {
       state: sheet.hidden && id !== forceVisible ? 'hidden' : 'visible',
     })
     writeSheet(ws, sheet, resolve(data.defaultStyle as StyleRef), resolve, names)
+    addImages(wb, ws, sheet, drawings.filter((d) => d.hostSheetId === id && d.drawingType === DRAWING_TYPE_IMAGE))
     for (const rule of (rules[id] as DvRule[] | undefined) || []) addValidation(ws, rule)
   }
   if (!sheetIds.length) wb.addWorksheet('Sheet1')
@@ -189,7 +193,22 @@ export async function exportXlsx(data: IWorkbookData): Promise<Blob> {
   wb.views = [{ x: 0, y: 0, width: 20000, height: 12000, firstSheet: active, activeTab: active, visibility: 'visible' }]
 
   const buf = (await wb.xlsx.writeBuffer()) as ArrayBuffer
-  return new Blob([await postProcess(buf, resolve(data.defaultStyle as StyleRef))], { type: XLSX_MIME })
+  // Charts are written as native DrawingML charts after ExcelJS.
+  const charts = snapshotCharts(data.resources).flatMap((c) => {
+    const host = sheetIds.indexOf(c.hostSheetId)
+    const source = data.sheets[c.spec.sheetId]
+    if (host < 0 || !source) return []
+    const chart: XlsxChart & { sheetIndex: number } = {
+      sheetIndex: host + 1,
+      spec: c.spec,
+      sourceName: names.get(c.spec.sheetId)!,
+      value: (r, col) => snapshotValue(source.cellData as never, r, col),
+      from: c.from,
+      to: c.to,
+    }
+    return [chart]
+  })
+  return new Blob([await postProcess(buf, resolve(data.defaultStyle as StyleRef), charts)], { type: XLSX_MIME })
 }
 
 function writeSheet(
@@ -347,9 +366,10 @@ function cellValue(
 // - the workbook default font (styles.xml font 0) follows the snapshot's default style;
 // - internal links (location="Sheet!A1") are written with an extra external
 //   relationship pointing at the same text, which Excel would follow, so it is dropped.
-async function postProcess(buf: ArrayBuffer, defaultStyle: IStyleData | undefined): Promise<ArrayBuffer> {
+async function postProcess(buf: ArrayBuffer, defaultStyle: IStyleData | undefined, charts: (XlsxChart & { sheetIndex: number })[]): Promise<ArrayBuffer> {
   const zip = await JSZip.loadAsync(buf)
-  let changed = false
+  let changed = charts.length > 0
+  await addXlsxCharts(zip, charts)
   const font = defaultStyle && fontOf(defaultStyle)
   const styles = font && (await zip.file('xl/styles.xml')?.async('string'))
   if (font && styles) {
@@ -491,5 +511,22 @@ function addValidation(ws: Worksheet, rule: DvRule) {
     const a = encodeCell(r.startRow, r.startColumn)
     const b = encodeCell(Math.min(r.endRow, MAX_ROWS - 1), Math.min(r.endColumn, MAX_COLS - 1))
     dvs.add(a === b ? a : `${a}:${b}`, dv)
+  }
+}
+
+// Floating images (data: URLs) anchored at their cells; linked (http) images are skipped.
+function addImages(wb: InstanceType<typeof ExcelJS.Workbook>, ws: Worksheet, sheet: Partial<IWorksheetData>, images: ReturnType<typeof snapshotDrawings>) {
+  const colWidth = (c: number) => sheet.columnData?.[c]?.w ?? sheet.defaultColumnWidth ?? 88
+  const rowHeight = (r: number) => sheet.rowData?.[r]?.h ?? sheet.defaultRowHeight ?? 24
+  for (const img of images) {
+    const m = /^data:image\/(png|jpe?g|gif);base64,(.+)$/i.exec(String(img.raw.source ?? ''))
+    if (!m) continue
+    const extension = m[1].toLowerCase() === 'jpg' ? 'jpeg' : (m[1].toLowerCase() as 'png' | 'jpeg' | 'gif')
+    const imageId = wb.addImage({ base64: m[2], extension })
+    ws.addImage(imageId, {
+      tl: { col: img.from.column + img.from.columnOffset / colWidth(img.from.column), row: img.from.row + img.from.rowOffset / rowHeight(img.from.row) } as never,
+      ext: { width: img.transform.width, height: img.transform.height },
+      editAs: 'oneCell',
+    })
   }
 }

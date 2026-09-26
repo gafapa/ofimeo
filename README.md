@@ -245,6 +245,21 @@ replicas the same log order, so replaying it always yields the same workbook.
 - **draw.io compatible**: opens and downloads `.drawio` files (compressed or
   not, multiple pages, user objects) with the same style strings, so diagrams
   move between both editors. Pasting draw.io XML also works.
+- **Visio import**: opens `.vsdx` drawings (and `.vssx` stencils, shown as one
+  page with every master) in the browser: pages and page size, masters and
+  style sheets, geometry (lines, arcs, elliptical arcs, ellipses, curves),
+  formatted text, groups, pictures and connectors with their arrows, following
+  draw.io's importer. Rectangles, ellipses and common flowchart masters become
+  draw.io shapes; other geometry becomes an inline stencil (`shape=stencil(…)`,
+  which draw.io reads too). Theme colors are approximated; EMF pictures and
+  rotated groups are not supported.
+- **Shape handles**: yellow handles adjust shape parameters like draw.io
+  (callout tail, step and hexagon size, arrows, cylinder, note and card
+  corners, rounded corners, swimlane header…, plus the handles of the draw.io
+  libraries that define them); the change is one undo step and syncs.
+- **Page background and size** per page (draw.io's `background`, `pageWidth`,
+  `pageHeight`, kept in `.drawio` files and used by the exports), and a
+  *Page view* (View menu or format panel) that shows the printable pages.
 - Shapes and markers ported from draw.io (general, flowchart, UML, entity
   relation, basic, arrows and connectors) in a searchable shape panel; click
   to insert or drag onto the canvas or into a container.
@@ -294,6 +309,18 @@ presented or exported.
   alignment), images (insert, paste, drop), shapes, arrows and icons from the
   shape libraries, tables and equations (MathLive editor, rendered as MathML).
 - Speaker notes per slide under the canvas, edited together in real time.
+- **Animations**: entrance, emphasis and exit effects per object (appear,
+  fade, fly in/out from a side, zoom, wipe; pulse, spin, teeter), started on
+  click, with or after the previous one, with duration and delay; the
+  animation pane lists them in order (drag or arrows to reorder) and numbers
+  the objects on the slide. **Slide transitions**: fade, push and wipe.
+  Everything is shared in real time, played when presenting, in the presenter
+  view and for followers, and exported to PowerPoint and OpenDocument (native
+  PowerPoint / Impress effects).
+- **Comments** on a slide or on one of its objects, with replies and
+  resolving, in a comments pane; markers on the slide and a count on the
+  thumbnails. People with a comment link can comment (they click the object
+  they are commenting on); view links can read them.
 - **Present**: full screen, arrows / Space / Page Up / Page Down / click / swipe,
   slide counter, laser pointer (L), black screen (B), Esc to end. **Presenter
   view** in a second window: current and next slide, notes, timer.
@@ -306,7 +333,10 @@ presented or exported.
   (.odp)**, **PDF** (print, one slide per page at the slide size), PNG of a
   slide or of all slides (.zip). **Open .pptx** files: text boxes and
   placeholders (positions and sizes from the layout and master, bullets, theme
-  colors), shapes, pictures, connectors, tables, backgrounds and notes.
+  colors), shapes, pictures, connectors, tables, backgrounds and notes; charts
+  (column, bar, line, area, pie, doughnut) are drawn from their data as a
+  picture that keeps the data, and SmartArt uses the drawing PowerPoint saves
+  with it (else a box with its text).
 - Hand in: the .pptx plus a PNG of every slide.
 
 ## Templates

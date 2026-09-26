@@ -19,7 +19,8 @@ import { renderPrintHtml, type PrintOverlay } from './print'
 import { SheetSync } from './sync'
 import { followTheme } from './theme'
 import { createSpreadsheet } from './univer'
-import { deleteChart, findChart, insertChart, listCharts, registerCharts, updateChart } from './charts/view'
+import { deleteChart, findChart, insertChart, listCharts, liveOption, registerCharts, updateChart } from './charts/view'
+import { snapshotCharts } from './charts/model'
 import { registerFunctionAliases } from './stats'
 
 // Live workbook access of each open session (for hand in).
@@ -120,13 +121,17 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
     const sheet = activeSheet()
     if (!sheet) return
     const sheetId = sheet.getSheetId()
-    const onSheet = listCharts(univerAPI).filter((c) => c.hostSheetId === sheetId)
+    const data = snapshot()
+    const onSheet = snapshotCharts(data.resources).filter((c) => c.hostSheetId === sheetId)
     const overlays: PrintOverlay[] = []
     if (onSheet.length) {
-      const [{ renderSvg }, { liveOption }, { PAPER_COLORS }] = await Promise.all([import('./charts/echarts'), import('./charts/view'), import('./charts/option')])
-      for (const c of onSheet) overlays.push({ ...c.position, svg: renderSvg(liveOption(univerAPI, c.spec, PAPER_COLORS), c.position.width, c.position.height) })
+      const [{ renderSvg }, { PAPER_COLORS }] = await Promise.all([import('./charts/echarts'), import('./charts/option')])
+      for (const c of onSheet) {
+        const { width, height } = c.transform
+        overlays.push({ from: c.from, width, height, svg: renderSvg(liveOption(univerAPI, c.spec, PAPER_COLORS), width, height) })
+      }
     }
-    printArea.innerHTML = renderPrintHtml(snapshot(), sheetId, (r, c) => sheet.getRange(r, c).getDisplayValue(), overlays)
+    printArea.innerHTML = renderPrintHtml(data, sheetId, (r, c) => sheet.getRange(r, c).getDisplayValue(), overlays)
     window.print()
     printArea.innerHTML = ''
   }

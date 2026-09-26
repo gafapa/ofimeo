@@ -43,6 +43,8 @@ import { isMac, mod, type ShortcutSection } from '../../ui/shortcuts'
 import type { Toolbar } from '../../ui/toolbar'
 import { zoomMenuItems } from '../../ui/zoom'
 import { contextMenuFor, toolsMenu } from './spell/ui'
+import { bibliographyTitle } from './references/format'
+import type { CiteLang, CiteStyle } from './references/types'
 
 export const FONTS = [
   'Arial',
@@ -264,6 +266,7 @@ export function writerFrame(ctx: WriterContext): Pick<FrameSpec, 'file' | 'edit'
           '-',
           { label: t('Footnote…'), shortcut: isMac ? '⌥⌘F' : 'Ctrl+Alt+F', run: () => dialogs().then((d) => d.insertFootnote(ctx)) },
           { label: t('Table of contents'), submenu: tocItems(editor) },
+          { label: t('Citation…'), run: () => import('./references/ui').then((m) => m.citationDialog(ctx)) },
           { label: t('Header and footer…'), run: () => dialogs().then((d) => d.editHeaderFooter(ctx)) },
           '-',
           { label: t('Page break'), shortcut: mod('Enter'), run: run((e) => e.chain().focus().setPageBreak().run()) },
@@ -373,6 +376,52 @@ export function writerFrame(ctx: WriterContext): Pick<FrameSpec, 'file' | 'edit'
     ], editable),
   }
 
+  // References: table of contents, citations, bibliography, sources.
+  const refs = () => import('./references/ui')
+  const styleNames: [CiteStyle, string][] = [
+    ['apa', t('APA (7th edition)')],
+    ['mla', t('MLA (9th edition)')],
+    ['chicago', t('Chicago (author-date)')],
+  ]
+  const langNames: [CiteLang | undefined, string][] = [
+    [undefined, t('Document language')],
+    ['es', 'Español'],
+    ['gl', 'Galego'],
+    ['en', 'English'],
+    ['fr', 'Français'],
+    ['de', 'Deutsch'],
+  ]
+  const referencesMenu: Menu = {
+    label: t('References'),
+    items: [
+      ...guard(
+        [
+          { label: t('Table of contents'), submenu: tocItems(editor) },
+          '-',
+          { label: t('Insert citation…'), run: () => refs().then((m) => m.citationDialog(ctx)) },
+          {
+            label: t('Insert bibliography'),
+            run: () => editor.chain().focus().insertBibliography(bibliographyTitle(ctx.references.settings())).run(),
+          },
+          { label: t('Import sources (BibTeX, RIS)…'), run: () => refs().then((m) => m.importSourcesFile(ctx)) },
+          '-',
+          {
+            label: t('Citation style'),
+            submenu: styleNames.map(([style, label]) => ({ label, run: () => ctx.references.setStyle(style), active: () => ctx.references.stored().style === style })),
+          },
+          {
+            label: t('Citation language'),
+            submenu: langNames.map(([lang, label]) => ({ label, run: () => ctx.references.setLang(lang), active: () => ctx.references.stored().lang === lang })),
+          },
+          '-',
+          { label: t('Footnote…'), shortcut: isMac ? '⌥⌘F' : 'Ctrl+Alt+F', run: () => dialogs().then((d) => d.insertFootnote(ctx)) },
+        ],
+        editable,
+      ),
+      { label: t('Sources…'), run: () => refs().then((m) => m.manageSources(ctx)) },
+    ],
+  }
+
   // Tools: spelling and grammar, then word count.
   const tools = toolsMenu(ctx.spell)
   tools.items.push('-', { label: t('Word count…'), run: () => dialogs().then((d) => d.wordCount(ctx)) })
@@ -409,7 +458,7 @@ export function writerFrame(ctx: WriterContext): Pick<FrameSpec, 'file' | 'edit'
     }
   })
 
-  return { file, edit, menus: { view, insert, format, app: [table], tools, review: [review] }, help: { sections: shortcutSections } }
+  return { file, edit, menus: { view, insert, format, app: [table, referencesMenu], tools, review: [review] }, help: { sections: shortcutSections } }
 }
 
 function toggleResolved(ctx: WriterContext) {

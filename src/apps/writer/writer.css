@@ -253,3 +253,20 @@
 .ProseMirror .toc.ProseMirror-selectednode { outline: 2px solid var(--accent); outline-offset: 2px; }
 .ProseMirror.paged .toc.ProseMirror-selectednode > * { outline: 1px solid var(--accent); }
 @media print { .ProseMirror .toc-update { display: none; } }
+.ProseMirror .citation { cursor: pointer; border-radius: 2px; }
+.ProseMirror .citation:hover { background: rgb(26 115 232 / 0.08); }
+.ProseMirror .citation.ProseMirror-selectednode { outline: 1px solid var(--accent); }
+.ProseMirror .bibliography { display: block; margin: 0 0 8pt; cursor: default; }
+.ProseMirror .bib-entry { margin: 0 0 6pt; padding-left: 1.27cm; text-indent: -1.27cm; line-height: 1.5; }
+.ProseMirror .bib-empty { color: #777; font-style: italic; }
+.ProseMirror .bibliography.ProseMirror-selectednode { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ProseMirror.paged .bibliography.ProseMirror-selectednode > * { outline: 1px solid var(--accent); }
+.source-list { max-height: 45vh; overflow: auto; border: 1px solid var(--border); border-radius: var(--radius-m); }
+.source-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--divider); font-size: var(--fs-m); }
+.source-row:last-child { border-bottom: 0; }
+.source-list > .hint { padding: 10px; margin: 0; }
+.source-type { flex: none; font-size: var(--fs-xs); color: var(--muted); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 0 6px; }
+.source-label { flex: 1; min-width: 0; }
+.source-row button, .source-tools button { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: var(--radius-s); padding: 3px 10px; }
+.source-tools { display: flex; flex-wrap: wrap; gap: 6px; }
+.source-form textarea { resize: vertical; }

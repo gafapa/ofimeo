@@ -36,7 +36,13 @@ before the rename keep working.
 - Find & replace, word count.
 - **Word (.docx) and OpenDocument (.odt)**: open and download with headings,
   styles, lists, tables (merged cells, widths), images, footnotes, header/footer
-  fields and page setup. Also opens `.html`, `.txt` and `.md`.
+  fields and page setup. Also opens `.doc` and `.rtf` (see below), `.html`,
+  `.txt` and **Markdown** (`.md`: headings, lists and task lists, emphasis,
+  links, code, block quotes, tables and images by URL, read with `marked`), and
+  downloads Markdown (*File → Download as*). When an importer has to leave
+  something out, the first editor who opens the document gets a one-time notice
+  listing it.
+- View ▸ Zoom (zoom in / out, presets, fit) and `Ctrl`+`+` / `-` / `0`.
 - Real-time collaboration with live cursors, presence and offline editing.
 
 ### Schoolwork: contents, citations, columns, PDF
@@ -93,10 +99,15 @@ before the rename keep working.
   screen (so pages break the same everywhere) and are embedded in the PDF; the
   accessibility fonts and KaTeX's fonts are embedded when used. Other fonts are
   replaced by the closest shipped family.
-- **Legacy files**: Word 97-2003 `.doc` (text, headings, title, bold / italic /
-  underline / strike / size / color / super- and subscript, alignment, lists,
-  tables, footnotes, hyperlinks, page breaks, inline JPEG/PNG pictures, table
-  of contents fields, page size and margins), Excel 97-2003 `.xls` in the
+- **Legacy files**: Word 97-2003 `.doc` (text, headings — outline numbering on
+  heading styles stays a heading —, title, bold / italic / underline / strike /
+  size / color / highlight / super- and subscript, alignment, lists, tables with
+  horizontally and vertically merged cells, footnotes, hyperlinks, page breaks,
+  inline JPEG/PNG pictures, table of contents fields, page size and margins, the
+  default header and footer with page numbers, and comments with their author
+  and range), **RTF** (`writer/formats/rtf-import.ts`: paragraphs, headings,
+  character formatting, alignment, basic lists and tables with merged cells,
+  links, footnotes, PNG/JPEG pictures, header, footer and comments), Excel 97-2003 `.xls` in the
   spreadsheet (values, shared strings, number formats and dates, common
   formulas including shared formulas and sheet references — others keep their
   value —, fonts, fills, alignment, merged cells, column widths, row heights)
@@ -106,8 +117,8 @@ before the rename keep working.
   (`src/core/cfb.ts` for the OLE container, `writer/formats/doc-import.ts`,
   `sheet/formats/xls-import.ts`, `slides/formats/ppt-import.ts`, together about
   60 kB before compression, loaded only when such a file is opened) instead of a
-  LibreOffice WebAssembly build (tens of MB). Not read: headers and footers,
-  comments and tracked changes in `.doc`; charts and pictures in `.xls`;
+  LibreOffice WebAssembly build (tens of MB). Not read: text boxes, drawings,
+  endnotes and tracked changes in `.doc` (the notice lists them); charts and pictures in `.xls`;
   pictures, notes and animations in `.ppt`; encrypted files.
 
 ### Reviewing (teachers correcting student work)
@@ -544,13 +555,22 @@ document (as binary chunks in Yjs) and travels to collaborators with it; above
   on selected text (tool or the bubble that appears over a selection), pen with
   stylus pressure and eraser, text boxes, rectangles, ellipses, lines, arrows,
   stamps (check, cross, "Good", "Revise", grade "Grade: …", custom text) and a
-  signature drawn once and kept in this browser. Blank pages can be inserted.
+  signature drawn once and kept in this browser.
+- Pages: the **Page** menu and the thumbnails' context menu rotate pages
+  (Ctrl+] / Ctrl+[), move them, insert blank pages and delete pages; thumbnails
+  can be dragged (or moved with Alt+↑/↓). The `pdf-pages` array is the page
+  map: original page index and rotation per entry, applied by the viewer and by
+  both exports. Annotations belong to a page id, so they follow their page and
+  turn with it; every change is undoable (deleted pages keep their annotations
+  for Undo).
 - Sticky notes with replies and resolving, like the writer's comments; they live
   in the comments channel, so comment links can add them.
 - Collaborators' pointers are shown on the pages.
 - Keyboard: V select, H highlight, U underline, K strikeout, P pen, E eraser,
   T text box, N note, R, O, L, A shapes, S stamp, G signature, Esc back to
-  Select. Annotations are focusable (Tab): arrows move them, Enter edits the
+  Select. With a creation tool chosen, Enter (or Space on the pages) places the
+  annotation in the middle of the visible part of the current page; the
+  Comments panel has **Add comment**. Annotations are focusable (Tab): arrows move them, Enter edits the
   text, Delete removes them. Stamps and signatures have alternative text
   (Format ▸ Alternative text…).
 - Export (pdf-lib): File ▸ Download as ▸ "PDF with annotations (editable)"
@@ -574,12 +594,20 @@ channel. `draw.ts` turns an annotation into drawing primitives used by both the
 screen (SVG) and the PDF writer, so both look the same.
 
 Limitations:
-- Text in exported annotations uses the standard Helvetica font: characters
-  outside Latin-1 (e.g. Greek, CJK, emoji) become "?".
-- Encrypted PDFs are exported as page images plus vector annotations, and
-  their existing annotations are not imported.
-- Original pages cannot be deleted, reordered or rotated; only blank pages can
-  be added and removed.
+- Text in exported annotations uses Helvetica for Latin-1 text; other
+  characters are drawn with embedded subsets (Type0 / Identity-H with
+  ToUnicode, loaded only when needed) of Arimo (Latin Extended) and a DejaVu
+  Sans symbols subset (`src/apps/pdf/fonts/`, Greek, Cyrillic, arrows, maths,
+  dingbats such as ✓ ✗). CJK and emoji still become "?".
+- Password-protected PDFs: the app asks for the password (Open, and whenever
+  the document is opened in a new tab); cancelling adds nothing. The document
+  keeps the original encrypted file — never a decrypted copy — and the password
+  is never stored in the document or sent to collaborators (it is remembered in
+  `sessionStorage` for the tab only), so every person enters it. Encrypted PDFs
+  are exported as page images plus vector annotations, and their existing
+  annotations are not imported.
+- Undoing a page deletion after the pages were reordered may put the page back
+  at a slightly different position (it is restored next to its old neighbours).
 - PDF forms (fields) are shown but not filled in.
 - Large PDFs make sharing slower: every collaborator downloads the whole file.
 

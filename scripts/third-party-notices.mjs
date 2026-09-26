@@ -47,6 +47,13 @@ const EXTRA = [
       'below with the @fontsource packages; the fonts are bundled with the application and are not sold separately.',
   },
   {
+    name: 'DejaVu Sans, symbols subset (src/apps/pdf/fonts/dejavu-sans-symbols.woff)',
+    source: 'https://dejavu-fonts.github.io/ (DejaVuSans.ttf 2.37, subset with fontTools pyftsubset)',
+    license: 'Bitstream Vera Fonts license + Arev Fonts license (DejaVu changes are in the public domain)',
+    files: ['src/apps/pdf/fonts/LICENSE-DejaVu.txt'],
+    fallback: 'See https://dejavu-fonts.github.io/License.html',
+  },
+  {
     name: 'Spelling dictionaries (dictionaries/)',
     source: 'dictionary-* packages from https://github.com/wooorm/dictionaries, converted by scripts/spell-dictionaries.mjs',
     license: 'Per language (see the dictionary-* packages below)',

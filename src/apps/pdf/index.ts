@@ -47,12 +47,30 @@ export async function pickPdf(file: File): Promise<File | null> {
   return pdf
 }
 
+// Checks that pdf.js can open the file (asking for the password of a
+// protected one) before anything is stored. Resolves false when the person
+// cancels the password prompt; throws a translated error for broken files.
+export async function checkPdf(bytes: Uint8Array): Promise<boolean> {
+  const { openPdf, askPdfPassword, PasswordCancelled } = await import('./pdfjs')
+  try {
+    const pdf = await openPdf(bytes, { askPassword: askPdfPassword })
+    void pdf.destroy()
+    return true
+  } catch (err) {
+    if (err instanceof PasswordCancelled) return false
+    throw err
+  }
+}
+
 // Imports a PDF (or a PDF from a hand-in ZIP) into a new local document; returns its path.
+// Nothing is created when the file cannot be opened or its password prompt is cancelled.
 export async function importFile(file: File): Promise<string> {
   const pdf = await pickPdf(file)
   if (!pdf) return location.href
+  const bytes = new Uint8Array(await pdf.arrayBuffer())
+  if (!(await checkPdf(bytes))) return location.href
   const { preparePdf } = await import('./import')
-  const prepared = await preparePdf(new Uint8Array(await pdf.arrayBuffer()), pdf.name, { author: loadUser().name })
+  const prepared = await preparePdf(bytes, pdf.name, { author: loadUser().name })
   return createLocalDocument('pdf', pdf.name.replace(/\.pdf$/i, ''), (doc) => fillDoc(doc, prepared))
 }
 
@@ -70,10 +88,10 @@ async function exportStored(session: Session, mode: 'annotations' | 'flatten'): 
   if (session.commentsDoc) notesMap(session).forEach((n, id) => notes.set(id, n))
   const { exportPdf } = await import('./export')
   const opened: { pdf?: ReturnType<typeof import('./pdfjs').openPdf> } = {}
-  const raster = async (src: number): Promise<Uint8Array> => {
-    opened.pdf ??= import('./pdfjs').then((m) => m.openPdf(bytes!))
+  const raster = async (src: number, rotation?: number): Promise<Uint8Array> => {
+    opened.pdf ??= import('./pdfjs').then((m) => m.openPdf(bytes!, { askPassword: m.askPdfPassword }))
     const page = await (await opened.pdf).getPage(src + 1)
-    const viewport = page.getViewport({ scale: 2 })
+    const viewport = page.getViewport({ scale: 2, rotation })
     const canvas = document.createElement('canvas')
     canvas.width = Math.floor(viewport.width)
     canvas.height = Math.floor(viewport.height)

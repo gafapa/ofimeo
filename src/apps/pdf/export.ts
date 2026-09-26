@@ -7,10 +7,11 @@
 // Every annotation also carries its own record (/OfimeoAnnot, /OfimeoNote) so a
 // file exported here reopens with the exact same annotations (import.ts).
 
-import { PDFDocument, PDFHexString, PDFName, PDFString, StandardFonts, type PDFDict, type PDFFont, type PDFPage, type PDFRef } from 'pdf-lib'
+import { degrees, PDFDocument, PDFHexString, PDFName, PDFString, StandardFonts, type PDFDict, type PDFFont, type PDFPage, type PDFRef } from 'pdf-lib'
 import { prims, type Cmd, type Measure, type Prim } from './draw'
 import { apply, normalizeBox, userBox, viewTransform, type Matrix } from './geometry'
 import { rgb, type Annot, type Note, type PageEntry } from './model'
+import { loadUnicodeFonts, type UnicodeFace, type UnicodeFonts } from './unicode-fonts'
 
 export interface ExportInput {
   bytes: Uint8Array | null
@@ -19,7 +20,7 @@ export interface ExportInput {
   notes: Note[]
   title?: string
   // Renders an original page as PNG (used when the PDF is encrypted and cannot be rewritten).
-  raster?: (src: number) => Promise<Uint8Array>
+  raster?: (src: number, rotation?: number) => Promise<Uint8Array>
 }
 
 export const NOTE_SIZE = 20
@@ -30,17 +31,49 @@ interface Fonts {
   regular: PDFFont
   bold: PDFFont
   measure: Measure
-  clean: (text: string) => string
+  // Text split into runs: Helvetica (face null) or an embedded Unicode face.
+  runs: (text: string, bold?: boolean) => { face: UnicodeFace | null; text: string }[]
+  unicode: UnicodeFonts | null
 }
 
-async function loadFonts(doc: PDFDocument): Promise<Fonts> {
+// Helvetica for WinAnsi text; characters it lacks use embedded Unicode fonts
+// (loaded only when some text needs them), and "?" only when no font has them.
+async function loadFonts(doc: PDFDocument, texts: string[]): Promise<Fonts> {
   const regular = await doc.embedFont(StandardFonts.Helvetica)
   const bold = await doc.embedFont(StandardFonts.HelveticaBold)
   const chars = new Set(regular.getCharacterSet())
-  // Standard fonts only cover WinAnsi; other characters become "?".
-  const clean = (text: string) => [...text.normalize('NFC')].map((c) => (chars.has(c.codePointAt(0)!) ? c : '?')).join('')
-  const measure: Measure = (text, size, b) => (b ? bold : regular).widthOfTextAtSize(clean(text), size)
-  return { regular, bold, measure, clean }
+  const winAnsi = (c: string) => chars.has(c.codePointAt(0)!)
+  const needed = texts.some((t) => [...t.normalize('NFC')].some((c) => c >= ' ' && !winAnsi(c)))
+  const unicode = needed ? await loadUnicodeFonts(doc).catch(() => null) : null
+  const runs = (text: string, b = false) => {
+    const out: { face: UnicodeFace | null; text: string }[] = []
+    for (const c of text.normalize('NFC')) {
+      let face: UnicodeFace | null = null
+      let ch = c
+      if (!winAnsi(c)) {
+        face = unicode?.faceFor(c, b) ?? null
+        if (!face) ch = '?'
+      }
+      const last = out[out.length - 1]
+      if (last && last.face === face) last.text += ch
+      else out.push({ face, text: ch })
+    }
+    return out
+  }
+  const measure: Measure = (text, size, b) =>
+    runs(text, b).reduce((w, r) => {
+      if (!r.face) return w + (b ? bold : regular).widthOfTextAtSize(r.text, size)
+      const { font } = r.face
+      for (const c of r.text) w += ((font.advances[font.cmap.get(c.codePointAt(0)!) ?? 0] ?? 0) * size) / font.unitsPerEm
+      return w
+    }, 0)
+  return { regular, bold, measure, runs, unicode }
+}
+
+const fontResources = (fonts: Fonts): Record<string, PDFRef> => {
+  const out: Record<string, PDFRef> = { OfHelv: fonts.regular.ref, OfHelvB: fonts.bold.ref }
+  fonts.unicode?.faces.forEach((face, i) => (out[`OfU${i}`] = face.ref))
+  return out
 }
 
 // Content stream operators for primitives drawn in view space.
@@ -82,10 +115,25 @@ class Writer {
     } else {
       const font = p.bold ? 'OfHelvB' : 'OfHelv'
       const encoder = p.bold ? this.fonts.bold : this.fonts.regular
-      this.ops.push('BT', `/${font} ${f(p.size)} Tf`, `${rgb(p.color).map(f).join(' ')} rg`)
+      const faces = this.fonts.unicode?.faces ?? []
+      this.ops.push('BT', `${rgb(p.color).map(f).join(' ')} rg`)
       p.lines.forEach((line, i) => {
         // The view space has y down: flip the text matrix so glyphs stay upright.
-        this.ops.push(`1 0 0 -1 ${f(p.x)} ${f(p.y + i * p.lineHeight)} Tm`, `${encoder.encodeText(this.fonts.clean(line)).toString()} Tj`)
+        this.ops.push(`1 0 0 -1 ${f(p.x)} ${f(p.y + i * p.lineHeight)} Tm`)
+        for (const run of this.fonts.runs(line, p.bold)) {
+          if (!run.face) {
+            this.ops.push(`/${font} ${f(p.size)} Tf`, `${encoder.encodeText(run.text).toString()} Tj`)
+            continue
+          }
+          const face = run.face
+          let hex = ''
+          for (const c of run.text) {
+            const gid = face.font.cmap.get(c.codePointAt(0)!) ?? 0
+            face.used.set(gid, c)
+            hex += gid.toString(16).padStart(4, '0')
+          }
+          this.ops.push(`/OfU${faces.indexOf(face)} ${f(p.size)} Tf`, `<${hex}> Tj`)
+        }
       })
       this.ops.push('ET')
     }
@@ -137,11 +185,17 @@ export async function exportPdf(input: ExportInput, mode: 'annotations' | 'flatt
   if (input.title) doc.setTitle(input.title)
   doc.setModificationDate(new Date())
 
-  // Blank pages inserted in the app (original pages keep their order).
-  input.pages.forEach((p, i) => {
-    if (p.src === -1) doc.insertPage(Math.min(i, doc.getPageCount()), [p.w, p.h])
-  })
-  const fonts = await loadFonts(doc)
+  if (input.bytes && !rasterized.size) arrangePages(doc, input.pages)
+  else {
+    // Blank pages inserted in the app (rasterized pages already follow the page map).
+    input.pages.forEach((p, i) => {
+      if (p.src === -1) doc.insertPage(Math.min(i, doc.getPageCount()), [p.w, p.h])
+    })
+  }
+  const fonts = await loadFonts(
+    doc,
+    input.annots.flatMap((a) => [a.text ?? '']),
+  )
   const ctx = doc.context
   const push = ctx.getPushGraphicsStateContentStream()
   const pop = ctx.getPopGraphicsStateContentStream()
@@ -176,12 +230,12 @@ export async function exportPdf(input: ExportInput, mode: 'annotations' | 'flatt
       else page.node.set(PDFName.of('Annots'), ctx.obj(refs))
     }
   }
+  fonts.unicode?.finish()
   return doc.save()
 }
 
 function setResources(doc: PDFDocument, page: PDFPage, fonts: Fonts, w: Writer) {
-  page.node.setFontDictionary(PDFName.of('OfHelv'), fonts.regular.ref)
-  page.node.setFontDictionary(PDFName.of('OfHelvB'), fonts.bold.ref)
+  for (const [name, ref] of Object.entries(fontResources(fonts))) page.node.setFontDictionary(PDFName.of(name), ref)
   for (const [name, dict] of Object.entries(w.extGStates(doc))) page.node.setExtGState(PDFName.of(name), dict)
 }
 
@@ -192,7 +246,7 @@ function appearance(doc: PDFDocument, fonts: Fonts, list: Prim[], toUser: Matrix
     Type: 'XObject',
     Subtype: 'Form',
     BBox: rect,
-    Resources: { Font: { OfHelv: fonts.regular.ref, OfHelvB: fonts.bold.ref }, ExtGState: w.extGStates(doc) },
+    Resources: { Font: fontResources(fonts), ExtGState: w.extGStates(doc) },
   })
   return doc.context.register(stream)
 }
@@ -336,13 +390,37 @@ function inkBounds(a: Annot): [number, number, number, number] {
   return [x0, y0, x1 - x0, y1 - y0]
 }
 
+// Applies the page map: original pages in the stored order and rotation
+// (deleted ones left out) and the blank pages inserted in the app.
+function arrangePages(doc: PDFDocument, entries: PageEntry[]) {
+  const original = doc.getPages()
+  const inOrder = entries.filter((p) => p.src >= 0).every((p, i) => p.src === i) && entries.filter((p) => p.src >= 0).length === original.length
+  if (inOrder) {
+    entries.forEach((p, i) => {
+      if (p.src === -1) doc.insertPage(Math.min(i, doc.getPageCount()), [p.w, p.h])
+    })
+  } else {
+    for (let i = original.length - 1; i >= 0; i--) doc.removePage(i)
+    for (const p of entries) {
+      if (p.src === -1) doc.addPage([p.w, p.h])
+      else if (original[p.src]) doc.addPage(original[p.src])
+    }
+  }
+  // Rotation of every original page (turned in the app or not).
+  let i = 0
+  for (const p of entries) {
+    const page = doc.getPage(i++)
+    if (p.src >= 0 && ((page.getRotation().angle % 360) + 360) % 360 !== p.rotate) page.setRotation(degrees(p.rotate))
+  }
+}
+
 // Encrypted PDFs cannot be rewritten: rebuild them from page images.
 async function rasterize(input: ExportInput, rasterized: Set<number>): Promise<PDFDocument> {
   if (!input.raster) throw new Error('encrypted')
   const doc = await PDFDocument.create()
   for (const [i, p] of input.pages.entries()) {
     if (p.src === -1) continue
-    const png = await doc.embedPng(await input.raster(p.src))
+    const png = await doc.embedPng(await input.raster(p.src, p.rotate))
     const page = doc.addPage([p.w, p.h])
     page.drawImage(png, { x: 0, y: 0, width: p.w, height: p.h })
     rasterized.add(i)

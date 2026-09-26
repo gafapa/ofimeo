@@ -125,6 +125,8 @@ export interface EditMenuOptions {
   canRedo?: () => boolean
   cut?: () => void
   copy?: () => void
+  // Whether there is something to copy (default: always enabled).
+  canCopy?: () => boolean
   paste?: () => void
   selectAll?: () => void
   find?: () => void
@@ -146,7 +148,7 @@ export function editMenu(options: EditMenuOptions): Menu {
   if (options.redo) items.push({ label: t('Redo'), shortcut: mod('Y'), run: options.redo, enabled: () => editable() && (options.canRedo?.() ?? true) })
   items.push('-')
   if (options.cut) items.push({ label: t('Cut'), shortcut: mod('X'), run: options.cut, enabled: editable })
-  if (options.copy) items.push({ label: t('Copy'), shortcut: mod('C'), run: options.copy })
+  if (options.copy) items.push({ label: t('Copy'), shortcut: mod('C'), run: options.copy, enabled: options.canCopy })
   if (options.paste) items.push({ label: t('Paste'), shortcut: mod('V'), run: options.paste, enabled: editable })
   items.push(...(slots.clipboard ?? []), '-')
   if (options.selectAll) items.push({ label: t('Select all'), shortcut: mod('A'), run: options.selectAll })

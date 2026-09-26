@@ -204,7 +204,7 @@ La langue de l’interface se change sur l’écran d’accueil ou dans le panne
 - Révision ▸ Afficher les auteurs colore le texte selon la personne qui l’a écrit.
 
 ## Fichiers
-Ouvre et télécharge Word (.docx) et OpenDocument (.odt)${NB}; ouvre aussi .html, .txt et .md. Imprimez ou enregistrez en PDF avec Fichier ▸ Imprimer.`,
+Ouvre et télécharge Word (.docx) et OpenDocument (.odt)${NB}; ouvre aussi Word 97-2003 (.doc), RTF, .html, .txt et Markdown (.md, avec titres, listes, liens, code et tableaux), et télécharge en Markdown. Si un fichier contient quelque chose qu’Ofimeo ne peut pas reprendre (par exemple des zones de texte ou des notes de fin d’un .doc), un message l’indique une fois. Imprimez ou enregistrez en PDF avec Fichier ▸ Imprimer. Affichage ▸ Zoom (ou \`Ctrl++\`, \`Ctrl+-\`, \`Ctrl+0\`) change le zoom.`,
   },
   sheet: {
     title: 'Ofimeo Classeurs (tableur)',
@@ -296,10 +296,16 @@ Les réponses sont chiffrées dans le navigateur de l’élève${NB}: seuls les 
 - Ouvrez un PDF depuis l’écran d’accueil, depuis Fichier ▸ Ouvrir…, ou ouvrez un ZIP rendu${NB}: les PDF qu’il contient sont listés.
 - Outils${NB}: surligner, souligner et barrer (sélectionnez du texte), stylo et gomme, zones de texte, formes, **tampons** (coche, croix, «${NB}Bien${NB}», une note…), **notes** et votre **signature**.
 - Touches${NB}: \`H\` surligner, \`P\` stylo, \`T\` zone de texte, \`N\` note, \`S\` tampon, \`G\` signature, \`Échap\` retour à Sélectionner.
+- Clavier${NB}: choisissez un outil (par exemple \`T\`, \`N\`, \`R\` ou \`S\`) et appuyez sur \`Entrée\` pour le placer au centre de la page affichée. Dans le panneau Commentaires, **Ajouter un commentaire** fait de même pour les notes.
 - Partagez le PDF pour le corriger à plusieurs ou pour que l’élève lise vos annotations.
 
+## Pages
+Le menu **Page** (ou le clic droit sur une miniature) fait pivoter une page à gauche ou à droite (\`Ctrl+[\` / \`Ctrl+]\`), la monte ou la descend, ajoute des pages blanches et supprime des pages. Faites glisser les miniatures pour les réordonner (ou \`Alt+↑\` / \`Alt+↓\` sur une miniature). Les annotations suivent leur page et Annuler rétablit chaque modification. Le PDF téléchargé respecte le nouvel ordre et la rotation.
+
 ## Fichiers
-Fichier ▸ Télécharger au format enregistre le **PDF avec annotations**${NB}: «${NB}modifiable${NB}» les conserve comme annotations que d’autres lecteurs PDF peuvent modifier, «${NB}aplati${NB}» les dessine dans les pages. Le rendu inclut les deux.`,
+Fichier ▸ Télécharger au format enregistre le **PDF avec annotations**${NB}: «${NB}modifiable${NB}» les conserve comme annotations que d’autres lecteurs PDF peuvent modifier, «${NB}aplati${NB}» les dessine dans les pages. Le rendu inclut les deux. Les zones de texte et les tampons conservent des symboles comme π, √, ≈, → et ✓.
+
+Un **PDF protégé par mot de passe** le demande à l’ouverture. Le document garde le fichier protégé d’origine${NB}; le mot de passe n’y est pas enregistré ni envoyé à personne, donc chaque personne qui l’ouvre (et vous, dans un nouvel onglet) le saisit à nouveau. Si vous annulez, rien n’est ajouté.`,
   },
 }
 

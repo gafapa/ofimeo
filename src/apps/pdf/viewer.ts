@@ -79,6 +79,8 @@ export class Viewer {
       const view = old.get(entry.id)
       if (view) {
         old.delete(entry.id)
+        // Rotated (or resized) page: render it again.
+        if (view.entry.rotate !== entry.rotate || view.entry.w !== entry.w || view.entry.h !== entry.h) this.clearRender(view)
         view.entry = entry
         view.index = index
         return view
@@ -174,7 +176,8 @@ export class Viewer {
     v.task?.cancel()
     const page = await this.page(v.entry.src)
     if (v.scale !== s) return
-    const viewport = page.getViewport({ scale: s })
+    // The page map's rotation (the original /Rotate unless the page was turned).
+    const viewport = page.getViewport({ scale: s, rotation: v.entry.rotate })
     const ratio = Math.min(window.devicePixelRatio || 1, 3)
     // Keep the canvas area reasonable on very large zooms.
     const limit = Math.sqrt(16_000_000 / (viewport.width * viewport.height * ratio * ratio))
@@ -205,7 +208,7 @@ export class Viewer {
     const { TextLayer } = await pdfjs()
     v.textLayer?.cancel()
     v.text.replaceChildren()
-    const layer = new TextLayer({ textContentSource: page.streamTextContent(), container: v.text, viewport: page.getViewport({ scale: s }) })
+    const layer = new TextLayer({ textContentSource: page.streamTextContent(), container: v.text, viewport: page.getViewport({ scale: s, rotation: v.entry.rotate }) })
     v.textLayer = layer
     try {
       await layer.render()

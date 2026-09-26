@@ -44,7 +44,7 @@ export const APPS: AppInfo[] = [
     untitled: t('Untitled document'),
     letter: 'W',
     color: '#1a73e8',
-    accept: '.docx,.odt,.doc,.html,.htm,.txt,.md',
+    accept: '.docx,.odt,.doc,.rtf,.html,.htm,.txt,.md,.markdown',
     load: () => import('./writer'),
   },
   {

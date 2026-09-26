@@ -33,9 +33,10 @@ dialog.spell-dialog {
 .spell-current-layer { position: fixed; inset: 0; pointer-events: none; z-index: 899; }
 .spell-current { position: fixed; border-radius: 3px; outline: 2px solid #d93025; background: rgb(217 48 37 / 0.18); }
 .spell-current.grammar, .spell-current.style { outline-color: #1a73e8; background: rgb(26 115 232 / 0.18); }
-.spell-dialog h2 { margin: 0 0 10px; font-size: 18px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
-.spell-dialog h2 .spell-close { margin-left: auto; border: 0; background: none; font-size: 18px; color: var(--muted); }
-.spell-dialog .spell-lang { font-size: 13px; }
+.spell-dialog h2 { margin: 0 0 10px; font-size: 18px; font-weight: 500; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; padding-right: 32px; position: relative; overflow-wrap: anywhere; }
+/* The close button stays in the top right corner even when the title wraps. */
+.spell-dialog h2 .spell-close { position: absolute; top: -4px; right: 0; margin: 0; border: 0; background: none; font-size: 18px; color: var(--muted); }
+.spell-dialog .spell-lang { font-size: 13px; min-width: 0; max-width: 100%; }
 .spell-dialog .spell-kind { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
 .spell-dialog .spell-kind.spelling { color: #d93025; }
 .spell-dialog .spell-kind.grammar, .spell-dialog .spell-kind.style { color: #1a73e8; }

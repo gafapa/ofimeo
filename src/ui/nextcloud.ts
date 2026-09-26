@@ -27,7 +27,7 @@ const online = () => navigator.onLine
 // Formats each app saves in, first = default (the apps list the same ones in
 // session.hooks.exportFormats); used before an app is loaded.
 const SAVE_EXTS: Record<DocType, string[]> = {
-  writer: ['docx', 'odt', 'html', 'txt'],
+  writer: ['docx', 'odt', 'html', 'txt', 'md'],
   sheet: ['xlsx', 'ods', 'csv'],
   draw: ['excalidraw', 'png', 'svg'],
   diagram: ['drawio', 'svg', 'png'],
@@ -35,7 +35,7 @@ const SAVE_EXTS: Record<DocType, string[]> = {
   forms: ['oform', 'csv'],
   pdf: ['pdf'],
 }
-const EXT_ALIASES: Record<string, string> = { htm: 'html', xml: 'drawio' }
+const EXT_ALIASES: Record<string, string> = { htm: 'html', xml: 'drawio', markdown: 'md' }
 
 const extOf = (name: string) => (/\.([^./]+)$/.exec(name)?.[1] ?? '').toLowerCase()
 const stripExt = (name: string) => name.replace(/\.[^./]+$/, '')
@@ -665,7 +665,7 @@ export async function openFromNextcloud(): Promise<void> {
       store.setRemoteLink(id, {
         account: account.id,
         path: entry.path,
-        // Formats the app cannot write (e.g. .md) are saved with "Save to Nextcloud as…".
+        // Formats the app cannot write (e.g. .rtf, .doc) are saved with "Save to Nextcloud as…".
         format: SAVE_EXTS[target.info.type].includes(ext) ? ext : '',
         etag: etag ?? entry.etag,
         fileId: entry.fileId,

@@ -37,6 +37,8 @@ export class Notes {
   private userId: string
   showResolved = false
   onToggle: () => void = () => {}
+  // Adds a sticky note in the middle of the visible page (set by the app).
+  onAdd: () => void = () => {}
 
   constructor(
     private session: Session,
@@ -53,8 +55,11 @@ export class Notes {
       this.showResolved = resolved.checked
       this.refresh()
     })
+    const add = el('button', { type: 'button', class: 'pdf-add-note', textContent: t('Add comment') })
+    add.addEventListener('click', () => this.onAdd())
     this.panel.append(
       el('div', { class: 'pdf-side-head' }, el('h2', { textContent: t('Comments') }), close),
+      ...(this.session.canComment ? [add] : []),
       el('label', { class: 'pdf-check' }, resolved, t('Show resolved')),
       this.list,
     )
@@ -151,7 +156,7 @@ export class Notes {
     if (focused instanceof HTMLTextAreaElement && this.list.contains(focused) && focused.value) return
     const threads = this.threads().filter((th) => this.showResolved || !th.note.resolved || th.note.id === this.active)
     this.list.replaceChildren()
-    if (!threads.length) this.list.append(el('p', { class: 'pdf-hint', textContent: this.canComment ? t('No comments yet. Choose the sticky note tool (N) and click on a page.') : t('No comments yet.') }))
+    if (!threads.length) this.list.append(el('p', { class: 'pdf-hint', textContent: this.canComment ? t('No comments yet. Use "Add comment", or choose the sticky note tool (N) and click on a page (or press Enter).') : t('No comments yet.') }))
     for (const th of threads) this.list.append(this.card(th))
   }
 

@@ -202,7 +202,7 @@ Die Sprache der Oberfläche ändern Sie auf der Startseite oder im Panel.`,
 - Überprüfen ▸ Autorschaft anzeigen färbt den Text danach, wer ihn geschrieben hat.
 
 ## Dateien
-Öffnet und speichert Word (.docx) und OpenDocument (.odt); öffnet auch .html, .txt und .md. Drucken oder als PDF speichern mit Datei ▸ Drucken.`,
+Öffnet und speichert Word (.docx) und OpenDocument (.odt); öffnet auch Word 97-2003 (.doc), RTF, .html, .txt und Markdown (.md, mit Überschriften, Listen, Links, Code und Tabellen) und speichert Markdown. Enthält eine Datei etwas, das Ofimeo nicht übernehmen kann (zum Beispiel Textfelder oder Endnoten einer .doc-Datei), nennt eine Meldung es einmal. Drucken oder als PDF speichern mit Datei ▸ Drucken. Ansicht ▸ Zoom (oder \`Strg++\`, \`Strg+-\`, \`Strg+0\`) ändert den Zoom.`,
   },
   sheet: {
     title: 'Ofimeo Tabellen (Tabellenkalkulation)',
@@ -294,10 +294,16 @@ Antworten werden im Browser der Schülerin oder des Schülers verschlüsselt: Nu
 - Öffnen Sie ein PDF auf der Startseite, über Datei ▸ Öffnen… oder öffnen Sie eine Abgabe-ZIP-Datei: Die enthaltenen PDFs werden aufgelistet.
 - Werkzeuge: hervorheben, unterstreichen und durchstreichen (Text markieren), Stift und Radierer, Textfelder, Formen, **Stempel** (Haken, Kreuz, „Gut“, eine Note…), **Notizen** und Ihre **Unterschrift**.
 - Tasten: \`H\` hervorheben, \`P\` Stift, \`T\` Textfeld, \`N\` Notiz, \`S\` Stempel, \`G\` Unterschrift, \`Esc\` zurück zu Auswählen.
+- Tastatur: Wählen Sie ein Werkzeug (zum Beispiel \`T\`, \`N\`, \`R\` oder \`S\`) und drücken Sie die \`Eingabetaste\`, um es in der Mitte der angezeigten Seite zu platzieren. Im Kommentarbereich macht **Kommentar hinzufügen** dasselbe für Notizen.
 - Teilen Sie das PDF, um gemeinsam zu korrigieren oder damit die Person Ihre Anmerkungen lesen kann.
 
+## Seiten
+Das Menü **Seite** (oder ein Rechtsklick auf eine Miniatur) dreht eine Seite nach links oder rechts (\`Strg+[\` / \`Strg+]\`), verschiebt sie nach oben oder unten, fügt leere Seiten ein und löscht Seiten. Ziehen Sie Miniaturen, um sie neu anzuordnen (oder \`Alt+↑\` / \`Alt+↓\` auf einer Miniatur). Anmerkungen bleiben bei ihrer Seite, und Rückgängig macht jede Änderung rückgängig. Das heruntergeladene PDF folgt der neuen Reihenfolge und Drehung.
+
 ## Dateien
-Datei ▸ Herunterladen als speichert das **PDF mit Anmerkungen**: „bearbeitbar“ behält sie als Anmerkungen, die andere PDF-Programme ändern können, „reduziert“ zeichnet sie in die Seiten. Die Abgabe enthält beide.`,
+Datei ▸ Herunterladen als speichert das **PDF mit Anmerkungen**: „bearbeitbar“ behält sie als Anmerkungen, die andere PDF-Programme ändern können, „reduziert“ zeichnet sie in die Seiten. Die Abgabe enthält beide. Textfelder und Stempel behalten Symbole wie π, √, ≈, → und ✓.
+
+Ein **passwortgeschütztes PDF** fragt beim Öffnen nach dem Passwort. Das Dokument behält die ursprüngliche geschützte Datei; das Passwort wird darin weder gespeichert noch an jemanden gesendet, daher gibt es jede Person beim Öffnen (und Sie in einem neuen Tab) erneut ein. Wenn Sie abbrechen, wird nichts hinzugefügt.`,
   },
 }
 

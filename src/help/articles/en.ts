@@ -202,7 +202,7 @@ The interface language can be changed on the home screen or in the panel.`,
 - Review ▸ Show authorship colors the text by who wrote it.
 
 ## Files
-Opens and downloads Word (.docx) and OpenDocument (.odt); also opens .html, .txt and .md. Print or save as PDF with File ▸ Print.`,
+Opens and downloads Word (.docx) and OpenDocument (.odt); also opens Word 97-2003 (.doc), RTF, .html, .txt and Markdown (.md, with headings, lists, links, code and tables), and downloads Markdown. If a file has something Ofimeo cannot bring over (for example text boxes or endnotes of a .doc), a message lists it once. Print or save as PDF with File ▸ Print. View ▸ Zoom (or \`Ctrl++\`, \`Ctrl+-\`, \`Ctrl+0\`) changes the zoom.`,
   },
   sheet: {
     title: 'Ofimeo Sheets (spreadsheets)',
@@ -294,10 +294,16 @@ Answers are encrypted in the student's browser: only the form's editors can read
 - Open a PDF from the home screen, from File ▸ Open…, or open a hand-in ZIP: the PDFs inside are listed.
 - Tools: highlight, underline and strikeout (select text), pen and eraser, text boxes, shapes, **stamps** (check, cross, "Good", a grade…), **sticky notes** and your **signature**.
 - Keys: \`H\` highlight, \`P\` pen, \`T\` text box, \`N\` note, \`S\` stamp, \`G\` signature, \`Esc\` back to Select.
+- Keyboard: choose a tool (for example \`T\`, \`N\`, \`R\` or \`S\`) and press \`Enter\` to place it in the middle of the page you are looking at. In the Comments panel, **Add comment** does the same for sticky notes.
 - Share the PDF to correct it together or to let the student read your notes.
 
+## Pages
+The **Page** menu (or right-click a thumbnail) rotates a page left or right (\`Ctrl+[\` / \`Ctrl+]\`), moves it up or down, adds blank pages and deletes pages. Drag thumbnails to reorder them (or \`Alt+↑\` / \`Alt+↓\` on a thumbnail). Annotations stay with their page, and Undo reverts every change. The downloaded PDF follows the new order and rotation.
+
 ## Files
-File ▸ Download as saves the **PDF with annotations**: "editable" keeps them as annotations that other PDF readers can change, "flattened" draws them into the pages. Hand in includes both.`,
+File ▸ Download as saves the **PDF with annotations**: "editable" keeps them as annotations that other PDF readers can change, "flattened" draws them into the pages. Hand in includes both. Text boxes and stamps keep symbols such as π, √, ≈, → and ✓.
+
+A **password-protected PDF** asks for its password when you open it. The document keeps the original protected file; the password is not stored in it or sent to anyone, so everyone who opens it (and you, in a new browser tab) enters it again. Cancel and nothing is added.`,
   },
 }
 

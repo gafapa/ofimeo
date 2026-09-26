@@ -15,13 +15,14 @@ import { mountFrame } from '../../ui/frame'
 import { provideWebMcpTools } from '../../core/webmcp'
 import { renderShell } from '../../ui/shell'
 import { isMac, mod, type ShortcutSection } from '../../ui/shortcuts'
-import { closePopover, colorPalette, confirmDialog, el, icon, openPopover, toast, type Menu, type MenuEntry } from '../../ui/widgets'
+import { closePopover, colorPalette, confirmDialog, el, icon, openPopover, showContextMenu, toast, type Menu, type MenuEntry } from '../../ui/widgets'
 import { zoomMenuItems, type ZoomTarget } from '../../ui/zoom'
 import { appInfo } from '../registry'
-import { Editor, MARKUP_TOOLS, type Tool } from './editor'
-import { fileArray, blankPage, fillDoc, LOCAL, metaMap, notesMap, pagesArray, readFile, type PageEntry } from './model'
+import { copySelection, Editor, MARKUP_TOOLS, type Tool } from './editor'
+import { fileArray, blankPage, fillDoc, LOCAL, metaMap, notesMap, pagesArray, readFile, type Annot, type PageEntry } from './model'
+import { round, viewTransform } from './geometry'
 import { Notes } from './notes'
-import { openPdf } from './pdfjs'
+import { askPdfPassword, openPdf, PasswordCancelled } from './pdfjs'
 import { annotElement } from './render'
 import { drawSignature, forgetSignature, loadSignature, stampPresets } from './stamps'
 import { findAll, markMatches, Viewer, type Match, type PageView } from './viewer'
@@ -78,9 +79,19 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
     if (size && size !== loadedSize) {
       loadedSize = size
       try {
-        pdf = await openPdf(readFile(doc)!)
+        pdf = await openPdf(readFile(doc)!, { askPassword: askPdfPassword })
       } catch (err) {
-        showEmpty(t('This PDF cannot be shown: {message}', { message: (err as Error).message }))
+        // Protected file and the prompt was cancelled: offer to try again.
+        const retry = err instanceof PasswordCancelled
+        showEmpty(retry ? t('This PDF is protected with a password.') : t('This PDF cannot be shown: {message}', { message: (err as Error).message }))
+        if (retry) {
+          const again = el('button', { type: 'button', class: 'primary', textContent: t('Enter the password…') })
+          again.addEventListener('click', () => {
+            loadedSize = -1
+            void reload()
+          })
+          empty.append(again)
+        }
         return
       }
       viewer.setDocument(pdf)
@@ -120,14 +131,16 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
 
   // Opens a file: into this document when it is still empty, else as a new document.
   const openFile = async (file: File) => {
-    const { pickPdf, importFile } = await import('./index')
+    const { pickPdf, importFile, checkPdf } = await import('./index')
     try {
       if (!pages.length && session.canEdit) {
         const picked = await pickPdf(file)
         if (!picked) return
+        const bytes = new Uint8Array(await picked.arrayBuffer())
+        if (!(await checkPdf(bytes))) return
         const { preparePdf } = await import('./import')
         toast(t('Opening…'))
-        const prepared = await preparePdf(new Uint8Array(await picked.arrayBuffer()), picked.name, { author: session.user.name })
+        const prepared = await preparePdf(bytes, picked.name, { author: session.user.name })
         fillDoc(doc, prepared, notesMap(session))
         if (!String(doc.getMap('meta').get('title') ?? '')) doc.getMap('meta').set('title', picked.name.replace(/\.pdf$/i, ''))
       } else {
@@ -161,9 +174,9 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
 
   // ---------- Export ----------
 
-  const raster = async (src: number): Promise<Uint8Array> => {
+  const raster = async (src: number, rotation?: number): Promise<Uint8Array> => {
     const page = await viewer.page(src)
-    const viewport = page.getViewport({ scale: 2 })
+    const viewport = page.getViewport({ scale: 2, rotation })
     const canvas = el('canvas', { width: Math.floor(viewport.width), height: Math.floor(viewport.height) })
     await page.render({ canvas, viewport }).promise
     const png = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/png'))
@@ -219,16 +232,80 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
     requestAnimationFrame(() => viewer.scrollToPage(index))
   }
   const currentEntry = (): PageEntry | undefined => pages.get(viewer.currentIndex())
-  const deleteBlank = async () => {
-    const entry = currentEntry()
-    if (!entry || entry.src !== -1) return
-    if (!(await confirmDialog(t('Delete page'), t('This deletes the blank page and everything written on it.'), { confirmLabel: t('Delete'), danger: true }))) return
-    const index = pages.toArray().findIndex((p) => p.id === entry.id)
+  const indexOf = (id: string) => pages.toArray().findIndex((p) => p.id === id)
+
+  // Page map: the pages array lists original pages (src) and blank ones in
+  // their order and rotation; the viewer and the exporters follow it. Every
+  // change is one undoable step (the undo manager tracks pages and annotations).
+
+  // Deletes a page (original or blank). Its annotations stay stored, so Undo brings them back.
+  const deletePage = async (entry = currentEntry()) => {
+    if (!entry || !session.canEdit) return
+    if (pages.length <= 1) return toast(t('A document needs at least one page.'))
+    if (!(await confirmDialog(t('Delete page'), t('This removes the page and everything written on it from the document. Undo brings it back.'), { confirmLabel: t('Delete'), danger: true }))) return
+    const index = indexOf(entry.id)
+    if (index >= 0) doc.transact(() => pages.delete(index, 1), LOCAL)
+  }
+
+  // Rotates a page by 90° (clockwise when dir is 1); annotations and notes turn with it.
+  const rotatePage = (dir: 1 | -1, entry = currentEntry()) => {
+    if (!entry || !session.canEdit) return
+    const index = indexOf(entry.id)
+    if (index < 0) return
+    const W = entry.w
+    const H = entry.h
+    // View-space point on the old page → the rotated page.
+    const P = (x: number, y: number): [number, number] => (dir > 0 ? [round(H - y), round(x)] : [round(y), round(W - x)])
+    const box = (x: number, y: number, w: number, h: number): [number, number, number, number] => {
+      const [ax, ay] = P(x, y)
+      const [bx, by] = P(x + w, y + h)
+      return [Math.min(ax, bx), Math.min(ay, by), Math.abs(bx - ax), Math.abs(by - ay)]
+    }
+    const turn = (a: Annot): Annot => {
+      const out: Annot = { ...a }
+      if (a.rects) out.rects = a.rects.map(([x, y, w, h]) => box(x, y, w, h))
+      if (a.strokes) out.strokes = a.strokes.map((st) => st.flatMap((v, i) => (i % 3 === 0 ? [...P(v, st[i + 1]), st[i + 2]] : [])))
+      if (a.line) out.line = [...P(a.line[0], a.line[1]), ...P(a.line[2], a.line[3])]
+      if (a.x !== undefined && a.y !== undefined && a.w !== undefined && a.h !== undefined) {
+        if (a.type === 'text' || a.type === 'stamp') {
+          // Text stays upright: move the box's centre.
+          const [cx, cy] = P(a.x + a.w / 2, a.y + a.h / 2)
+          out.x = round(cx - a.w / 2)
+          out.y = round(cy - a.h / 2)
+        } else [out.x, out.y, out.w, out.h] = box(a.x, a.y, a.w, a.h)
+      }
+      return out
+    }
+    let next: PageEntry
+    if (entry.src === -1) next = { ...entry, w: H, h: W, view: [0, 0, H, W] }
+    else {
+      const rotate = (((entry.rotate + dir * 90) % 360) + 360) % 360
+      const { w, h } = viewTransform({ view: entry.view, rotate })
+      next = { ...entry, rotate, w: round(w), h: round(h) }
+    }
     doc.transact(() => {
       pages.delete(index, 1)
-      for (const a of editor.pageAnnots(entry.id)) editor.annots.delete(a.id)
+      pages.insert(index, [next])
+      for (const a of editor.pageAnnots(entry.id)) editor.annots.set(a.id, turn(a))
     }, LOCAL)
-    notes.removePage(entry.id)
+    session.commentsDoc.transact(() => {
+      for (const [id, n] of notes.map) {
+        if (n.page !== entry.id || n.x === undefined || n.y === undefined) continue
+        const [x, y] = P(n.x + 10, n.y + 10)
+        notes.map.set(id, { ...n, x: round(x - 10), y: round(y - 10) })
+      }
+    })
+  }
+
+  // Moves a page to another position (thumbnail drag, Page ▸ Move up / down).
+  const movePage = (from: number, to: number) => {
+    if (!session.canEdit || from === to || from < 0 || to < 0 || from >= pages.length || to >= pages.length) return
+    const entry = pages.get(from)
+    doc.transact(() => {
+      pages.delete(from, 1)
+      pages.insert(to, [entry])
+    }, LOCAL)
+    requestAnimationFrame(() => viewer.scrollToPage(to))
   }
 
   // ---------- Thumbnails ----------
@@ -248,7 +325,7 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
     node.dataset.drawn = '1'
     if (entry.src === -1) return
     const page = await viewer.page(entry.src)
-    const viewport = page.getViewport({ scale: (THUMB_W / entry.w) * Math.min(2, window.devicePixelRatio || 1) })
+    const viewport = page.getViewport({ scale: (THUMB_W / entry.w) * Math.min(2, window.devicePixelRatio || 1), rotation: entry.rotate })
     const canvas = el('canvas', { width: Math.floor(viewport.width), height: Math.floor(viewport.height) })
     await page.render({ canvas, viewport }).promise
     node.querySelector('.pdf-thumb-page')?.prepend(canvas)
@@ -262,6 +339,52 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
     if (editor.showAnnotations) for (const a of editor.pageAnnots(entry.id)) s.append(annotElement(a, false))
     return s
   }
+  // Thumbnail context menu (rotate, move, delete) and drag to reorder.
+  function bindThumb(node: HTMLElement, id: string) {
+    const entry = () => pages.toArray().find((p) => p.id === id)
+    node.addEventListener('contextmenu', (e) => {
+      if (!session.canEdit) return
+      e.preventDefault()
+      showContextMenu(e.clientX, e.clientY, pageMenuItems(entry))
+    })
+    node.addEventListener('keydown', (e) => {
+      // Shift+F10 / the context menu key, and Alt+↑/↓ to move the page.
+      if (!session.canEdit) return
+      if (e.key === 'ContextMenu' || (e.key === 'F10' && e.shiftKey)) {
+        e.preventDefault()
+        const r = node.getBoundingClientRect()
+        showContextMenu(r.left + r.width / 2, r.top + r.height / 2, pageMenuItems(entry))
+      } else if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+        e.preventDefault()
+        const from = indexOf(id)
+        movePage(from, from + (e.key === 'ArrowUp' ? -1 : 1))
+        requestAnimationFrame(() => thumbList.querySelector<HTMLElement>(`[data-page-id="${id}"]`)?.focus())
+      }
+    })
+    node.draggable = session.canEdit
+    node.addEventListener('dragstart', (e) => {
+      e.dataTransfer?.setData('application/x-ofimeo-page', id)
+      if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
+      node.classList.add('dragging')
+    })
+    node.addEventListener('dragend', () => node.classList.remove('dragging'))
+    node.addEventListener('dragover', (e) => {
+      if (!e.dataTransfer?.types.includes('application/x-ofimeo-page')) return
+      e.preventDefault()
+      e.stopPropagation()
+      node.classList.add('drop-target')
+    })
+    node.addEventListener('dragleave', () => node.classList.remove('drop-target'))
+    node.addEventListener('drop', (e) => {
+      const from = e.dataTransfer?.getData('application/x-ofimeo-page')
+      node.classList.remove('drop-target')
+      if (!from) return
+      e.preventDefault()
+      e.stopPropagation()
+      movePage(indexOf(from), indexOf(id))
+    })
+  }
+
   function renderThumbs() {
     const current = viewer.currentIndex()
     const existing = new Map([...thumbList.children].map((c) => [(c as HTMLElement).dataset.pageId, c as HTMLElement]))
@@ -273,9 +396,20 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
         const box = el('div', { class: 'pdf-thumb-page' })
         box.style.aspectRatio = `${entry.w} / ${entry.h}`
         node.append(box, el('span', { class: 'pdf-thumb-num' }))
-        node.addEventListener('click', () => viewer.scrollToPage(pages.toArray().findIndex((p) => p.id === entry.id)))
+        node.addEventListener('click', () => viewer.scrollToPage(indexOf(entry.id)))
+        bindThumb(node, entry.id)
         thumbObserver.observe(node)
       }
+      // Rotated page: draw the thumbnail again.
+      const shape = `${entry.rotate}|${entry.w}|${entry.h}`
+      if (node.dataset.shape && node.dataset.shape !== shape) {
+        node.querySelector('.pdf-thumb-page canvas')?.remove()
+        delete node.dataset.drawn
+        thumbObserver.unobserve(node)
+        thumbObserver.observe(node)
+      }
+      node.dataset.shape = shape
+      ;(node.querySelector('.pdf-thumb-page') as HTMLElement).style.aspectRatio = `${entry.w} / ${entry.h}`
       node.querySelector('.pdf-thumb-overlay')?.remove()
       node.querySelector('.pdf-thumb-page')!.append(thumbOverlay(entry))
       node.querySelector('.pdf-thumb-num')!.textContent = String(i + 1)
@@ -380,9 +514,10 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
   const stampItems = (): MenuEntry[] =>
     stampPresets().map((s) => ({ label: s.label, enabled: () => session.canEdit && pages.length > 0, run: () => void editor.chooseStamp(s) }))
   const signatureTool = async () => {
+    if (!session.canEdit) return
     if (!loadSignature() && !(await drawSignature())) return
     editor.setTool('sign')
-    toast(t('Click on a page to place your signature.'))
+    toast(t('Click on a page, or press Enter, to place your signature.'))
   }
   editor.onNeedSignature = () => void signatureTool()
   const hasSelection = () => !!editor.selectedAnnot() && session.canEdit
@@ -423,7 +558,31 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
       '-',
       { label: t('Blank page after this one'), enabled: () => session.canEdit, run: () => insertBlank(true) },
       { label: t('Blank page before this one'), enabled: () => session.canEdit && pages.length > 0, run: () => insertBlank(false) },
-      { label: t('Delete this blank page…'), enabled: () => session.canEdit && currentEntry()?.src === -1, run: () => void deleteBlank() },
+    ],
+  }
+  const pageMenuItems = (entry?: () => PageEntry | undefined): MenuEntry[] => {
+    const target = entry ?? currentEntry
+    const at = () => {
+      const e = target()
+      return e ? indexOf(e.id) : -1
+    }
+    return [
+      { label: t('Rotate right'), shortcut: isMac ? '⌘]' : 'Ctrl+]', enabled: () => session.canEdit && !!target(), run: () => rotatePage(1, target()) },
+      { label: t('Rotate left'), shortcut: isMac ? '⌘[' : 'Ctrl+[', enabled: () => session.canEdit && !!target(), run: () => rotatePage(-1, target()) },
+      '-',
+      { label: t('Move page up'), enabled: () => session.canEdit && at() > 0, run: () => movePage(at(), at() - 1) },
+      { label: t('Move page down'), enabled: () => session.canEdit && at() >= 0 && at() < pages.length - 1, run: () => movePage(at(), at() + 1) },
+      '-',
+      { label: t('Delete page…'), enabled: () => session.canEdit && pages.length > 1 && !!target(), run: () => void deletePage(target()) },
+    ]
+  }
+  const pageMenu: Menu = {
+    label: t('Page'),
+    items: [
+      { label: t('Blank page after this one'), enabled: () => session.canEdit, run: () => insertBlank(true) },
+      { label: t('Blank page before this one'), enabled: () => session.canEdit && pages.length > 0, run: () => insertBlank(false) },
+      '-',
+      ...pageMenuItems(),
     ],
   }
   const format: Menu = {
@@ -456,7 +615,7 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
       toolItem('pen', t('Pen'), 'P'),
       toolItem('eraser', t('Eraser'), 'E'),
       '-',
-      { label: t('Draw a new signature…'), run: () => void drawSignature().then((s) => s && editor.setTool('sign')) },
+      { label: t('Draw a new signature…'), enabled: () => session.canEdit, run: () => void drawSignature().then((s) => s && editor.setTool('sign')) },
       { label: t('Forget my signature'), enabled: () => !!loadSignature(), run: () => forgetSignature() },
     ],
   }
@@ -481,11 +640,12 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
       redo: () => editor.undo.redo(),
       canUndo: () => editor.undo.canUndo(),
       canRedo: () => editor.undo.canRedo(),
-      copy: () => void navigator.clipboard?.writeText(document.getSelection()?.toString() ?? ''),
+      copy: () => copySelection(),
+      canCopy: () => !!document.getSelection()?.toString(),
       find: openFind,
       slots: { clipboard: [{ label: t('Delete annotation'), shortcut: 'Del', enabled: hasSelection, run: () => editor.deleteSelected() }] },
     },
-    menus: { view, insert, format, tools },
+    menus: { view, insert, format, app: [pageMenu], tools },
     help: { sections: shortcutSections },
     zoom,
     afterToolbarAction: () => undefined,
@@ -525,6 +685,7 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
   const stampBtn = tb.button(Stamp, t('Stamp'), () => openStampMenu(), { shortcut: 'S', active: () => editor.tool === 'stamp', enabled: () => session.canEdit })
   stampBtn.setAttribute('aria-haspopup', 'true')
   function openStampMenu() {
+    if (!session.canEdit) return
     const list = el('div', { class: 'pdf-stamp-menu', role: 'menu' })
     for (const s of stampPresets()) {
       const b = el('button', { type: 'button', role: 'menuitem', class: 'pdf-stamp-choice' }, el('span', { class: 'pdf-stamp-sample', textContent: s.glyph === 'check' && !s.text ? '✓' : s.glyph === 'cross' ? '✗' : (s.text ?? s.label) }), el('span', { textContent: s.label }))
@@ -584,6 +745,10 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
     thumbList.querySelector('.current')?.scrollIntoView({ block: 'nearest' })
   }
   viewer.onPageCreated = (v) => editor.attachPage(v)
+  notes.onAdd = () => {
+    editor.setTool('note')
+    if (editor.tool === 'note') editor.placeWithKeyboard()
+  }
 
   // Tool keys (single letters, outside text fields), undo and redo.
   const TOOL_KEYS: Record<string, Tool> = { v: 'select', h: 'highlight', u: 'underline', k: 'strike', p: 'pen', e: 'eraser', t: 'text', n: 'note', r: 'rect', o: 'ellipse', l: 'line', a: 'arrow' }
@@ -596,6 +761,11 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
       e.preventDefault()
       if (key === 'y' || e.shiftKey) editor.undo.redo()
       else editor.undo.undo()
+      return
+    }
+    if (primary && !e.altKey && (e.key === ']' || e.key === '[') && pages.length) {
+      e.preventDefault()
+      rotatePage(e.key === ']' ? 1 : -1)
       return
     }
     if (e.ctrlKey || e.metaKey || e.altKey) return
@@ -611,16 +781,21 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
       return
     }
     if (!pages.length) return
+    // Enter (or Space on the pages) places the chosen annotation on the current page.
+    if ((key === 'enter' || (key === ' ' && target === viewer.scroller)) && (target === viewer.scroller || target === document.body)) {
+      if (editor.placeWithKeyboard()) e.preventDefault()
+      return
+    }
     if (TOOL_KEYS[key]) {
       e.preventDefault()
       editor.setTool(TOOL_KEYS[key])
       // A text selection made before choosing a markup tool is marked right away.
       if (MARKUP_TOOLS.includes(TOOL_KEYS[key])) editor.markSelection(TOOL_KEYS[key] as 'highlight')
-    } else if (key === 's') {
+    } else if (key === 's' && session.canEdit) {
       e.preventDefault()
       if (editor.stamp) editor.setTool('stamp')
       else openStampMenu()
-    } else if (key === 'g') {
+    } else if (key === 'g' && session.canEdit) {
       e.preventDefault()
       void signatureTool()
     }
@@ -658,6 +833,16 @@ function shortcutSections(): ShortcutSection[] {
         [t('Stamp'), 'S'],
         [t('Signature'), 'G'],
         [t('Back to Select'), 'Esc'],
+        [t('Place the chosen annotation on the current page'), 'Enter'],
+      ],
+    },
+    {
+      title: t('Pages'),
+      rows: [
+        [t('Rotate right'), mod(']')],
+        [t('Rotate left'), mod('[')],
+        [t('Move the page (thumbnails)'), 'Alt+↑ / Alt+↓'],
+        [t('Page menu (thumbnails)'), 'Shift+F10'],
       ],
     },
     {

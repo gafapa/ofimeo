@@ -495,7 +495,7 @@ export async function confirmDialog(
 }
 
 let toastTimer = 0
-export function toast(message: string): void {
+export function toast(message: string, duration = 3000): void {
   let node = document.getElementById('toast')
   if (!node) {
     node = el('div', { id: 'toast', class: 'toast' })
@@ -504,5 +504,5 @@ export function toast(message: string): void {
   node.textContent = message
   node.hidden = false
   clearTimeout(toastTimer)
-  toastTimer = window.setTimeout(() => (node!.hidden = true), 3000)
+  toastTimer = window.setTimeout(() => (node!.hidden = true), duration)
 }

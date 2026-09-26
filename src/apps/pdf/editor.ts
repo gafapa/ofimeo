@@ -6,6 +6,7 @@ import * as Y from 'yjs'
 import { t } from '../../core/i18n'
 import type { Session } from '../../core/session'
 import { el, toast } from '../../ui/widgets'
+import { mod } from '../../ui/shortcuts'
 import { stampSize } from './draw'
 import { annotsMap, bounds, LOCAL, moved, newId, pagesArray, resized, type Annot, type AnnotType } from './model'
 import type { Notes } from './notes'
@@ -392,6 +393,7 @@ export class Editor {
 
   // Chooses a stamp; grade and custom stamps ask for their text first.
   async chooseStamp(spec: StampSpec): Promise<void> {
+    if (!this.canEdit) return
     if (spec.ask) {
       const { promptText } = await import('../../ui/widgets')
       const value = await promptText(spec.ask === 'grade' ? t('Grade stamp') : t('Custom stamp'), spec.ask === 'grade' ? t('Grade') : t('Text'), '')
@@ -401,7 +403,8 @@ export class Editor {
     }
     this.stamp = spec
     this.setTool('stamp')
-    toast(t('Click on a page to place the stamp. Esc to stop.'))
+    // setTool refuses for people who cannot edit.
+    if (this.tool === 'stamp') toast(t('Click on a page, or press Enter, to place the stamp. Esc to stop.'))
   }
 
   private dragMove(v: PageView, id: string, e: PointerEvent): void {
@@ -597,7 +600,7 @@ export class Editor {
       })
     }
     add(t('Copy'), () => {
-      void navigator.clipboard?.writeText(document.getSelection()?.toString() ?? '')
+      copySelection()
       this.hideBubble()
     })
     document.body.append(bubble)
@@ -613,6 +616,81 @@ export class Editor {
   }
 
   // ---------- Keyboard ----------
+
+  // Keyboard creation: with a creation tool chosen (T, N, R, O, L, A, S, G, P)
+  // and the page area focused, Enter or Space places the annotation in the
+  // middle of the visible part of the current page.
+  placeWithKeyboard(): boolean {
+    if (!DRAW_TOOLS.includes(this.tool) || this.tool === 'eraser') return false
+    const v = this.viewer.views[this.viewer.currentIndex()]
+    if (!v) return false
+    const page = v.el.getBoundingClientRect()
+    const box = this.viewer.scroller.getBoundingClientRect()
+    const left = Math.max(page.left, box.left)
+    const right = Math.min(page.right, box.right)
+    const top = Math.max(page.top, box.top)
+    const bottom = Math.min(page.bottom, box.bottom)
+    const cx = right > left ? (left + right) / 2 : (page.left + page.right) / 2
+    const cy = bottom > top ? (top + bottom) / 2 : (page.top + page.bottom) / 2
+    const p = this.viewer.toPage(v, cx, cy)
+    this.createAt(v, r2(p.x), r2(p.y))
+    return true
+  }
+
+  // Creates an annotation of the current tool at a page point (keyboard placement).
+  private createAt(v: PageView, x: number, y: number): void {
+    const base = { page: v.entry.id, color: this.lineColor, width: this.lineWidth }
+    switch (this.tool) {
+      case 'pen': {
+        // A short wavy stroke that can then be moved, resized or deleted.
+        const pts: number[] = []
+        for (let i = 0; i <= 12; i++) pts.push(r2(x - 30 + i * 5), r2(y + Math.sin(i / 2) * 6), this.lineWidth)
+        const a = this.add({ ...base, type: 'ink', strokes: [pts] })
+        this.setTool('select')
+        this.select(a.id, true)
+        return
+      }
+      case 'rect':
+      case 'ellipse': {
+        const a = this.add({ ...base, type: this.tool, x: r2(x - 40), y: r2(y - 25), w: 80, h: 50 })
+        this.setTool('select')
+        this.select(a.id, true)
+        return
+      }
+      case 'line':
+      case 'arrow': {
+        const a = this.add({ ...base, type: this.tool, line: [r2(x - 30), y, r2(x + 30), y] })
+        this.setTool('select')
+        this.select(a.id, true)
+        return
+      }
+      case 'note':
+        this.notes.create(v.entry.id, x - 10, y - 10)
+        return this.setTool('select')
+      case 'text': {
+        const size = this.textSize
+        const a = this.add({ type: 'text', page: v.entry.id, color: this.lineColor, x: r2(x - 100), y: r2(y - size * 0.6), w: 200, h: r2(size * 1.2 + 6), size, text: '' })
+        this.setTool('select')
+        return this.editText(a)
+      }
+      case 'stamp': {
+        const before = new Set(this.annots.keys())
+        this.placeStamp(v, x, y)
+        const added = [...this.annots.keys()].find((k) => !before.has(k))
+        this.setTool('select')
+        if (added) this.select(added, true)
+        return
+      }
+      case 'sign': {
+        const sig = loadSignature()
+        if (!sig) return
+        const a = this.add({ type: 'ink', page: v.entry.id, color: '#1a237e', width: 2, alt: t('Signature of {name}', { name: this.session.user.name }), ...signatureAnnot(sig, x - 75, y - 25, 150) })
+        this.setTool('select')
+        this.select(a.id, true)
+        return
+      }
+    }
+  }
 
   private bindKeys(): void {
     this.viewer.column.addEventListener('keydown', (e) => {
@@ -687,4 +765,13 @@ function mergeLines(rects: [number, number, number, number][]): [number, number,
     } else out.push(r)
   }
   return out
+}
+
+// Copies the selected page text; browsers may deny clipboard access to menus.
+export function copySelection(): void {
+  const text = document.getSelection()?.toString() ?? ''
+  if (!text) return
+  const denied = () => toast(t('Could not copy. Use {shortcut} instead.', { shortcut: mod('C') }))
+  if (!navigator.clipboard) return denied()
+  navigator.clipboard.writeText(text).catch(denied)
 }

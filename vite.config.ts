@@ -59,6 +59,8 @@ export default defineConfig({
               'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
               'application/vnd.oasis.opendocument.text': ['.odt'],
               'application/msword': ['.doc'],
+              'application/rtf': ['.rtf'],
+              'text/markdown': ['.md', '.markdown'],
               'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
               'application/vnd.oasis.opendocument.spreadsheet': ['.ods'],
               'application/vnd.ms-excel': ['.xls'],

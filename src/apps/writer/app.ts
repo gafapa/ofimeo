@@ -92,6 +92,8 @@ export interface WriterContext {
   layout: () => Layout
   setZoom: (zoom: number) => void
   getZoom: () => number
+  // The zoom in use (the fitted value when "Fit" is on).
+  effectiveZoom: () => number
   find: { open: (replace?: boolean) => void }
   newDocument: () => void
   openFile: () => void
@@ -417,6 +419,7 @@ export function mountWriter(session: Session, root: HTMLElement): WriterContext 
     { ext: 'odt', label: t('OpenDocument text (.odt)'), build: exportBlob('odt') },
     { ext: 'html', label: t('Web page (.html)'), build: exportBlob('html') },
     { ext: 'txt', label: t('Plain text (.txt)'), build: exportBlob('txt') },
+    { ext: 'md', label: t('Markdown (.md)'), build: exportBlob('md') },
     { ext: 'pdf', label: t('PDF document (.pdf)'), build: () => import('./pdf').then((m) => m.exportPdf(ctx)) },
   ]
 
@@ -454,6 +457,7 @@ export function mountWriter(session: Session, root: HTMLElement): WriterContext 
     setPage,
     setZoom,
     getZoom: () => zoom,
+    effectiveZoom: () => effectiveZoom(),
     find,
     newDocument,
     openFile: () => fileInput.click(),
@@ -497,6 +501,7 @@ export function mountWriter(session: Session, root: HTMLElement): WriterContext 
       min: 0.5,
       max: 2,
       presets: ZOOMS,
+      keys: true,
     },
     status: { language: languageButton(spell) },
   })
@@ -579,6 +584,8 @@ export function mountWriter(session: Session, root: HTMLElement): WriterContext 
   // Handle for automated browser tests in development builds only.
   if (import.meta.env.DEV) Object.assign(window, { editor, spell, writer: ctx })
 
+  showImportNotice(meta, editable)
+
   updateStatus()
   updateZoomBox()
   // Header/footer schema must be registered for rendering even before first use.
@@ -627,7 +634,40 @@ export async function importFileAsDocument(file: File): Promise<string> {
     if (lang) ydoc.getMap<unknown>('meta').set('lang', lang)
     // The new document has no comments channel yet: the first editor to open it moves them there.
     if (imported.comments?.length) writeImportedComments(ydoc, schema, ranges, imported.comments)
+    // Shown once when the document is first opened (see showImportNotice).
+    if (imported.notImported?.length) ydoc.getMap<unknown>('meta').set(IMPORT_NOTICE, JSON.stringify(imported.notImported))
   })
+}
+
+const IMPORT_NOTICE = 'importNotImported'
+
+// Tells the first editor who opens an imported document what the importer had to leave out.
+function showImportNotice(meta: Y.Map<unknown>, editable: boolean) {
+  if (!editable) return
+  const names: Record<string, () => string> = {
+    endnotes: () => t('endnotes'),
+    shapes: () => t('text boxes and drawings'),
+    pictures: () => t('some pictures'),
+  }
+  const check = () => {
+    const raw = meta.get(IMPORT_NOTICE)
+    if (typeof raw !== 'string') return false
+    meta.delete(IMPORT_NOTICE)
+    let items: string[] = []
+    try {
+      items = JSON.parse(raw)
+    } catch {
+      // Unreadable: nothing to list.
+    }
+    const list = items.map((k) => names[k]?.() ?? k).join(', ')
+    if (list) toast(t('Some content could not be imported: {list}', { list }), 8000)
+    return true
+  }
+  if (check()) return
+  const observer = () => {
+    if (check()) meta.unobserve(observer)
+  }
+  meta.observe(observer)
 }
 
 // Body JSON for the converters, with comment ranges as `commentRange` marks

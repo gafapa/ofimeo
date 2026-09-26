@@ -288,6 +288,17 @@ export async function editHeaderFooter(ctx: WriterContext): Promise<void> {
     el('p', { class: 'hint', textContent: t('Shown on every page. Use # to insert the page number. Changes are shared with collaborators.') }),
   )
   const shown = showDialog(t('Header and footer'), body, [{ label: t('Done'), value: 'ok', primary: true }], true)
+  // Esc closes the dialog (ProseMirror's base keymap would take it to select the parent node).
+  body.addEventListener(
+    'keydown',
+    (e) => {
+      if (e.key !== 'Escape') return
+      e.preventDefault()
+      e.stopPropagation()
+      body.closest('dialog')?.close('ok')
+    },
+    true,
+  )
   header.commands.focus('end')
   await shown
   header.destroy()

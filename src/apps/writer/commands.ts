@@ -237,14 +237,15 @@ export function writerFrame(ctx: WriterContext): Pick<FrameSpec, 'file' | 'edit'
       {
         label: t('Zoom'),
         submenu: zoomMenuItems({
-          get: ctx.getZoom,
+          get: ctx.effectiveZoom,
           set: ctx.setZoom,
           fit: () => ctx.setZoom(0),
           isFit: () => ctx.getZoom() === 0,
           min: 0.5,
           max: 2,
           presets: ZOOMS,
-        }).slice(3),
+          keys: true,
+        }),
       },
     ],
   }

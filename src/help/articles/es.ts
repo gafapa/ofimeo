@@ -202,7 +202,7 @@ El idioma de la interfaz se cambia en la pantalla principal o en el panel.`,
 - Revisar ▸ Mostrar autoría colorea el texto según quién lo escribió.
 
 ## Archivos
-Abre y descarga Word (.docx) y OpenDocument (.odt); también abre .html, .txt y .md. Imprime o guarda como PDF con Archivo ▸ Imprimir.`,
+Abre y descarga Word (.docx) y OpenDocument (.odt); también abre Word 97-2003 (.doc), RTF, .html, .txt y Markdown (.md, con títulos, listas, enlaces, código y tablas), y descarga Markdown. Si un archivo tiene algo que Ofimeo no puede traer (por ejemplo cuadros de texto o notas al final de un .doc), un mensaje lo indica una vez. Imprime o guarda como PDF con Archivo ▸ Imprimir. Ver ▸ Zoom (o \`Ctrl++\`, \`Ctrl+-\`, \`Ctrl+0\`) cambia el zoom.`,
   },
   sheet: {
     title: 'Ofimeo Hojas de cálculo',
@@ -294,10 +294,16 @@ Las respuestas se cifran en el navegador del alumno: solo los editores del formu
 - Abre un PDF desde la pantalla principal, desde Archivo ▸ Abrir…, o abre un ZIP de entrega: se listan los PDF que contiene.
 - Herramientas: resaltar, subrayar y tachar (selecciona texto), bolígrafo y borrador, cuadros de texto, formas, **sellos** (visto, cruz, «Bien», una nota…), **notas adhesivas** y tu **firma**.
 - Teclas: \`H\` resaltar, \`P\` bolígrafo, \`T\` cuadro de texto, \`N\` nota, \`S\` sello, \`G\` firma, \`Esc\` volver a Seleccionar.
+- Teclado: elige una herramienta (por ejemplo \`T\`, \`N\`, \`R\` o \`S\`) y pulsa \`Intro\` para colocarla en el centro de la página que estás viendo. En el panel Comentarios, **Añadir comentario** hace lo mismo con las notas adhesivas.
 - Comparte el PDF para corregirlo en equipo o para que el alumno lea tus anotaciones.
 
+## Páginas
+El menú **Página** (o el clic derecho en una miniatura) gira una página a la izquierda o a la derecha (\`Ctrl+[\` / \`Ctrl+]\`), la sube o la baja, añade páginas en blanco y elimina páginas. Arrastra las miniaturas para reordenarlas (o \`Alt+↑\` / \`Alt+↓\` en una miniatura). Las anotaciones siguen a su página y Deshacer revierte cada cambio. El PDF descargado respeta el nuevo orden y el giro.
+
 ## Archivos
-Archivo ▸ Descargar como guarda el **PDF con anotaciones**: «editable» las mantiene como anotaciones que otros lectores de PDF pueden cambiar, «acoplado» las dibuja en las páginas. La entrega incluye ambos.`,
+Archivo ▸ Descargar como guarda el **PDF con anotaciones**: «editable» las mantiene como anotaciones que otros lectores de PDF pueden cambiar, «acoplado» las dibuja en las páginas. La entrega incluye ambos. Los cuadros de texto y los sellos conservan símbolos como π, √, ≈, → y ✓.
+
+Un **PDF protegido con contraseña** la pide al abrirlo. El documento guarda el archivo protegido original; la contraseña no se guarda en él ni se envía a nadie, así que cada persona que lo abre (y tú, en una pestaña nueva) la vuelve a escribir. Si cancelas, no se añade nada.`,
   },
 }
 

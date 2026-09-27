@@ -19,7 +19,28 @@ find each other.
 
 Storage keys and database names keep the historical `words-online` prefix
 (`localStorage` `words-online:*`, IndexedDB and cache names), so documents made
-before the rename keep working.
+before the rename keep working. The GitHub repository is still called
+`words-online`.
+
+## Documentation
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): how the suite is built (session,
+  sync, permissions, app frame, apps)
+- [docs/DECISIONS.md](docs/DECISIONS.md): design decisions and why they were made
+- [docs/ROADMAP.md](docs/ROADMAP.md): what comes next
+- [CONTRIBUTING.md](CONTRIBUTING.md): development setup, conventions, tests,
+  translations
+- [docs/deploy-school.md](docs/deploy-school.md): hosting Ofimeo in a school
+  (Docker, relay, `ofimeo.config.json`)
+- [docs/relay.md](docs/relay.md): Ofimeo Relay (Nostr, STUN/TURN, import proxy)
+- [docs/store-forward.md](docs/store-forward.md): sync without being online
+  together, threat model
+- [docs/moodle.md](docs/moodle.md): Moodle tasks and hand in
+- [docs/nextcloud.md](docs/nextcloud.md): Nextcloud accounts, CORS, security
+- [docs/webmcp.md](docs/webmcp.md): AI assistants over WebMCP
+- [docs/ui-frame-api.md](docs/ui-frame-api.md): the shared app frame API
+- [docs/design/](docs/design/): design notes per area (editors, converters,
+  UI audit)
 
 ## Word processor
 
@@ -394,6 +415,10 @@ Galician, English, French and German.
   always written with the English names. Data ▸ Descriptive statistics… writes
   a live summary table (n, mean, median, mode, standard deviations, variances,
   min, quartiles, max, range). Univer localizes function help, not names.
+- **Warn before editing** (Data ▸ Warn before editing…): ranges whose cells ask
+  for a confirmation before they change (the formulas of a grading sheet, a
+  header row), kept in the shared document (`sheet/warnings.ts`). It guards
+  against accidents, not people: anyone with an edit link can confirm.
 - **Screen readers and keyboard** (`sheet/a11y.ts`): Univer draws the grid on
   a canvas, so View ▸ Accessible table view (Alt+Shift+T, or the "Switch to
   accessible table view" skip link) mirrors the active sheet as an HTML
@@ -491,7 +516,9 @@ replicas the same log order, so replaying it always yields the same workbook.
   copy/paste between diagrams (and images or text from other apps), zoom and pan,
   and *Edit → Find…* (Ctrl+F), which searches the labels of every page (also in
   presentations).
-- Download SVG and PNG (the selection or the whole page) and print / PDF.
+- Download SVG and PNG (the selection or the whole page), a PDF of all pages
+  (each sized to its page settings, `diagram/pdf.ts`, also used by drawings)
+  and print.
 - Collaborators' selections are highlighted, their pointers shown, and the page
   tabs show who is on each page.
 - Sync is state-based: Yjs holds pages → cells → fields, so concurrent edits merge
@@ -545,8 +572,13 @@ presented or exported.
   placeholders (positions and sizes from the layout and master, bullets, theme
   colors), shapes, pictures, connectors, tables, backgrounds and notes; charts
   (column, bar, line, area, pie, doughnut) are drawn from their data as a
-  picture that keeps the data, and SmartArt uses the drawing PowerPoint saves
-  with it (else a box with its text).
+  picture that keeps the data, SmartArt uses the drawing PowerPoint saves
+  with it (else a box with its text), and slide transitions and the preset
+  animations of the main sequence become the app's own. **Open .odp** files
+  (from this app or LibreOffice Impress: text boxes, shapes, lines, pictures,
+  groups, tables as one text box, backgrounds, notes, transitions and
+  animations) and legacy `.ppt` (see *Legacy files*).
+- **Charts** (Insert ▸ Chart…) and **math graphs**, as in the word processor.
 - Hand in: the .pptx plus a PNG of every slide.
 
 ## Forms and quizzes
@@ -581,6 +613,8 @@ Ofimeo Forms is a form and quiz app for schools that works without a server.
   statistics (mean, median, lowest and highest score, standard deviation,
   histogram, share of correct answers per question). Export to CSV or XLSX,
   or *Open in Ofimeo Sheets*, which creates a new spreadsheet.
+- **Print** (File ▸ Print…): the form on paper, to answer by hand, never with
+  the answer key (`paper.ts`).
 - **Templates**: self-assessment, review quiz (with answer key), family
   survey, and peer-assessment rubric.
 
@@ -612,7 +646,9 @@ Files: `src/apps/forms/` has these modules:
 - `transport.ts`: the `form` room action (encrypted responses and the private
   document sync)
 - `state.ts`: receiving, receipts, releasing grades
-- `editor.ts`, `respond.ts`, `results.ts`, `charts.ts`, `export.ts`, `app.ts`
+- `grading.ts`: automatic and manual points, feedback
+- `editor.ts`, `respond.ts`, `results.ts`, `charts.ts`, `export.ts`,
+  `paper.ts`, `find.ts`, `spell.ts`, `webmcp.ts`, `app.ts`
 
 The app uses one additive hook in core: `RoomProvider.makeAction()` in
 `network.ts`.
@@ -621,8 +657,9 @@ Limitations:
 - An editor must be online, or must import the response files, to collect
   responses.
 - "One response per browser" is not a hard limit.
-- A copy of a form ("Make a copy", template links) does not include the answer
-  key: export and import an `.oform` file to keep it.
+- *File → Make a copy* by an editor keeps the answer key, but a copy made
+  through a template link (`…&copy=1`) does not: export and import an `.oform`
+  file to pass it on.
 - The private document is not removed when the form is deleted from the
   trash.
 
@@ -768,12 +805,13 @@ created and opened.
 | Drawing | Brainstorm board, mind map, storyboard (six scenes with action and dialogue) |
 | Presentation | Learning situation presentation, student oral presentation, class presentation (goals, key concept, example, activity steps, exit ticket), project report (team, objective, process, results table, next steps), lesson plan for the teacher (objectives, timed phases table, materials and differentiation, evaluation table) |
 | Form | Self-assessment, review quiz (answer key, points, feedback), family survey, peer assessment rubric |
+| Notebook | Class notes, lab notebook, reading journal |
 | PDF | None: a PDF starts from a file (or blank pages) |
 
 Templates are generated in code (no network) and go through each app's own
 import path: HTML for documents, a workbook snapshot for spreadsheets,
 `.drawio` XML for diagrams, `.excalidraw` for drawings, `.pptx` for
-presentations and the form model for forms. The gallery and each app's templates are separate chunks, loaded
+presentations, the form model for forms and the notebook model for notebooks. The gallery and each app's templates are separate chunks, loaded
 only when the home screen shows them or a template is used.
 
 ### My templates
@@ -939,7 +977,7 @@ The home screen organizes the documents of this browser. All of this is local
   indexed.
 - **Download** builds files from the stored state without opening the documents
   (Word, PowerPoint, draw.io, Excalidraw, `.oform`, the PDF with editable
-  annotations; several go into a zip, and a document that cannot be built is
+  annotations, Word for notebooks; several go into a zip, and a document that cannot be built is
   left out and named in a message). Spreadsheets are downloaded from the app.
 
 Code: `src/core/backup.ts`, `src/core/library.ts` (folders, tags, local database),
@@ -987,10 +1025,10 @@ or menu → *Install*) and it works without a connection for individual work.
   opening and downloading files needs no network. Collaboration resumes by itself
   when peers are reachable again, and offline edits merge automatically.
 - When installed, the app registers as a handler for `.docx`, `.odt`, `.doc`,
-  `.xlsx`, `.ods`, `.xls`, `.csv`, `.tsv`, `.drawio`, `.vsdx`, `.excalidraw`,
-  `.pptx`, `.odp`, `.ppt`, `.oform` and `.pdf` files ("Open with"). Its
-  shortcuts (long-press or right-click the icon) start a new document in any
-  of the seven apps.
+  `.rtf`, `.md`, `.xlsx`, `.ods`, `.xls`, `.csv`, `.tsv`, `.drawio`, `.vsdx`,
+  `.excalidraw`, `.pptx`, `.odp`, `.ppt`, `.oform` and `.pdf` files ("Open
+  with"). Its shortcuts (long-press or right-click the icon) start a new
+  document in seven of the apps (all but the notebook).
 - Updates are picked up automatically on the next visit.
 
 ## Nextcloud
@@ -1261,7 +1299,9 @@ The **Hand in** button (next to Share) downloads, in one click, a ZIP named
 `<your name> - <title>.zip` with the document in its original formats and a
 `README.txt` (title, author, date): `.odt` + `.docx` (documents), `.ods` +
 `.xlsx` (spreadsheets), `.excalidraw` + `.png` (drawings), `.drawio` + PNG and
-SVG of every page (diagrams). It then offers *Print / Save as PDF* and
+SVG of every page (diagrams), `.pptx` + a PNG of every slide (presentations),
+`.oform` (forms), the PDF with editable annotations + a flattened one (PDF),
+`.docx` + a ZIP of Markdown (notebooks). It then offers *Print / Save as PDF* and
 *Upload to a Nextcloud share link…* (see [Nextcloud](#nextcloud)).
 
 ### Moodle

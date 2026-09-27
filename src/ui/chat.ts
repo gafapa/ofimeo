@@ -37,6 +37,13 @@ const READ_PREFIX = 'words-online:chat-read:'
 const EMOJI = ['👍', '👏', '🙂', '😀', '😂', '😮', '🤔', '🙏', '❤️', '🎉', '✅', '❌', '❓', '❗', '👀', '💡', '📌', '📎', '✏️', '📚', '⭐', '🔥', '👋', '🙌']
 
 const chatArray = (session: Session) => session.commentsDoc.getArray<ChatMessage>('chat')
+// Messages come from other browsers: only well-formed ones are shown.
+const COLOR = /^#[0-9a-f]{3,8}$/i
+const valid = (m: unknown): m is ChatMessage => {
+  const v = m as ChatMessage
+  return !!v && typeof v === 'object' && typeof v.text === 'string' && typeof v.name === 'string' && typeof v.sid === 'string' && typeof v.ts === 'number' && (v.mentions === undefined || (Array.isArray(v.mentions) && v.mentions.every((n) => typeof n === 'string')))
+}
+const listMessages = (session: Session) => chatArray(session).toArray().filter(valid)
 const settings = (session: Session) => session.doc.getMap<unknown>('chat')
 export const chatDisabled = (session: Session) => settings(session).get('disabled') === true
 
@@ -168,25 +175,28 @@ export function setupChat(session: Session): void {
     }
     const time = el('time', { dateTime: new Date(m.ts).toISOString(), textContent: when(m.ts), title: fullFormat.format(m.ts) })
     const author = el('span', { class: 'chat-author', textContent: own ? t('You') : m.name || t('Someone') })
+    const color = COLOR.test(String(m.color)) ? m.color : 'var(--muted)'
     const dot = el('span', { class: 'chat-dot' })
-    dot.style.background = m.color
+    dot.style.background = color
     const item = el('li', { class: `chat-msg${own ? ' own' : ''}${mentionsMe(m) ? ' mentioned' : ''}` }, el('div', { class: 'chat-meta' }, dot, author, time), body)
-    item.style.setProperty('--chat-color', m.color)
+    item.style.setProperty('--chat-color', color)
     return item
   }
 
   let rendered = 0
+  let firstId: string | undefined
   const renderList = () => {
     const disabled = chatDisabled(session)
-    const all = disabled ? [] : messages.toArray()
+    const all = disabled ? [] : listMessages(session)
     const atBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 40
     // Messages are only appended, except when the history is cleared or trimmed.
-    if (all.length < rendered || list.children.length !== rendered) {
+    if (all.length < rendered || list.children.length !== rendered || (rendered && all[0]?.id !== firstId)) {
       list.replaceChildren()
       rendered = 0
     }
     for (const m of all.slice(rendered)) list.append(renderMessage(m))
     rendered = all.length
+    firstId = all[0]?.id
     empty.hidden = all.length > 0 || disabled
     empty.textContent = t('No messages yet. Messages are seen by everyone who has this document open.')
     if (atBottom || open) list.scrollTop = list.scrollHeight
@@ -205,10 +215,10 @@ export function setupChat(session: Session): void {
     menuButton.hidden = !session.canEdit
     // People without edit access do not see the button while the chat is off.
     toggle.hidden = disabled && !session.canEdit
-    if (toggle.hidden && open) setOpen(false)
+    if (toggle.hidden && open) setOpen(false, false)
   }
 
-  const unread = () => (chatDisabled(session) ? [] : messages.toArray().filter((m) => m.sid !== sid && m.ts > lastRead))
+  const unread = () => (chatDisabled(session) ? [] : listMessages(session).filter((m) => m.sid !== sid && m.ts > lastRead))
   const renderBadge = () => {
     const pending = open ? [] : unread()
     const n = pending.length
@@ -221,7 +231,7 @@ export function setupChat(session: Session): void {
   }
 
   const markRead = () => {
-    const newest = messages.toArray().reduce((max, m) => Math.max(max, m.ts), lastRead)
+    const newest = listMessages(session).reduce((max, m) => Math.max(max, m.ts), lastRead)
     if (newest > lastRead) saveReadTime(session.docId, (lastRead = newest))
   }
 
@@ -434,7 +444,7 @@ export function setupChat(session: Session): void {
   // Updates from anyone.
   messages.observe((event) => {
     renderList()
-    const added = event.changes.delta.flatMap((d) => (d.insert as ChatMessage[] | undefined) ?? []).filter((m) => m.sid !== sid)
+    const added = event.changes.delta.flatMap((d) => (Array.isArray(d.insert) ? d.insert : [])).filter((m): m is ChatMessage => valid(m) && m.sid !== sid)
     if (!chatDisabled(session) && added.length) {
       if (open && document.visibilityState === 'visible') markRead()
       const last = added[added.length - 1]

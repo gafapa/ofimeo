@@ -1,0 +1,19 @@
+/* Store-and-forward sync state and settings (store-forward.ts). */
+.sf-states { display: inline-flex; gap: 2px; }
+.sf-state {
+  display: inline-flex; align-items: center; gap: 4px; border: 0; background: none; color: var(--muted);
+  font-size: var(--fs-s); padding: 2px 6px; border-radius: var(--radius-pill); white-space: nowrap;
+}
+.sf-state:hover { background: var(--hover); }
+.sf-state.synced, .sf-state.readonly { color: var(--ok); }
+.sf-state.pending, .sf-state.offline { color: var(--warn); }
+.sf-state.error { color: var(--danger); }
+.sf-state.syncing svg { animation: sf-spin 1.2s linear infinite; }
+@keyframes sf-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .sf-state.syncing svg { animation: none; } }
+.sf-settings .sf-note { margin: -4px 0 6px 26px; }
+.sf-folder { display: flex; gap: 8px; align-items: center; margin: 4px 0 4px 26px; }
+.sf-folder .field { flex: 1; min-width: 0; }
+@media (max-width: 760px) {
+  .sf-state-label { display: none; }
+}

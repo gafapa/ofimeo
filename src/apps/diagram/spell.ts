@@ -28,6 +28,7 @@ export interface GraphSpellOptions {
   extraItems?: (pageId: string, index: number) => (SpellItem & { extra: unknown })[]
   replaceExtra?: (item: SpellItem & { page: string; extra: unknown }, from: number, to: number, text: string) => boolean
   revealExtra?: (item: SpellItem & { page: string; extra: unknown }, from: number, to: number) => void
+  rectsExtra?: (item: SpellItem & { page: string; extra: unknown }, from: number, to: number) => DOMRect[]
   // Shows a page (default: the editor's own page switch).
   showPage?: (id: string) => void
 }
@@ -126,7 +127,12 @@ export function graphSpelling(session: Session, editor: DiagramEditor, o: GraphS
   setLang()
   language.onChange(setLang)
 
-  const source: SpellSource = { items, start, reveal, replace, editable, language, close: () => graph.container?.focus() }
+  const rects = (item: SpellItem, from: number, to: number): DOMRect[] => {
+    const i = item as LabelItem
+    return i.extra !== undefined ? (o.rectsExtra?.(i as never, from, to) ?? []) : []
+  }
+
+  const source: SpellSource = { items, start, reveal, rects, replace, editable, language, close: () => graph.container?.focus() }
   const open = () => openSpellingDialog(source)
   registerSpellingKey(open)
   return { open, language, menu: () => spellingMenuItems({ open, language, editable }) }

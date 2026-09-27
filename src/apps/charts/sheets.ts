@@ -68,15 +68,29 @@ const parse = <T>(raw: unknown): T | null => {
 // Workbook of an Ofimeo spreadsheet's Yjs state (see sheet/sync.ts).
 export function sheetDocWorkbook(doc: Y.Doc): Workbook {
   const state = doc.getMap('sheet')
-  const base = parse<{ snapshot?: Workbook }>(state.get('checkpoint'))?.snapshot ?? parse<Workbook>(state.get('base')) ?? {}
+  // A new spreadsheet has no stored base: the app starts from one empty sheet (sheet/univer.ts emptyWorkbook).
+  const base = parse<{ snapshot?: Workbook }>(state.get('checkpoint'))?.snapshot ??
+    parse<Workbook>(state.get('base')) ?? { sheetOrder: ['sheet-1'], sheets: { 'sheet-1': { id: 'sheet-1', name: t('Sheet{n}', { n: 1 }), cellData: {} } } }
   const wb: Workbook = { ...base, sheets: { ...(base.sheets ?? {}) } }
   for (const entry of doc.getArray<{ m?: string; p?: string }>('sheet-ops').toArray()) {
+    if (entry?.m === 'sheet.mutation.insert-sheet' || entry?.m === 'sheet.mutation.set-worksheet-name') {
+      const p = parse<{ sheet?: { id?: string; name?: string }; subUnitId?: string; name?: string }>(entry.p)
+      const id = p?.sheet?.id ?? p?.subUnitId
+      const name = p?.sheet?.name ?? p?.name
+      if (id && name) {
+        wb.sheets![id] = { ...(wb.sheets![id] ?? { id, cellData: {} }), name }
+        if (!wb.sheetOrder?.includes(id)) wb.sheetOrder = [...(wb.sheetOrder ?? []), id]
+      }
+      continue
+    }
     if (entry?.m !== 'sheet.mutation.set-range-values') continue
     const params = parse<{ subUnitId?: string; cellValue?: CellData }>(entry.p)
-    const sheet = params?.subUnitId ? wb.sheets![params.subUnitId] : null
-    if (!sheet) continue
+    if (!params?.subUnitId) continue
+    // Sheets added later exist only in the log (their insert mutation carries the name).
+    const sheet = (wb.sheets![params.subUnitId] ??= { id: params.subUnitId, name: params.subUnitId, cellData: {} })
+    if (!wb.sheetOrder?.includes(params.subUnitId)) wb.sheetOrder = [...(wb.sheetOrder ?? []), params.subUnitId]
     const cells = (sheet.cellData = { ...(sheet.cellData ?? {}) })
-    for (const [r, row] of Object.entries(params!.cellValue ?? {})) {
+    for (const [r, row] of Object.entries(params.cellValue ?? {})) {
       const target = (cells[r] = { ...(cells[r] ?? {}) })
       for (const [c, cell] of Object.entries(row ?? {})) {
         if (!cell) {

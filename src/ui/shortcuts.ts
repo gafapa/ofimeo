@@ -102,6 +102,8 @@ export function commonShortcuts(actions: ShortcutActions = registered ?? {}): Sh
     [t('Accessibility'), 'Alt+Shift+A'],
     [t('Read aloud'), 'Alt+Shift+R'],
     [t('Dictation'), 'Alt+Shift+D'],
+    // Document chat (chat.ts), in the apps only.
+    ...(document.querySelector('.chat-toggle') ? [[t('Chat'), 'Alt+Shift+C'] as [string, string]] : []),
   ]
   return [
     { title: t('File'), rows: file },

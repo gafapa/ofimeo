@@ -12,6 +12,7 @@ import { t, tn } from '../../core/i18n'
 import type { Session } from '../../core/session'
 import { setupChrome } from '../../ui/chrome'
 import { mountFrame } from '../../ui/frame'
+import { pdfSpelling } from './spell'
 import { provideWebMcpTools } from '../../core/webmcp'
 import { renderShell } from '../../ui/shell'
 import { isMac, mod, type ShortcutSection } from '../../ui/shortcuts'
@@ -56,6 +57,7 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
   const notes = new Notes(session, viewer)
   layout.append(notes.panel)
   const editor = new Editor(session, viewer, notes, layout)
+  const spelling = pdfSpelling(session, viewer, editor, notes, center)
   if (window.innerWidth < 760) thumbs.hidden = true
 
   const fileInput = el('input', { type: 'file', accept: PDF_ACCEPT, hidden: true })
@@ -617,6 +619,8 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
       '-',
       { label: t('Draw a new signature…'), enabled: () => session.canEdit, run: () => void drawSignature().then((s) => s && editor.setTool('sign')) },
       { label: t('Forget my signature'), enabled: () => !!loadSignature(), run: () => forgetSignature() },
+      '-',
+      ...spelling.menu(),
     ],
   }
 
@@ -833,6 +837,7 @@ function shortcutSections(): ShortcutSection[] {
         [t('Stamp'), 'S'],
         [t('Signature'), 'G'],
         [t('Back to Select'), 'Esc'],
+        [t('Spelling and grammar'), 'F7'],
         [t('Place the chosen annotation on the current page'), 'Enter'],
       ],
     },

@@ -15,7 +15,7 @@
 .chat-badge[hidden] { display: none; }
 
 .chat-panel {
-  position: fixed; right: 12px; bottom: 40px; z-index: var(--z-panel);
+  position: fixed; right: 12px; bottom: 40px; z-index: calc(var(--z-menu) - 1); /* under its own menus */
   width: 340px; max-width: calc(100vw - 24px); height: min(560px, calc(100vh - 140px));
   display: flex; flex-direction: column; background: var(--surface); color: var(--text);
   border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow);

@@ -12,7 +12,7 @@ import { createLocalDocument } from '../../../core/session'
 import type { WriterContext } from '../app'
 import { allExtensions } from '../editor/extensions'
 import { mergeText, type MergeRecord } from '../editor/merge'
-import type { DocumentData } from '../formats/types'
+import { langCode, type DocumentData } from '../formats/types'
 
 // The body (or any content) for one record.
 export function mergeContent(node: JSONContent, record: MergeRecord): JSONContent | null {
@@ -76,7 +76,7 @@ export async function createDocument(data: DocumentData, title: string): Promise
     meta.set('page', JSON.stringify(data.page))
     if (data.columns && data.columns.count > 1) meta.set('columns', JSON.stringify(data.columns))
     if (data.citeStyle) meta.set('cite', JSON.stringify(data.citeStyle))
-    const lang = data.lang ? data.lang.split('-')[0] : ''
+    const lang = langCode(data.lang)
     if (lang) meta.set('lang', lang)
     if (data.sources?.length) {
       const map = ydoc.getMap<unknown>('sources')

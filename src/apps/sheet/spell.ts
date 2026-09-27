@@ -2,7 +2,7 @@
 // walks through the text cells of every sheet (formulas, numbers and booleans
 // are skipped), selecting each cell it stops at.
 
-import type { FUniver } from '@univerjs/presets'
+import type { FUniver, Univer } from '@univerjs/presets'
 import type { ICellData, IDocumentData, Nullable } from '@univerjs/core'
 import type { Session } from '../../core/session'
 import { openSpellingDialog, type SpellItem } from '../../ui/spell/dialog'
@@ -10,6 +10,7 @@ import { spellingMenuItems, registerSpellingKey } from '../../ui/spell/menu'
 import { docLanguage } from '../../ui/spell/service'
 import type { MenuEntry } from '../../ui/widgets'
 import { toA1 } from './charts/model'
+import { sheetInlineSpelling } from './spell-inline'
 
 const STRING = 1
 const FORCE_STRING = 4
@@ -44,9 +45,11 @@ function replaceInRichText(p: IDocumentData, from: number, to: number, text: str
   return doc
 }
 
-export function sheetSpelling(session: Session, univerAPI: FUniver): { menu: () => MenuEntry[]; open: () => void } {
+export function sheetSpelling(session: Session, univer: Univer, univerAPI: FUniver): { menu: () => MenuEntry[]; open: () => void } {
   const editable = () => session.canEdit
   const language = docLanguage(session.doc, editable)
+  // Underlines while a cell is edited.
+  if (session.canEdit) sheetInlineSpelling(univer, language)
   const workbook = () => univerAPI.getActiveWorkbook()
 
   const items = (): CellItem[] => {

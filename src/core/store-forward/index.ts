@@ -32,7 +32,8 @@ export { DEFAULT_NEXTCLOUD_FOLDER } from './backends'
 
 const PUSH_DELAY_MS = 1500
 const POLL_MS = 60_000
-const COMPACT_BLOBS = 40
+// Development aid: ?sfcompact=<n> compacts after n blobs.
+const COMPACT_BLOBS = Number(new URLSearchParams(location.search).get('sfcompact')) || 40
 const BACKOFF_MIN_MS = 5000
 const BACKOFF_MAX_MS = 5 * 60_000
 
@@ -156,10 +157,11 @@ class Link {
     docId: string,
     docKey: string,
   ) {
-    this.stateKey = `sf:${backend.key}:${docId}:${target.name}`
+    const stateKey = `sf:${backend.key}:${docId}:${target.name}`
+    this.stateKey = stateKey
     this.ready = (async () => {
       this.box = await openMailbox(docId, docKey, target.name, target.keys)
-      const saved = await kvGet<{ cursor: string; shadow: Uint8Array }>(this.stateKey)
+      const saved = await kvGet<{ cursor: string; shadow: Uint8Array }>(stateKey)
       if (saved) {
         this.cursor = saved.cursor
         Y.applyUpdate(this.shadow, saved.shadow)
@@ -351,7 +353,9 @@ export class StoreForward {
 
   private onWake = (): void => {
     for (const b of this.backends) b.retryAt = 0
-    this.kick(0)
+    // The relay may have been unreachable when the document opened.
+    infoCache.clear()
+    void this.configure()
   }
 
   private onVisibility = (): void => {

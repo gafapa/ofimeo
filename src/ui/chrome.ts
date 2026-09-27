@@ -12,6 +12,8 @@ import * as store from '../core/store'
 import { setupAutoVersions } from '../core/versions'
 import { setupChat } from './chat'
 import { handInToShare, setupNextcloud } from './nextcloud'
+import { hasMoodleAccount } from '../core/moodle-store'
+import { setupStoreForwardStatus } from './store-forward'
 import { el, icon, promptText, showDialog, toast } from './widgets'
 import './edu.css'
 
@@ -114,6 +116,7 @@ export function setupChrome(session: Session, untitled: string): void {
   setupSaveState(session)
   setupAutoVersions(session)
   setupNextcloud(session)
+  setupStoreForwardStatus(session)
   setupChat(session)
 }
 
@@ -197,6 +200,16 @@ export async function openShareDialog(session: Session): Promise<void> {
 // offers printing (Save as PDF).
 export async function handIn(session: Session, untitled: string): Promise<void> {
   const { user } = session
+  // Connected to Moodle (src/ui/moodle.ts): hand in there, or download as usual.
+  if (hasMoodleAccount()) {
+    const where = await showDialog(t('Hand in'), el('p', { textContent: t('Hand in your work to an assignment in Moodle, or download it to hand it in another way.') }), [
+      { label: t('Cancel'), value: 'cancel' },
+      { label: t('Download'), value: 'zip' },
+      { label: t('Hand in to Moodle…'), value: 'moodle', primary: true },
+    ], false, 'moodle')
+    if (where === 'moodle') return void (await import('./moodle')).handInToMoodle(session, untitled)
+    if (where !== 'zip') return
+  }
   if (isGuestName(user.name)) {
     const name = await promptText(t('Hand in'), t('Your full name (it goes in the file name)'), '')
     if (name === null) return
@@ -229,11 +242,13 @@ export async function handIn(session: Session, untitled: string): Promise<void> 
   )
   const choice = await showDialog(t('Hand in'), body, [
     { label: t('Upload to a Nextcloud share link…'), value: 'nextcloud' },
+    { label: t('Hand in to Moodle…'), value: 'moodle' },
     { label: t('Print / Save as PDF'), value: 'print' },
     { label: t('Done'), value: 'ok', primary: true },
   ], false, 'handin')
   if (choice === 'print') setTimeout(() => printDocument(session), 100)
   if (choice === 'nextcloud') await handInToShare(session, zip)
+  if (choice === 'moodle') await (await import('./moodle')).handInToMoodle(session, untitled)
 }
 
 // Automatic names ("Guest 123", in any language) are replaced by a real one when handing in.

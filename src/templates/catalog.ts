@@ -134,6 +134,9 @@ const ENTRIES: Entry[] = [
   ['form-review-quiz', 'forms', ['Cuestionario de repaso', 'Cuestionario de repaso', 'Quiz de révision', 'Wiederholungsquiz'], ['Autocorregible: respuestas correctas, puntos, retroalimentación y nota automática.', 'Autocorrixible: respostas correctas, puntos, retroalimentación e nota automática.', 'Autocorrigé : bonnes réponses, points, commentaires et note automatique.', 'Selbstkorrigierend: richtige Antworten, Punkte, Rückmeldung und automatische Note.']],
   ['form-family-survey', 'forms', ['Encuesta a las familias', 'Enquisa ás familias', 'Enquête auprès des familles', 'Elternumfrage'], ['Satisfacción, canales de comunicación, actividades y sugerencias.', 'Satisfacción, canles de comunicación, actividades e suxestións.', 'Satisfaction, moyens de communication, activités et suggestions.', 'Zufriedenheit, Kommunikationswege, Aktivitäten und Anregungen.']],
   ['form-peer-rubric', 'forms', ['Rúbrica de coevaluación', 'Rúbrica de coavaliación', 'Grille d’évaluation par les pairs', 'Peer-Bewertungsraster'], ['El alumnado evalúa a un compañero con criterios y niveles de logro.', 'O alumnado avalía a un compañeiro con criterios e niveis de logro.', 'Les élèves évaluent un camarade selon des critères et des niveaux.', 'Schüler bewerten eine Mitschülerin oder einen Mitschüler nach Kriterien und Stufen.']],
+  ['nb-class-notes', 'notebook', ['Apuntes de clase', 'Apuntamentos de clase', 'Notes de cours', 'Unterrichtsnotizen'], ['Unidades con objetivos, notas de cada clase, tareas y repaso con etiquetas.', 'Unidades con obxectivos, notas de cada clase, tarefas e repaso con etiquetas.', 'Chapitres avec objectifs, notes de chaque cours, devoirs et révisions avec balises.', 'Einheiten mit Lernzielen, Notizen je Stunde, Hausaufgaben und Wiederholung mit Tags.']],
+  ['nb-lab-notebook', 'notebook', ['Cuaderno de laboratorio', 'Caderno de laboratorio', 'Cahier de laboratoire', 'Laborbuch'], ['Normas de seguridad y prácticas con objetivo, hipótesis, datos y conclusiones.', 'Normas de seguridade e prácticas con obxectivo, hipótese, datos e conclusións.', 'Règles de sécurité et TP avec objectif, hypothèse, données et conclusions.', 'Sicherheitsregeln und Versuche mit Ziel, Hypothese, Messwerten und Ergebnis.']],
+  ['nb-reading-journal', 'notebook', ['Diario de lectura', 'Diario de lectura', 'Journal de lecture', 'Lesetagebuch'], ['Ficha del libro, resumen por capítulos, personajes, citas y vocabulario.', 'Ficha do libro, resumo por capítulos, personaxes, citas e vocabulario.', 'Fiche du livre, résumé par chapitres, personnages, citations et vocabulaire.', 'Steckbrief, Zusammenfassung je Kapitel, Figuren, Zitate und Wortschatz.']],
 ]
 
 async function create(id: string, app: DocType, lang: Lang, name: string): Promise<string> {
@@ -150,6 +153,8 @@ async function create(id: string, app: DocType, lang: Lang, name: string): Promi
       return (await import('./slides')).createSlidesTemplate(id, lang, name)
     case 'forms':
       return (await import('./forms')).createFormTemplate(id, lang, name)
+    case 'notebook':
+      return (await import('./notebook')).createNotebookTemplate(id, lang, name)
     default:
       throw new Error(`No templates for ${app}`)
   }

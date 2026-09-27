@@ -10,6 +10,8 @@
 //   pdf      file name, text boxes, stamps and marked text (pdf-annots), sticky
 //            notes (pdf-notes in the comments document, pdf-pending-notes) and
 //            the page text, which the worker extracts with pdf.js (pdfText)
+//   notebook section names, page titles and page text (nb-sections, nb-pages,
+//            XmlFragments nb-page:<id>)
 
 import * as Y from 'yjs'
 import type { DocType } from './store'
@@ -30,6 +32,7 @@ export function extractText(type: DocType, doc: Y.Doc, extra: ExtractExtra = {})
     else if (type === 'draw') parts.push(drawText(doc))
     else if (type === 'forms') parts.push(formsText(doc))
     else if (type === 'pdf') parts.push(pdfText(doc, extra))
+    else if (type === 'notebook') parts.push(notebookText(doc))
     else parts.push(diagramText(doc))
   } catch {
     // Unexpected structure: index what was read.
@@ -57,6 +60,13 @@ function xmlText(node: Y.XmlFragment | Y.XmlElement): string {
     }
   }
   return out
+}
+
+function notebookText(doc: Y.Doc): string {
+  const parts: string[] = []
+  doc.getMap<{ name?: string }>('nb-sections').forEach((s) => parts.push(String(s?.name ?? '')))
+  doc.getMap<{ title?: string }>('nb-pages').forEach((p, id) => parts.push(String(p?.title ?? ''), xmlText(doc.getXmlFragment(`nb-page:${id}`))))
+  return parts.join('\n')
 }
 
 type Cells = Record<string, Record<string, { v?: unknown } | null> | null>

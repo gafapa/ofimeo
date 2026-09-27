@@ -75,6 +75,8 @@ interface Context {
   tags: Map<string, string>
   // A field spanning paragraphs being skipped (table of contents / bibliography).
   fieldBlock: { kind: 'toc' | 'bib'; depth: number; paragraphs: Element[]; instr: string } | null
+  // A chart that ended the previous paragraph: a caption paragraph right after it becomes its caption.
+  lastChart?: JSONContent | null
 }
 
 // Tracked change around the runs being read (w:ins / w:del).
@@ -85,7 +87,7 @@ interface Revision {
   time: number
 }
 
-type Kind = 'heading' | 'title' | 'subtitle' | 'quote' | 'code' | 'hr' | 'listContinue' | 'tableHeading' | 'separator' | null
+type Kind = 'heading' | 'title' | 'subtitle' | 'quote' | 'code' | 'hr' | 'listContinue' | 'tableHeading' | 'separator' | 'caption' | null
 
 // A converted paragraph (or table) before lists, quotes and code blocks are assembled.
 interface Item {
@@ -634,6 +636,7 @@ function styleKind(styles: StyleDef[], pPr: Element | null): { kind: Kind; level
     if (/^list continue/.test(s.name)) return { kind: 'listContinue' }
     if (/^table heading$/.test(s.name)) return { kind: 'tableHeading' }
     if (s.name === 'table separator') return { kind: 'separator' }
+    if (s.name === 'caption') return { kind: 'caption' }
   }
   const outline = attr(child(pPr, 'outlineLvl'), 'val')
   if (outline !== null && Number(outline) < 6) return { kind: 'heading', level: Number(outline) + 1 }
@@ -648,11 +651,21 @@ async function paragraph(p: Element, ctx: Context, part: Part): Promise<Item[]> 
   const { kind, level } = styleKind(styles, pPr)
   // Our exporter's spacer between adjacent tables.
   if (kind === 'separator') return []
+  const lastChart = ctx.lastChart
+  ctx.lastChart = null
 
   // Run formatting inherited from the paragraph style; headings and named styles bring their own look.
   const plainStyle = kind === null || kind === 'listContinue'
   const baseRPrs = plainStyle ? [rPrOf(ctx.docDefaults), ...styles.map((s) => s.rPr).reverse()] : []
   const segments = await runs(p, ctx, part, baseRPrs, kind === 'code')
+  // A caption right under a chart.
+  if (kind === 'caption' && lastChart && !lastChart.attrs?.caption && segments.length === 1) {
+    const text = segments[0].map((n) => n.text ?? '').join('').trim()
+    if (text && segments[0].every((n) => n.type === 'text')) {
+      lastChart.attrs = { ...lastChart.attrs, caption: text }
+      return []
+    }
+  }
   const items: Item[] = []
   if (attr(child(pPr, 'pageBreakBefore'), 'val') !== 'false' && child(pPr, 'pageBreakBefore')) items.push({ node: { type: 'pageBreak' } })
 
@@ -700,6 +713,29 @@ async function paragraph(p: Element, ctx: Context, part: Part): Promise<Item[]> 
     if (kind === 'code') {
       const text = content.map((n) => (n.type === 'hardBreak' ? '\n' : (n.text ?? ''))).join('')
       items.push({ node: { type: 'codeBlock', attrs: { language: null }, content: text ? [{ type: 'text', text }] : undefined }, code: true })
+      return
+    }
+    // Charts are blocks: the paragraph is split around them.
+    if (content.some((n) => n.type === 'chart')) {
+      let run: JSONContent[] = []
+      const flush = () => {
+        if (run.length) items.push({ node: { type: 'paragraph', ...(Object.keys(attrs).length ? { attrs: { ...attrs } } : {}), content: run } })
+        run = []
+      }
+      for (const n of content) {
+        if (n.type !== 'chart') run.push(n)
+        else {
+          flush()
+          const { marks: _marks, ...chart } = n
+          void _marks
+          items.push({ node: chart })
+          ctx.lastChart = chart
+        }
+      }
+      if (run.some((n) => n.type !== 'text' || n.text?.trim())) {
+        flush()
+        ctx.lastChart = null
+      }
       return
     }
     const node: JSONContent = { type: 'paragraph' }
@@ -791,6 +827,7 @@ async function runs(p: Element, ctx: Context, part: Part, baseRPrs: (Element | n
     } else seg.push(node)
   }
   const hidden = () => fields.some((f) => !f.result || f.page || f.cite)
+  let styledField: JSONContent | null = null
   const fieldLink = () => [...fields].reverse().find((f) => f.link)?.link
 
   const walk = async (parent: Element, link: string | undefined) => {
@@ -808,7 +845,7 @@ async function runs(p: Element, ctx: Context, part: Part, baseRPrs: (Element | n
         case 'fldSimple': {
           const f = parseField(attr(el, 'instr') ?? '', ctx)
           if (f.cite) {
-            if (!hidden()) push(f.cite)
+            if (!hidden()) push(f.cite.type?.startsWith('merge') ? withMarks(f.cite, runMarks(child(child(el, 'r'), 'rPr'))) : f.cite)
           } else if (f.page) {
             if (!hidden()) push(withMarks({ type: 'pageNumber', attrs: { kind: f.page } }, runMarks(child(child(el, 'r'), 'rPr'))))
           } else await walk(el, f.link ?? link)
@@ -863,11 +900,20 @@ async function runs(p: Element, ctx: Context, part: Part, baseRPrs: (Element | n
             const f = fields[fields.length - 1]
             if (f && !f.result) {
               Object.assign(f, parseField(f.instr, ctx), { result: true })
+              // A merge field inside the code of an IF field becomes part of that code.
+              const outer = fields[fields.length - 2]
+              if (outer && !outer.result && f.cite?.type === 'mergeField') {
+                outer.instr += ` {MERGEFIELD:${f.cite.attrs?.name}} `
+                f.cite = null
+              }
               const outerHidden = fields.slice(0, -1).some((o) => !o.result || o.page || o.cite)
               if (f.page && !outerHidden) push(withMarks({ type: 'pageNumber', attrs: { kind: f.page } }, m))
               if (f.cite && !outerHidden) push(f.cite)
+              // Merge fields take the formatting of their (hidden) result.
+              if (f.cite && !outerHidden && f.cite.type?.startsWith('merge')) styledField = f.cite
             }
             if (type === 'end') fields.pop()
+            if (type === 'end') styledField = null
           }
           break
         }
@@ -876,6 +922,7 @@ async function runs(p: Element, ctx: Context, part: Part, baseRPrs: (Element | n
           break
         default:
           if (!hidden()) await runChild(el, m)
+          else if (styledField && el.localName === 't' && m?.length && !styledField.marks) styledField.marks = m
       }
     }
   }
@@ -918,6 +965,11 @@ async function runs(p: Element, ctx: Context, part: Part, baseRPrs: (Element | n
           segments.hr = true
           break
         }
+        const chart = await chartFrame(el, ctx, part)
+        if (chart) {
+          push(chart)
+          break
+        }
         const img = await image(el, ctx, part)
         if (img) push(img)
         break
@@ -939,6 +991,18 @@ function parseField(instr: string, ctx: Context): { page: 'page' | 'total' | nul
   const name = words[0]?.toUpperCase()
   if (name === 'CITATION') return { page: null, cite: wordCitation((instr.trim().match(/"[^"]*"|\S+/g) ?? []).slice(1).map((w) => w.replace(/^"|"$/g, '')), ctx) }
   if (name === 'ADDIN' && /CSL_CITATION/.test(instr)) return { page: null, cite: cslCitation(instr, ctx) }
+  if (name === 'MERGEFIELD') {
+    const field = fieldArgs(instr)[1]
+    if (field) return { page: null, cite: { type: 'mergeField', attrs: { name: field } } }
+  }
+  if (name === 'IF') {
+    // IF {MERGEFIELD:name} = "value" "then" "else" (the merge field was read as part of the code).
+    const args = fieldArgs(instr).slice(1)
+    const field = /^\{MERGEFIELD:(.*)\}$/.exec(args[0] ?? '')?.[1]
+    if (field !== undefined && (args[1] === '=' || args[1] === '<>')) {
+      return { page: null, cite: { type: 'mergeIf', attrs: { field, op: args[1], value: args[2] ?? '', then: args[3] ?? '', otherwise: args[4] && !args[4].startsWith('\\') ? args[4] : '' } } }
+    }
+  }
   if (name === 'PAGE') return { page: 'page' }
   if (name === 'NUMPAGES' || name === 'SECTIONPAGES') return { page: 'total' }
   if (name === 'HYPERLINK') {
@@ -947,6 +1011,15 @@ function parseField(instr: string, ctx: Context): { page: 'page' | 'total' | nul
     if (m) return { page: null, link: isAnchor ? `#${m[1]}` : m[1] }
   }
   return { page: null }
+}
+
+// Words of a field code; quoted arguments lose their quotes (\" inside them is a quote).
+function fieldArgs(instr: string): string[] {
+  const out: string[] = []
+  for (const m of instr.matchAll(/"((?:[^"\\]|\\.)*)"|\{MERGEFIELD:[^}]*\}|(\S+)/g)) {
+    out.push(m[1] !== undefined ? m[1].replace(/\\(.)/g, '$1') : m[0])
+  }
+  return out
 }
 
 // CITATION Tag1 \l 1033 \m Tag2 \p 23 (Word's own citations).
@@ -1131,6 +1204,22 @@ async function image(el: Element, ctx: Context, part: Part): Promise<JSONContent
   if (width) attrs.width = width
   if (height) attrs.height = height
   return { type: 'image', attrs }
+}
+
+// A native chart (c:chart in the drawing) → chart node with the drawing's size.
+async function chartFrame(el: Element, ctx: Context, part: Part): Promise<JSONContent | null> {
+  const ref = [...el.getElementsByTagNameNS('*', 'chart')].find((c) => c.namespaceURI?.endsWith('/drawingml/2006/chart'))
+  const id = attr(ref, 'id')
+  const target = id ? part.rels.get(id) : undefined
+  const xml = target ? await ctx.zip.file(target)?.async('string') : undefined
+  if (!xml) return null
+  const { readChartPart } = await import('./docx-charts')
+  const chart = readChartPart(xml)
+  if (!chart) return null
+  const extent = el.getElementsByTagNameNS('*', 'extent')[0]
+  const width = Math.round(Number(attr(extent, 'cx')) / EMU_PER_PX) || 480
+  const height = Math.round(Number(attr(extent, 'cy')) / EMU_PER_PX) || 300
+  return { type: 'chart', attrs: { chart: JSON.stringify(chart), width, height, caption: '' } }
 }
 
 async function loadImagePart(target: string | undefined, ctx: Context): Promise<{ src: string; width: number; height: number } | null> {

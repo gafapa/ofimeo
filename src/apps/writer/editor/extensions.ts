@@ -14,6 +14,7 @@ import { TaskList, TaskItem } from '@tiptap/extension-list'
 import { CharacterCount, Placeholder } from '@tiptap/extensions'
 import { CellBackground, Footnote, PageBreak, PageBreakShortcut, PageNumber, ParagraphFormat, SectionBreak } from './nodes'
 import { Equation } from './equation'
+import { GraphImage } from './mathgraph'
 import { ChartNode } from './chart'
 import { MergeField, MergeIf } from './merge'
 import { TableOfContents, type TocOptions } from './toc'
@@ -97,7 +98,8 @@ function common(options: Options): AnyExtension[] {
 export function bodyExtensions(options: Options = {}): AnyExtension[] {
   return [
     ...common(options),
-    Image.configure({ inline: true, allowBase64: true, resize: { enabled: true, alwaysPreserveAspectRatio: true, minWidth: 24, minHeight: 24 } }),
+    // Images, including math graphs (editable pictures).
+    GraphImage.configure({ inline: true, allowBase64: true, resize: { enabled: true, alwaysPreserveAspectRatio: true, minWidth: 24, minHeight: 24 } }),
     TableKit.configure({ table: { resizable: true, cellMinWidth: 40 } }),
     CellBackground,
     TaskList,

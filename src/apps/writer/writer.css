@@ -281,3 +281,27 @@
 .pdf-export .ProseMirror sup.footnote-ref { color: inherit; }
 .pdf-export .ProseMirror :is(.toc, .bibliography).ProseMirror-selectednode, .pdf-export .ProseMirror.paged :is(.toc, .bibliography).ProseMirror-selectednode > * { outline: 0; }
 .pdf-export .page-header, .pdf-export .page-footer { outline: 0 !important; background: none !important; }
+
+/* Mail merge fields (editor/merge.ts). */
+.merge-chip { display: inline-block; padding: 0 4px; border-radius: 4px; background: #e8f0fe; color: #174ea6; border: 1px solid #aecbfa; font: inherit; line-height: 1.3; white-space: pre-wrap; }
+button.merge-chip { cursor: pointer; padding: 2px 6px; font-size: var(--fs-s); }
+.merge-chip.merge-if { background: #fef7e0; color: #7a4b00; border-color: #fdd663; }
+.merge-chip.preview { background: #e6f4ea; color: inherit; border-color: #a8dab5; }
+.ProseMirror .merge-chip.ProseMirror-selectednode { outline: 2px solid var(--accent); }
+.pdf-export .merge-chip, .printing .merge-chip { background: none; border-color: transparent; color: inherit; }
+
+
+/* Charts (editor/chart.ts): fixed-size picture, caption, tools for editors. */
+.chart-figure { position: relative; margin: 8px auto; display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 100%; }
+.chart-figure .chart-box { position: relative; max-width: 100%; background: #fff; }
+.chart-figure .chart-img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.chart-figure figcaption { font-size: 0.9em; font-style: italic; color: #444; text-align: center; max-width: 100%; }
+.chart-figure .chart-resize { position: absolute; right: -5px; bottom: -5px; width: 10px; height: 10px; border: 1px solid var(--accent); background: #fff; cursor: nwse-resize; display: none; }
+.chart-figure .chart-tools { position: absolute; top: 4px; right: 4px; display: none; gap: 4px; }
+.chart-figure .chart-tools button { font: 12px var(--font-ui, sans-serif); padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); color: var(--text); cursor: pointer; }
+.chart-figure .chart-tools [hidden] { display: none; }
+.ProseMirror[contenteditable='true'] .chart-figure.ProseMirror-selectednode .chart-resize { display: block; }
+.ProseMirror .chart-figure:hover .chart-tools, .ProseMirror .chart-figure.ProseMirror-selectednode .chart-tools { display: flex; }
+.chart-figure.ProseMirror-selectednode .chart-box { outline: 2px solid var(--accent); }
+.pdf-export .chart-figure .chart-tools, .pdf-export .chart-figure .chart-resize, .printing .chart-figure .chart-tools { display: none !important; }
+.pdf-export .chart-figure.ProseMirror-selectednode .chart-box { outline: none; }

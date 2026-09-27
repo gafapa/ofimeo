@@ -113,7 +113,9 @@ export function registerCharts(univer: Univer, host: ChartHost): { redraw: () =>
     const descId = `chart-desc-${props.floatDomId ?? ''}`
     return createElement(
       'div',
-      { ref, className: 'ofimeo-chart', role: 'img', 'aria-label': spec?.title || t('Chart'), 'aria-describedby': descId, 'data-chart-id': props.floatDomId ?? '' },
+      { className: 'ofimeo-chart', role: 'img', 'aria-label': spec?.title || t('Chart'), 'aria-describedby': descId, 'data-chart-id': props.floatDomId ?? '' },
+      // ECharts owns the inner element's children.
+      createElement('div', { ref, className: 'ofimeo-chart-canvas' }),
       createElement('span', { ref: desc, id: descId, hidden: true }),
     )
   }

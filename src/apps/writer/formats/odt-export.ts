@@ -23,6 +23,8 @@ import { DEFAULT_CITE, type CiteSettings, type Run, type Source, type SourceType
 import { escapeXml, loadImage, toHex, toPt } from '../../../core/formats'
 import { latexToMathML } from '../../../ui/equation'
 import { changeOf, commentMarkers, type CommentMarkers } from './review'
+import { chartPng, readEmbedded } from '../../charts/embedded'
+import { mergeText } from '../editor/merge'
 import type { CommentData } from './types'
 
 const NS = [
@@ -301,6 +303,17 @@ class Writer {
         return this.bibliography()
       case 'sectionBreak':
         return ''
+      case 'chart': {
+        // A picture of the chart, centered, and its caption.
+        const chart = readEmbedded(a.chart)
+        if (!chart) return ''
+        const w = Number(a.width) || 480
+        const h = Number(a.height) || 300
+        const frame = await this.image({ src: await chartPng(chart, w, h), width: w, height: h, alt: chart.spec.title || a.caption || 'Chart', title: a.caption || chart.spec.title || '' })
+        const center = this.styles.paragraph(ctx.parent, ['fo:text-align="center"', ...(breakBefore ? ['fo:break-before="page"'] : [])])
+        const caption = a.caption ? `<text:p text:style-name="${this.styles.paragraph(ctx.parent, ['fo:text-align="center"'])}">${escapeText(String(a.caption))}</text:p>` : ''
+        return `<text:p text:style-name="${center}">${frame}</text:p>${caption}`
+      }
       case 'table': {
         const table = await this.table(node, ctx)
         if (!ctx.hoisted) return table
@@ -453,6 +466,10 @@ class Writer {
       }
       case 'citation':
         return this.citation(a)
+      case 'mergeField':
+        return `<text:database-display text:table-name="" text:table-type="table" text:column-name="${escapeXml(String(a.name ?? ''))}">«${escapeText(String(a.name ?? ''))}»</text:database-display>`
+      case 'mergeIf':
+        return escapeText(mergeText({ type: 'mergeIf', attrs: a }, null))
       case 'pageNumber':
         return a.kind === 'total' ? '<text:page-count>1</text:page-count>' : '<text:page-number text:select-page="current">1</text:page-number>'
       default:

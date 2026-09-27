@@ -263,6 +263,8 @@ export function writerFrame(ctx: WriterContext): Pick<FrameSpec, 'file' | 'edit'
           { label: t('Image from file…'), run: () => pickImage(editor) },
           { label: t('Image from URL…'), run: () => dialogs().then((d) => d.imageFromUrl(ctx)) },
           { label: t('Table…'), run: () => dialogs().then((d) => d.insertTableDialog(ctx)) },
+          { label: t('Chart…'), run: () => import('./charts').then((m) => m.insertChart(ctx)) },
+          { label: t('Math graph…'), run: () => import('./editor/mathgraph').then((m) => m.insertMathGraph(editor)) },
           { label: t('Link…'), shortcut: mod('K'), run: () => dialogs().then((d) => d.editLink(ctx)) },
           '-',
           { label: t('Footnote…'), shortcut: isMac ? '⌥⌘F' : 'Ctrl+Alt+F', run: () => dialogs().then((d) => d.insertFootnote(ctx)) },
@@ -426,6 +428,7 @@ export function writerFrame(ctx: WriterContext): Pick<FrameSpec, 'file' | 'edit'
   // Tools: spelling and grammar, then word count.
   const tools = toolsMenu(ctx.spell)
   tools.items.push('-', { label: t('Word count…'), run: () => dialogs().then((d) => d.wordCount(ctx)) })
+  tools.items.push({ label: t('Mail merge…'), run: () => import('./merge/panel').then((m) => m.openMergePanel(ctx)), enabled: editable })
 
   const review: Menu = {
     label: t('Review'),
@@ -689,6 +692,14 @@ export function setupContextMenu(ctx: WriterContext): void {
       ...(editor.isActive('link') ? [{ label: t('Remove link'), run: () => editor.chain().focus().extendMarkRange('link').unsetLink().run() }] : []),
       { label: t('Insert footnote…'), run: () => dialogs().then((d) => d.insertFootnote(ctx)) },
     ]
+    if (editor.isActive('chart')) {
+      const pos = editor.state.selection.from
+      items.push(
+        '-',
+        { label: t('Edit chart…'), run: () => import('./charts').then((m) => m.editChart(ctx, pos)) },
+        { label: t('Update from source'), run: () => import('./charts').then((m) => m.refreshChart(ctx, pos)) },
+      )
+    }
     if (editor.isActive('table')) {
       items.push(
         '-',

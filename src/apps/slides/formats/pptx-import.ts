@@ -14,6 +14,7 @@ import { newCellId, type CellRecord } from '../../diagram/model'
 import { SLIDE_SIZES, THEMES, type Ratio, type SlideData } from '../model'
 import { animationsFromStarts, defaultDuration, type AnimEffect, type AnimKind, type Animation, type Direction, type Trigger } from '../animations'
 import { parseChart, renderChartSvg, svgDataUri } from './chart'
+import { graphFromPictureName } from '../mathgraph'
 
 const EMU_PER_PX = 9525
 
@@ -391,8 +392,10 @@ async function picture(ctx: Ctx, node: Element, transform: GroupTransform): Prom
   if (!x || !path) return
   const image = await imageData(ctx, path)
   if (!image) return
-  const style = `shape=image;verticalLabelPosition=bottom;verticalAlign=top;imageAspect=0;image=${image};` + (x.rot ? `rotation=${round(x.rot)};` : '') + (x.flipH ? 'flipH=1;' : '')
-  push(ctx, { vertex: 1, style, geometry: geometry(ctx, x) })
+  // Math graphs exported by Ofimeo keep their construction in the picture name.
+  const mathGraph = graphFromPictureName(attr(find(node, 'cNvPr'), 'name'))
+  const style = `shape=image;verticalLabelPosition=bottom;verticalAlign=top;imageAspect=0;image=${image};` + (x.rot ? `rotation=${round(x.rot)};` : '') + (x.flipH ? 'flipH=1;' : '') + (mathGraph ? 'slideGraph=1;aspect=fixed;' : '')
+  push(ctx, { vertex: 1, style, geometry: geometry(ctx, x), ...(mathGraph ? { data: mathGraph } : {}) })
 }
 
 async function graphicFrame(ctx: Ctx, node: Element, transform: GroupTransform): Promise<void> {

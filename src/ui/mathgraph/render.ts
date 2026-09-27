@@ -202,14 +202,14 @@ export function renderSvg(doc: GraphDoc, computed: Computed, extras: RenderExtra
   for (let k = Math.ceil(tr.view.xmin / step.x); k * step.x <= tr.view.xmax; k++) {
     const x = tr.px(k * step.x)
     if (doc.options.grid) grid.push(`M${f2(x)},0V${h}`)
-    if (doc.options.axes && doc.options.numbers && k !== 0) {
+    if (doc.options.axes && doc.options.numbers && k !== 0 && x > 12 && x < w - 12) {
       ticks.push(textEl(x, axisY + (y0 > h - 20 ? -6 : 15), fmt(k * step.x), LABEL, 'middle', false, true))
     }
   }
   for (let k = Math.ceil(tr.view.ymin / step.y); k * step.y <= tr.view.ymax; k++) {
     const y = tr.py(k * step.y)
     if (doc.options.grid) grid.push(`M0,${f2(y)}H${w}`)
-    if (doc.options.axes && doc.options.numbers && k !== 0) {
+    if (doc.options.axes && doc.options.numbers && k !== 0 && y > 10 && y < h - 6) {
       ticks.push(textEl(axisX + (x0 < 30 ? 6 : -6), y + 4, fmt(k * step.y), LABEL, x0 < 30 ? 'start' : 'end', false, true))
     }
   }
@@ -249,6 +249,7 @@ export function renderSvg(doc: GraphDoc, computed: Computed, extras: RenderExtra
     ...curves,
     ...points,
     ...labels,
+    `<rect x="0.5" y="0.5" width="${w - 1}" height="${h - 1}" fill="none" stroke="#dadce0"/>`,
     '</svg>',
   )
   return parts.join('')

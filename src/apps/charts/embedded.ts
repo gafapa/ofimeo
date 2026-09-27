@@ -52,8 +52,16 @@ export function readEmbedded(raw: unknown): EmbeddedChart | null {
 
 export const chartJson = (c: EmbeddedChart) => JSON.stringify(c)
 
+// Font lists without double quotes: the SVG is used as a standalone picture,
+// whose attributes must be well-formed XML.
+function unquoteFonts(v: unknown): unknown {
+  if (Array.isArray(v)) return v.map(unquoteFonts)
+  if (!v || typeof v !== 'object') return v
+  return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, (k === 'fontFamily' || k === 'font') && typeof x === 'string' ? x.replace(/"/g, "'") : unquoteFonts(x)]))
+}
+
 export function optionOf(c: EmbeddedChart, width: number) {
-  return chartOption(c.spec, chartData(c.spec, c.rows, seriesLabel), PAPER_COLORS, formatChartNumber, width)
+  return unquoteFonts(chartOption(c.spec, chartData(c.spec, c.rows, seriesLabel), PAPER_COLORS, formatChartNumber, width)) as ReturnType<typeof chartOption>
 }
 
 type EChartsModule = typeof import('../sheet/charts/echarts')

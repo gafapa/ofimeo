@@ -286,6 +286,10 @@ export function setupSheetA11y(o: SheetA11yOptions): SheetA11y {
     const { listCharts, liveSummary } = await import('./charts/view')
     const list = listCharts(univerAPI).filter((c) => c.hostSheetId === sheetId)
     charts.hidden = !list.length
+    // Rebuilt only when something changed (a focused button keeps its focus).
+    const key = JSON.stringify(list.map((c) => [c.id, c.spec, liveSummary(univerAPI, c.spec)]))
+    if (chartList.dataset.key === key) return
+    chartList.dataset.key = key
     chartList.replaceChildren(
       ...list.map((c) => {
         const button = el('button', { type: 'button', textContent: t('Chart data as table') })
@@ -309,6 +313,25 @@ export function setupSheetA11y(o: SheetA11yOptions): SheetA11y {
     if (info.id.includes('.mutation.') || info.id === UNIVER_COMMANDS.setActiveSheet) queueRender()
   })
 
+  // Reads the active cell. A formula still being calculated is read again once it has a value.
+  let speakTimer = 0
+  const speakCell = (prefix = '') => {
+    clearTimeout(speakTimer)
+    const at = { r: row, c: col }
+    let tries = 0
+    const speak = () => {
+      const ws = sheet()
+      if (!ws || at.r !== row || at.c !== col) return
+      const pending = !!ws.getRange(row, col).getFormula() && ws.getRange(row, col).getDisplayValue() === ''
+      if (pending && tries++ < 10) {
+        speakTimer = window.setTimeout(speak, 100)
+        return
+      }
+      announce(prefix + cellText(ws, row, col))
+    }
+    speak()
+  }
+
   const moveTo = (r: number, c: number, speak = true) => {
     const { maxRow, maxCol } = limits()
     row = Math.max(0, Math.min(maxRow, r))
@@ -322,7 +345,7 @@ export function setupSheetA11y(o: SheetA11yOptions): SheetA11y {
       // Selection is a convenience.
     }
     const ws = sheet()
-    if (speak && ws) announce(cellText(ws, row, col))
+    if (speak && ws) speakCell()
   }
 
   const isEmpty = (ws: FWorksheet, r: number, c: number) => {
@@ -416,7 +439,7 @@ export function setupSheetA11y(o: SheetA11yOptions): SheetA11y {
       if (commit) save()
       moveTo(at.r + dr, at.c + dc, false)
       const now = sheet()
-      if (now) announce(commit && input.value !== original ? `${t('Saved')}. ${cellText(now, row, col)}` : cellText(now, row, col))
+      if (now) speakCell(commit && input.value !== original ? `${t('Saved')}. ` : '')
     }
     input.addEventListener('keydown', (e) => {
       e.stopPropagation()
@@ -529,7 +552,9 @@ export function setupSheetA11y(o: SheetA11yOptions): SheetA11y {
       // Remembering the view is a convenience.
     }
     view.hidden = !on
+    // Hidden but laid out, so Univer keeps its size.
     o.host.inert = on
+    o.host.classList.toggle('sheet-host-covered', on)
     if (on) o.host.setAttribute('aria-hidden', 'true')
     else o.host.removeAttribute('aria-hidden')
     skip.hidden = on

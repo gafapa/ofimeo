@@ -75,6 +75,11 @@ export async function openConfigGenerator(): Promise<void> {
   })
   const lockNc = check(!!start.locked?.includes('nextcloud'))
 
+  // Moodle (src/core/moodle.ts, docs/moodle.md)
+  const moodleUrl = text(start.moodle?.url, { type: 'url', placeholder: 'https://moodle.school.example' })
+  const moodleViaRelay = check(!!start.moodle?.viaRelay)
+  const lockMoodle = check(!!start.locked?.includes('moodle'))
+
   // Features
   const webmcp = check(start.features?.webmcp !== false && start.features?.ai !== false && !start.locked?.includes('webmcp'))
   const ai = check(start.features?.ai !== false)
@@ -107,7 +112,7 @@ export async function openConfigGenerator(): Promise<void> {
   const noticeUrl = text(start.legal?.legalNoticeUrl, { type: 'url' })
 
   const build = (): SchoolConfig => {
-    const locked = [lockLang.checked && uiLang.value && 'language', !webmcp.checked && 'webmcp', lockRelay.checked && relayUrl.value.trim() && 'relay', lockNc.checked && ncServers.value.trim() && 'nextcloud'].filter(Boolean)
+    const locked = [lockLang.checked && uiLang.value && 'language', !webmcp.checked && 'webmcp', lockRelay.checked && relayUrl.value.trim() && 'relay', lockNc.checked && ncServers.value.trim() && 'nextcloud', lockMoodle.checked && moodleUrl.value.trim() && 'moodle'].filter(Boolean)
     const turnList = turnUrls.value
       .split(/[,\s]+/)
       .map((u) => u.trim())
@@ -127,6 +132,7 @@ export async function openConfigGenerator(): Promise<void> {
           return b ? { name: a, url: b } : { url: a }
         }),
       },
+      moodle: { url: moodleUrl.value, viaRelay: moodleUrl.value.trim() && moodleViaRelay.checked ? true : undefined },
       features: {
         webmcp: webmcp.checked ? undefined : false,
         ai: ai.checked ? undefined : false,
@@ -149,7 +155,7 @@ export async function openConfigGenerator(): Promise<void> {
     preview.textContent = json()
     const problems: string[] = []
     if (!publicRelays.checked && !relayUrl.value.trim() && !lines(nostr.value).length) problems.push(t('Without public servers, give a school relay or Nostr relays, or people will not find each other.'))
-    for (const input of [relayUrl, website, privacyUrl, noticeUrl]) if (input.value.trim() && !/^https?:\/\//i.test(input.value.trim())) problems.push(t('Addresses must start with https://: {value}', { value: input.value.trim() }))
+    for (const input of [relayUrl, website, privacyUrl, noticeUrl, moodleUrl]) if (input.value.trim() && !/^https?:\/\//i.test(input.value.trim())) problems.push(t('Addresses must start with https://: {value}', { value: input.value.trim() }))
     warnings.textContent = problems.join(' ')
     warnings.hidden = !problems.length
   }
@@ -195,6 +201,12 @@ export async function openConfigGenerator(): Promise<void> {
       field(t('Nextcloud folder'), storeFolder),
     ),
     section('Nextcloud', field(t('Nextcloud servers (one per line: name | address)'), ncServers), checkRow(lockNc, t('Only these servers can be used'))),
+    section(
+      'Moodle',
+      field(t('Moodle address'), moodleUrl, t('Students see their Moodle assignments and hand in to them (docs/moodle.md).')),
+      checkRow(moodleViaRelay, t('Always through the school relay (the relay must be started with --moodle-url)')),
+      checkRow(lockMoodle, t('Only this Moodle can be used')),
+    ),
     section(
       t('Features'),
       checkRow(ai, t('Allow AI features')),

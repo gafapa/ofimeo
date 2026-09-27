@@ -102,8 +102,8 @@ export function extrema(f: (x: number) => number, xmin: number, xmax: number, sc
 }
 
 function clean(v: number): number {
-  const r = Math.round(v * 1e9) / 1e9
-  return Math.abs(r) < 1e-9 ? 0 : r
+  const r = Math.round(v * 1e7) / 1e7
+  return Math.abs(r) < 1e-7 ? 0 : r
 }
 
 export interface Fn {

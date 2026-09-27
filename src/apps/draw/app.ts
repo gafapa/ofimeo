@@ -21,6 +21,7 @@ import { el, toast } from '../../ui/widgets'
 import type { ZoomTarget } from '../../ui/zoom'
 import { drawFrame, redo } from './menus'
 import { DrawSync } from './sync'
+import { drawSpelling } from './spell'
 import { provideWebMcpTools } from '../../core/webmcp'
 
 export const DRAW_ACCEPT = '.excalidraw'
@@ -118,12 +119,14 @@ export function mountDraw(session: Session, root: HTMLElement): void {
     keys: true,
   }
 
+  const spelling = drawSpelling(session, api, container)
   const frame = mountFrame({
     session,
     shell,
     ...drawFrame({
       session,
       api,
+      spelling: spelling.menu,
       openFile: () => fileInput.click(),
       print: () => void print(),
       zoom,

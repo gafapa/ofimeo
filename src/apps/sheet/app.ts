@@ -259,7 +259,7 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
   }
   let toolbarVisible = session.canEdit
   const languageLabel = el('span', { class: 'sb-text', textContent: LANGUAGE_NAMES[language], title: t('Language of function help and number formats') })
-  const spelling = sheetSpelling(session, univerAPI)
+  const spelling = sheetSpelling(session, univer, univerAPI)
   const frameSpec = sheetFrame({
     spelling: spelling.menu,
     session,

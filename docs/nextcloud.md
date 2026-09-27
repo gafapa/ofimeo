@@ -54,6 +54,15 @@ In Nextcloud, create a folder (e.g. *Hand-ins 3B*), share it → *Share link* �
 give the link to the students. They paste it in *Hand in → Upload to a
 Nextcloud share link…*. Students cannot see each other's files.
 
+### Sync without being online together
+
+Nextcloud can also carry **encrypted changes** between people who are never
+online at the same time (connection test → *Sync without being online
+together* → *In a Nextcloud folder*). Ofimeo keeps small encrypted files in a
+folder (default `/Ofimeo/Sync`, one subfolder per document); use a folder
+shared with the people you work with. Nextcloud only sees encrypted data. See
+[store-forward.md](store-forward.md).
+
 ## For administrators: allowing the browser to connect (CORS)
 
 Browsers only let a page talk to another site when that site allows it

@@ -10,12 +10,14 @@ import { legalFooter } from '../legal/links'
 import { accessibilityButton } from '../ui/accessibility'
 import { brandMark } from '../ui/brand'
 import { schoolBadge } from '../ui/school'
+import { schoolConfig } from '../core/school-config'
 import { nameButton } from '../ui/shell'
 import { helpMenuItems } from '../ui/menus'
 import { openAccountDialog, openFromNextcloud } from '../ui/nextcloud'
 import { registerShortcuts, showShortcuts } from '../ui/shortcuts'
 import { el, icon, showContextMenu, toast, uiZoom } from '../ui/widgets'
-import { CircleHelp, Cloud, HardDrive } from 'lucide'
+import { CircleHelp, Cloud, GraduationCap, HardDrive } from 'lucide'
+import { hasMoodleAccount } from '../core/moodle-store'
 import { onboardingOff, welcomeSeen } from '../help/prefs'
 import { documentsSection } from './docs'
 import { backupReminder, openStorageDialog, setChangeListener } from './storage'
@@ -70,6 +72,18 @@ export function mountHome(root: HTMLElement): void {
   window.addEventListener('offline', renderOnline)
   renderOnline()
 
+  // Moodle: account (header) and the "Moodle tasks" panel (src/ui/moodle.ts, loaded on demand).
+  const moodleButton = el('button', { type: 'button', class: 'home-cloud md-home-button', title: 'Moodle' }, icon(GraduationCap, 18), el('span', { class: 'btn-label', textContent: 'Moodle' }))
+  moodleButton.setAttribute('aria-label', 'Moodle')
+  moodleButton.addEventListener('click', () => void import('../ui/moodle').then((m) => m.openMoodleDialog()))
+  const moodleSlot = el('div', { class: 'moodle-slot' })
+  const loadMoodlePanel = () => {
+    if (moodleSlot.childElementCount) return
+    void import('../ui/moodle').then((m) => moodleSlot.childElementCount || moodleSlot.append(m.moodleTasksSection()))
+  }
+  if (hasMoodleAccount() || schoolConfig().moodle?.url) loadMoodlePanel()
+  moodleButton.addEventListener('click', loadMoodlePanel)
+
   const newCards = el(
     'div',
     { class: 'new-cards' },
@@ -108,6 +122,7 @@ export function mountHome(root: HTMLElement): void {
         el('span', { class: 'spacer' }),
         offlineControl(),
         cloudButton,
+        moodleButton,
         storageButton(),
         languageSelect('home-language'),
         helpButton(),
@@ -120,6 +135,7 @@ export function mountHome(root: HTMLElement): void {
         { class: 'home-new' },
         el('div', { class: 'home-inner' }, el('div', { class: 'home-section-title' }, el('h2', { textContent: t('Start something new') }), el('span', { class: 'home-open-buttons' }, openButton, linkOpen, cloudOpen), fileInput), newCards),
       ),
+      moodleSlot,
       reminderSlot,
       templatesSection(),
       el(

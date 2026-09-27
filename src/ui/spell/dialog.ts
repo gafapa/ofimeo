@@ -214,9 +214,12 @@ export function openSpellingDialog(source: SpellSource): void {
     }
     show(null)
     if (pendingSeen) {
-      // A dictionary is still downloading: try again when it is ready.
+      // A dictionary is still downloading: try again when it is ready (or soon).
       status.textContent = t('Checking…')
       waitingForDictionary = true
+      setTimeout(() => {
+        if (waitingForDictionary && !current && open?.dialog === dialog) resume()
+      }, 1000)
     } else status.textContent = visited ? t('The check is complete.') : t('No spelling or grammar issues found.')
   }
   let waitingForDictionary = false
@@ -302,6 +305,15 @@ export function openSpellingDialog(source: SpellSource): void {
     void next()
   }
 
+  // Walks again from the start after a dictionary arrived.
+  function resume() {
+    waitingForDictionary = false
+    items = source.items()
+    pos = { index: Math.min(startIndex, Math.max(0, items.length - 1)), offset: 0 }
+    wrapped = false
+    void next()
+  }
+
   function restart() {
     items = source.items()
     startIndex = Math.max(0, Math.min(items.length - 1, source.start?.(items) ?? 0))
@@ -339,11 +351,7 @@ export function openSpellingDialog(source: SpellSource): void {
 
   const unsubscribe = onSpellChange(() => {
     // A dictionary finished downloading.
-    if (waitingForDictionary && !current) {
-      waitingForDictionary = false
-      items = source.items()
-      void next()
-    }
+    if (waitingForDictionary && !current) resume()
   })
   const unsubscribeLang = source.language.onChange(() => {
     lang.value = source.language.tag()

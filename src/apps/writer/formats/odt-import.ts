@@ -825,6 +825,12 @@ function inlineElement(el: Element, ctx: Ctx, fmt: Fmt, out: InlineBuilder): voi
     case 'page-count':
       out.node({ type: 'pageNumber', attrs: { kind: 'total' } })
       break
+    case 'database-display': {
+      // Mail merge field (LibreOffice database field).
+      const name = attr(el, 'column-name')
+      if (name) out.node({ type: 'mergeField', attrs: { name } }, ctx)
+      break
+    }
     case 'annotation':
       annotation(el, ctx)
       break

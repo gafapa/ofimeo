@@ -34,6 +34,8 @@ import { openRooms } from '../core/network'
 import type { Session } from '../core/session'
 import { el, showDialog, toast } from './widgets'
 import { lockedNote } from './school'
+import { publicRelaysAllowed } from '../core/school-config'
+import { storeForwardSettings } from './store-forward'
 import './connection.css'
 
 type Verdict = 'direct' | 'school' | 'blocked' | 'partial' | 'testing'
@@ -60,8 +62,9 @@ async function runChecks(update: (r: Results) => void): Promise<Results> {
   const relay = schoolRelay()
   const schoolUrls = new Set(relay?.config?.relays ?? (relay ? [`${relay.address.replace(/^http/, 'ws')}/nostr`] : []))
   const relays = effectiveRelays()
-  // Public relays are always tested, even when only the school relay is used.
-  const all = [...relays, ...publicRelays().filter((u) => !relays.includes(u))]
+  // Public relays are always tested, even when only the school relay is used,
+  // unless the school configuration forbids public servers.
+  const all = publicRelaysAllowed() ? [...relays, ...publicRelays().filter((u) => !relays.includes(u))] : relays
   results.relays = all.map((url) => ({ url, state: 'skip', school: schoolUrls.has(url) }))
   update(results)
 
@@ -476,6 +479,7 @@ export async function openConnectionTest(_session?: Session): Promise<void> {
     details,
     el('div', { class: 'conn-actions' }, copy, rerun),
     relaySettings(() => void run()),
+    storeForwardSettings(_session),
   )
   const shown = showDialog(t('Connection test'), body, [{ label: t('Close'), value: 'close', primary: true }], true, 'network')
   void run()

@@ -1,0 +1,74 @@
+/* Math graph editor dialog (editor.ts). Theme colors come from the tokens; the
+   graph itself is drawn on white paper in every theme. */
+
+dialog.dlg.mg-dialog { width: min(1180px, calc(100vw - 24px)); max-height: calc(100vh - 24px); }
+.mg-wrap { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; max-height: calc(100vh - 24px); box-sizing: border-box; }
+.mg-wrap h2 { margin: 0; }
+.mg-body { display: grid; grid-template-columns: minmax(280px, 360px) 1fr; gap: 16px; min-height: 0; flex: 1; overflow: hidden; }
+.mg-side { display: flex; flex-direction: column; min-height: 0; border: 1px solid var(--border); border-radius: var(--radius-l); overflow: hidden; }
+.mg-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--surface-alt); flex: none; }
+.mg-tab { flex: 1; border: 0; background: none; padding: 9px 6px; color: var(--muted); font-size: var(--fs-m); border-bottom: 2px solid transparent; cursor: pointer; }
+.mg-tab[aria-selected='true'] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.mg-panels { overflow: auto; flex: 1; min-height: 0; }
+.mg-panel { padding: 10px 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.mg-panel[hidden] { display: none; }
+.mg-sub { margin: 10px 0 2px; font-size: var(--fs-base); font-weight: 600; }
+.mg-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; counter-reset: mg; }
+.mg-row { border: 1px solid var(--border); border-radius: var(--radius-m); padding: 6px; background: var(--surface); }
+.mg-row.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.mg-row-line { display: flex; align-items: center; gap: 6px; }
+.mg-color { width: 26px; height: 26px; padding: 0; border: 1px solid var(--border); border-radius: 50%; background: none; flex: none; cursor: pointer; }
+.mg-color::-webkit-color-swatch-wrapper { padding: 0; }
+.mg-color::-webkit-color-swatch { border: 0; border-radius: 50%; }
+.mg-expr { flex: 1; min-width: 0; font-family: var(--font-mono); font-size: var(--fs-base); padding: 6px 8px; border: 1px solid transparent; border-radius: var(--radius-s); background: var(--surface-alt); color: var(--text); }
+.mg-expr:focus { outline: 2px solid var(--accent); outline-offset: -1px; background: var(--surface); }
+.mg-expr[aria-invalid='true'] { border-color: var(--danger); }
+.mg-icon { display: grid; place-items: center; width: 30px; height: 30px; border: 0; border-radius: var(--radius-s); background: none; color: var(--muted); cursor: pointer; flex: none; }
+.mg-icon:hover { background: var(--hover); color: var(--text); }
+.mg-preview { min-height: 0; padding: 2px 4px 0 36px; font-size: 15px; color: var(--text); overflow-x: auto; }
+.mg-preview:empty { display: none; }
+.mg-error { padding-left: 36px; color: var(--danger-text); font-size: var(--fs-s); }
+.mg-error.warn { color: var(--warn-fg); }
+.mg-error:empty { display: none; }
+.mg-add { align-self: flex-start; border: 1px dashed var(--border); background: none; border-radius: var(--radius-m); padding: 6px 12px; color: var(--accent); cursor: pointer; }
+.mg-add:hover { background: var(--hover); }
+.mg-examples { margin: 0; font-size: var(--fs-s); }
+.mg-sliders { display: flex; flex-direction: column; gap: 8px; }
+.mg-slider { border: 1px solid var(--border); border-radius: var(--radius-m); padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; }
+.mg-slider-line { display: flex; align-items: center; gap: 6px; }
+.mg-slider-name { font-family: var(--font-mono); font-weight: 600; }
+.mg-slider-value { width: 90px; flex: 1; padding: 4px 6px; }
+.mg-slider input[type='range'] { width: 100%; accent-color: var(--accent); }
+.mg-limits summary { font-size: var(--fs-s); color: var(--muted); cursor: pointer; }
+.mg-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mg-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 4px; }
+.mg-tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.mg-tool { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: var(--radius-m); padding: 6px 4px; font-size: var(--fs-s); cursor: pointer; }
+.mg-tool:hover { background: var(--hover); }
+.mg-tool[aria-pressed='true'] { background: var(--active); color: var(--active-fg); border-color: var(--accent); font-weight: 600; }
+.mg-tool-hint { margin: 0; min-height: 2.6em; }
+.mg-points { display: flex; flex-direction: column; gap: 6px; }
+.mg-point { display: grid; grid-template-columns: 36px 1fr 1fr; gap: 6px; align-items: end; }
+.mg-point strong { padding-bottom: 8px; font-family: var(--font-mono); }
+.mg-table-wrap { overflow: auto; }
+.mg-table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: var(--fs-m); }
+.mg-table th, .mg-table td { border-bottom: 1px solid var(--border); padding: 4px 6px; text-align: right; }
+.mg-table thead th { color: var(--muted); font-weight: 600; font-family: var(--font-mono); }
+.mg-main { display: flex; flex-direction: column; gap: 6px; min-width: 0; min-height: 0; overflow: auto; }
+.mg-canvas-bar { display: flex; gap: 2px; justify-content: flex-end; }
+.mg-canvas { border: 1px solid var(--border); border-radius: var(--radius-m); background: #ffffff; overflow: hidden; touch-action: none; cursor: crosshair; line-height: 0; }
+.mg-canvas[data-tool='move'] { cursor: default; }
+.mg-canvas:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mg-canvas svg { width: 100%; height: auto; display: block; user-select: none; }
+.mg-live { min-height: 1.4em; font-size: var(--fs-m); color: var(--text); font-variant-numeric: tabular-nums; }
+.mg-readout-box summary { cursor: pointer; color: var(--muted); font-size: var(--fs-m); }
+.mg-readout { margin: 4px 0 0; padding-left: 18px; font-size: var(--fs-m); max-height: 140px; overflow: auto; }
+.mg-readout li { margin: 2px 0; }
+.mg-spacer { flex: 1; }
+.mg-dialog .dlg-actions { margin-top: 0; flex-wrap: wrap; }
+
+@media (max-width: 760px) {
+  .mg-body { grid-template-columns: 1fr; overflow: auto; }
+  .mg-side { max-height: none; }
+  .mg-main { order: -1; overflow: visible; }
+}

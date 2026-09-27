@@ -1,0 +1,17 @@
+# Build context of the Dockerfile: sources only (generated files are rebuilt).
+.git
+.github
+node_modules
+dist
+test-results
+playwright-report
+public/excalidraw
+public/diagram-libs
+public/legal
+public/.well-known
+relay/dist
+relay/webapp.zip
+relay/ofimeo-relay
+*.log
+Dockerfile
+docker-compose.yml

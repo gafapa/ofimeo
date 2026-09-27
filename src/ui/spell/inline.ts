@@ -142,10 +142,24 @@ class Mirror {
       'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth', 'borderStyle'] as const) {
       s[p] = cs[p]
     }
-    s.left = `${rect.left}px`
-    s.top = `${rect.top}px`
-    s.width = `${rect.width}px`
-    s.height = `${rect.height}px`
+    const parent = f.offsetParent as HTMLElement | null
+    if (cs.transform !== 'none' && parent) {
+      // A scaled or rotated field (the drawing app's text editor): the same
+      // transform on a copy at its untransformed place.
+      const p = parent.getBoundingClientRect()
+      s.left = `${p.left + parent.clientLeft + f.offsetLeft - parent.scrollLeft}px`
+      s.top = `${p.top + parent.clientTop + f.offsetTop - parent.scrollTop}px`
+      s.width = `${f.offsetWidth}px`
+      s.height = `${f.offsetHeight}px`
+      s.transform = cs.transform
+      s.transformOrigin = cs.transformOrigin
+    } else {
+      s.left = `${rect.left}px`
+      s.top = `${rect.top}px`
+      s.width = `${rect.width}px`
+      s.height = `${rect.height}px`
+      s.transform = ''
+    }
     const multiline = f instanceof HTMLTextAreaElement
     s.whiteSpace = multiline ? 'pre-wrap' : 'pre'
     s.overflowWrap = multiline ? 'break-word' : 'normal'

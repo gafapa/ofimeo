@@ -192,6 +192,12 @@ export function quickStartTips(session: Session): string[] {
       t('Share the PDF to correct it together or to return it to the student.'),
       t('File ▸ Download as saves the PDF with your annotations.'),
     ],
+    notebook: [
+      t('Sections are the colored tabs; add pages and subpages in the list next to them and drag to reorder.'),
+      t('Tag paragraphs as To do, Important, Question or Remember (Ctrl+Shift+1 to 4); Tag summary collects them.'),
+      t('Pen, Highlighter and Eraser in the toolbar draw over the page; a stylus follows your pressure.'),
+      t('Paste or drop pictures and files onto the page; File ▸ Download as exports a page, a section or the notebook.'),
+    ],
   }
   return tips[session.type] ?? []
 }

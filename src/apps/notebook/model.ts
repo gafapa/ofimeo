@@ -13,7 +13,7 @@
 // Comments of a page live in the comments document, map `comments:<id>`.
 
 import * as Y from 'yjs'
-import { t } from '../../core/i18n'
+import { locale, t } from '../../core/i18n'
 
 export interface SectionRecord {
   name: string
@@ -91,6 +91,10 @@ export function allPages(doc: Y.Doc): Page[] {
 }
 
 export const pageTitle = (p: Pick<PageRecord, 'title'>) => p.title.trim() || t('Untitled page')
+
+// Date and time a page was created, shown under its title.
+export const pageDate = (time: number) =>
+  new Date(time || Date.now()).toLocaleString(locale, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 
 // An order value between two neighbours (either may be missing).
 export function between(before: number | undefined, after: number | undefined): number {

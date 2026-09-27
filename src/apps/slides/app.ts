@@ -71,13 +71,15 @@ import {
 } from './model'
 import { NotesEditor } from './notes'
 import { graphSpelling } from '../diagram/spell'
-import { attachSpellcheck } from '../../ui/spell/inline'
+import { attachSpellcheck, textFieldRects } from '../../ui/spell/inline'
 import { Presentation, presenters } from './present'
 import { SlideRenderer, editingCell, installTheme, svgDataUrl } from './render'
 import { SlideList } from './slidelist'
 import { TRANSITION_NAMES, animationsMap, copyAnimations, readAnimations, timeline, type TransitionType } from './animations'
 import { AnimationPane } from './animpane'
 import { CommentsPane } from './comments'
+import { setupSlideCharts } from './charts'
+import { editSlideGraph, isGraphCell } from './mathgraph'
 import type { PlayableSlide } from './player'
 
 export const SLIDES_ACCEPT = '.pptx,.ppt,.odp'
@@ -346,12 +348,25 @@ export function mountSlides(session: Session, root: HTMLElement): void {
   }
   const isEquation = (cell: Cell | null) => !!cell && String((cell.getStyle() as Style | null)?.slideEq ?? '') === '1'
   const isCellEditable = graph.isCellEditable.bind(graph)
-  graph.isCellEditable = (cell: Cell) => !isEquation(cell) && isCellEditable(cell)
+  graph.isCellEditable = (cell: Cell) => !isEquation(cell) && !isGraphCell(cell) && isCellEditable(cell)
+  const graphHost = { graph, readOnly, inBatch: (fn: () => void) => editor.inBatch(fn), insertAtCenter: (cells: Cell[]) => editor.insertAtCenter(cells) }
+  // Charts (linked to spreadsheets or with typed data): double click edits them.
+  const charts = setupSlideCharts(session, editor)
   graph.addListener(InternalEvent.DOUBLE_CLICK, (_sender: unknown, evt: EventObject) => {
     const cell = evt.getProperty('cell') as Cell | null
+    if (charts.isChart(cell) && !readOnly) {
+      evt.consume()
+      void charts.edit(cell)
+      return
+    }
     if (isEquation(cell)) {
       evt.consume()
       void insertEquation(cell!)
+    }
+    // Math graphs open the graph editor (read-only for viewers).
+    if (isGraphCell(cell)) {
+      evt.consume()
+      void editSlideGraph(graphHost, cell!)
     }
   })
   imageInput.addEventListener('change', () => {
@@ -713,9 +728,19 @@ export function mountSlides(session: Session, root: HTMLElement): void {
       enabled: editable(),
     }))
   const objectContextItems = (): MenuEntry[] => [
+    ...chartContextItems(),
     { label: t('Add animation…'), run: () => animPane.addMenu(lastContext.x, lastContext.y), enabled: editable() },
     { label: t('Comment'), run: addComment, enabled: () => session.canComment },
   ]
+  const chartContextItems = (): MenuEntry[] => {
+    const cell = graph.getSelectionCell()
+    if (!charts.isChart(cell)) return []
+    return [
+      { label: t('Edit chart…'), run: () => void charts.edit(cell), enabled: editable() },
+      { label: t('Update from source'), run: () => void charts.refresh(cell), enabled: editable() },
+      '-',
+    ]
+  }
   const slideContextItems = (): MenuEntry[] => [
     { label: t('New slide'), run: () => addSlide(), enabled: editable() },
     { label: t('Layout'), submenu: layoutMenu(), enabled: editable() },
@@ -744,6 +769,8 @@ export function mountSlides(session: Session, root: HTMLElement): void {
       { label: t('Image…'), run: () => imageInput.click(), enabled: editable() },
       { label: t('Table…'), run: () => openPopover(tableAnchor(), tableGrid(insertTable, 8)), enabled: editable() },
       { label: t('Equation…'), run: () => void insertEquation(), enabled: editable() },
+      { label: t('Chart…'), run: () => void charts.insert(), enabled: editable() },
+      { label: t('Math graph…'), run: () => void editSlideGraph(graphHost), enabled: editable() },
       { label: t('Comment'), shortcut: mod('Alt+M'), run: addComment, enabled: () => session.canComment },
       { label: t('Shapes'), run: () => showLeft('shapes'), enabled: editable() },
     ],
@@ -802,6 +829,7 @@ export function mountSlides(session: Session, root: HTMLElement): void {
       if (notes.element.hidden) toggleNotes()
       notes.select(from, to)
     },
+    rectsExtra: (_item, from, to) => textFieldRects(notes.area, from, to),
   })
   if (!readOnly) attachSpellcheck(notes.area, spelling.language.tag)
   const frame = mountFrame({

@@ -5,7 +5,7 @@
 import PptxGenJS from 'pptxgenjs'
 import type { PresentationData } from '../model'
 import type { SlideRenderer } from '../render'
-import { gradientPng, slideContents, toPng, type Paragraph, type Run, type SlideElement, type TextElement } from './elements'
+import { gradientPng, slideContents, toPng, type NativeChart, type Paragraph, type Run, type SlideElement, type TextElement } from './elements'
 import { addPptxAnimations } from './pptx-anim'
 
 const PX = 1 / 96 // inches per CSS pixel
@@ -61,8 +61,9 @@ export async function exportPptx(pres: PresentationData, renderer: SlideRenderer
 
 // Adds an element; returns the number of objects (shapes) it became.
 async function addElement(slide: Slide, e: SlideElement, geomShape: Record<TextElement['geom'], PptxGenJS.SHAPE_NAME>, shapes: Pptx['ShapeType']): Promise<number> {
+  if (e.kind === 'image' && e.chart && addChart(slide, e, e.chart)) return 1
   if (e.kind === 'image') {
-    slide.addImage({ data: data(await toPng(e.data, e.w, e.h)), x: e.x * PX, y: e.y * PX, w: e.w * PX, h: e.h * PX, rotate: e.rotation || undefined })
+    slide.addImage({ data: data(await toPng(e.data, e.w, e.h)), x: e.x * PX, y: e.y * PX, w: e.w * PX, h: e.h * PX, rotate: e.rotation || undefined, ...(e.name ? { objectName: e.name } : {}), ...(e.alt ? { altText: e.alt } : {}) })
     return 1
   }
   if (e.kind === 'line') {
@@ -137,6 +138,41 @@ async function addElement(slide: Slide, e: SlideElement, geomShape: Record<TextE
   if (!text.length && !e.fill && !e.stroke) return 0
   slide.addText(text.length ? text : '', options)
   return 1
+}
+
+// A native PowerPoint chart; false when pptxgenjs cannot write it.
+function addChart(slide: Slide, e: { x: number; y: number; w: number; h: number }, c: NativeChart): boolean {
+  const types = { column: 'bar', bar: 'bar', line: 'line', area: 'area', pie: 'pie', doughnut: 'doughnut', scatter: 'scatter' } as const
+  const data =
+    c.type === 'scatter'
+      ? [{ name: 'X', values: c.x ?? c.series[0]?.values.map((_, i) => i + 1) ?? [] }, ...c.series.map((s) => ({ name: s.name, values: s.values.map((v) => v ?? 0) }))]
+      : (c.type === 'pie' || c.type === 'doughnut' ? c.series.slice(0, 1) : c.series).map((s) => ({ name: s.name, labels: c.categories, values: s.values.map((v) => v ?? 0) }))
+  if (!data.length) return false
+  try {
+    slide.addChart(types[c.type] as PptxGenJS.CHART_NAME, data, {
+      x: e.x * PX,
+      y: e.y * PX,
+      w: e.w * PX,
+      h: e.h * PX,
+      barDir: c.type === 'bar' ? 'bar' : 'col',
+      barGrouping: c.percent ? 'percentStacked' : c.stacked ? 'stacked' : 'clustered',
+      title: c.title || undefined,
+      showTitle: !!c.title,
+      showLegend: c.legend !== 'none',
+      legendPos: c.legend === 'top' ? 't' : c.legend === 'right' ? 'r' : 'b',
+      chartColors: c.colors.length ? c.colors.map((x) => hex(x)!) : undefined,
+      holeSize: c.type === 'doughnut' ? 50 : undefined,
+      showValAxisTitle: !!c.yTitle && c.type !== 'pie' && c.type !== 'doughnut',
+      valAxisTitle: c.yTitle || undefined,
+      showCatAxisTitle: !!c.xTitle && c.type !== 'pie' && c.type !== 'doughnut',
+      catAxisTitle: c.xTitle || undefined,
+      lineDataSymbol: c.type === 'scatter' ? 'circle' : undefined,
+      lineSize: c.type === 'scatter' ? 0 : undefined,
+    })
+    return true
+  } catch {
+    return false
+  }
 }
 
 // Paragraphs → pptxgenjs text runs (a line break ends each paragraph).

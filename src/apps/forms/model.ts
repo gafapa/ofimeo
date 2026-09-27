@@ -99,6 +99,9 @@ export interface Settings {
   dropPassword: string
   // X25519 public key responses are encrypted to (base64url).
   responseKey: string
+  // Spell check in respondents' answers: 'on', 'off', or '' (on for surveys,
+  // off for quizzes, where it could give answers away). See respondentSpelling.
+  respondentSpelling: '' | 'on' | 'off'
 }
 
 export type Answer = string | string[] | number | Record<string, string>
@@ -136,7 +139,11 @@ export const DEFAULT_SETTINGS: Settings = {
   dropUrl: '',
   dropPassword: '',
   responseKey: '',
+  respondentSpelling: '',
 }
+
+// Whether respondents get spell checking in their answers.
+export const respondentSpelling = (s: Settings): boolean => (s.respondentSpelling ? s.respondentSpelling === 'on' : !s.quiz)
 
 export const newId = () => Math.random().toString(36).slice(2, 10)
 

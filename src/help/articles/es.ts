@@ -21,7 +21,15 @@ Escribe tu nombre en la casilla de arriba a la derecha (en un móvil o en una ve
 - Para trabajar con otras personas, envía un [enlace para compartir](help:sharing).
 - El alumnado entrega los trabajos con el botón [Entregar](help:handin).
 
-[Ver de nuevo la visita guiada](action:tour)`,
+[Ver de nuevo la visita guiada](action:tour)
+
+## Importar desde Google Drive o Microsoft 365
+**Importar desde un enlace…** (pantalla de inicio y menú Archivo de cada aplicación) abre archivos compartidos desde Documentos, Hojas de cálculo, Presentaciones y Drive de Google, OneDrive o SharePoint:
+1. Pega el enlace para compartir. El archivo debe estar compartido con **Cualquier persona con el enlace**, o tienes que poder abrirlo con tu propia cuenta.
+2. Pulsa el botón de descarga: tu navegador descarga el archivo como Word, Excel o PowerPoint.
+3. Suelta el archivo descargado en el cuadro de diálogo (o elígelo). Se abre como un documento nuevo de Ofimeo.
+
+Los navegadores no permiten que las aplicaciones web descarguen estos archivos directamente, así que el archivo pasa por tu carpeta de Descargas; Ofimeo nunca ve tu cuenta de Google o Microsoft. Si el relé de tu centro lo ofrece, **Importar directamente a través del relé del centro** lo hace en un clic con los archivos públicos.`,
   },
   sharing: {
     title: 'Compartir y permisos',
@@ -41,12 +49,19 @@ El cuadro de diálogo también muestra un **código QR**, práctico para tableta
 - Los enlaces de lectura y de comentario no se pueden convertir en enlaces de edición: los cambios solo se aceptan si están firmados con la clave de edición.
 - No hay una copia central en un servidor. Para recibir los últimos cambios, alguien que tenga el documento debe estar conectado a la vez. Los cambios hechos sin conexión se combinan solos la próxima vez que coincidáis.
 - El estado junto a Compartir dice **Solo tú** o cuántas personas hay. Si nunca aparece nadie, haz la [prueba de conexión](help:network).
-- Los documentos creados antes de que existieran los enlaces con permisos solo se pueden compartir con enlaces de edición. Usa Archivo ▸ Hacer una copia para tener todos los tipos de enlace.`,
+- Los documentos creados antes de que existieran los enlaces con permisos solo se pueden compartir con enlaces de edición. Usa Archivo ▸ Hacer una copia para tener todos los tipos de enlace.
+
+## Chat
+- El botón del bocadillo junto a las personas del documento (o \`Alt+Shift+C\`) abre el chat. Un número indica los mensajes sin leer; se vuelve rojo cuando alguien te menciona.
+- Escribe \`@\` para mencionar a alguien que está aquí. Los enlaces se abren en otra pestaña; el botón de la cara sonriente añade emojis. \`Intro\` envía, \`Mayús+Intro\` empieza una línea nueva y \`Escape\` cierra el chat.
+- Quien tiene un enlace para editar o comentar puede escribir; quien tiene un enlace de solo lectura solo puede leer.
+- Docentes (enlace para editar): el botón ⋯ del chat lo desactiva en este documento o borra su historial para todos.
+- Los mensajes se guardan con el documento en este navegador y en las copias de seguridad, pero no en las versiones, las copias ni los archivos descargados.`,
   },
   offline: {
     title: 'Trabajar sin conexión y dónde se guardan tus datos',
     keywords: 'sin conexión internet instalar aplicación pwa almacenamiento indexeddb datos del navegador borrar perdidos dispositivo ordenador',
-    body: `Tus documentos se guardan **en este navegador, en este dispositivo** (en su almacenamiento IndexedDB). No se suben a ningún servidor. El estado de guardado de la barra de estado indica **Guardado en este navegador**.
+    body: `Tus documentos se guardan **en este navegador, en este dispositivo** (en su almacenamiento IndexedDB). No se suben a ningún servidor (salvo que actives [sincronizar sin estar conectados a la vez](help:network), que guarda una copia cifrada). El estado de guardado de la barra de estado indica **Guardado en este navegador**.
 
 ## Qué significa
 - Borrar los datos del navegador (historial, cookies y datos de sitios) **elimina tus documentos**. Haz [copias de seguridad](help:backup) o guárdalos en [Nextcloud](help:nextcloud).
@@ -104,12 +119,41 @@ Abre [Cuenta de Nextcloud](action:nextcloud) (botón Nextcloud de la pantalla pr
 - Sube o envía el ZIP a tu profesor o profesora como te haya indicado (aula virtual, correo…).
 - **Imprimir / Guardar como PDF** crea un PDF si también hace falta: elige «Guardar como PDF» como impresora.
 - **Subir a un enlace compartido de Nextcloud…**: si tu profesor te dio un enlace de subida, el archivo va directamente allí. No necesitas cuenta de Nextcloud.
+- **Entregar en Moodle…**: si tu centro usa Moodle, entrega directamente en una tarea. Consulta [Moodle](help:moodle).
 
 **Para el profesorado.**
 - Da a cada alumno su propia ficha con un enlace **Hace una copia** (ver [Compartir](help:sharing)).
 - Crea un enlace de subida («Solo subida») en tu Nextcloud y dáselo a la clase.
 - Abre los PDF del alumnado, o los ZIP de entrega, en [Ofimeo PDF](help:pdf) para corregirlos.
 - Para cuestionarios, usa [Ofimeo Formularios](help:forms).`,
+  },
+  moodle: {
+    title: 'Moodle',
+    keywords: 'moodle aula virtual campus tarea deberes fecha de entrega plazo nota calificación comentarios entregar curso',
+    body: `Conecta Ofimeo con el Moodle de tu centro para ver tus tareas en la pantalla principal y entregar tu trabajo sin descargar y subir archivos.
+
+## Conectar
+Abre [Moodle](action:moodle) (botón Moodle de la pantalla principal, o Archivo ▸ Cuenta de Moodle…). Escribe la dirección de Moodle (puede que tu centro ya la haya puesto), tu usuario y tu contraseña, y elige **Conectar**.
+- Tu contraseña va solo a Moodle, una vez. Ofimeo guarda en este navegador solo una clave de Moodle y tu nombre. **Desconectar** los borra.
+- Si en tu centro se entra en Moodle a través de una página web (Google, Microsoft o un acceso del centro, «inicio de sesión único»), este tipo de acceso todavía no funciona en Ofimeo. Ofimeo te avisa cuando lo detecta. Entrega con el [Entregar](help:handin) habitual y sube el archivo en Moodle.
+
+## Tareas de Moodle
+El panel **Tareas de Moodle** de la pantalla principal muestra las tareas de tus cursos. Primero las pendientes, ordenadas por fecha de entrega. Después las entregadas y calificadas.
+- Abre una tarea para leer su descripción, descargar sus archivos (**Abrir en Ofimeo** crea tu propia copia) y ver la fecha de entrega, el último día para entregar, tu estado, tu nota y los comentarios del profesor cuando se publiquen.
+- **Actualizar** renueva la lista. Sin conexión ves la última lista, con la hora en que se actualizó.
+- La lista solo informa. Trabaja en la tarea en el propio Moodle cuando no se entrega como archivo.
+
+## Entregar en Moodle
+En cualquier aplicación, elige **Entregar** (o Archivo ▸ Entregar en Moodle…):
+1. Elige la tarea. Solo aparecen las tareas abiertas que admiten archivos.
+2. Elige el formato. Ofimeo propone uno que la tarea acepta. Se ofrece PDF en las aplicaciones que lo exportan; si no, usa **Un archivo de este dispositivo…**.
+3. Si la tarea tiene una declaración de entrega, léela y márcala.
+4. Elige **Entregar**. Ofimeo sube el archivo y lo guarda como tu entrega. Si la tarea tiene botón de enviar, además la envía para calificar.
+
+Si vuelves a entregar mientras la tarea está abierta, se sustituye tu archivo. Si Moodle rechaza el archivo (demasiado grande, tipo no admitido, demasiados archivos), el mensaje dice por qué.
+
+## Privacidad
+Tu trabajo de Moodle va solo al Moodle de tu centro, directamente desde este navegador o a través del relé propio de tu centro. Nunca se envía a las personas con las que compartes documentos.`,
   },
   network: {
     title: 'Redes de centros: prueba de conexión y relé',
@@ -130,7 +174,42 @@ Para estas redes, un centro puede ejecutar **Ofimeo Relay**, un pequeño program
 - Los enlaces para compartir incluyen el relé, así que el alumnado lo recibe al abrir el enlace.
 - Puedes elegir usar solo el relé del centro.
 
+## Sincronizar sin estar conectados a la vez
+Normalmente los cambios solo viajan mientras dos personas tienen el documento abierto a la vez. Con **sincronizar sin estar conectados a la vez**, una copia cifrada de los cambios espera a los demás: un alumno edita en clase y sigue en casa, y el docente corrige por la noche.
+- Actívalo en la prueba de conexión, en **Sincronizar sin estar conectados a la vez**: en el relé del centro (si guarda copias) o en una carpeta de Nextcloud. Tu centro puede activarlo para todos.
+- El estado junto al de guardado muestra **Sincronizado en …** cuando tus cambios están guardados, o **Esperando para sincronizar** si no tienes conexión (se envían después).
+- Todo se cifra en tu navegador con la clave del enlace del documento. El relé o Nextcloud solo ven datos cifrados, su tamaño y cuándo cambian.
+- Los enlaces de solo lectura descargan los cambios pero nunca pueden subir ninguno. En Nextcloud, usa una carpeta compartida con las demás personas.
+- Las copias del relé del centro se borran tras un tiempo sin cambios (180 días de forma predeterminada).
+
 El departamento de informática encuentra la guía de instalación en la documentación del proyecto (docs/relay.md).`,
+  },
+  'school-setup': {
+    title: 'Para administradores: instalar Ofimeo en un centro',
+    keywords: 'administrador departamento informática instalar desplegar servidor docker raspberry windows configuración ofimeo.config.json bloqueado lo establece tu centro logotipo idioma webmcp plantillas ocultar aplicaciones',
+    body: `Un centro puede tener su propia copia de Ofimeo en su red y configurarla para todos con un solo archivo, **ofimeo.config.json**.
+
+## Formas de instalarlo
+- **Docker**: un contenedor con la aplicación y Ofimeo Relay (el Dockerfile y docker-compose.yml están en el proyecto).
+- **Solo Ofimeo Relay** en un servidor Windows, un equipo Linux o una Raspberry Pi: también puede servir la aplicación.
+- **Cualquier servidor web** (nginx, Apache, IIS): copia los archivos compilados. La aplicación no tiene parte de servidor.
+
+## La configuración del centro
+[Ayuda ▸ Para administradores…](action:admin) abre un formulario que crea ofimeo.config.json. Establece:
+- el nombre y el logotipo del centro, que se muestran en la pantalla de inicio;
+- el idioma de la interfaz por defecto y el idioma de los documentos nuevos;
+- el relé del centro, otros relés y si se pueden usar servidores públicos;
+- dónde pueden esperar los cambios cifrados para quien no está conectado;
+- los servidores Nextcloud que se ofrecen al conectarse;
+- si se permiten asistentes de IA (WebMCP) y qué aplicaciones y plantillas se ofrecen;
+- los contactos de privacidad del centro, que se muestran encima de los enlaces legales.
+
+Pon el archivo junto a index.html (o dáselo a Ofimeo Relay con **--school-config**). Cada navegador lo aplica al abrir Ofimeo y guarda una copia para trabajar sin conexión.
+
+## Ajustes bloqueados
+Los ajustes que el centro bloquea muestran **Lo establece tu centro** y no se pueden cambiar en el navegador: el idioma de la interfaz, el interruptor de asistentes de IA, el relé del centro y los servidores Nextcloud.
+
+La guía paso a paso para el departamento de informática está en la documentación del proyecto (docs/deploy-school.md).`,
   },
   privacy: {
     title: 'Privacidad',
@@ -185,6 +264,27 @@ Los menús muestran el atajo de cada orden a su lado.
 
 El idioma de la interfaz se cambia en la pantalla principal o en el panel.`,
   },
+  spelling: {
+    title: 'Ortografía y gramática',
+    keywords: 'ortografía corrector gramática diccionario idioma errata falta subrayado f7 revisar',
+    body: `Todas las aplicaciones revisan la ortografía (subrayado ondulado rojo) y la gramática (azul) mientras escribes, en el idioma del documento. La revisión se hace en tu navegador: el texto no se envía a ningún sitio, salvo que elijas un servidor LanguageTool en el procesador de textos.
+
+## Dónde
+- **Documentos**: todo el documento. Haz clic derecho en una palabra subrayada para ver sugerencias.
+- **Hojas de cálculo**: la celda que editas. Las fórmulas y los números no se revisan.
+- **Presentaciones y Diagramas**: etiquetas y cuadros de texto mientras escribes, y notas del orador.
+- **Formularios**: títulos, descripciones y opciones. Las respuestas escritas se revisan si el formulario lo permite (**Configuración ▸ Permitir el corrector ortográfico a quienes responden**: activado en encuestas, desactivado en cuestionarios, donde podría revelar respuestas).
+- **PDF**: cuadros de texto, comentarios y respuestas.
+- **Dibujo**: el texto que escribes.
+
+## Diálogo de ortografía y gramática
+**Herramientas ▸ Ortografía y gramática…** (\`F7\`) recorre los errores uno a uno: todas las celdas de todas las hojas, todas las diapositivas y sus notas, todas las páginas de un diagrama, todas las preguntas de un formulario, todos los cuadros de texto y comentarios de un PDF y todos los textos de un dibujo. Muestra dónde está cada uno (por ejemplo «Hoja1 · B3») y lo selecciona. **Cambiar** o **Cambiar todo** lo corrige, **Omitir** lo salta y **Añadir al diccionario** acepta la palabra desde entonces.
+
+## Idioma y diccionario
+- **Herramientas ▸ Idioma** fija el idioma del documento (inglés de EE. UU. o del Reino Unido, español de varios países, gallego, francés, alemán). Se guarda con el documento, así que todos lo revisan en el mismo idioma.
+- **Herramientas ▸ Diccionario personal…** muestra las palabras que añadiste. Se comparten en todas las aplicaciones y documentos de este navegador.
+- **Herramientas ▸ Revisar la ortografía al escribir** / **Revisar la gramática al escribir** quitan los subrayados en todas las aplicaciones.`,
+  },
   writer: {
     title: 'Ofimeo Documentos (textos)',
     keywords: 'procesador de textos documento word docx odt página índice cita bibliografía comentario sugerencias control de cambios revisar corregir',
@@ -201,6 +301,19 @@ El idioma de la interfaz se cambia en la pantalla principal o en el panel.`,
 - **Sugerencias**: cambia el modo de **Edición** a **Sugerencias**. Tus cambios quedan marcados y el autor los acepta o rechaza.
 - Revisar ▸ Mostrar autoría colorea el texto según quién lo escribió.
 
+## Gráficos
+**Insertar ▸ Gráfico…** añade un gráfico de columnas, barras, líneas, áreas, circular, de anillo o de dispersión. Toma los datos de una hoja de cálculo de tu biblioteca (elige la hoja y el rango) o escríbelos en la pequeña tabla. Un gráfico **vinculado** a una hoja de cálculo se actualiza solo cuando esa hoja cambia en este navegador; **Actualizar desde el origen** (en el gráfico o en su menú contextual) lo hace al momento. El documento guarda una copia de los datos, así que todos ven el gráfico aunque no tengan la hoja. Arrastra la esquina para cambiar su tamaño; haz doble clic para modificarlo o añadir un pie de figura. Los archivos de Word lo conservan como gráfico real.
+
+## Combinar correspondencia
+**Herramientas ▸ Combinar correspondencia…** crea una carta, diploma o boletín por cada fila de una tabla:
+1. Elige los datos: una hoja de cálculo de tu biblioteca o un archivo CSV, Excel u OpenDocument, la hoja y la fila con los nombres de los campos.
+2. Haz clic en un campo para insertarlo donde está el cursor, por ejemplo «Nombre». **Texto condicional…** añade texto solo cuando un campo tiene un valor (por ejemplo "si Nota es Aprobado").
+3. Si quieres, deja solo algunas filas con el filtro.
+4. Marca **Mostrar los datos de un registro** y usa las flechas para revisar cada uno.
+5. Crea un **Documento nuevo** con todos (uno por página), un **PDF** o un **ZIP** de archivos Word o PDF con el nombre de un campo.
+
+Los archivos de Word conservan los campos (MERGEFIELD), así que la plantilla también funciona en Word.
+
 ## Archivos
 Abre y descarga Word (.docx) y OpenDocument (.odt); también abre Word 97-2003 (.doc), RTF, .html, .txt y Markdown (.md, con títulos, listas, enlaces, código y tablas), y descarga Markdown. Si un archivo tiene algo que Ofimeo no puede traer (por ejemplo cuadros de texto o notas al final de un .doc), un mensaje lo indica una vez. Imprime o guarda como PDF con Archivo ▸ Imprimir. Ver ▸ Zoom (o \`Ctrl++\`, \`Ctrl+-\`, \`Ctrl+0\`) cambia el zoom.`,
   },
@@ -215,6 +328,9 @@ Abre y descarga Word (.docx) y OpenDocument (.odt); también abre Word 97-2003 (
 - **Formato** tiene formatos de número, combinar celdas y formato condicional; los bordes están en la barra de herramientas.
 - La barra de estado muestra la suma, el promedio y el recuento de las celdas seleccionadas.
 - Varias personas pueden editar a la vez; ves sus selecciones en sus colores.
+
+## Lectores de pantalla y teclado
+La cuadrícula se dibuja como una imagen, así que **Ver ▸ Vista de tabla accesible** (\`Alt+Mayús+T\`, o el enlace «Cambiar a la vista de tabla accesible» al principio de la página) muestra la hoja actual como una tabla real que los lectores de pantalla pueden leer. Las flechas mueven entre celdas y cada celda se lee con su dirección, su valor y su fórmula; \`Intro\` o \`F2\` la edita, \`Supr\` la borra, \`Ctrl+Z\` deshace, \`Ctrl+Inicio\` / \`Ctrl+Fin\` van al principio y al final de los datos y \`Ctrl+Re Pág\` / \`Ctrl+Av Pág\` cambian de hoja. Los cambios llegan a los demás al momento. Los gráficos aparecen bajo la tabla con un resumen de sus valores y **Datos del gráfico como tabla** (también en el menú del botón derecho del gráfico y en Editar cuando hay un gráfico seleccionado). En la cuadrícula normal se lee la celda seleccionada al moverse, y las flechas pasan de una pestaña de hoja a otra.
 
 ## Archivos
 Abre y descarga Excel (.xlsx), OpenDocument (.ods) y CSV. Los gráficos se guardan como gráficos reales que Excel y LibreOffice pueden editar. Imprime o guarda la hoja actual como PDF con Archivo ▸ Imprimir.
@@ -261,6 +377,7 @@ La pantalla principal tiene plantillas de mapas conceptuales, líneas de tiempo,
 - El **panel de diapositivas** de la izquierda muestra las diapositivas. Haz clic con el botón derecho en una miniatura para añadir, duplicar, mover o eliminar una diapositiva y para cambiar su disposición o su fondo.
 - Elige un **tema** y una **disposición** para cada diapositiva. Haz clic en los marcadores para añadir un título y texto.
 - Inserta imágenes, formas, tablas y ecuaciones. Escribe las **notas del orador** debajo de la diapositiva.
+- **Insertar ▸ Gráfico…** añade un gráfico de una hoja de cálculo de tu biblioteca (se actualiza cuando cambia) o con datos que escribes. Los archivos de PowerPoint lo conservan como gráfico real.
 - Las **animaciones** y **transiciones** hacen aparecer objetos y diapositivas por turnos.
 - **Presentar** muestra las diapositivas a pantalla completa: flechas o un clic para avanzar, \`L\` para un puntero láser, \`B\` para una pantalla negra, \`Esc\` para terminar. La **vista del presentador** muestra las notas y un cronómetro en una segunda ventana.
 - Mientras presentas, el resto de personas en la presentación pueden **seguirte** (Seguir al presentador), también con un enlace de lectura.
@@ -304,6 +421,33 @@ El menú **Página** (o el clic derecho en una miniatura) gira una página a la 
 Archivo ▸ Descargar como guarda el **PDF con anotaciones**: «editable» las mantiene como anotaciones que otros lectores de PDF pueden cambiar, «acoplado» las dibuja en las páginas. La entrega incluye ambos. Los cuadros de texto y los sellos conservan símbolos como π, √, ≈, → y ✓.
 
 Un **PDF protegido con contraseña** la pide al abrirlo. El documento guarda el archivo protegido original; la contraseña no se guarda en él ni se envía a nadie, así que cada persona que lo abre (y tú, en una pestaña nueva) la vuelve a escribir. Si cancelas, no se añade nada.`,
+  },
+  notebook: {
+    title: 'Ofimeo Cuaderno (apuntes de clase)',
+    keywords: 'cuaderno onenote apuntes notas clase sección página subpágina etiqueta tarea pendiente tinta lápiz lápiz óptico resaltador dibujo laboratorio diario lectura',
+    body: `Apuntes de clase organizados como un archivador: las **secciones** (pestañas de colores) contienen **páginas**, y las páginas pueden tener **subpáginas**.
+
+## Secciones y páginas
+- **Añadir sección** y **Añadir página** están en el panel de la izquierda. Arrastra páginas y secciones para ordenarlas, o suelta una página sobre la pestaña de otra sección para moverla allí. Con el teclado: \`Alt+↑\` / \`Alt+↓\`.
+- El botón **⋯** de una página (o el clic derecho) la convierte en subpágina, la mueve a otra sección, la exporta, la imprime o la elimina.
+- **Buscar en el cuaderno** (\`Ctrl+F\`) busca en los títulos y el texto de todas las páginas.
+- En el móvil, el botón **Secciones y páginas** de la parte superior las abre como un panel.
+
+## Escribir
+- Cada página tiene un título, la fecha en que se creó y texto libre con títulos, listas, listas de comprobación, tablas, imágenes, enlaces, ecuaciones y código.
+- Pega o suelta imágenes y archivos en la página: se guardan en el cuaderno (las imágenes grandes se reducen; los demás archivos, hasta 5 MB).
+- Las **etiquetas** marcan un párrafo como **Tarea**, **Importante**, **Pregunta** o **Recordar** (barra de herramientas ▸ Etiqueta, o \`Ctrl+Mayús+1\` a \`4\`). Haz clic en la casilla de una tarea para marcarla. **Resumen de etiquetas** reúne los párrafos etiquetados de todas las páginas.
+
+## Dibujar
+Elige **Bolígrafo**, **Resaltador** o **Borrador** en la barra de herramientas (\`Alt+2\`, \`Alt+3\`, \`Alt+4\`; \`Alt+1\` o \`Esc\` vuelven a escribir). Con un lápiz óptico el trazo es más grueso cuanto más aprietas. Con **Dibujar ▸ Dibujar con el lápiz óptico** el lápiz óptico siempre dibuja, mientras el dedo o el ratón seleccionan texto. El borrador quita trazos enteros; Deshacer los recupera.
+
+## En equipo
+Comparte el cuaderno para escribir a la vez y ver quién está en cada página. Comenta con \`Ctrl+Alt+M\`, entrégalo y encuentra versiones anteriores en Archivo ▸ Historial de versiones.
+
+## Archivos
+- Archivo ▸ Descargar como: todo el cuaderno en Word, OpenDocument, PDF, Markdown o un **ZIP de Markdown** (una carpeta por sección, con imágenes y tinta). **Página actual** y **Sección actual** exportan solo eso.
+- Imprimir (\`Ctrl+P\`) imprime la página abierta; **Imprimir sección…** imprime todas las páginas de la sección.
+- Archivo ▸ Abrir… importa archivos Markdown o un ZIP de Markdown. Un ZIP exportado desde Ofimeo recupera secciones, colores, subpáginas y tinta. **Importar una carpeta de archivos Markdown…** toma una carpeta entera. Los archivos de OneNote (.one) no se pueden importar: expórtalos antes desde OneNote a Word o PDF.`,
   },
 }
 

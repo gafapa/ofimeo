@@ -64,6 +64,8 @@ type Config struct {
 	SchoolConfig string `json:"school_config"`
 	// ImportProxy: optional fetch proxy for importing public Google/Microsoft share links (proxy.go); off by default.
 	ImportProxy ImportProxyConfig `json:"import_proxy"`
+	// Moodle: forwarding to the school's Moodle for the web app (moodle.go); off unless a URL is given.
+	Moodle MoodleConfig `json:"moodle"`
 
 	// Not in the file.
 	DataDir string `json:"-"`
@@ -172,6 +174,9 @@ func (c *Config) validate() error {
 		return errors.New("cert_file and key_file must be given together")
 	}
 	if err := setExtraLocal(c.AllowNetworks); err != nil {
+		return err
+	}
+	if err := validateMoodle(&c.Moodle); err != nil {
 		return err
 	}
 	if time.Duration(c.CredentialTTL) < 10*time.Minute {

@@ -245,7 +245,10 @@ ofimeo-relay-linux-arm64 --serve-app /path/to/dist     # or a folder (npm run bu
 ```
 
 Students open `https://<relay>/` (the status page shows the link and a QR
-code). The app detects that it is served by the relay and uses it
+code). With `--school-config ofimeo.config.json`, the school's settings
+(language, locked settings, logo…) apply to everyone; see
+[docs/deploy-school.md](deploy-school.md), which also has a Docker image with
+the app and the relay. The app detects that it is served by the relay and uses it
 automatically; nothing needs to be pasted. It installs as an app and works
 offline as usual.
 
@@ -273,10 +276,86 @@ the defaults on first run); command-line options override them. `ofimeo-relay
 | `--allow-networks` | `allow_networks` | | Extra address ranges treated as local (CIDR list) |
 | `--credential-ttl` | `credential_ttl` | 24h | Validity of TURN credentials |
 | `--log-file` | `log_file` | | Also log to this file |
+| `--school-config` | `school_config` | | The school's `ofimeo.config.json`, served at `/ofimeo.config.json` and inside `/ofimeo/config` (see [docs/deploy-school.md](deploy-school.md)); images in a `school` folder next to it are served at `/school/` |
+| | `import_proxy` | off | Optional import proxy for Google/Microsoft share links (see [Import proxy](#import-proxy-optional)) |
+| `--moodle-url`, `--moodle-max-upload` | `moodle` (`url`, `max_upload_mb`) | off, 50 | Forward the app's Moodle calls to this Moodle only (see [Moodle forwarding](#moodle-forwarding-optional)); also `OFIMEO_MOODLE_URL`, `OFIMEO_MOODLE_MAX_UPLOAD` |
+| `--store`, `--store-default-on`, `--store-max-doc`, `--store-max-total`, `--store-ttl` | `store` | on, browsers opt in, 32MB, 4GB, 180 days | Encrypted store-and-forward mailboxes (see [Store-and-forward](#store-and-forward-mailboxes)); also `OFIMEO_STORE*` environment variables |
 | | `max_clients`, `max_subscriptions`, `max_event_bytes`, `events_per_minute`, `max_allocations`, `max_allocations_per_ip` | 2000, 64, 65536, 600, 16000, 600 | Limits |
+
+In containers, the main options can also be given as environment variables
+(`OFIMEO_NAME`, `OFIMEO_HOST`, `OFIMEO_DOMAIN`, `OFIMEO_ACME_EMAIL`,
+`OFIMEO_CERT`, `OFIMEO_KEY`, `OFIMEO_HTTPS_PORT`, `OFIMEO_HTTP_PORT`,
+`OFIMEO_TURN_PORT`, `OFIMEO_TURN_TLS_PORT`, `OFIMEO_RELAY_PORT_MIN`,
+`OFIMEO_RELAY_PORT_MAX`, `OFIMEO_SERVE_APP`, `OFIMEO_APP_URL`, `OFIMEO_PUBLIC`,
+`OFIMEO_ALLOW_NETWORKS`, `OFIMEO_CREDENTIAL_TTL`, `OFIMEO_SCHOOL_CONFIG`,
+`OFIMEO_LOG_FILE`): they override the file, and command-line options override
+both. `ofimeo-relay healthcheck [port]` exits with 0 when the local HTTPS server
+answers (used by the Docker image, see [docs/deploy-school.md](deploy-school.md)).
 
 The TURN shared secret is generated on first run and kept in `turn-secret` in
 the data folder; it never leaves the relay.
+
+## Store-and-forward mailboxes
+
+The relay also keeps **encrypted mailboxes** so that devices sync even when
+they are never online at the same time (a student edits in class and
+continues at home; the teacher corrects at night). Browsers encrypt everything
+with the key in the document link before uploading; the relay only sees opaque
+mailbox ids, sizes and times, and accepts writes only when they are signed with
+the document's edit key (view links can read, never write). Blobs are kept in
+`store/` in the data folder, with limits per document and in total, and are
+deleted 180 days after the last change.
+
+It is on by default, but each browser opts in (connection test → *Sync without
+being online together*) unless the relay says otherwise:
+
+```json
+"store": { "enabled": true, "default_on": true, "max_total_bytes": 4294967296, "ttl": "4320h" }
+```
+
+or `--store-default-on` / `OFIMEO_STORE_DEFAULT_ON=on`; `--store=false` /
+`OFIMEO_STORE=off` turns it off. Students at home can only reach it if the relay
+is public (`--public`). Details, API and threat model:
+[store-forward.md](store-forward.md).
+
+## Import proxy (optional)
+
+Ofimeo can import files from Google Docs/Sheets/Slides/Drive and OneDrive or
+SharePoint share links (**Import from link…**). Browsers cannot download those
+files for a web app (no CORS), so by default people download the file and drop
+it on the dialog. A school can let the relay do that download in one click:
+
+```json
+"import_proxy": { "enabled": true, "max_mb": 30 }
+```
+
+in `ofimeo-relay.json` (off by default; `max_mb` defaults to 30). The relay then
+advertises `"importProxy": "/ofimeo/fetch"` in `/ofimeo/config`, and the app
+shows *Import directly through the school relay*. `GET /ofimeo/fetch?url=…`:
+
+- only fetches `https` URLs on `docs.google.com`, `drive.google.com`,
+  `drive.usercontent.google.com`, `*.googleusercontent.com`,
+  `onedrive.live.com`, `1drv.ms`, `api.onedrive.com`, `*.files.1drv.com`,
+  `*.sharepoint.com` and `*.microsoftpersonalcontent.com`, checking every
+  redirect again, and only on public Internet addresses (never the school
+  network or the relay itself);
+- sends no cookies, credentials or headers from the browser, so only files
+  shared as "anyone with the link" work (sign-in pages are reported as
+  "not shared publicly");
+- refuses files larger than `max_mb`, runs at most four downloads at a time,
+  and always answers with `application/octet-stream` as an attachment;
+- follows the relay's usual rule: local network only unless `public`;
+- logs only the host name, never the full link.
+
+## Moodle forwarding (optional)
+
+When the school's Moodle does not let browsers call it directly (no CORS
+header), the relay can forward Ofimeo's Moodle calls to **that one Moodle**:
+`--moodle-url https://moodle.school.example` (or `"moodle": {"url": …,
+"max_upload_mb": 50}` in `ofimeo-relay.json`, or `OFIMEO_MOODLE_URL`). Off by
+default. Only the configured Moodle and the Moodle app's assignment functions
+are forwarded, nothing is stored or logged but the endpoint, status and size.
+See [moodle.md](moodle.md).
 
 ## Security notes
 
@@ -295,9 +374,11 @@ the data folder; it never leaves the relay.
   addresses.
 - **Limits**: maximum browsers, subscriptions per browser, event size, events
   per minute per browser, and TURN allocations in total and per device.
-- **Nothing is stored**: signaling messages are checked (id and signature),
-  kept in memory for two minutes and then dropped. Document contents never
-  reach the relay unencrypted.
+- **Nothing readable is stored**: signaling messages are checked (id and
+  signature), kept in memory for two minutes and then dropped. The optional
+  store-and-forward mailboxes hold only data encrypted in the browsers, under
+  opaque ids, and accept only signed writes. Document contents never reach the
+  relay unencrypted.
 - The status page shows only counts, no addresses or document information.
 
 ## Troubleshooting

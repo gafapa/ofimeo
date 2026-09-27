@@ -93,6 +93,7 @@ All apps: `get_document_info`.
 | Forms (editors) | `get_form` | – | `add_question`, `get_responses` (editors only) |
 | PDF | `get_text` (per page), `list_comments` | `add_note` | `add_highlight` |
 | Drawings | `get_scene` | – | `add_element` |
+| Notebooks | `list_pages` (sections, pages, levels), `get_page` (Markdown, by id or title) | – | `add_page` (with Markdown text), `append_text` (Markdown at the end of a page; direct edit, one undo step) |
 
 Text is located by exact text (`match` + `occurrence`) rather than internal
 positions where possible; `find` also returns positions usable until the next

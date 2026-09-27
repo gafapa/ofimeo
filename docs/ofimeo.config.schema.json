@@ -86,6 +86,14 @@
         }
       }
     },
+    "moodle": {
+      "type": "object",
+      "description": "The school's Moodle (docs/moodle.md): students connect to it, see their assignments and hand in files. With locked [\"moodle\"], only this site can be used.",
+      "properties": {
+        "url": { "type": "string", "pattern": "^https?://", "examples": ["https://moodle.school.example"] },
+        "viaRelay": { "type": "boolean", "default": false, "description": "Always go through the school relay (Ofimeo Relay started with --moodle-url). Otherwise the browser calls Moodle directly and uses the relay only when that is not possible." }
+      }
+    },
     "features": {
       "type": "object",
       "properties": {
@@ -119,8 +127,8 @@
     "locked": {
       "type": "array",
       "uniqueItems": true,
-      "items": { "enum": ["language", "webmcp", "relay", "nextcloud"] },
-      "description": "Settings people cannot change; the settings show \"Set by your school\". language: needs defaults.language. webmcp: AI assistants stay off. relay: needs relay.url. nextcloud: needs nextcloud.servers."
+      "items": { "enum": ["language", "webmcp", "relay", "nextcloud", "moodle"] },
+      "description": "Settings people cannot change; the settings show \"Set by your school\". language: needs defaults.language. webmcp: AI assistants stay off. relay: needs relay.url. nextcloud: needs nextcloud.servers. moodle: needs moodle.url."
     }
   }
 }

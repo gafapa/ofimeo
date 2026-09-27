@@ -15,6 +15,7 @@ find each other.
 | Presentation (`slides`) | Ofimeo Slides / Ofimeo Presentaciones | Available |
 | Forms and quizzes (`forms`) | Ofimeo Forms / Ofimeo Formularios | Available |
 | PDF correction (`pdf`) | Ofimeo PDF / Ofimeo PDF | Available |
+| Notebook (`notebook`) | Ofimeo Notebook / Ofimeo Cuaderno | Available |
 
 Storage keys and database names keep the historical `words-online` prefix
 (`localStorage` `words-online:*`, IndexedDB and cache names), so documents made
@@ -159,6 +160,29 @@ before the rename keep working.
 - Access: *view* and *comment* links open the text read-only; the File menu has
   *Make a copy*, *Save version…* and *Version history…*.
 
+### Charts and mail merge
+
+- **Insert ▸ Chart…** (also in presentations): data from an Ofimeo spreadsheet
+  of the library (sheet + range) or typed into a small table; the sheet's
+  chart model, options and ECharts renderer are reused
+  (`src/apps/charts/`). The chart node stores the chart and a snapshot of its
+  data, so collaborators see it without the source. A *linked* chart refreshes
+  itself when the source spreadsheet is saved in this browser (read from
+  IndexedDB: checkpoint/base plus logged cell edits; formula results come
+  from the last checkpoint) and on *Update from source*. Resizable, with a
+  caption. DOCX: native DrawingML chart (the sheet's `.xlsx` chart writer)
+  with cached values, an embedded workbook and the picture as
+  `mc:AlternateContent` fallback; read back losslessly (Word charts from their
+  cache). ODT and ODP: picture. PPTX: native chart (pptxgenjs). PDF: picture.
+- **Tools ▸ Mail merge…**: data from a library spreadsheet or a CSV / XLSX /
+  ODS file (sheet, header row); field chips («Name») and conditional text
+  (IF field = value); simple filter; record-by-record preview. Output: one
+  combined Ofimeo document (page break per record), one PDF, or a ZIP of
+  DOCX or PDF files named after a field. The PDF is laid out in a hidden
+  same-origin frame from a temporary local document, which is deleted
+  afterwards. DOCX keeps `MERGEFIELD` / `IF` fields and reads them back; ODT
+  writes `text:database-display`. The chosen data is stored in the document.
+
 ### Spelling and grammar
 
 Offline and private: checks run in a Web Worker in the browser and no text is
@@ -166,7 +190,7 @@ sent anywhere (unless a LanguageTool server is turned on, see below). Spanish,
 Galician, English, French and German.
 
 - **Spelling** (red wavy underline) with Hunspell dictionaries and our own
-  checker (`spell/hunspell.ts`): stems and affix rules are kept as they are and
+  checker (`src/core/spell/hunspell.ts`): stems and affix rules are kept as they are and
   affixes are stripped when a word is checked (two-level suffixes, prefixes,
   German compounds, `REP`/`MAP`/`KEY` suggestions). Loading takes 0.05–0.4 s;
   nspell, which expands every form up front, did not finish loading the
@@ -175,7 +199,7 @@ Galician, English, French and German.
   capitals and mixed-case names (`iPhone`) are skipped. The word being typed is
   underlined only once the cursor leaves it.
 - **Grammar and style** (blue wavy / dotted underline): an offline rule set
-  (`spell/rules/`, one file per language, each rule tagged with language and
+  (`src/core/spell/rules/`, one file per language, each rule tagged with language and
   category): repeated words, double spaces, spaces before or missing after
   punctuation, capital letters at the start of paragraphs and sentences
   (abbreviations and initials excepted), `¿…?` / `¡…!` pairs (Spanish; in
@@ -232,7 +256,7 @@ Galician, English, French and German.
   34 ms median with checking vs 30 ms without (the rest is layout of the
   pages). The Galician dictionary takes about 55 MB of memory in the worker
   (Spanish 11 MB); Harper about 100 MB more.
-- **Regional variants** (`spell/variants.ts`): Español (España, México,
+- **Regional variants** (`src/core/spell/variants.ts`): Español (España, México,
   Argentina, Colombia, Chile, Estados Unidos), Galego, English (US, UK,
   Australia, Canada), Français, Deutsch. The document and paragraph language
   is stored as a BCP 47 tag (`en-GB`, `es-MX`; older documents with a bare
@@ -247,7 +271,7 @@ Galician, English, French and German.
   general RLA-ES Spanish dictionary), loaded only when used; Harper uses the
   matching English dialect. Personal dictionaries are per language.
 - **More offline rules**, each tested with right and wrong sentences in
-  `spell/rules/tests.ts`: Spanish diacritic accents where only one reading is
+  `src/core/spell/rules/tests.ts`: Spanish diacritic accents where only one reading is
   possible (*él/el* before a verb, a pronoun or punctuation; *tú, mí, sé, té,
   más, sí, aún/aun, está*), accents of question and exclamation words after
   `¿` / `¡` and in indirect questions (*no sé dónde*), *de el / a el* →
@@ -267,12 +291,37 @@ Galician, English, French and German.
   words of clean text (the writer, slides and diagram templates in es/gl/fr/de,
   the interface translations and hand-written texts) the new rules give one
   false positive, a Spanish verb quoted in a Galician explanation.
-- **Diagrams and slides**: `spell/inline.ts` exports
-  `attachSpellcheck(element, lang?)`, which checks any contenteditable
-  element (the label editors) with the same worker and underlines issues with
-  the CSS Custom Highlight API, without changing the element's HTML (an
-  overlay is drawn in browsers without it); right click shows suggestions,
-  *Ignore all* and *Add to dictionary*.
+- **Every app** (`src/ui/spell/`): `inline.ts` exports
+  `attachSpellcheck(element, lang?)` and `spellcheckFields(root, selector)`,
+  which check contenteditable elements (diagram and slide labels), `<textarea>`
+  and text `<input>` fields with the same worker, without changing their
+  content: underlines use the CSS Custom Highlight API, or an overlay placed
+  with a hidden mirror of the field (fields have no ranges; transformed fields
+  such as Excalidraw's text editor are mirrored with the same transform). Right
+  click shows suggestions, *Ignore all* and *Add to dictionary*. `dialog.ts` is
+  the Spelling and grammar dialog (F7) for apps whose text is in many pieces:
+  an app gives a `SpellSource` (its items in order, where to start, how to
+  show and replace text in one) and the dialog walks through them, showing
+  where each issue is ("Sheet1 · B3", "Slide 2 · Speaker notes").
+  `menu.ts` has the shared Tools entries (dialog, as-you-type toggles,
+  document language, personal dictionary) and the F7 key; `service.ts` the
+  shared worker, settings and the **document language**, stored in the
+  document's `meta.lang` in every app. Settings and the personal dictionary
+  are per browser and shared by all apps (and other tabs).
+  - **Sheets**: Univer draws the cell editor on a canvas, so the underlines
+    are an overlay placed with Univer's own layout (`calcDocRangePositions`);
+    the dialog walks the text cells of every sheet (formulas, numbers and
+    booleans skipped), selects each cell and keeps rich-text runs on change.
+  - **Slides / Diagrams**: labels of every slide or page (HTML labels are
+    changed without losing their markup) and speaker notes (checked as typed).
+  - **Forms**: questions, descriptions and options as typed and in the
+    dialog. Respondents' written answers are checked when *Settings ▸ Allow
+    spell check for respondents* is on (default: on for surveys, off for
+    quizzes, where it would give answers away; then the browser's checker is
+    turned off too).
+  - **PDF**: text boxes, one's own comments and replies.
+  - **Draw**: Excalidraw's text editor as typed; the dialog changes text
+    elements (dimensions are measured again).
 
 ## Spreadsheet
 
@@ -321,6 +370,19 @@ Galician, English, French and German.
   always written with the English names. Data ▸ Descriptive statistics… writes
   a live summary table (n, mean, median, mode, standard deviations, variances,
   min, quartiles, max, range). Univer localizes function help, not names.
+- **Screen readers and keyboard** (`sheet/a11y.ts`): Univer draws the grid on
+  a canvas, so View ▸ Accessible table view (Alt+Shift+T, or the "Switch to
+  accessible table view" skip link) mirrors the active sheet as an HTML
+  `role=grid` table (aria-rowcount/colcount, windowed around the active cell
+  for large sheets) with arrow keys, Ctrl+Home/End, Ctrl+Arrow, Ctrl+Page
+  Up/Down between sheets, Enter/F2 editing in a text field that shows the
+  formula, and a live region reading address, value and formula. Edits go
+  through `FRange.setValue` (Univer's commands), so they sync, undo and are
+  refused for view/comment links (read-only grid). In the canvas grid a live
+  region reads the selected cell, the name box, formula bar and grid are
+  labelled, and arrow keys move between sheet tabs. Charts carry a text
+  summary (`charts/summary.ts`, via `aria-describedby`) and offer "Chart data
+  as table". Covered by `tests/e2e/sheet-a11y.spec.ts` with axe-core.
 
 ### How spreadsheet sync works
 
@@ -611,6 +673,56 @@ Limitations:
 - PDF forms (fields) are shown but not filled in.
 - Large PDFs make sharing slower: every collaborator downloads the whole file.
 
+## Notebook (class notes)
+
+Ofimeo Notebook (`src/apps/notebook/`) keeps class notes like OneNote:
+**sections** (coloured tabs) hold **pages** with **subpages** (two levels).
+
+- **Panel**: sections and pages side by side (a drawer on phones, opened from
+  the "Sections and pages" button at the top of the page). Drag and drop
+  reorders pages and sections and moves a page to another section (drop it on
+  the tab); `Alt+↑`/`Alt+↓` on a focused item does the same. **Search
+  notebook** (`Ctrl+F`) searches titles and text of all pages.
+- **Pages**: a title, the creation date and flowing rich text with the
+  writer's editor schema (headings, lists, checklists, tables, pictures, links,
+  equations, code). Pasted or dropped pictures are stored in the document
+  (scaled to 1600 px / JPEG when larger than 1 MB); other files become
+  attachment chips (at most 5 MB each) that download on click.
+- **Tags** on paragraphs and headings: To do (tickable), Important, Question,
+  Remember (`Ctrl+Shift+1…4`). **Tag summary** lists them across pages and jumps
+  to the paragraph.
+- **Ink**: pen (width follows stylus pressure), highlighter and a stroke
+  eraser over the page. The page has a fixed logical width (816 px, scaled to
+  fit) so ink stays next to the text it was drawn on; "Draw with the stylus"
+  lets a stylus draw while fingers and the mouse select text.
+- **Collaboration**: one Yjs document; each page is an `XmlFragment`
+  (`nb-page:<id>`), its strokes a `Y.Array` (`nb-ink:<id>`), sections and pages
+  records in `nb-sections` / `nb-pages` with fractional `order` values. Only
+  the open page is bound to an editor; collaborators' cursors and a dot per
+  person in the page list show who is where. Comments per page (the writer's
+  review rail on the comments map `comments:<page>`), permissions, version
+  history and hand in work as in the other apps. Undo covers the page text and,
+  in time order, page/section changes and ink (one step per stroke).
+- **Files**: File ▸ Download as saves the whole notebook as Word, ODT, PDF
+  (text PDF through the writer's print layout and PDF renderer), Markdown or a
+  **ZIP of Markdown** (a folder per section, `assets/` with pictures, files and
+  ink SVGs, and `notebook.json` with colours, levels and strokes); "Current
+  page" and "Current section" export only those. Tags become symbols
+  (☐ ☑ ★ ⁇ ☞) in exported text and are recognised again on import; ink becomes
+  a picture after the page's text. Printing (`Ctrl+P`) prints the open page with
+  its ink in place; File ▸ Print section… prints a section.
+- **Import**: File ▸ Open… takes `.md` files or a ZIP of Markdown (folders
+  become sections; an Ofimeo export comes back complete); "Import a folder of
+  Markdown files…" takes a folder. OneNote `.one` files are not imported (export
+  them from OneNote as Word or PDF first). The home screen does not route
+  `.zip`/`.md` to the notebook (they belong to the PDF app and the writer).
+- **Templates**: class notes, lab notebook, reading journal.
+- **WebMCP**: `list_pages`, `get_page`, `add_page`, `append_text` (direct
+  edits, one undo step each).
+- **Limitations**: ink is not re-flowed when the text above it changes (as in
+  OneNote); on phones the page is zoomed out to fit (zoom in from the status
+  bar); undo history of a page's text starts again when you switch pages.
+
 ## Templates
 
 The home screen has a **Templates** gallery for schools. Template content is
@@ -810,6 +922,36 @@ Code: `src/core/backup.ts`, `src/core/library.ts` (folders, tags, local database
 `src/core/library-search.ts` + `library-extract.ts` + `library-search.worker.ts`,
 `src/home/docs.ts`, `src/home/storage.ts`, `src/home/download.ts`.
 
+## Import from Google Drive and Microsoft 365
+
+**Home ▸ Import from link…** and **File ▸ Import from link…** in every app take
+the share link of a Google Docs, Sheets or Slides file, a file in Google Drive,
+or a OneDrive or SharePoint file (`src/core/import-link.ts` turns it into the
+download URL: `…/document/d/ID/export?format=docx`, `…/spreadsheets/d/ID/export?format=xlsx`,
+`…/presentation/d/ID/export/pptx`, `drive.google.com/uc?export=download&id=ID`,
+SharePoint links with `download=1`, `_layouts/15/download.aspx?UniqueId=…`,
+`onedrive.live.com/download?resid=…` and the OneDrive `shares` API for `1drv.ms`
+links).
+
+Browsers do not let a web page download those URLs itself (Google and
+Microsoft send no CORS headers), so the import is a **guided download**:
+the dialog shows the export URL as a button (other formats as links), the
+person's own browser downloads the file (with their own Google or Microsoft
+session if the file is not public; Ofimeo never sees it), and they drop it on
+the dialog, which opens it in the right app. Drawings, forms, folders and
+"Publish to the web" links of documents cannot be imported and the dialog says so.
+
+**One-click import through a school relay (optional).** Ofimeo Relay has an
+import proxy (`relay/proxy.go`), **off by default**. When a school turns it on
+(`"import_proxy": {"enabled": true, "max_mb": 30}` in `ofimeo-relay.json`), the
+relay advertises `"importProxy": "/ofimeo/fetch"` in `/ofimeo/config` and the
+dialog adds *Import directly through the school relay*. The proxy only fetches
+https URLs on Google Docs/Drive and OneDrive/SharePoint hosts (checked again
+on every redirect, public Internet addresses only), sends no cookies or
+credentials (so only "anyone with the link" files work), limits the size and
+the number of downloads at a time, always answers with an attachment, and logs
+only the host. See [docs/relay.md](docs/relay.md#import-proxy-optional).
+
 ## Offline and installable
 
 Ofimeo is a Progressive Web App: install it from the browser (address bar
@@ -1006,6 +1148,28 @@ local CA) and, optionally, the web app itself (`--serve-app`).
   changes when no relay is configured.
 - Development aid: `?ice=relay` forces relayed (TURN) connections.
 
+### Sync without being online together (store-and-forward)
+
+Direct sync needs two people online at the same time. For the rest (a student
+edits in class and continues at home, the teacher corrects at night), changes
+can wait in **encrypted mailboxes**: on Ofimeo Relay (`/ofimeo/store`, files
+on the relay with quotas and a 180-day expiry) and/or in a Nextcloud folder
+(WebDAV). Public Nostr relays are never used for storage. Guide and threat
+model: [docs/store-forward.md](docs/store-forward.md).
+
+- Everything is encrypted in the browser (AES-256-GCM, key derived from the
+  room secret in the link); a mailbox is named by the hash of the key that may
+  write to it, and the relay checks an Ed25519 signature on every write, so
+  view links pull but never push. Readers verify every signed change again.
+- The browser pulls on open, when back online, when the tab becomes visible and
+  every minute; it pushes shortly after changes (offline changes wait and go
+  later) and compacts old blobs into a signed snapshot now and then.
+- The status next to the save state shows *Synced to …* / *Not yet synced* /
+  *Waiting to sync*; settings are in the connection test (per browser; the
+  relay's `default_on` or the school config's `store` section can turn it on by
+  default or forbid it). Code: `src/core/store-forward/`,
+  `src/ui/store-forward.ts`, `relay/store.go`.
+
 ### Permissions (edit, comment, view)
 
 Permissions are enforced with signatures, not only in the interface
@@ -1042,6 +1206,31 @@ Permissions are enforced with signatures, not only in the interface
   anyone who viewed it before), explains the wait if it takes long, then opens
   the copy.
 
+### Chat
+
+Every app has a document chat: the speech-bubble button next to the
+collaborators' avatars (or `Alt+Shift+C`) opens a side panel (a bottom sheet on
+phones). A badge counts unread messages and turns red when someone mentions
+you. Messages carry the author's name, colour and time; type `@` to mention
+someone who is here, links open in a new tab, and the 🙂 button inserts emoji.
+New messages from others are announced to screen readers (a polite live
+region); `Escape` closes the panel and returns the focus to the button.
+
+- Storage: array `chat` in `session.commentsDoc`, so it syncs in the same room,
+  signed with the comment key: **edit and comment links write, view links
+  only read** (documents without permission keys: everyone writes). It is kept
+  in this browser with the comments and in backups, but never in versions,
+  copies or exported files. At most the last 1,000 messages are kept.
+- Teacher controls (edit access only, ⋯ in the panel): **Turn off chat for
+  this document** (flag `disabled` in the document's `chat` map, signed with
+  the edit key, so only editors can change it; while it is off the chat is
+  hidden for everyone else and nothing can be sent; the setting is part of
+  the document, so copies and templates keep it) and **Clear chat
+  history…** (deletes every message for everyone).
+- Limitation: as with comments, the comment key signs the whole comments
+  channel, so a modified client with a comment link could delete messages.
+  Code: `src/ui/chat.ts`.
+
 ### Hand in
 
 The **Hand in** button (next to Share) downloads, in one click, a ZIP named
@@ -1050,6 +1239,36 @@ The **Hand in** button (next to Share) downloads, in one click, a ZIP named
 `.xlsx` (spreadsheets), `.excalidraw` + `.png` (drawings), `.drawio` + PNG and
 SVG of every page (diagrams). It then offers *Print / Save as PDF* and
 *Upload to a Nextcloud share link…* (see [Nextcloud](#nextcloud)).
+
+### Moodle
+
+Students connect to their school's Moodle once (Moodle button on the home
+screen, or **File → Moodle account…**) with their Moodle username and password.
+Ofimeo gets a token from `login/token.php?service=moodle_mobile_app` (the
+Moodle app's web service) and keeps only the token, the site name and the
+person's name in this browser; the password is never stored. **Disconnect**
+removes them.
+
+- **Moodle tasks** (home screen, informational): the assignments of every
+  course with description, files, due date / last day, status (new, draft,
+  handed in), grade and feedback once released. Pending ones first by due
+  date, then handed in and graded. Refresh button; the last list stays
+  available offline with its time.
+- **Hand in → Hand in to Moodle…** (every app, and **File → Hand in to
+  Moodle…**): pick an open assignment that takes files, a format (the first one
+  the assignment accepts, else the app's main format; PDF where the app exports
+  it, or any file from the device), tick the submission statement if there is
+  one. The file goes to `webservice/upload.php` (draft area), then
+  `mod_assign_save_submission`, and `mod_assign_submit_for_grading` when the
+  assignment has a submit button. Handing in again while open replaces it.
+- The browser calls Moodle directly when Moodle allows it (CORS on the web
+  service endpoints); otherwise the school's Ofimeo Relay can forward the calls
+  (`--moodle-url`, only to that Moodle). Nothing Moodle-related goes to peers.
+- Single sign-on sites (sign-in on a web page) are detected and explained;
+  password sign-in only for now.
+- School settings: `moodle: { url, viaRelay }` in `ofimeo.config.json`, lock
+  with `locked: ["moodle"]`. Admin guide: [docs/moodle.md](docs/moodle.md).
+  Code: `src/core/moodle.ts`, `src/ui/moodle.ts`, `relay/moodle.go`.
 
 ### Version history
 
@@ -1088,7 +1307,8 @@ open document. Details: [docs/webmcp.md](docs/webmcp.md).
   `list_slides`, `get_slide`, `add_slide`, `set_text`, comments; diagrams
   `get_diagram`, `add_shape`, `connect`, `set_label`; forms (editors)
   `get_form`, `add_question`, `get_responses`; PDF `get_text`, notes,
-  `add_highlight`; drawings `get_scene`, `add_element`.
+  `add_highlight`; drawings `get_scene`, `add_element`; notebooks
+  `list_pages`, `get_page`, `add_page`, `append_text`.
 - Uses the native `document.modelContext` when the browser has it, otherwise
   loads the MIT-licensed `@mcp-b/global` polyfill (only while the switch is on).
 
@@ -1197,11 +1417,14 @@ src/
       formats/       DOCX / ODT import and export, DOC import (loaded on demand);
                      math.ts converts MathML / OMML / LaTeX, bibliography-xml.ts
                      Word's b:Sources
-      spell/         Spelling and grammar: plugin.ts (decorations, incremental
-                     checks), worker.ts + checker.ts (runs off the main thread),
-                     hunspell.ts, tokenize.ts, rules/ (offline rules and tests),
-                     ui.ts (Tools menu, context menu, status), dialog.ts (F7),
-                     lang.ts (paragraph language)
+      spell/         Spelling and grammar of the word processor: plugin.ts
+                     (decorations, incremental checks), ui.ts (Tools menu,
+                     context menu, status), dialog.ts (F7), lang.ts (paragraph
+                     language); the engine is src/core/spell/ (worker.ts +
+                     checker.ts, hunspell.ts, tokenize.ts, variants.ts,
+                     settings.ts, rules/ with tests) and the parts shared by
+                     every app are src/ui/spell/ (inline.ts, dialog.ts, menu.ts,
+                     service.ts, fields.ts)
 relay/               Ofimeo Relay (Go): Nostr relay + STUN/TURN + status page for school
                      networks; build.sh cross-compiles it, docs/relay.md is the guide
 ```
@@ -1256,9 +1479,15 @@ npm test          # grammar rule tests + end-to-end tests (build first)
   documents stay in the trash until it is emptied, the help center finds
   articles and the welcome tour shows once, and AI assistants (WebMCP) get
   only the tools the link allows, with writer changes as suggestions.
+  `tests/e2e/chat-import.spec.ts` covers the document chat between browsers
+  (mentions, unread badge, view links, turning it off) and the share-link
+  parser and import dialog. `E2E_RELAY_PORT` moves the test relay off 7790.
+- `tests/e2e/sync.spec.ts` (store-and-forward) builds and starts the real relay
+  when Go is installed (skipped otherwise) and runs a mock WebDAV server.
 - `cd relay && go test ./...`: Ofimeo Relay (Nostr messages and signatures,
   TURN allocations with time-limited credentials, certificates, the TLS port
-  shared by HTTPS and TURN, `/ofimeo/config`, serving the app).
+  shared by HTTPS and TURN, `/ofimeo/config`, serving the app, the import
+  proxy against a local mock server).
 - GitHub Actions (`.github/workflows/ci.yml`) runs the type check, both test
   suites and the build on every pull request and on pushes to `main`, plus
   `go vet` and `go test` for the relay; the Playwright report is attached to
@@ -1270,6 +1499,30 @@ npm test          # grammar rule tests + end-to-end tests (build first)
 `.github/workflows/pages.yml` builds and publishes `dist/` to GitHub Pages on
 every push to `main` (enable *Settings → Pages → Source: GitHub Actions*).
 The build uses relative paths, so any static host or subfolder works.
+
+### Schools: Docker, relay and `ofimeo.config.json`
+
+A school can host its own Ofimeo and configure it for everyone
+([docs/deploy-school.md](docs/deploy-school.md), step by step for the IT department):
+
+- **Docker**: the `Dockerfile` builds the web app and Ofimeo Relay into one small
+  image (the relay serves the app over HTTPS, the Nostr relay, TURN and the
+  school configuration); `docker-compose.yml` runs it with volumes for the relay
+  data and the configuration, `OFIMEO_*` environment variables and a health check.
+  CI builds the image (without publishing it) and checks the running container.
+- **Relay program** on Windows, Linux or a Raspberry Pi with `--serve-app` and
+  `--school-config`, or **any static web server** (nginx and Apache snippets with
+  the right MIME types, caching and Content-Security-Policy in `deploy/`).
+- **`ofimeo.config.json`** next to `index.html` (schema:
+  [docs/ofimeo.config.schema.json](docs/ofimeo.config.schema.json)): school name
+  and logo, default interface and document languages, school relay and other
+  relays, public servers allowed or not, store-and-forward backends, Nextcloud
+  servers, AI assistants (WebMCP) and AI features allowed or not, templates
+  offered, hidden apps, the school's privacy contacts, and **locked** settings
+  that show "Set by your school". It is applied before the first render
+  (`src/core/school-config.ts`), cached for offline use, and can also come from
+  the relay's `/ofimeo/config`.
+- **Help ▸ For administrators…** is a form that writes the file (offline, in the browser).
 
 ## Limitations
 

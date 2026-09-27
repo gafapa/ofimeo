@@ -302,6 +302,10 @@ async function runAction(name: string, ctx: HelpContext): Promise<void> {
       return (await import('../ui/accessibility')).togglePanel(true)
     case 'tour':
       return (await import('./tour')).showWelcomeTour()
+    case 'moodle':
+      return void (await import('../ui/moodle')).openMoodleDialog()
+    case 'admin':
+      return (await import('../ui/admin-config')).openConfigGenerator()
   }
 }
 

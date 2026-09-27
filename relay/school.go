@@ -105,8 +105,9 @@ func validateSchoolConfig(cfg *Config) error {
 	if cfg.SchoolConfig == "" {
 		return nil
 	}
-	_, err := schoolConfigFor(cfg.SchoolConfig).Load()
-	if err != nil {
+	// A missing file is not an error (a container may be started before it is
+	// written): the app's own ofimeo.config.json answers until it exists.
+	if _, err := schoolConfigFor(cfg.SchoolConfig).Load(); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("--school-config: %w", err)
 	}
 	return nil
@@ -124,7 +125,12 @@ func (s *Web) schoolJSON() json.RawMessage {
 // handleSchoolConfig serves /ofimeo.config.json; without --school-config the
 // app's own file (if the app is served) answers.
 func (s *Web) handleSchoolConfig(w http.ResponseWriter, r *http.Request) {
-	if s.cfg.SchoolConfig == "" {
+	var data []byte
+	var err error
+	if s.cfg.SchoolConfig != "" {
+		data, err = schoolConfigFor(s.cfg.SchoolConfig).Load()
+	}
+	if s.cfg.SchoolConfig == "" || errors.Is(err, os.ErrNotExist) {
 		if s.app != nil {
 			s.app.ServeHTTP(w, r)
 		} else {
@@ -136,14 +142,9 @@ func (s *Web) handleSchoolConfig(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	data, err := schoolConfigFor(s.cfg.SchoolConfig).Load()
 	if err != nil {
 		s.log.Warn("school configuration", "error", err)
-		if errors.Is(err, os.ErrNotExist) {
-			http.NotFound(w, r)
-		} else {
-			http.Error(w, "the school configuration file is not valid JSON", http.StatusInternalServerError)
-		}
+		http.Error(w, "the school configuration file is not valid JSON", http.StatusInternalServerError)
 		return
 	}
 	h := w.Header()

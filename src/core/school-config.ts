@@ -18,8 +18,8 @@
 //      (?relay=) cannot lock anything;
 //   2. <app folder>/ofimeo.config.json.
 
-export type LockKey = 'language' | 'webmcp' | 'relay' | 'nextcloud'
-export const LOCK_KEYS: LockKey[] = ['language', 'webmcp', 'relay', 'nextcloud']
+export type LockKey = 'language' | 'webmcp' | 'relay' | 'nextcloud' | 'moodle'
+export const LOCK_KEYS: LockKey[] = ['language', 'webmcp', 'relay', 'nextcloud', 'moodle']
 
 const UI_LANGUAGES = ['en', 'es', 'gl', 'fr', 'de'] as const
 const APP_TYPES = ['writer', 'sheet', 'draw', 'diagram', 'slides', 'forms', 'pdf', 'notebook'] as const
@@ -62,6 +62,13 @@ export interface SchoolConfig {
   nextcloud?: {
     // Servers offered in "Connect to Nextcloud"; the first one is filled in.
     servers?: NextcloudPreset[]
+  }
+  // The school's Moodle (src/core/moodle.ts, docs/moodle.md): filled in by
+  // "Connect to Moodle"; with "moodle" locked, only this site can be used.
+  moodle?: {
+    url?: string
+    // Always go through the school relay (its Moodle forwarding), never directly.
+    viaRelay?: boolean
   }
   features?: {
     // AI assistants through WebMCP (default true).
@@ -125,6 +132,7 @@ export function sanitizeSchoolConfig(raw: unknown): SchoolConfig {
   const nextcloud = isObject(raw.nextcloud) ? raw.nextcloud : {}
   const features = isObject(raw.features) ? raw.features : {}
   const legal = isObject(raw.legal) ? raw.legal : {}
+  const moodle = isObject(raw.moodle) ? raw.moodle : {}
   const storeNc = isObject(store.nextcloud) ? store.nextcloud : {}
   const language = str(defaults.language)
   const docLanguage = str(defaults.documentLanguage, 20)
@@ -163,6 +171,7 @@ export function sanitizeSchoolConfig(raw: unknown): SchoolConfig {
             .slice(0, 20)
         : undefined,
     }),
+    moodle: clean({ url: httpUrl(moodle.url), viaRelay: bool(moodle.viaRelay) }),
     features: clean({
       webmcp: bool(features.webmcp),
       ai: bool(features.ai),

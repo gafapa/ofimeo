@@ -309,8 +309,8 @@ export async function chartEmbedDialog(current?: EmbeddedChart, opts: { caption?
     }
   })
   const result = await opened
-  const chart = result === 'ok' ? resolve().chart : null
-  return chart ? { chart, caption: caption.value.trim() } : null
+  const out = result === 'ok' ? resolve().chart : null
+  return out ? { chart: out, caption: caption.value.trim() } : null
 }
 
 function field(label: string, input: HTMLElement): HTMLElement {

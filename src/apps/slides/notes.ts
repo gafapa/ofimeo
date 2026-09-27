@@ -27,11 +27,14 @@ export class NotesEditor {
     this.area.value = text.toString()
   }
 
-  // Selects text of the notes (spelling dialog) and brings it into view.
+  // Selects text of the notes (spelling dialog, which keeps the focus and
+  // outlines it) and brings it into view.
   select(from: number, to: number): void {
     this.element.hidden = false
-    this.area.focus({ preventScroll: true })
     this.area.setSelectionRange(from, to)
+    const lines = this.area.value.slice(0, from).split('\n').length - 1
+    const lineHeight = parseFloat(getComputedStyle(this.area).lineHeight) || 18
+    this.area.scrollTop = Math.max(0, lines * lineHeight - this.area.clientHeight / 2)
   }
 
   // Local edit → the smallest replacement in the shared text.

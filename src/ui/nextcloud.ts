@@ -60,6 +60,7 @@ const SAVE_EXTS: Record<DocType, string[]> = {
   slides: ['pptx', 'odp'],
   forms: ['oform', 'csv'],
   pdf: ['pdf'],
+  notebook: ['zip', 'docx', 'odt', 'pdf', 'md'],
 }
 const EXT_ALIASES: Record<string, string> = { htm: 'html', xml: 'drawio', markdown: 'md' }
 

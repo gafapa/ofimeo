@@ -173,6 +173,7 @@ func newFlagSet(cfg *Config, dataDir, relayPorts *string) (*flag.FlagSet, *bool)
 	fs.Var(&cfg.CredentialTTL, "credential-ttl", "validity of the TURN credentials given to browsers (e.g. 24h)")
 	fs.StringVar(&cfg.LogFile, "log-file", cfg.LogFile, "also write the log to this file")
 	addStoreFlags(fs, &cfg.Store)
+	addMoodleFlags(fs, &cfg.Moodle)
 	fs.StringVar(&cfg.SchoolConfig, "school-config", cfg.SchoolConfig, "the school's ofimeo.config.json, served to the web app (see docs/deploy-school.md)")
 	showHelp := fs.Bool("help", false, "show this help")
 	fs.Usage = func() {}
@@ -205,6 +206,9 @@ func parseArgs(args []string) (Config, []string, error) {
 		return cfg, nil, err
 	}
 	if err := applyDeployEnv(&cfg); err != nil {
+		return cfg, nil, err
+	}
+	if err := applyMoodleEnv(&cfg.Moodle); err != nil {
 		return cfg, nil, err
 	}
 	// Second pass over the loaded config: only the given flags change it.

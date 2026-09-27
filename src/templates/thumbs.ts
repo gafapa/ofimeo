@@ -32,7 +32,22 @@ const card = (y: number, h: number, body: string) => rect(34, y, 92, h, '#fff', 
 const choices = (y: number, n: number, square = false) =>
   Array.from({ length: n }, (_, i) => (square ? rect(40, y + i * 7 - 2, 4, 4, '#fff', '#5f6368') : circle(42, y + i * 7, 2.2, '#fff', '#5f6368')) + line(48, y + i * 7, 76, y + i * 7, '#dadce0', 2)).join('')
 
+// Notebook thumbnails: coloured section tabs, a page list and the open page.
+const notebook = (tabs: string[], body: string) =>
+  svg(
+    tabs.map((c, i) => rect(6, 8 + i * 12, 30, 9, c, 'none', 2)).join('') +
+      rect(40, 6, 4, 88, '#e8eaed') +
+      rect(46, 6, 108, 90, '#fff', '#dadce0') +
+      rect(46, 6, 108, 2, tabs[0]) +
+      body.replace(/x1="48"/g, 'x1="52"').replace(/x="48"/g, 'x="52"'),
+    '#f1f3f4',
+  )
+const tagRow = (y: number, color: string) => circle(55, y, 2.5, color) + line(60, y, 120, y, '#dadce0', 2)
+
 export const THUMBS: Record<string, () => string> = {
+  'nb-class-notes': () => notebook(['#1e88e5', '#43a047', '#e53935'], heading(18, '#202124', 44) + textLines(30, 3) + tagRow(52, '#f29900') + tagRow(60, '#8e24aa') + textLines(72, 2)),
+  'nb-lab-notebook': () => notebook(['#00897b', '#3949ab'], heading(18, '#202124', 40) + textLines(28, 2) + grid(52, 44, 3, 4, 20, 7, '#e0f2f1') + tagRow(80, '#8e24aa')),
+  'nb-reading-journal': () => notebook(['#8e24aa', '#fb8c00'], heading(18, '#202124', 48) + textLines(28, 2) + rect(52, 44, 3, 14, '#c4c7c5') + textLines(46, 2, 58, 56) + tagRow(66, '#8e24aa') + tagRow(74, '#f29900') + line(52, 86, 110, 90, '#1a237e', 1.5)),
   'form-self-assessment': () => form(card(32, 34, grid(40, 43, 5, 3, 16, 7, '#e0f2f1')) + card(70, 26, [0, 1, 2, 3, 4].map((i) => circle(48 + i * 16, 86, 2.5, '#fff', '#5f6368')).join(''))),
   'form-review-quiz': () => form(card(32, 32, choices(44, 3) + rect(96, 40, 22, 7, '#e6f4ea', '#188038', 3)) + card(68, 30, choices(80, 3, true))),
   'form-family-survey': () => form(card(32, 26, [0, 1, 2, 3, 4].map((i) => circle(48 + i * 16, 48, 2.5, i === 3 ? '#00897b' : '#fff', '#5f6368')).join('')) + card(62, 34, choices(74, 3, true))),

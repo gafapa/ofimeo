@@ -26,6 +26,7 @@ import { mountRespond, mountRespondentPage, privacyNote, verifiedBadge } from '.
 import { setupPaperPrint } from './paper'
 import { createFindBar } from './find'
 import { zoomMenuItems, type ZoomTarget } from '../../ui/zoom'
+import { formSpelling, respondentSpellingSetting, spellcheckEditor } from './spell'
 import { provideWebMcpTools } from '../../core/webmcp'
 import { createResults, whoSeesResponses } from './results'
 import { LOCAL, openFormState, type FormState } from './state'
@@ -67,6 +68,7 @@ function mountEditorApp(state: FormState, root: HTMLElement): void {
   shell.main.classList.add('fm-main')
 
   const editor = createEditor(state)
+  spellcheckEditor(session, editor.element)
   let count = 0
   const results = createResults(state, (n) => {
     if (n !== count) {
@@ -176,6 +178,7 @@ function mountEditorApp(state: FormState, root: HTMLElement): void {
     presets: [0.5, 0.75, 0.9, 1, 1.25, 1.5, 2],
     keys: true,
   }
+  const spelling = formSpelling(session, () => editor.element, () => tab !== 'questions' && show('questions'))
   const frame = mountFrame({
     session,
     shell,
@@ -230,6 +233,8 @@ function mountEditorApp(state: FormState, root: HTMLElement): void {
           { label: t('Send…'), run: () => void sendDialog(state) },
           { label: t('Quiz mode'), active: () => readSettings(doc).quiz, run: () => doc.transact(() => settingsMap(doc).set('quiz', !readSettings(doc).quiz), LOCAL) },
           { label: t('Import response files…'), run: () => (show('responses'), results.importFiles()) },
+          '-',
+          ...spelling.menu(),
         ],
       },
     },
@@ -329,6 +334,7 @@ function settingsView(state: FormState): HTMLElement {
       check('collectGroup', t('Ask for the class or group')),
       check('onePerBrowser', t('Only one response per browser'), t('A convenience, not a guarantee: another browser or device can answer again.')),
       check('shuffleQuestions', t('Shuffle question order (within each section)')),
+      respondentSpellingSetting(state.session, (value) => set('respondentSpelling', value)),
       field('confirmation', t('Message after the response is received'), true),
     ),
     el(

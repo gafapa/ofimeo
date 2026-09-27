@@ -19,6 +19,7 @@ import { answerText, isAnswered, newId, questionsOf, readItems, readSettings, re
 import { answerControl, pages, questionCard, sectionCard, shuffled } from './render'
 import type { FormState } from './state'
 import { brandMark } from '../../ui/brand'
+import { spellcheckAnswers } from './spell'
 
 interface Mine {
   rid: string
@@ -77,6 +78,7 @@ export async function mountRespond(state: FormState, container: HTMLElement, opt
 
   const root = el('div', { class: 'fm-column' })
   container.replaceChildren(root)
+  const stopSpelling = spellcheckAnswers(session, root)
 
   const render = () => {
     const settings = readSettings(doc)
@@ -308,6 +310,7 @@ export async function mountRespond(state: FormState, container: HTMLElement, opt
   flush()
   return () => {
     clearInterval(timer)
+    stopSpelling()
     doc.off('update', schedule)
   }
 }

@@ -63,3 +63,26 @@ jobs:
           cache-dependency-path: relay/go.sum
       - run: go vet ./...
       - run: go test ./...
+
+  docker:
+    name: Docker image
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      # Built only (never pushed), to catch breakage of the Dockerfile.
+      - name: Build the image
+        run: docker build --build-arg VERSION=ci -t ofimeo:ci .
+      - name: Start it and check the app, the school configuration and the health check
+        run: |
+          mkdir -p ci-config
+          echo '{"school":{"name":"CI school"},"locked":["webmcp"]}' > ci-config/ofimeo.config.json
+          docker run -d --name ofimeo -p 8443:8443 -v "$PWD/ci-config:/config:ro" -e OFIMEO_HOST=127.0.0.1 ofimeo:ci
+          for i in $(seq 1 30); do curl -skf https://127.0.0.1:8443/ofimeo/status.json > /dev/null && break; sleep 2; done
+          curl -skf https://127.0.0.1:8443/ | grep -q 'name="ofimeo-relay"'
+          curl -skf https://127.0.0.1:8443/ofimeo.config.json | grep -q 'CI school'
+          curl -skf https://127.0.0.1:8443/ofimeo/config | grep -q 'CI school'
+          docker exec ofimeo /ofimeo-relay healthcheck
+      - name: Container log
+        if: always()
+        run: docker logs ofimeo || true

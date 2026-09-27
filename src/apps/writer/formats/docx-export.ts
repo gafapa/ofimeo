@@ -50,6 +50,8 @@ import { loadImage, toHex, toPt, type LoadedImage } from '../../../core/formats'
 import { latexToMathML } from '../../../ui/equation'
 import { mathmlToOmml } from './math'
 import { changeOf, commentMarkers } from './review'
+import { chartPng, readEmbedded, type EmbeddedChart } from '../../charts/embedded'
+import { addDocxCharts, CHART_MARK } from './docx-charts'
 
 // Custom style ids (the importer recognises them by name) and layout constants.
 const TWIPS_PER_INDENT = 720 // 1.27 cm per indent level
@@ -108,6 +110,8 @@ interface Context {
   cite: CiteSettings
   tags: Map<string, string>
   suffixes: Map<string, string>
+  // Charts written as pictures, turned into native charts afterwards (docx-charts.ts).
+  charts: EmbeddedChart[]
 }
 
 // Where a block sits: inside a quote, a table header cell, or as extra content of a list item.
@@ -137,6 +141,7 @@ export async function exportDocx(data: DocumentData): Promise<Blob> {
     cite,
     tags: sourceTags(data.sources ?? []),
     suffixes: yearSuffixes(cited, cite),
+    charts: [],
   }
   const comments = prepareComments(data, ctx)
 
@@ -225,6 +230,7 @@ export async function exportDocx(data: DocumentData): Promise<Blob> {
           paragraph: { indent: { left: (level - 1) * 284 }, spacing: { after: 60 } },
         })),
         { id: 'Bibliography', name: 'Bibliography', basedOn: 'Normal', paragraph: { indent: { left: 720, hanging: 720 }, spacing: { after: 120, line: 360, lineRule: LineRuleType.AUTO } } },
+        { id: 'Caption', name: 'caption', basedOn: 'Normal', next: 'Normal', quickFormat: true, run: { italics: true, size: 18, color: '44546A' }, paragraph: { alignment: AlignmentType.CENTER, spacing: { after: 200 } } },
         { id: STYLE.tableSeparator, name: 'Table Separator', basedOn: 'Normal', run: { size: 2 }, paragraph: { spacing: { before: 0, after: 0, line: 20, lineRule: LineRuleType.EXACT } } },
       ],
       characterStyles: [{ id: STYLE.inlineCode, name: 'Source Text', basedOn: 'DefaultParagraphFont', run: { font: CODE_FONT } }],
@@ -240,8 +246,10 @@ export async function exportDocx(data: DocumentData): Promise<Blob> {
       children,
     })),
   })
-  if (!data.sources?.length) return Packer.toBlob(doc)
-  return addBibliographyPart(await Packer.toBlob(doc), sourcesXml(data.sources, cite))
+  let blob = await Packer.toBlob(doc)
+  if (ctx.charts.length) blob = await addDocxCharts(blob, ctx.charts)
+  if (!data.sources?.length) return blob
+  return addBibliographyPart(blob, sourcesXml(data.sources, cite))
 }
 
 function contentWidth(section: Section): number {
@@ -464,6 +472,8 @@ async function block(node: JSONContent, ctx: Context, scope: Scope): Promise<Blo
       return [rawXml(bibliographyXml(ctx)) as unknown as Paragraph]
     case 'sectionBreak':
       return []
+    case 'chart':
+      return chartBlocks(node, ctx)
     default:
       // Unknown blocks: keep their inline content if any.
       return node.content ? blocks(node.content, ctx, scope) : []
@@ -551,7 +561,7 @@ async function inlines(nodes: JSONContent[], ctx: Context): Promise<ParagraphChi
     const ends = ctx.commentEnds.get(node) ?? []
     const children: ParagraphChild[] = [
       ...starts.map((id) => new CommentRangeStart(id)),
-      ...(run ? [run] : []),
+      ...(Array.isArray(run) ? run : run ? [run] : []),
       ...ends.flatMap((id) => [new CommentRangeEnd(id), new TextRun({ children: [new CommentReference(id)] })]),
     ]
     if (!children.length) continue
@@ -568,7 +578,7 @@ async function inlines(nodes: JSONContent[], ctx: Context): Promise<ParagraphChi
   return out
 }
 
-async function inline(node: JSONContent, ctx: Context): Promise<ParagraphChild | null> {
+async function inline(node: JSONContent, ctx: Context): Promise<ParagraphChild | ParagraphChild[] | null> {
   const opts = { ...runOptions(node.marks ?? []), ...(ctx.lang ? { language: { value: ctx.lang } } : {}) }
   switch (node.type) {
     case 'text': {
@@ -594,9 +604,77 @@ async function inline(node: JSONContent, ctx: Context): Promise<ParagraphChild |
       return image(node, ctx)
     case 'citation':
       return rawXml(citationXml(node, ctx)) as unknown as ParagraphChild
+    case 'mergeField':
+    case 'mergeIf':
+      return mergeFieldRuns(node, opts)
     default:
       return null
   }
+}
+
+// ---------- Mail merge fields (MERGEFIELD, IF) ----------
+
+const fieldArg = (s: unknown) => `"${String(s ?? '').replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
+const raw = (xml: string) => rawXml(xml) as unknown as ParagraphChild
+
+// The field code with its result run formatted like the text around it.
+function mergeFieldRuns(node: JSONContent, opts: IRunOptions): ParagraphChild[] {
+  const a = node.attrs ?? {}
+  const result = (text: string) => new TextRun({ ...opts, text })
+  if (node.type === 'mergeField') {
+    const name = String(a.name ?? '')
+    return [raw(fldChar('begin')), raw(instr(` MERGEFIELD ${fieldArg(name)} \\* MERGEFORMAT `)), raw(fldChar('separate')), result(`«${name}»`), raw(fldChar('end'))]
+  }
+  const field = String(a.field ?? '')
+  return [
+    raw(fldChar('begin')),
+    raw(instr(' IF ')),
+    raw(fldChar('begin')),
+    raw(instr(` MERGEFIELD ${fieldArg(field)} `)),
+    raw(fldChar('separate')),
+    result(`«${field}»`),
+    raw(fldChar('end')),
+    raw(instr(` ${a.op === '<>' ? '<>' : '='} ${fieldArg(a.value)} ${fieldArg(a.then)} ${fieldArg(a.otherwise)} \\* MERGEFORMAT `)),
+    raw(fldChar('separate')),
+    result(String(a.then ?? '')),
+    raw(fldChar('end')),
+  ]
+}
+
+// ---------- Charts ----------
+
+// A centered picture of the chart (replaced by a native chart in the package) and its caption.
+async function chartBlocks(node: JSONContent, ctx: Context): Promise<Block[]> {
+  const a = node.attrs ?? {}
+  const chart = readEmbedded(a.chart)
+  if (!chart) return []
+  const maxWidth = ctx.contentWidth / TWIPS_PER_PX
+  let width = Number(a.width) || 480
+  let height = Number(a.height) || 300
+  if (width > maxWidth) {
+    height = (height * maxWidth) / width
+    width = maxWidth
+  }
+  const img = await loadImage(await chartPng(chart, Number(a.width) || 480, Number(a.height) || 300))
+  if (!img) return []
+  ctx.charts.push(chart)
+  const caption = String(a.caption ?? '')
+  const out: Block[] = [
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      keepNext: !!caption,
+      children: [
+        new ImageRun({
+          type: img.type,
+          data: img.data,
+          transformation: { width: Math.round(width), height: Math.round(height) },
+          altText: { name: `${CHART_MARK}${ctx.charts.length}`, description: chart.spec.title || caption || 'Chart', title: caption || chart.spec.title || 'Chart' },
+        }),
+      ],
+    }),
+  ]
+  if (caption) out.push(new Paragraph({ style: 'Caption', children: [new TextRun(caption)] }))
+  return out
 }
 
 function runOptions(marks: JSONContent['marks'] & object): IRunOptions {

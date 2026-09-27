@@ -37,6 +37,8 @@ dialog.spell-dialog {
 /* The close button stays in the top right corner even when the title wraps. */
 .spell-dialog h2 .spell-close { position: absolute; top: -4px; right: 0; margin: 0; border: 0; background: none; font-size: 18px; color: var(--muted); }
 .spell-dialog .spell-lang { font-size: 13px; min-width: 0; max-width: 100%; }
+.spell-dialog .spell-where { font-size: 13px; color: var(--muted); margin-bottom: 2px; overflow-wrap: anywhere; }
+.spell-dialog .spell-where:empty { display: none; }
 .spell-dialog .spell-kind { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
 .spell-dialog .spell-kind.spelling { color: #d93025; }
 .spell-dialog .spell-kind.grammar, .spell-dialog .spell-kind.style { color: #1a73e8; }
@@ -45,6 +47,7 @@ dialog.spell-dialog {
   border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; max-height: 96px; overflow: auto;
   font-size: 14px; line-height: 1.5; background: var(--bg);
 }
+.spell-dialog .spell-context:empty { display: none; }
 .spell-dialog .spell-context mark { background: rgb(217 48 37 / 0.14); color: inherit; border-bottom: 2px solid #d93025; }
 .spell-dialog .spell-context mark.grammar, .spell-dialog .spell-context mark.style { background: rgb(26 115 232 / 0.14); border-bottom-color: #1a73e8; }
 .spell-dialog .spell-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-top: 10px; }

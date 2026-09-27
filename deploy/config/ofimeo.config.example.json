@@ -1,0 +1,38 @@
+{
+  "$schema": "https://raw.githubusercontent.com/gafapa/words-online/main/docs/ofimeo.config.schema.json",
+  "version": 1,
+  "school": {
+    "name": "IES Example",
+    "logo": "school/logo.svg",
+    "url": "https://www.school.example"
+  },
+  "defaults": {
+    "language": "gl",
+    "documentLanguage": "gl-ES"
+  },
+  "relay": {
+    "url": "https://ofimeo.school.example:8443",
+    "only": true
+  },
+  "store": {
+    "relay": true,
+    "nextcloud": { "enabled": true, "folder": "/Ofimeo" }
+  },
+  "nextcloud": {
+    "servers": [{ "name": "Nube do centro", "url": "https://cloud.school.example" }]
+  },
+  "features": {
+    "webmcp": false,
+    "ai": true,
+    "publicRelays": false,
+    "templates": "all",
+    "hiddenApps": []
+  },
+  "legal": {
+    "organization": "IES Example",
+    "contactEmail": "secretaria@school.example",
+    "dpoEmail": "dpd@school.example",
+    "privacyUrl": "https://www.school.example/privacy"
+  },
+  "locked": ["language", "webmcp", "relay", "nextcloud"]
+}

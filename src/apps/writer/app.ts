@@ -38,6 +38,7 @@ import { languageButton, openSpellDialog } from './spell/ui'
 import { ReferenceStore } from './references/store'
 import { installDocumentFonts } from './fonts'
 import { provideWebMcpTools } from '../../core/webmcp'
+import { setupCharts } from './charts'
 
 const UNTITLED = t('Untitled document')
 const ZOOM_KEY = 'words-online:zoom'
@@ -111,6 +112,8 @@ export interface WriterContext {
   references: ReferenceStore
   showContributions: () => void
   spell: SpellController
+  // Everything the converters need (body with comment ranges, header, footer, page setup…).
+  documentData: () => DocumentData
 }
 
 export function mountWriter(session: Session, root: HTMLElement): WriterContext {
@@ -487,6 +490,7 @@ export function mountWriter(session: Session, root: HTMLElement): WriterContext 
     references,
     showContributions: () => void import('./authorship').then((a) => a.contributionsDialog(editor, session, authors)),
     spell,
+    documentData,
   }
   const statusItems = [...shell.statusbar.children] as HTMLElement[]
   const frame = mountFrame({
@@ -510,6 +514,9 @@ export function mountWriter(session: Session, root: HTMLElement): WriterContext 
   frame.status?.addRight(...statusItems.filter((n) => n.matches('.status-mode, .status-comments')))
   buildToolbar(ctx, frame.toolbar)
   setupContextMenu(ctx)
+  setupCharts(ctx)
+  // Mail merge PDF output: this window is a hidden frame laying out the merged document (merge/frame.ts).
+  if (window.name.startsWith('ofimeo-merge-export:')) void import('./merge/frame').then((m) => m.runExportFrame(ctx))
   // AI assistants (WebMCP, off by default): the tool module loads only when turned on.
   provideWebMcpTools(session, () => import('./webmcp').then((m) => m.writerTools(ctx)))
   document.addEventListener('keydown', (e) => {

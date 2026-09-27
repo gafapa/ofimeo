@@ -21,6 +21,8 @@ export interface DrawContext {
   zoom: ZoomTarget
   background: () => string
   setBackground: (color: string) => void
+  // Tools ▸ Spelling and grammar… and its settings (spell.ts).
+  spelling?: () => MenuEntry[]
 }
 
 // Excalidraw's canvas background presets (DEFAULT_CANVAS_BACKGROUND_PICKS).
@@ -242,6 +244,7 @@ export function drawFrame(ctx: DrawContext): Pick<FrameSpec, 'file' | 'edit' | '
         active: () => !!state().activeTool?.locked,
         run: () => api()?.setActiveTool({ ...state().activeTool, locked: !state().activeTool?.locked }),
       },
+      ...(ctx.spelling ? ['-' as const, ...ctx.spelling()] : []),
     ],
   }
 

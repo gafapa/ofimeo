@@ -125,6 +125,19 @@ export const APPS: AppInfo[] = [
     accept: '.pdf,.zip',
     load: () => import('./pdf'),
   },
+  {
+    type: 'notebook',
+    name: t('Notebook'),
+    product: t('Ofimeo Notebook'),
+    plural: t('Notebooks'),
+    newLabel: t('New notebook'),
+    untitled: t('Untitled notebook'),
+    letter: 'N',
+    color: '#ad1457',
+    // Opened from File ▸ Open… in the notebook (ZIP of Markdown, .md): these
+    // extensions belong to the PDF app (hand-in ZIPs) and the writer (.md).
+    load: () => import('./notebook'),
+  },
 ]
 
 // Apps a school configuration hides (features.hiddenApps) are not offered for

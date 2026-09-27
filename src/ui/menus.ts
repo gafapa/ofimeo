@@ -6,11 +6,11 @@
 //   New ▸ (one item per app) · Open… Ctrl+O · Open from Nextcloud… · Import from link… · All documents · Storage and backup…
 //   [slots.open]
 //   ─ Make a copy · Save as template… · Save to Nextcloud Ctrl+S (when linked) / Save to Nextcloud… · Save to Nextcloud as… (when linked)
-//     · Nextcloud account… · Download as ▸ (session.hooks.exportFormats, then `download` extras)
+//     · Nextcloud account… · Moodle account… · Download as ▸ (session.hooks.exportFormats, then `download` extras)
 //   [slots.save]
 //   ─ [slots.print: e.g. Page setup…] · Print… Ctrl+P
 //   ─ Version history… · Save version…
-//   ─ Hand in… · Share…
+//   ─ Hand in… · Hand in to Moodle… · Share…
 //   ─ Document details…
 //   [slots.end]
 // Edit (editMenu): Undo · Redo ─ Cut · Copy · Paste [slots.clipboard] ─ Select all [slots.select]
@@ -95,6 +95,7 @@ export function fileMenu(session: Session, options: FileMenuOptions): Menu {
       { label: t('Save to Nextcloud…'), visible: () => !linked(), enabled: online, run: () => void saveToNextcloudAs(session) },
       { label: t('Save to Nextcloud as…'), visible: linked, enabled: online, run: () => void saveToNextcloudAs(session) },
       { label: t('Nextcloud account…'), run: () => void openAccountDialog() },
+      { label: t('Moodle account…'), run: () => void import('./moodle').then((m) => m.openMoodleDialog()) },
       {
         label: t('Download as'),
         get submenu() {
@@ -111,6 +112,7 @@ export function fileMenu(session: Session, options: FileMenuOptions): Menu {
       { label: t('Save version…'), enabled: () => session.canEdit, run: () => void saveNamedVersion(session) },
       '-',
       { label: t('Hand in…'), run: () => void handIn(session, info.untitled) },
+      { label: t('Hand in to Moodle…'), enabled: online, run: () => void import('./moodle').then((m) => m.handInToMoodle(session, info.untitled)) },
       { label: t('Share…'), run: () => void openShareDialog(session) },
       '-',
       { label: t('Document details…'), run: async () => (await aboutModule()).documentDetails(session, (await options.details?.()) ?? []) },

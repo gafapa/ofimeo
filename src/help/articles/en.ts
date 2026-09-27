@@ -21,7 +21,15 @@ Type your name in the box at the top right (on a phone or in a narrow window, ta
 - To work with others, send a [sharing link](help:sharing).
 - Students hand in work with the [Hand in](help:handin) button.
 
-[Show the welcome tour again](action:tour)`,
+[Show the welcome tour again](action:tour)
+
+## Import from Google Drive or Microsoft 365
+**Import from link…** (home screen, and File menu in every app) opens files shared from Google Docs, Sheets, Slides and Drive, OneDrive or SharePoint:
+1. Paste the share link. The file must be shared as **Anyone with the link**, or you must be able to open it with your own account.
+2. Click the download button: your browser downloads the file as Word, Excel or PowerPoint.
+3. Drop the downloaded file on the dialog (or choose it). It opens as a new Ofimeo document.
+
+Browsers do not let web apps download these files directly, so the file goes through your Downloads folder; Ofimeo never sees your Google or Microsoft account. If your school relay offers it, **Import directly through the school relay** does it in one click for public files.`,
   },
   sharing: {
     title: 'Sharing and permissions',
@@ -41,12 +49,19 @@ The dialog also shows a **QR code**, handy for tablets and phones in class.
 - View and comment links cannot be turned into edit links: changes are only accepted when they are signed with the edit key.
 - There is no central copy on a server. To receive the latest changes, someone who has the document must be online at the same time. Edits made offline merge automatically the next time you meet.
 - The status next to Share says **Only you** or how many people are here. If others never appear, run the [connection test](help:network).
-- Documents made before permission links existed can only be shared with edit links. Use File ▸ Make a copy to get all link kinds.`,
+- Documents made before permission links existed can only be shared with edit links. Use File ▸ Make a copy to get all link kinds.
+
+## Chat
+- The speech-bubble button next to the people in the document (or \`Alt+Shift+C\`) opens the chat. A number shows unread messages; it turns red when someone mentions you.
+- Type \`@\` to mention someone who is here. Links open in a new tab; the smiley button adds emoji. \`Enter\` sends, \`Shift+Enter\` starts a new line, \`Escape\` closes the chat.
+- People with an edit or comment link can write; people with a view link can only read.
+- Teachers (edit link): the ⋯ button in the chat turns the chat off for this document or clears its history for everyone.
+- Messages are kept with the document in this browser and in backups, but not in versions, copies or downloaded files.`,
   },
   offline: {
     title: 'Working offline and where your data is stored',
     keywords: 'offline internet connection install app pwa storage indexeddb browser data delete cleared lost device computer',
-    body: `Your documents are stored **in this browser on this device** (in its IndexedDB storage). They are not uploaded to any server. The save state in the status bar shows **Saved in this browser**.
+    body: `Your documents are stored **in this browser on this device** (in its IndexedDB storage). They are not uploaded to any server (unless you turn on [sync without being online together](help:network), which keeps an encrypted copy). The save state in the status bar shows **Saved in this browser**.
 
 ## What this means
 - Clearing the browser data (history, cookies and site data) **deletes your documents**. Make [backups](help:backup) or save to [Nextcloud](help:nextcloud).
@@ -104,6 +119,7 @@ Open [Nextcloud account](action:nextcloud) (Nextcloud button on the home screen,
 - Upload or send the ZIP to your teacher the way they asked (virtual classroom, email…).
 - **Print / Save as PDF** makes a PDF if one is also needed: choose "Save as PDF" as the printer.
 - **Upload to a Nextcloud share link…**: if your teacher gave you an upload link, the file goes straight there. You do not need a Nextcloud account.
+- **Hand in to Moodle…**: if your school uses Moodle, hand in straight to an assignment. See [Moodle](help:moodle).
 
 **For teachers.**
 - Give each student their own worksheet with a **Makes a copy** link (see [Sharing](help:sharing)).
@@ -111,9 +127,37 @@ Open [Nextcloud account](action:nextcloud) (Nextcloud button on the home screen,
 - Open the students' PDFs, or hand-in ZIPs, in [Ofimeo PDF](help:pdf) to correct them.
 - For quizzes, use [Ofimeo Forms](help:forms).`,
   },
+  moodle: {
+    title: 'Moodle',
+    keywords: 'moodle virtual classroom campus assignment task homework due date deadline grade feedback submit hand in course aula virtual',
+    body: `Connect Ofimeo to your school's Moodle to see your assignments on the home screen and hand in your work without downloading and uploading files.
+
+## Connect
+Open [Moodle](action:moodle) (Moodle button on the home screen, or File ▸ Moodle account…). Enter the Moodle address (your school may have filled it in), your username and your password, and choose **Connect**.
+- Your password goes only to Moodle, once. Ofimeo keeps only a Moodle key and your name in this browser. **Disconnect** removes them.
+- If your school signs in to Moodle through a web page (Google, Microsoft or a school login, "single sign-on"), this kind of sign-in does not work in Ofimeo yet. Ofimeo tells you when it detects it. Hand in with the usual [Hand in](help:handin) and upload the file in Moodle.
+
+## Moodle tasks
+The **Moodle tasks** panel on the home screen lists the assignments of your courses. Assignments to do come first, sorted by due date. Handed-in and graded ones come after.
+- Open an assignment to read its description, download its files (**Open in Ofimeo** makes your own copy) and see the due date, the last day to hand in, your status, your grade and your teacher's feedback once they are released.
+- **Refresh** updates the list. Without a connection you see the last list, with the time it was updated.
+- The list only shows information. Work on the assignment in Moodle itself when it is not handed in as a file.
+
+## Hand in to Moodle
+In any app, choose **Hand in** (or File ▸ Hand in to Moodle…):
+1. Pick the assignment. Only assignments that are open and take files are listed.
+2. Choose the format. Ofimeo suggests one the assignment accepts. PDF is offered in the apps that export it; otherwise use **A file from this device…**.
+3. If the assignment has a submission statement, read it and tick it.
+4. Choose **Hand in**. Ofimeo uploads the file and saves it as your submission. When the assignment has a submit button, it is also submitted for grading.
+
+Handing in again while the assignment is open replaces your file. If Moodle refuses the file (too large, wrong type, too many files), the message says why.
+
+## Privacy
+Your Moodle work goes only to your school's Moodle, directly from this browser or through your school's own relay. It is never sent to the people you share documents with.`,
+  },
   network: {
     title: 'School networks: connection test and relay',
-    keywords: 'network wifi firewall filter blocked only you not connecting relay turn stun nostr it department proxy',
+    keywords: 'network wifi firewall filter blocked only you not connecting relay turn stun nostr it department proxy store forward mailbox sync later asynchronous',
     body: `Collaborators connect directly to each other. Public relays are only used to find each other. Some school networks block this: the status then stays at **Only you**.
 
 ## Connection test
@@ -130,7 +174,42 @@ For these networks a school can run **Ofimeo Relay**, a small program for its ow
 - Share links include the relay, so students get it by opening the link.
 - You can choose to use only the school relay.
 
+## Sync without being online together
+Normally changes travel only while two people have the document open at the same time. With **sync without being online together**, an encrypted copy of the changes waits for the others: a student edits in class and continues at home, the teacher corrects at night.
+- Turn it on in the connection test, under **Sync without being online together**: on the school relay (if it keeps copies) and/or in a Nextcloud folder. Your school may turn it on for everyone.
+- The status next to the save state shows **Synced to …** once your changes are stored, or **Waiting to sync** while you are offline (they are sent later).
+- Everything is encrypted in your browser with the key in the document link. The relay or Nextcloud only sees encrypted data, its size and when it changes.
+- View-only links download changes but can never upload any. For Nextcloud, use a folder shared with the other people.
+- Copies on the school relay are deleted after a period without changes (180 days by default).
+
 The IT department finds the installation guide in the project's documentation (docs/relay.md).`,
+  },
+  'school-setup': {
+    title: 'For administrators: installing Ofimeo in a school',
+    keywords: 'administrator it department install deploy server docker raspberry windows configuration ofimeo.config.json locked set by your school logo language webmcp templates hide apps',
+    body: `A school can run its own copy of Ofimeo on its network and set it up for everyone with one file, **ofimeo.config.json**.
+
+## Ways to install it
+- **Docker**: one container with the app and Ofimeo Relay (the Dockerfile and docker-compose.yml are in the project).
+- **Ofimeo Relay alone** on a Windows server, a Linux machine or a Raspberry Pi: it can serve the app too.
+- **Any web server** (nginx, Apache, IIS): copy the built files. The app has no server part.
+
+## The school configuration
+[Help ▸ For administrators…](action:admin) opens a form that writes ofimeo.config.json. It sets:
+- the school's name and logo, shown on the home screen;
+- the default interface language and the language of new documents;
+- the school relay, other relays, and whether public servers may be used;
+- where encrypted changes may wait for people who are offline;
+- the Nextcloud servers offered when connecting;
+- whether AI assistants (WebMCP) are allowed, which apps and templates are offered;
+- the school's privacy contacts, shown above the legal links.
+
+Put the file next to index.html (or give it to Ofimeo Relay with **--school-config**). Each browser applies it when Ofimeo opens and keeps a copy for working offline.
+
+## Locked settings
+Settings the school locks show **Set by your school** and cannot be changed in the browser: the interface language, the AI assistants switch, the school relay and the Nextcloud servers.
+
+The step-by-step guide for the IT department is in the project's documentation (docs/deploy-school.md).`,
   },
   privacy: {
     title: 'Privacy',
@@ -185,6 +264,27 @@ Menus show the shortcut of each command next to it.
 
 The interface language can be changed on the home screen or in the panel.`,
   },
+  spelling: {
+    title: 'Spelling and grammar',
+    keywords: 'spelling spell check checker grammar dictionary language typo misspelled correct f7 underline',
+    body: `Every app checks spelling (red wavy underline) and grammar (blue) as you type, in the document's language. The check runs in your browser: the text is never sent anywhere, unless you choose a LanguageTool server in the word processor.
+
+## Where
+- **Docs**: the whole document. Right-click an underlined word for suggestions.
+- **Sheets**: the cell being edited. Formulas and numbers are skipped.
+- **Slides and Diagrams**: labels and text boxes while you type, and speaker notes.
+- **Forms**: titles, descriptions and options. Respondents' written answers are checked when the form allows it (**Settings ▸ Allow spell check for respondents**: on for surveys, off for quizzes, where it could give answers away).
+- **PDF**: text boxes, comments and replies.
+- **Draw**: the text you are typing.
+
+## Spelling and grammar dialog
+**Tools ▸ Spelling and grammar…** (\`F7\`) walks through the issues one by one: every cell of every sheet, every slide and its notes, every page of a diagram, every question of a form, every text box and comment of a PDF, every text of a drawing. It shows where each one is (for example "Sheet1 · B3") and selects it. **Change** or **Change all** corrects it, **Ignore** skips it, and **Add to dictionary** accepts the word from then on.
+
+## Language and dictionary
+- **Tools ▸ Language** sets the document's language (English US or UK, Spanish of several countries, Galician, French, German). It is saved with the document, so everyone checks it in the same language.
+- **Tools ▸ Personal dictionary…** lists the words you added. They are shared by every app and document of this browser.
+- **Tools ▸ Check spelling as you type** / **Check grammar as you type** turn the underlines off in every app.`,
+  },
   writer: {
     title: 'Ofimeo Docs (documents)',
     keywords: 'writer word processor text document docx odt page table of contents citation bibliography comment suggest track changes review correct',
@@ -201,6 +301,19 @@ The interface language can be changed on the home screen or in the panel.`,
 - **Suggestions**: switch the mode from **Editing** to **Suggesting**. Your changes are marked, and the author accepts or rejects them.
 - Review ▸ Show authorship colors the text by who wrote it.
 
+## Charts
+**Insert ▸ Chart…** adds a column, bar, line, area, pie, doughnut or scatter chart. Take the data from a spreadsheet of your library (choose the sheet and the range) or type it into the small table. A chart **linked** to a spreadsheet updates by itself when that spreadsheet changes in this browser; **Update from source** (on the chart or in its right-click menu) does it at once. The document keeps a copy of the data, so everyone sees the chart even without the spreadsheet. Drag the corner to resize it; double-click to change it or add a caption. Word files keep it as a real chart.
+
+## Mail merge
+**Tools ▸ Mail merge…** makes one letter, certificate or report card per row of a table:
+1. Choose the data: a spreadsheet of your library or a CSV, Excel or OpenDocument file, the sheet and the row with the field names.
+2. Click a field to insert it where the cursor is, for example «Name». **Conditional text…** adds text only when a field has a value (for example "if Grade is Pass").
+3. Optionally keep only some rows with the filter.
+4. Tick **Show the data of a record** and use the arrows to check each one.
+5. Make a **New document** with all of them (one per page), one **PDF**, or a **ZIP** of Word or PDF files named after a field.
+
+Word files keep the fields (MERGEFIELD), so the template also works in Word.
+
 ## Files
 Opens and downloads Word (.docx) and OpenDocument (.odt); also opens Word 97-2003 (.doc), RTF, .html, .txt and Markdown (.md, with headings, lists, links, code and tables), and downloads Markdown. If a file has something Ofimeo cannot bring over (for example text boxes or endnotes of a .doc), a message lists it once. Print or save as PDF with File ▸ Print. View ▸ Zoom (or \`Ctrl++\`, \`Ctrl+-\`, \`Ctrl+0\`) changes the zoom.`,
   },
@@ -215,6 +328,9 @@ Opens and downloads Word (.docx) and OpenDocument (.odt); also opens Word 97-200
 - **Format** has number formats, merged cells and conditional formatting; borders are on the toolbar.
 - The status bar shows the sum, average and count of the selected cells.
 - Several people can edit at once; you see their selections in their colors.
+
+## Screen readers and keyboard
+The grid is drawn as a picture, so **View ▸ Accessible table view** (\`Alt+Shift+T\`, or the "Switch to accessible table view" link at the top of the page) shows the current sheet as a real table that screen readers can read. Arrow keys move between cells and each cell is read with its address, value and formula; \`Enter\` or \`F2\` edits it, \`Delete\` clears it, \`Ctrl+Z\` undoes, \`Ctrl+Home\` / \`Ctrl+End\` go to the start and end of the data and \`Ctrl+Page Up\` / \`Ctrl+Page Down\` change the sheet. Edits reach everyone else at once. Charts are listed below the table with a summary of their values and **Chart data as table** (also in the chart's right-click menu and in Edit when a chart is selected). In the normal grid, the selected cell is read aloud as it moves, and the arrow keys move between the sheet tabs.
 
 ## Files
 Opens and downloads Excel (.xlsx), OpenDocument (.ods) and CSV. Charts are saved as real charts that Excel and LibreOffice can edit. Print or save the current sheet as PDF with File ▸ Print.
@@ -261,6 +377,7 @@ The home screen has templates for concept maps, timelines, flowcharts and graphi
 - The **slide panel** on the left shows the slides. Right-click a thumbnail to add, duplicate, move or delete a slide and to change its layout or background.
 - Choose a **theme** and a **layout** for each slide. Click the placeholders to add a title and text.
 - Insert images, shapes, tables and equations. Type the **speaker notes** under the slide.
+- **Insert ▸ Chart…** adds a chart from a spreadsheet of your library (kept up to date when it changes) or from data you type. PowerPoint files keep it as a real chart.
 - **Animations** and **transitions** make objects and slides appear in turn.
 - **Present** shows the slides full screen: arrow keys or a click to go on, \`L\` for a laser pointer, \`B\` for a black screen, \`Esc\` to end. The **presenter view** shows the notes and a timer in a second window.
 - While you present, everyone else in the presentation can **Follow** you, also with a view link.
@@ -304,6 +421,33 @@ The **Page** menu (or right-click a thumbnail) rotates a page left or right (\`C
 File ▸ Download as saves the **PDF with annotations**: "editable" keeps them as annotations that other PDF readers can change, "flattened" draws them into the pages. Hand in includes both. Text boxes and stamps keep symbols such as π, √, ≈, → and ✓.
 
 A **password-protected PDF** asks for its password when you open it. The document keeps the original protected file; the password is not stored in it or sent to anyone, so everyone who opens it (and you, in a new browser tab) enters it again. Cancel and nothing is added.`,
+  },
+  notebook: {
+    title: 'Ofimeo Notebook (class notes)',
+    keywords: 'notebook onenote notes class notes section page subpage tag to do ink pen stylus highlighter drawing lab journal reading',
+    body: `Class notes organised like a binder: **sections** (coloured tabs) hold **pages**, and pages can have **subpages**.
+
+## Sections and pages
+- **Add section** and **Add page** are in the panel on the left. Drag pages and sections to reorder them, or drop a page on a section tab to move it there. With the keyboard: \`Alt+↑\` / \`Alt+↓\`.
+- The **⋯** button of a page (or a right-click) makes it a subpage, moves it to another section, exports, prints or deletes it.
+- **Search notebook** (\`Ctrl+F\`) looks in the titles and text of every page.
+- On a phone, the **Sections and pages** button at the top of the page opens them as a panel.
+
+## Writing
+- A page has a title, the date it was created and free text with headings, lists, checklists, tables, pictures, links, equations and code.
+- Paste or drop pictures and files onto the page: they are kept in the notebook (large pictures are made smaller; other files up to 5 MB).
+- **Tags** mark a paragraph as **To do**, **Important**, **Question** or **Remember** (toolbar ▸ Tag, or \`Ctrl+Shift+1\` to \`4\`). Click a To do box to tick it. **Tag summary** lists the tagged paragraphs of every page.
+
+## Drawing
+Choose **Pen**, **Highlighter** or **Eraser** in the toolbar (\`Alt+2\`, \`Alt+3\`, \`Alt+4\`; \`Alt+1\` or \`Esc\` goes back to typing). A stylus writes thicker when you press harder. With **Draw ▸ Draw with the stylus** a stylus always draws, while a finger or the mouse selects text. The eraser removes whole strokes; Undo brings them back.
+
+## Together
+Share the notebook to write in it together and see who is on each page. Comment with \`Ctrl+Alt+M\`, hand it in, and find earlier versions in File ▸ Version history.
+
+## Files
+- File ▸ Download as: the whole notebook as Word, OpenDocument, PDF, Markdown or a **ZIP of Markdown** (one folder per section, with pictures and ink). **Current page** and **Current section** export only those.
+- Print (\`Ctrl+P\`) prints the open page; **Print section…** prints every page of the section.
+- File ▸ Open… imports Markdown files or a ZIP of Markdown. A ZIP exported from Ofimeo brings back sections, colours, subpages and ink. **Import a folder of Markdown files…** takes a whole folder. OneNote files (.one) cannot be imported: export them from OneNote as Word or PDF first.`,
   },
 }
 

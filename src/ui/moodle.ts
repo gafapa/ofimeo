@@ -517,7 +517,6 @@ export async function handInToMoodle(session: Session, untitled: string): Promis
     taskInfo.replaceChildren(...lines)
     statementBox.hidden = !task.requireStatement
     statementCheck.checked = false
-    statementCheck.required = task.requireStatement
     if (task.requireStatement) {
       const text = task.statement ? sanitizeHtml(task.statement) : document.createTextNode(t('This submission is my own work, except where I have acknowledged the use of the works of other people.'))
       statementBox.replaceChildren(el('label', { class: 'md-statement-label' }, statementCheck, el('span', {}, text)))

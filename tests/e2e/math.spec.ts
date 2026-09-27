@@ -24,7 +24,7 @@ async function screenPoint(dialog: Locator, x: number, y: number, view: { xmin: 
 const VIEW = { xmin: -10, xmax: 10, ymin: -7.5, ymax: 7.5 }
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('words-online:language', 'en'))
+  await page.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
 })
 
 test('writer: graph of y = a·x² with a slider, edit a, export DOCX with the picture and reopen it editable', async ({ page }) => {

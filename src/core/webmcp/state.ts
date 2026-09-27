@@ -4,7 +4,7 @@
 
 import { webMcpForbidden } from '../school-config'
 
-const KEY = 'words-online:webmcp'
+const KEY = 'ofimeo:webmcp'
 const listeners = new Set<(on: boolean) => void>()
 
 export function isWebMcpEnabled(): boolean {

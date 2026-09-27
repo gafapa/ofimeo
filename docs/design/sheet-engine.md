@@ -1,6 +1,6 @@
-# Spreadsheet converter spec (Words Online)
+# Spreadsheet converter spec (Ofimeo)
 
-Project: /home/user/words-online (Vite + TypeScript, browser-only). The spreadsheet app uses **Univer** (open-source
+Project: /home/user/ofimeo (Vite + TypeScript, browser-only). The spreadsheet app uses **Univer** (open-source
 presets, `@univerjs/presets` 1.0.x, Apache-2.0). Converters translate between files and Univer's workbook snapshot
 `IWorkbookData` (import type from '@univerjs/presets'; read the real types in
 node_modules/@univerjs/core/lib/types — `IWorkbookData`, `IWorksheetData`, `ICellData`, `IStyleData`, `CellValueType`,

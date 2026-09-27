@@ -16,7 +16,7 @@ async function menu(page: Page, top: string, ...path: string[]) {
 }
 
 async function setup(page: Page) {
-  await page.addInitScript(() => localStorage.setItem('words-online:language', 'en'))
+  await page.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
 }
 
 // Values column by column from A1 (see sheet-charts.spec.ts).

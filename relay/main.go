@@ -109,7 +109,7 @@ Options (saved defaults live in <data dir>/ofimeo-relay.json; options given here
 Ports to open in the firewall: TCP 443 (or the --https-port), UDP+TCP 3478,
 UDP 49152-65535 (relayed traffic; narrow it with --relay-ports), TCP 80 (optional).
 Only devices on the local network are accepted unless --public is given.
-Guide: https://github.com/gafapa/words-online/blob/main/docs/relay.md
+Guide: https://github.com/gafapa/ofimeo/blob/main/docs/relay.md
 `
 
 const helpES = `Ofimeo Relay %s — permite colaborar en Ofimeo en las redes de los centros educativos.
@@ -133,7 +133,7 @@ Opciones (los valores guardados están en <carpeta de datos>/ofimeo-relay.json; 
 Puertos que hay que abrir en el cortafuegos: TCP 443 (o el de --https-port), UDP+TCP 3478,
 UDP 49152-65535 (tráfico retransmitido; se puede acotar con --relay-ports), TCP 80 (opcional).
 Solo se aceptan equipos de la red local salvo que se indique --public.
-Guía: https://github.com/gafapa/words-online/blob/main/docs/relay.md
+Guía: https://github.com/gafapa/ofimeo/blob/main/docs/relay.md
 `
 
 func usage(w io.Writer, es bool) {

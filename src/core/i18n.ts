@@ -17,7 +17,7 @@ export const languages: { code: Language; name: string }[] = [
   { code: 'de', name: 'Deutsch' },
 ]
 
-const STORAGE_KEY = 'words-online:language'
+const STORAGE_KEY = 'ofimeo:language'
 
 function saved(): Language | null {
   try {

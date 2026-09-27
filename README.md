@@ -19,10 +19,12 @@ where that is not enough.
 | PDF correction (`pdf`) | Ofimeo PDF / Ofimeo PDF | Available |
 | Notebook (`notebook`) | Ofimeo Notebook / Ofimeo Cuaderno | Available |
 
-Storage keys and database names keep the historical `words-online` prefix
-(`localStorage` `words-online:*`, IndexedDB and cache names), so documents made
-before the rename keep working. The GitHub repository is still called
-`words-online`.
+Storage keys and database names use the `ofimeo` prefix (`localStorage`
+`ofimeo:*`, IndexedDB `ofimeo:*` and `ofimeo-*`). Data saved under the former
+`words-online` names is moved to them the first time the app starts
+(`src/core/legacy-storage.ts`), so documents made before the rename keep
+working. Peer-to-peer room and signature identifiers keep the former name, so
+existing links stay valid.
 
 ## Documentation
 
@@ -869,7 +871,7 @@ Built-in help for teachers and students, bundled and available offline (`src/hel
 - **Welcome tour** (home screen, first visit in a browser): five short steps on
   documents living in this browser, sharing links (edit / comment / view /
   copy), offline use, backups and Nextcloud, and handing in. It is remembered in
-  `localStorage` (`words-online:help:welcome`) and reopened from *Help ▸
+  `localStorage` (`ofimeo:help:welcome`) and reopened from *Help ▸
   Getting started* on the home screen.
 - **Quick start** per app: the first time an app is opened, a small
   non-blocking panel with three or four tips (respondents of a form and view or
@@ -886,7 +888,7 @@ Built-in help for teachers and students, bundled and available offline (`src/hel
 - **Contextual help**: `showDialog(…, help)` adds a "?" button that opens an
   article; used by Share, Hand in, Connection test, Storage and backup,
   Nextcloud and the Nextcloud upload link.
-- **Opt-out**: `?notour` (remembered) or `localStorage['words-online:help:off'] = '1'`
+- **Opt-out**: `?notour` (remembered) or `localStorage['ofimeo:help:off'] = '1'`
   turns the tour and quick starts off; they are also skipped under WebDriver
   (Playwright) unless the URL has `?tour`.
 

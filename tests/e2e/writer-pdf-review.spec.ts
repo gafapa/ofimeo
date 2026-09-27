@@ -11,7 +11,7 @@ import { PDFDocument } from 'pdf-lib'
 import { APP_READY, RELAYS, trackErrors, uniqueDoc } from './helpers'
 import { makeFixturePdf } from './pdf-fixture'
 
-const ENGLISH = () => localStorage.setItem('words-online:language', 'en')
+const ENGLISH = () => localStorage.setItem('ofimeo:language', 'en')
 const b64 = (n: number) => randomBytes(n).toString('base64url')
 const fixturePath = (name: string) => new URL(`../fixtures/${name}`, import.meta.url).pathname
 

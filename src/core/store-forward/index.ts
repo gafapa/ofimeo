@@ -39,7 +39,7 @@ const BACKOFF_MAX_MS = 5 * 60_000
 
 // ---------- Settings (this browser) ----------
 
-const SETTINGS_KEY = 'words-online:store-forward'
+const SETTINGS_KEY = 'ofimeo:store-forward'
 export const SETTINGS_EVENT = 'ofimeo-store-settings'
 
 export interface StoreSettings {

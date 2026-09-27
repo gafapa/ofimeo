@@ -1,6 +1,8 @@
 // Bootstrap: routes by URL fragment to the home screen or to an app, loading
 // only the code that is needed.
 
+// First: moves data saved under the former name before other modules read it.
+import { migrateLegacyDatabases } from './core/legacy-storage'
 import './ui/base.css'
 import { appInfo } from './apps/registry'
 import { t } from './core/i18n'
@@ -11,6 +13,7 @@ import { openSession } from './core/session'
 import { onboardingOff } from './help/prefs'
 
 registerServiceWorker()
+await migrateLegacyDatabases()
 
 const root = document.getElementById('root')!
 // "#new=<app>" (the installed app's shortcuts): a new document of that app.

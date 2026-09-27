@@ -34,7 +34,7 @@ async function featureWorkbook(): Promise<Buffer> {
 
 test('xlsx round trip keeps notes, named ranges, conditional formatting and filters', async ({ page }) => {
   const errors = trackErrors(page)
-  await page.addInitScript(() => localStorage.setItem('words-online:language', 'en'))
+  await page.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
   await page.goto(`/${RELAYS}`)
   const [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.locator('.home-open').first().click()])
   await chooser.setFiles({ name: 'grades.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: await featureWorkbook() })
@@ -75,7 +75,7 @@ test('xlsx round trip keeps notes, named ranges, conditional formatting and filt
 
 test('a copy of a quiz keeps its answer key', async ({ page }) => {
   const errors = trackErrors(page)
-  await page.addInitScript(() => localStorage.setItem('words-online:language', 'en'))
+  await page.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
   await page.goto(newDoc('forms'))
   await page.locator('.fm-editor').waitFor({ timeout: 60_000 })
   await page.locator('[data-f="meta:title"]').fill('Capitals')
@@ -104,7 +104,7 @@ test('a copy of a quiz keeps its answer key', async ({ page }) => {
 
 test('a spreadsheet view link refuses edits without page errors', async ({ browser }) => {
   const editor = await (await browser.newContext()).newPage()
-  await editor.addInitScript(() => localStorage.setItem('words-online:language', 'en'))
+  await editor.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
   await editor.goto(newDoc('sheet'))
   await editor.locator('.app-sheet canvas').first().waitFor({ timeout: 60_000 })
   await editor.locator('.persist-notice button').first().click({ timeout: 3000 }).catch(() => {})
@@ -118,7 +118,7 @@ test('a spreadsheet view link refuses edits without page errors', async ({ brows
   await editor.keyboard.press('Escape')
 
   const viewer = await (await browser.newContext()).newPage()
-  await viewer.addInitScript(() => localStorage.setItem('words-online:language', 'en'))
+  await viewer.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
   const errors = trackErrors(viewer)
   await viewer.goto(link.replace(/^https?:\/\/[^/#]+\/[^#]*/, `/${RELAYS}`))
   await viewer.locator('.app-sheet canvas').first().waitFor({ timeout: 60_000 })

@@ -366,7 +366,7 @@ interface CsvChoice {
   // Values as the sheet shows them (number formats) instead of plain values.
   displayed: boolean
 }
-const CSV_KEY = 'words-online:sheet-csv'
+const CSV_KEY = 'ofimeo:sheet-csv'
 const usesDecimalComma = () => new Intl.NumberFormat(locale).format(1.5).includes(',')
 
 function loadCsvChoice(): CsvChoice {

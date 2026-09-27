@@ -12,7 +12,7 @@ const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js')
 const relays = process.env.E2E_RELAYS ?? RELAYS
 const b64 = (n: number) => randomBytes(n).toString('base64url')
 const newDoc = () => `/${relays}#app=sheet&doc=sheet-a11y-${Date.now()}&key=${b64(18)}&edit=${b64(32)}`
-const english = () => localStorage.setItem('words-online:language', 'en')
+const english = () => localStorage.setItem('ofimeo:language', 'en')
 
 async function open(page: Page, url: string) {
   await page.goto(url)

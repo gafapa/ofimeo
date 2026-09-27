@@ -9,7 +9,7 @@
 
 import { t } from './i18n'
 
-const ACCOUNTS_KEY = 'words-online:nextcloud'
+const ACCOUNTS_KEY = 'ofimeo:nextcloud'
 
 export interface NcAccount {
   id: string

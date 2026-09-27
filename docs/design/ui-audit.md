@@ -1,4 +1,4 @@
-# Words Online: UI consistency audit and plan for one app frame
+# Ofimeo: UI consistency audit and plan for one app frame
 
 Audited: commit `fbf873d` (HEAD, in a separate worktree, so the other agent's uncommitted edits are not included), Spanish UI (`es-ES`), Chromium, 1366×820 and 390×844, light, dark and high-contrast (dark) themes.
 Screenshots: `shots/` (128 files). File names follow `<viewport|theme>-<app>-<what>.png`. Side-by-side strips are in `shots/compare/`.
@@ -27,7 +27,7 @@ The fix is a small **app frame contract** in `src/ui/` plus per-app adoption, sp
 
 | Part | Home | Writer | Sheet | Draw | Diagram | Slides |
 |---|---|---|---|---|---|---|
-| App bar (logo, title) | own `home-bar` (white, "Words Online" + blue **W**, same letter and colour as the writer) | ✓ | ✓ | ✓ | ✓ | ✓ |
+| App bar (logo, title) | own `home-bar` (white, "Ofimeo" + blue **W**, same letter and colour as the writer) | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Save state "Guardado en este navegador" | – | ✓ | ✓ | **✗ never set** | ✓ | ✓ |
 | Menubar (ours) | – | ✓ 9 menus | ✓ 3 menus (File, Edit, Help) | **hidden** (Excalidraw hamburger) | ✓ 6 menus | ✓ 9 menus |
 | Toolbar (ours) | – | ✓ (**wraps to 2 rows at 1366 px**) | **hidden**; Univer ribbon (tabs + 1 row) | **hidden**; Excalidraw island | ✓ | ✓ (+ primary "Presentar" at right) |
@@ -75,7 +75,7 @@ Differences: the position of *Open* and *All documents*; *Mis documentos…* exi
 | Edit | Undo, Redo \| Cut, Copy, Paste \| Select all \| Find Ctrl+F, Find and replace Ctrl+H | Undo, Redo \| Find and replace Ctrl+F | – (Excalidraw context menu) | Undo, Redo \| Cut, Copy, Paste, Duplicate, Delete \| Select all, Select shapes, Select connectors, Select none \| Edit label F2, Edit style… | = diagram (shared `editor.editMenu()`) |
 | View | Zoom ▸ (50…200 %, Fit to width) · Word count… \| Show authorship · Contributions… · Show resolved comments | (Univer "Vista" tab) | – | Shapes · Format · More shapes… · Grid \| Zoom in, Zoom out, Actual size, Fit | Slides panel · Speaker notes · Format · More shapes… · Grid \| zoom items |
 | Tools | Spelling F7 · check spelling / grammar while typing · Language ▸ · Grammar ▸ · Personal dictionary | – | – | – | – |
-| Help | Keyboard shortcuts **Ctrl+/** · About Words Online | Keyboard shortcuts | Excalidraw "Ayuda" (its own dialog, partly English) | Keyboard shortcuts | Keyboard shortcuts |
+| Help | Keyboard shortcuts **Ctrl+/** · About Ofimeo | Keyboard shortcuts | Excalidraw "Ayuda" (its own dialog, partly English) | Keyboard shortcuts | Keyboard shortcuts |
 
 Other duplication: in the writer, *Show authorship / Contributions / Show resolved comments* appear in both **Ver** and **Revisar**. Word count sits under View, not Tools (Google puts it in Tools). There is no Accessibility entry in any Help menu (only the app-bar button). "About" exists only in the writer.
 
@@ -265,7 +265,7 @@ Download is always a submenu; items use "Format name (.ext)" labels, the same pa
 **Edit:** Undo Ctrl+Z · Redo Ctrl+Y | Cut · Copy · Paste | ‹app: Duplicate Ctrl+D, Delete Supr› | Select all Ctrl+A | Find Ctrl+F · Find and replace Ctrl+H.
 **View:** Zoom ▸ (Zoom in Ctrl++, Zoom out Ctrl+−, 50…200 %, Fit) | ‹panels and toggles› | ‹app show-items›.
 **Tools:** ‹app tools (spelling, word count)› | Accessibility… .
-**Help:** Keyboard shortcuts Ctrl+/ · Accessibility… · About Words Online.
+**Help:** Keyboard shortcuts Ctrl+/ · Accessibility… · About Ofimeo.
 
 ### 4.2 Shared components (new or extended in `src/ui/`)
 

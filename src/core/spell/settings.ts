@@ -5,8 +5,8 @@ import { LANGS, type Lang } from './types'
 import { defaultVariant, variantOf } from './variants'
 import { schoolConfig } from '../school-config'
 
-const KEY = 'words-online:spelling'
-const DICT_KEY = 'words-online:spelling-dictionary:'
+const KEY = 'ofimeo:spelling'
+const DICT_KEY = 'ofimeo:spelling-dictionary:'
 
 export interface SpellSettings {
   spelling: boolean

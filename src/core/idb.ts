@@ -1,7 +1,7 @@
 // Minimal IndexedDB key-value store for data that is not a Y.Doc (signed
 // update logs of protected documents).
 
-const DB_NAME = 'words-online-kv'
+const DB_NAME = 'ofimeo-kv'
 const STORE = 'kv'
 
 let dbPromise: Promise<IDBDatabase> | null = null

@@ -11,7 +11,7 @@ import { TEMPLATES } from '../templates/catalog'
 import { el, showDialog, toast } from './widgets'
 import './admin-config.css'
 
-const GUIDE_URL = 'https://github.com/gafapa/words-online/blob/main/docs/deploy-school.md'
+const GUIDE_URL = 'https://github.com/gafapa/ofimeo/blob/main/docs/deploy-school.md'
 const DOC_LANGUAGES = ['es-ES', 'gl-ES', 'en-GB', 'en-US', 'fr-FR', 'de-DE', 'es-MX', 'es-AR', 'es-CO', 'es-CL', 'es-US', 'en-AU', 'en-CA']
 
 const lines = (text: string) =>
@@ -144,7 +144,7 @@ export async function openConfigGenerator(): Promise<void> {
       locked: locked.length ? locked : undefined,
     }
     // The same checks the app applies when it reads the file: what is not valid is left out.
-    return { $schema: 'https://raw.githubusercontent.com/gafapa/words-online/main/docs/ofimeo.config.schema.json', ...sanitizeSchoolConfig(raw) } as SchoolConfig
+    return { $schema: 'https://raw.githubusercontent.com/gafapa/ofimeo/main/docs/ofimeo.config.schema.json', ...sanitizeSchoolConfig(raw) } as SchoolConfig
   }
 
   const preview = el('pre', { class: 'admin-preview mono' })

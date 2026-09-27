@@ -42,7 +42,7 @@ class Page {
   }
 }
 
-const file = (pages: Page[]) => `<mxfile host="words-online">${pages.map((p, i) => p.xml(i)).join('')}</mxfile>`
+const file = (pages: Page[]) => `<mxfile host="ofimeo">${pages.map((p, i) => p.xml(i)).join('')}</mxfile>`
 
 const EDGE = 'edgeStyle=none;html=1;endArrow=classic;rounded=0;fontSize=12;labelBackgroundColor=#ffffff;'
 const TEXT = 'text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;'

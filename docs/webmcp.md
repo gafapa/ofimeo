@@ -19,7 +19,7 @@ provider handles what it reads (see the *Note on artificial intelligence* in
   (an icon only on phones). It pulses when a tool is called and a toast
   announces every change; clicking it shows the tools offered and a *Turn off*
   button. *Tools → Allow AI assistants* again also turns it off.
-- The setting is stored in `localStorage` (`words-online:webmcp`) and applies to
+- The setting is stored in `localStorage` (`ofimeo:webmcp`) and applies to
   every tab of the browser (other open tabs follow at once).
 - Nothing WebMCP-related is loaded while it is off. When it is on, the runtime
   and the app's tool module are loaded lazily; the polyfill only if needed.

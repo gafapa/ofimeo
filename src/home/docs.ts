@@ -17,7 +17,7 @@ type View = { kind: 'all' } | { kind: 'folder'; id: string } | { kind: 'tag'; id
 type Sort = 'date' | 'name' | 'type'
 type Layout = 'list' | 'grid'
 
-const PREFS_KEY = 'words-online:home-view'
+const PREFS_KEY = 'ofimeo:home-view'
 const DRAG_TYPE = 'application/x-ofimeo-docs'
 
 function loadPrefs(): { sort: Sort; layout: Layout } {

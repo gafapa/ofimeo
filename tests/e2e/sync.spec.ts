@@ -34,7 +34,7 @@ function filesUnder(dir: string): string[] {
 async function newPage(browser: Browser, init?: (page: Page) => Promise<void>): Promise<Page> {
   const context = await browser.newContext({ ignoreHTTPSErrors: true })
   const page = await context.newPage()
-  await page.addInitScript(() => localStorage.setItem('words-online:language', 'en'))
+  await page.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
   if (init) await init(page)
   return page
 }
@@ -224,8 +224,8 @@ test.describe('store-and-forward through Nextcloud', () => {
     await page.addInitScript(
       ({ server, folder }) => {
         const account = { id: `student@${server.replace(/^https?:\/\//, '')}`, server, user: 'student', loginName: 'student', appPassword: 'app-password' }
-        localStorage.setItem('words-online:nextcloud', JSON.stringify([account]))
-        localStorage.setItem('words-online:store-forward', JSON.stringify({ nextcloud: true, ...(folder ? { folder } : {}) }))
+        localStorage.setItem('ofimeo:nextcloud', JSON.stringify([account]))
+        localStorage.setItem('ofimeo:store-forward', JSON.stringify({ nextcloud: true, ...(folder ? { folder } : {}) }))
       },
       { server, folder },
     )

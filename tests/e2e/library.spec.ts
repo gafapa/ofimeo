@@ -111,7 +111,7 @@ test('deleted documents go to the trash until it is emptied', async ({ page }) =
   await page.locator(`.doc-row[data-id="${id}"] .row-more`).click()
   await page.locator('.menu-row', { hasText: 'Move to the trash' }).click()
   // The data stays in IndexedDB while the document is in the trash.
-  const hasDb = () => page.evaluate(async (name) => (await indexedDB.databases()).some((d) => d.name === name), `words-online:${id}`)
+  const hasDb = () => page.evaluate(async (name) => (await indexedDB.databases()).some((d) => d.name === name), `ofimeo:${id}`)
   expect(await hasDb()).toBe(true)
   await page.locator('.lib-item', { hasText: 'Trash' }).click()
   await page.getByRole('button', { name: 'Empty trash…' }).click()

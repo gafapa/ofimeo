@@ -95,8 +95,8 @@ export interface SchoolConfig {
   locked?: LockKey[]
 }
 
-const CACHE_KEY = 'words-online:school-config'
-const RELAY_CACHE_KEY = 'words-online:school-config:relay'
+const CACHE_KEY = 'ofimeo:school-config'
+const RELAY_CACHE_KEY = 'ofimeo:school-config:relay'
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v)
 const str = (v: unknown, max = 500): string | undefined => (typeof v === 'string' && v.trim() && v.length <= max ? v.trim() : undefined)

@@ -102,10 +102,10 @@ self.onmessage = async (event: MessageEvent<{ jobs: Job[] }>) => {
     let text: string | null = null
     let pdf: PdfTextCache | undefined
     try {
-      const doc = await loadDoc(`words-online:${job.id}`)
+      const doc = await loadDoc(`ofimeo:${job.id}`)
       let comments: Y.Doc | undefined
       if (job.type === 'pdf') {
-        comments = await loadDoc(`words-online:${job.id}:comments`).catch(() => undefined)
+        comments = await loadDoc(`ofimeo:${job.id}:comments`).catch(() => undefined)
         const key = pdfFileKey(doc)
         pdf = job.pdf?.key === key ? job.pdf : { key, pages: await pdfPages(doc).catch(() => []) }
       }

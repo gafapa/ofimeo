@@ -38,7 +38,7 @@ export { isMac, mod } from '../../ui/shortcuts'
 const ZOOMS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4]
 const MIN_ZOOM = 0.1
 const MAX_ZOOM = 8
-const CLIPBOARD_PREFIX = 'words-online-diagram:'
+const CLIPBOARD_PREFIX = 'ofimeo-diagram:'
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024
 const TEXT_STYLE = 'text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;'
 

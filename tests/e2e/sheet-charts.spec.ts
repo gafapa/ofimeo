@@ -30,7 +30,7 @@ async function menu(page: Page, name: string, item: string) {
 
 test('insert a chart, save it as native charts in .xlsx and .ods, and open it again', async ({ page }) => {
   const errors = trackErrors(page)
-  await page.addInitScript(() => localStorage.setItem('words-online:language', 'en'))
+  await page.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
   await openApp(page, 'sheet')
   await page.locator('.persist-notice button').first().click({ timeout: 3000 }).catch(() => {})
   await fill(page, [

@@ -12,19 +12,19 @@ Todo el almacenamiento es propio (no hay almacenamiento de terceros), se guarda 
 
 | Categoría | Nombre técnico | Finalidad |
 | --- | --- | --- |
-| Documentos | IndexedDB `words-online:<id>` y `words-online:<id>:comments` | Contenido de cada documento, comentarios, historial de versiones y autoría |
-| Registro de cambios firmados | IndexedDB `words-online-kv` | Permite reenviar a otros participantes los cambios de documentos abiertos con enlaces de lectura o de comentario |
-| Índice de documentos | localStorage `words-online:docs` | Lista de tus documentos: título, fecha, claves de acceso y archivo vinculado en Nextcloud |
-| Organización local | localStorage `words-online:library`; IndexedDB `words-online-library` | Carpetas y etiquetas de tus documentos, índice para buscar en su texto y tus propias plantillas |
-| Copias de seguridad | localStorage `words-online:backup` | Fecha de la última copia, recordatorio y copia automática en Nextcloud, si la activas |
-| Relay del centro | localStorage `words-online:school-relay` | Dirección del relay del centro y configuración de conexión que este facilita |
-| Identidad | localStorage `words-online:user`, `words-online:writer-user-id` | Nombre y color que ven tus colaboradores; identificador técnico para la autoría |
-| Preferencias | localStorage `words-online:language`, `words-online:a11y`, `words-online:spelling`, `words-online:spelling-dictionary:<idioma>`, `words-online:zoom`, `words-online:home-view`, `wo-template-lang`, `diagram-libraries` | Idioma, accesibilidad, ortografía y diccionario personal, zoom, idioma de las plantillas y bibliotecas de formas elegidas |
-| Asistentes de IA (solo si lo activas) | localStorage `words-online:webmcp` | Que has permitido a los asistentes de IA usar los documentos abiertos en este navegador (WebMCP; desactivado por defecto). Ver la [Nota sobre inteligencia artificial](ai.md) |
-| Nextcloud (solo si lo configuras) | localStorage `words-online:nextcloud`, `words-online:nextcloud-server`, `words-online:nextcloud-folder`, `words-online:nextcloud-format`, `words-online:nextcloud-share` | Servidor, usuario y contraseña de aplicación, última carpeta y formato usados |
+| Documentos | IndexedDB `ofimeo:<id>` y `ofimeo:<id>:comments` | Contenido de cada documento, comentarios, historial de versiones y autoría |
+| Registro de cambios firmados | IndexedDB `ofimeo-kv` | Permite reenviar a otros participantes los cambios de documentos abiertos con enlaces de lectura o de comentario |
+| Índice de documentos | localStorage `ofimeo:docs` | Lista de tus documentos: título, fecha, claves de acceso y archivo vinculado en Nextcloud |
+| Organización local | localStorage `ofimeo:library`; IndexedDB `ofimeo-library` | Carpetas y etiquetas de tus documentos, índice para buscar en su texto y tus propias plantillas |
+| Copias de seguridad | localStorage `ofimeo:backup` | Fecha de la última copia, recordatorio y copia automática en Nextcloud, si la activas |
+| Relay del centro | localStorage `ofimeo:school-relay` | Dirección del relay del centro y configuración de conexión que este facilita |
+| Identidad | localStorage `ofimeo:user`, `ofimeo:writer-user-id` | Nombre y color que ven tus colaboradores; identificador técnico para la autoría |
+| Preferencias | localStorage `ofimeo:language`, `ofimeo:a11y`, `ofimeo:spelling`, `ofimeo:spelling-dictionary:<idioma>`, `ofimeo:zoom`, `ofimeo:home-view`, `wo-template-lang`, `diagram-libraries` | Idioma, accesibilidad, ortografía y diccionario personal, zoom, idioma de las plantillas y bibliotecas de formas elegidas |
+| Asistentes de IA (solo si lo activas) | localStorage `ofimeo:webmcp` | Que has permitido a los asistentes de IA usar los documentos abiertos en este navegador (WebMCP; desactivado por defecto). Ver la [Nota sobre inteligencia artificial](ai.md) |
+| Nextcloud (solo si lo configuras) | localStorage `ofimeo:nextcloud`, `ofimeo:nextcloud-server`, `ofimeo:nextcloud-folder`, `ofimeo:nextcloud-format`, `ofimeo:nextcloud-share` | Servidor, usuario y contraseña de aplicación, última carpeta y formato usados |
 | Funcionamiento sin conexión | Service worker y Cache Storage `workbox-precache-*`, `excalidraw-fonts`, `spelling`, `diagram-libs-*` | Archivos de la aplicación, tipos de letra, diccionarios y formas para usarla sin conexión |
 
-Los nombres técnicos pueden cambiar entre versiones; las categorías y finalidades se mantienen. Las claves `words-online` provienen del nombre técnico del proyecto.
+Los nombres técnicos pueden cambiar entre versiones; las categorías y finalidades se mantienen. Las claves `ofimeo` provienen del nombre técnico del proyecto.
 
 ## 3. Por qué no hay aviso de cookies
 

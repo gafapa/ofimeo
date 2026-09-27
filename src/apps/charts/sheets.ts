@@ -190,7 +190,7 @@ export function displayText(v: Cell, pattern?: string): string {
 export function watchLibrary(onChange: (docId: string) => void): () => void {
   const stamps = new Map(activeDocs().map((d) => [d.id, d.updated]))
   const listener = (e: StorageEvent) => {
-    if (e.key !== 'words-online:docs') return
+    if (e.key !== 'ofimeo:docs') return
     for (const d of activeDocs()) {
       if (stamps.get(d.id) !== d.updated) {
         stamps.set(d.id, d.updated)

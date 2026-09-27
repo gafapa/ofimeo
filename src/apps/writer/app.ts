@@ -41,7 +41,7 @@ import { provideWebMcpTools } from '../../core/webmcp'
 import { setupCharts } from './charts'
 
 const UNTITLED = t('Untitled document')
-const ZOOM_KEY = 'words-online:zoom'
+const ZOOM_KEY = 'ofimeo:zoom'
 
 const MAIN_HTML = `
   <div id="find-panel" class="find-panel" hidden>

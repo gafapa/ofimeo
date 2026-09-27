@@ -148,6 +148,7 @@ function importVerifier(pub: string): Promise<CryptoKey> {
 }
 
 async function deriveCommentSeed(editSeed: Uint8Array): Promise<Uint8Array> {
+  // Kept from the project's former name: existing comment links derive from it.
   const label = new TextEncoder().encode('words-online:comment-key:')
   const data = new Uint8Array(label.length + editSeed.length)
   data.set(label)

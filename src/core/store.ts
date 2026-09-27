@@ -5,8 +5,8 @@ import { kvDelete } from './idb'
 import type { Access, LinkKeys } from './keys'
 import { t } from './i18n'
 
-const DOCS_KEY = 'words-online:docs'
-const USER_KEY = 'words-online:user'
+const DOCS_KEY = 'ofimeo:docs'
+const USER_KEY = 'ofimeo:user'
 const COLORS = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#469990', '#f032e6', '#9a6324', '#800000', '#000075']
 
 export type DocType = 'writer' | 'sheet' | 'draw' | 'diagram' | 'slides' | 'forms' | 'pdf' | 'notebook'
@@ -48,10 +48,10 @@ export interface User {
   color: string
 }
 
-export const dbName = (id: string) => `words-online:${id}`
-export const commentsDbName = (id: string) => `words-online:${id}:comments`
+export const dbName = (id: string) => `ofimeo:${id}`
+export const commentsDbName = (id: string) => `ofimeo:${id}:comments`
 // Editor-only state of an app kept outside the shared document (a form's answer key).
-export const privateDbName = (type: DocType, id: string) => `words-online:${id}:${type}-private`
+export const privateDbName = (type: DocType, id: string) => `ofimeo:${id}:${type}-private`
 export const signedLogKey = (id: string, channel: string) => `signed:${id}:${channel}`
 
 export const newDocId = () => randomToken(9)

@@ -215,6 +215,8 @@ test('notebook: export a page to Word and the notebook as a ZIP of Markdown that
   expect(Object.keys(archive.files).some((n) => /^assets\/ink-.*\.svg$/.test(n))).toBe(true)
 
   // Importing it into another notebook brings the page, the tag and the ink back.
+  // (A hash-only navigation would reload the page later: leave it first.)
+  await page.goto('about:blank')
   await newNotebook(page)
   await page.locator('#menubar').getByText('File', { exact: true }).click()
   const chooser = page.waitForEvent('filechooser')

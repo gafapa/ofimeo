@@ -22,22 +22,28 @@
   "_jurisdiction_help": "jurisdiction: optional forum clause (e.g. 'los juzgados y tribunales de Pontevedra'); empty = the courts that correspond under the applicable law.",
   "hosting": {
     "_help": "Who serves the static files. Defaults describe GitHub Pages; change them for a school or Consellería server. Any value can be a plain string or one per language ({\"es\": …, \"gl\": …, \"en\": …, \"fr\": …, \"de\": …}).",
-    "provider": "GitHub, Inc. (GitHub Pages)",
+    "provider": {
+      "es": "Oracle Cloud Infrastructure (Oracle Corporation), en un servidor administrado por el titular",
+      "gl": "Oracle Cloud Infrastructure (Oracle Corporation), nun servidor administrado polo titular",
+      "en": "Oracle Cloud Infrastructure (Oracle Corporation), on a server administered by the owner",
+      "fr": "Oracle Cloud Infrastructure (Oracle Corporation), sur un serveur administré par le titulaire",
+      "de": "Oracle Cloud Infrastructure (Oracle Corporation), auf einem vom Inhaber verwalteten Server"
+    },
     "country": {
-      "es": "Estados Unidos",
-      "gl": "Estados Unidos",
-      "en": "United States",
-      "fr": "États-Unis",
-      "de": "USA"
+      "es": "Alemania (Unión Europea, Fráncfort)",
+      "gl": "Alemaña (Unión Europea, Frankfurt)",
+      "en": "Germany (European Union, Frankfurt)",
+      "fr": "Allemagne (Union européenne, Francfort)",
+      "de": "Deutschland (Europäische Union, Frankfurt am Main)"
     },
     "transfers": {
-      "es": "el Marco de Privacidad de Datos UE-EE. UU.",
-      "gl": "o Marco de Privacidade de Datos UE-EUA",
-      "en": "the EU-U.S. Data Privacy Framework",
-      "fr": "le cadre de protection des données UE-États-Unis",
-      "de": "den Datenschutzrahmen EU-USA (EU-U.S. Data Privacy Framework)"
+      "es": "el acuerdo de tratamiento de datos de Oracle, con las cláusulas contractuales tipo de la UE",
+      "gl": "o acordo de tratamento de datos de Oracle, coas cláusulas contractuais tipo da UE",
+      "en": "Oracle's data processing agreement, with the EU standard contractual clauses",
+      "fr": "l’accord de traitement des données d’Oracle, avec les clauses contractuelles types de l’UE",
+      "de": "die Auftragsverarbeitungsvereinbarung von Oracle mit den EU-Standardvertragsklauseln"
     },
-    "privacyUrl": "https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement"
+    "privacyUrl": "https://www.oracle.com/legal/privacy/"
   },
   "accessibility": {
     "_help": "Accessibility statement (RD 1112/2018). status: 'partial' (until an audit says otherwise), 'full' or 'none'. method: 'self' (self-assessment) or 'audit' (external audit). reviewedOn: optional. complaintBody: only for public-sector owners (the body that handles accessibility complaints); empty = private owner, voluntary statement.",

@@ -57,6 +57,8 @@ import type { WriterContext } from '../writer/app'
 import type { EquationEditDetail } from '../writer/editor/equation'
 import { Review } from '../writer/review'
 import { userIdOf } from '../writer/collab'
+import { SpellController, spellExtension } from '../writer/spell/plugin'
+import { contextMenuFor, languageButton, openSpellDialog, toolsMenu } from '../writer/spell/ui'
 import { formatSize, notebookExtensions } from './extensions'
 import { InkLayer, type Tool } from './ink'
 import { createNav, type Nav } from './nav'
@@ -195,6 +197,8 @@ export function mountNotebook(session: Session, root: HTMLElement): NotebookCont
   // Fit: the page width (with the comments), never larger than 100 %.
   const effectiveZoom = () => (zoom > 0 ? zoom : Math.min(1, Math.max(0.3, (canvas.clientWidth - 24 - railWidth()) / PAGE_WIDTH)))
   let status: ReturnType<typeof mountFrame>['status']
+  // Spelling and grammar (the writer's checker; the language is the notebook's meta "lang").
+  const spell = new SpellController(doc.getMap('meta'), () => canEdit && !!editor)
   const updateZoom = () => {
     const z = effectiveZoom()
     sheet.style.transform = `scale(${z})`
@@ -273,6 +277,8 @@ export function mountNotebook(session: Session, root: HTMLElement): NotebookCont
         ...notebookExtensions({ history: false, placeholder: canEdit ? t('Type your notes…') : '' }),
         Collaboration.configure({ document: doc, field: pageField(id) }),
         CollaborationCaret.configure({ provider: { awareness }, user: { name: session.user.name, color: session.user.color } }),
+        // One spelling controller for the notebook; it follows the open page's editor.
+        spellExtension(spell),
       ],
       editable: canEdit,
       editorProps: {
@@ -316,6 +322,13 @@ export function mountNotebook(session: Session, root: HTMLElement): NotebookCont
         tr.setNodeMarkup(pos, undefined, { ...node.attrs, ...value })
         return true
       }).run()
+    })
+    // Right-click on an underlined word: spelling suggestions (otherwise the browser's menu).
+    ed.view.dom.addEventListener('contextmenu', (e) => {
+      const at = ed.view.posAtCoords({ left: e.clientX, top: e.clientY })
+      if (!at || !spell.enabled || !spell.issueAt(at.pos)) return
+      e.preventDefault()
+      void contextMenuFor(spell, at.pos, e.clientX, e.clientY, [])
     })
     ed.view.dom.addEventListener('click', (e) => {
       const target = e.target as HTMLElement
@@ -482,7 +495,7 @@ export function mountNotebook(session: Session, root: HTMLElement): NotebookCont
     fileInput.value = ''
     if (!files.length) return
     const list = []
-    for (const f of files) list.push(...(/\.zip$/i.test(f.name) ? await filesFromZip(f) : filesFromList([f])))
+    for (const f of files) list.push(...((await isZip(f)) ? await filesFromZip(f) : filesFromList([f])))
     await importFiles(list)
   })
   folderInput.addEventListener('change', async () => {
@@ -729,6 +742,7 @@ export function mountNotebook(session: Session, root: HTMLElement): NotebookCont
         ],
       },
       app: [notebookMenu, drawMenu],
+      tools: toolsMenu(spell),
       review: [
         {
           label: t('Review'),
@@ -758,6 +772,7 @@ export function mountNotebook(session: Session, root: HTMLElement): NotebookCont
       ],
     },
     zoom: zoomTarget,
+    status: { language: languageButton(spell) },
     keys: { find: () => openDrawerAndSearch() },
   })
   status = frame.status
@@ -981,6 +996,9 @@ export function mountNotebook(session: Session, root: HTMLElement): NotebookCont
       } else if (e.altKey && !modKey && !e.shiftKey && /^Digit[1-4]$/.test(e.code) && !inField) {
         e.preventDefault()
         setTool((['type', 'pen', 'highlighter', 'eraser'] as Tool[])[Number(e.code.slice(5)) - 1])
+      } else if (e.key === 'F7' && !modKey && !e.altKey && editor) {
+        e.preventDefault()
+        openSpellDialog(spell)
       } else if (e.key === 'Escape' && ink.tool !== 'type' && !inField) setTool('type')
     },
     true,
@@ -1039,6 +1057,12 @@ export function mountNotebook(session: Session, root: HTMLElement): NotebookCont
   // Handle for automated browser tests in development builds only.
   if (import.meta.env.DEV) Object.assign(window, { notebook: ctx })
   return ctx
+}
+
+// ZIP files by their signature ("PK"), whatever their name.
+async function isZip(file: Blob): Promise<boolean> {
+  const head = new Uint8Array(await file.slice(0, 2).arrayBuffer())
+  return head[0] === 0x50 && head[1] === 0x4b
 }
 
 function readLocal(key: string): string | null {

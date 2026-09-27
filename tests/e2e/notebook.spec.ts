@@ -9,7 +9,14 @@ import { RELAYS, trackErrors } from './helpers'
 const relays = process.env.E2E_RELAYS ?? RELAYS
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('words-online:language', 'en'))
+  // (about:blank has no storage.)
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('words-online:language', 'en')
+    } catch {
+      // ignore
+    }
+  })
 })
 
 async function newNotebook(page: Page): Promise<void> {
@@ -207,7 +214,8 @@ test('notebook: export a page to Word and the notebook as a ZIP of Markdown that
   const download = page.waitForEvent('download')
   await page.getByText('Notebook as Markdown (.zip)', { exact: true }).click()
   const nbZip = await download
-  const path = (await nbZip.path())!
+  const path = test.info().outputPath('notebook.zip')
+  await nbZip.saveAs(path)
   const archive = await JSZip.loadAsync(await readFile(path))
   const md = await archive.file('Section 1/01 Cells.md')!.async('string')
   expect(md).toContain('# Cells')

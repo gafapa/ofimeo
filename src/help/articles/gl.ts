@@ -285,6 +285,31 @@ O idioma da interface cámbiase na pantalla principal ou no panel.`,
 - **Ferramentas ▸ Dicionario persoal…** mostra as palabras que engadiches. Compártense en todas as aplicacións e documentos deste navegador.
 - **Ferramentas ▸ Revisar a ortografía ao escribir** / **Revisar a gramática ao escribir** quitan os subliñados en todas as aplicacións.`,
   },
+  'math-graph': {
+    title: 'Gráficas matemáticas e xeometría',
+    keywords: 'calculadora gráfica, función, representar, esvarador, geogebra, desmos, xeometría, punto medio, construción, táboa de valores',
+    body: `Insire unha **calculadora gráfica** nun documento ou nunha diapositiva con **Inserir ▸ Gráfica matemática…**. A gráfica gárdase no documento como unha imaxe editable: fai dobre clic nela (ou selecciónaa e preme \`Intro\`) para cambiala. Quen teña unha ligazón de lectura pode abrila para explorala, pero non cambiala.
+
+## Funcións e curvas
+Escribe unha expresión por fila en **Álxebra**:
+- Funcións: \`y = a x^2 + b\`, \`f(x) = sin(x)\`, \`g(x) = f(x - 1)\`, \`f'(x)\` (derivada)
+- Ecuacións e inecuacións: \`x^2 + y^2 = 9\`, \`y > x - 1\`, \`x = 3\`
+- Curvas: \`(cos t, sin t)\` (paramétrica), \`r = 2cos(3θ)\` (polar)
+- Puntos: \`A = (1, 2)\`
+
+As letras sen valor (como \`a\`) convértense en **esvaradores** ao premer \`Intro\`. Preme ▶ para animar un esvarador.
+
+As **Lecturas** indican raíces, mínimo e máximo, o corte co eixo y e onde se cortan dúas funcións, como texto (tamén para lectores de pantalla). **Táboa** mostra unha táboa de valores. **Axustes** ten a xanela, a cuadrícula, os eixos, os graos e o tamaño da imaxe.
+
+## Xeometría
+En **Xeometría**, escolle unha ferramenta e fai clic na gráfica: Punto, Segmento, Recta, Semirrecta, Circunferencia, Polígono, Punto medio, Perpendicular, Paralela, Intersección e Ángulo. As construcións actualízanse ao arrastrar os puntos. Tamén podes escribir ordes como \`M = PuntoMedio(A, B)\` ou \`Área(poly1)\`, e cambiar as coordenadas dos puntos libres na lista.
+
+## Teclado
+Sobre a gráfica: as frechas moven o punto seleccionado (selecciónao pola súa fila), percorren a función seleccionada ou desprazan a vista; \`+\` e \`-\` fan zoom; \`0\` restablece a vista.
+
+## Ficheiros
+Os ficheiros de Word e OpenDocument gardan a gráfica como unha imaxe coa construción no seu título, así que ao abrir de novo o ficheiro en Ofimeo a gráfica segue sendo editable. O PDF e a impresión usan a imaxe. **Descargar SVG** e **Descargar PNG** gardan a imaxe.`,
+  },
   writer: {
     title: 'Ofimeo Documentos (textos)',
     keywords: 'procesador de textos documento word docx odt páxina índice táboa de contidos cita bibliografía comentario suxestións control de cambios revisar corrixir',

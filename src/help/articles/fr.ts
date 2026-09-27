@@ -287,6 +287,31 @@ La langue de l’interface se change sur l’écran d’accueil ou dans le panne
 - **Outils ▸ Dictionnaire personnel…** liste les mots ajoutés. Ils sont partagés par toutes les applications et tous les documents de ce navigateur.
 - **Outils ▸ Vérifier l’orthographe pendant la saisie** / **Vérifier la grammaire pendant la saisie** désactivent les soulignements dans toutes les applications.`,
   },
+  'math-graph': {
+    title: 'Graphiques mathématiques et géométrie',
+    keywords: 'calculatrice graphique, fonction, tracer, curseur, geogebra, desmos, géométrie, milieu, construction, tableau de valeurs',
+    body: `Insérez une **calculatrice graphique** dans un document ou une diapositive avec **Insérer ▸ Graphique mathématique…**. Le graphique est enregistré dans le document comme une image modifiable : double-cliquez dessus (ou sélectionnez-le et appuyez sur \`Entrée\`) pour le modifier. Les personnes ayant un lien en lecture peuvent l’ouvrir pour l’explorer, sans le modifier.
+
+## Fonctions et courbes
+Tapez une expression par ligne dans **Algèbre** :
+- Fonctions : \`y = a x^2 + b\`, \`f(x) = sin(x)\`, \`g(x) = f(x - 1)\`, \`f'(x)\` (dérivée)
+- Équations et inéquations : \`x^2 + y^2 = 9\`, \`y > x - 1\`, \`x = 3\`
+- Courbes : \`(cos t, sin t)\` (paramétrique), \`r = 2cos(3θ)\` (polaire)
+- Points : \`A = (1, 2)\`
+
+Les lettres sans valeur (comme \`a\`) deviennent des **curseurs** quand vous appuyez sur \`Entrée\`. Appuyez sur ▶ pour animer un curseur.
+
+Les **Relevés** indiquent les racines, le minimum et le maximum, l’ordonnée à l’origine et les intersections de deux fonctions, sous forme de texte (lu aussi par les lecteurs d’écran). **Tableau** affiche un tableau de valeurs. **Paramètres** contient la fenêtre, la grille, les axes, les degrés et la taille de l’image.
+
+## Géométrie
+Dans **Géométrie**, choisissez un outil et cliquez sur le graphique : Point, Segment, Droite, Demi-droite, Cercle, Polygone, Milieu, Perpendiculaire, Parallèle, Intersection et Angle. Les constructions se mettent à jour quand vous déplacez les points. Vous pouvez aussi taper des commandes comme \`M = Milieu(A, B)\` ou \`Aire(poly1)\`, et modifier les coordonnées des points libres dans la liste.
+
+## Clavier
+Sur le graphique : les flèches déplacent le point sélectionné (sélectionnez-le par sa ligne), parcourent la fonction sélectionnée ou déplacent la vue ; \`+\` et \`-\` zooment ; \`0\` rétablit la vue.
+
+## Fichiers
+Les fichiers Word et OpenDocument gardent le graphique comme une image avec la construction dans son titre : en rouvrant le fichier dans Ofimeo, le graphique reste modifiable. Le PDF et l’impression utilisent l’image. **Télécharger en SVG** et **Télécharger en PNG** enregistrent l’image.`,
+  },
   writer: {
     title: 'Ofimeo Documents (traitement de texte)',
     keywords: 'traitement de texte document word docx odt page table des matières citation bibliographie commentaire suggestion suivi des modifications révision corriger',

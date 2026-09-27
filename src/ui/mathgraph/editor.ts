@@ -111,7 +111,7 @@ export function editGraph(options: GraphEditOptions = {}): Promise<GraphImage | 
   const dialog = h('dialog', { class: 'dlg mg-dialog', 'aria-labelledby': `mg-title-${id}` })
   const title = h('h2', { id: `mg-title-${id}`, textContent: readOnly ? t('Math graph') : isNew ? t('Insert math graph') : t('Edit math graph') })
   const helpButton = h('button', { type: 'button', class: 'dlg-help', textContent: '?', title: t('Help'), 'aria-label': t('Help about this') })
-  helpButton.addEventListener('click', () => void import('../../help/center').then((m) => m.openHelp('math-graph' as never)))
+  helpButton.addEventListener('click', () => void import('../../help/center').then((m) => m.openHelp('math-graph')))
 
   const tabs = h('div', { class: 'mg-tabs', role: 'tablist', 'aria-label': t('Graph panels') })
   const panels = h('div', { class: 'mg-panels' })

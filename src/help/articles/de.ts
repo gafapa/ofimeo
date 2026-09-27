@@ -285,6 +285,31 @@ Die Sprache der Oberfläche ändern Sie auf der Startseite oder im Panel.`,
 - **Extras ▸ Persönliches Wörterbuch…** listet die hinzugefügten Wörter. Sie gelten für alle Apps und Dokumente dieses Browsers.
 - **Extras ▸ Rechtschreibung während der Eingabe prüfen** / **Grammatik während der Eingabe prüfen** schalten die Unterstreichungen in allen Apps aus.`,
   },
+  'math-graph': {
+    title: 'Mathematische Graphen und Geometrie',
+    keywords: 'Grafikrechner, Funktion, zeichnen, Schieberegler, geogebra, desmos, Geometrie, Mittelpunkt, Konstruktion, Wertetabelle',
+    body: `Fügen Sie mit **Einfügen ▸ Mathematischer Graph…** einen **Grafikrechner** in ein Dokument oder eine Folie ein. Der Graph wird im Dokument als bearbeitbares Bild gespeichert: Doppelklicken Sie darauf (oder wählen Sie ihn aus und drücken Sie \`Eingabe\`), um ihn zu ändern. Personen mit einem Leselink können ihn öffnen und erkunden, aber nicht ändern.
+
+## Funktionen und Kurven
+Geben Sie unter **Algebra** einen Ausdruck pro Zeile ein:
+- Funktionen: \`y = a x^2 + b\`, \`f(x) = sin(x)\`, \`g(x) = f(x - 1)\`, \`f'(x)\` (Ableitung)
+- Gleichungen und Ungleichungen: \`x^2 + y^2 = 9\`, \`y > x - 1\`, \`x = 3\`
+- Kurven: \`(cos t, sin t)\` (Parameterdarstellung), \`r = 2cos(3θ)\` (Polarkoordinaten)
+- Punkte: \`A = (1, 2)\`
+
+Buchstaben ohne Wert (wie \`a\`) werden beim Drücken von \`Eingabe\` zu **Schiebereglern**. Mit ▶ wird ein Schieberegler animiert.
+
+Die **Messwerte** nennen Nullstellen, Minimum und Maximum, den y-Achsenabschnitt und die Schnittpunkte zweier Funktionen als Text (auch für Screenreader). **Tabelle** zeigt eine Wertetabelle. **Einstellungen** enthält Fenster, Gitter, Achsen, Gradmaß und Bildgröße.
+
+## Geometrie
+Wählen Sie unter **Geometrie** ein Werkzeug und klicken Sie in den Graphen: Punkt, Strecke, Gerade, Strahl, Kreis, Vieleck, Mittelpunkt, Senkrechte, Parallele, Schnittpunkt und Winkel. Konstruktionen passen sich an, wenn Sie Punkte ziehen. Sie können auch Befehle wie \`M = Mittelpunkt(A, B)\` oder \`Fläche(poly1)\` eingeben und die Koordinaten freier Punkte in der Liste ändern.
+
+## Tastatur
+Im Graphen: Die Pfeiltasten verschieben den ausgewählten Punkt (über seine Zeile auswählen), verfolgen die ausgewählte Funktion oder verschieben die Ansicht; \`+\` und \`-\` zoomen; \`0\` setzt die Ansicht zurück.
+
+## Dateien
+Word- und OpenDocument-Dateien speichern den Graphen als Bild mit der Konstruktion im Titel. Öffnen Sie die Datei wieder in Ofimeo, ist der Graph weiter bearbeitbar. PDF und Druck verwenden das Bild. **Als SVG herunterladen** und **Als PNG herunterladen** speichern das Bild.`,
+  },
   writer: {
     title: 'Ofimeo Dokumente (Textverarbeitung)',
     keywords: 'textverarbeitung dokument word docx odt seite inhaltsverzeichnis zitat literaturverzeichnis kommentar vorschlag änderungen nachverfolgen überprüfen korrigieren',

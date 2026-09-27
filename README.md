@@ -183,6 +183,30 @@ before the rename keep working.
   afterwards. DOCX keeps `MERGEFIELD` / `IF` fields and reads them back; ODT
   writes `text:database-display`. The chosen data is stored in the document.
 
+### Math graphs and geometry
+
+*Insert → Math graph…* (writer and slides) opens a lightweight graphing
+calculator and geometry tool (`src/ui/mathgraph/`, loaded on first use, no
+dependencies). One expression per row: functions (`y = a x^2`, `f(x) = sin(x)`,
+`f'(x)`), implicit equations (`x^2 + y^2 = 9`), shaded inequalities
+(`y > x - 1`), parametric and polar curves, points, and GeoGebra-style
+commands (`Segment`, `Line`, `Ray`, `Circle`, `Polygon`, `Midpoint`,
+`Perpendicular`, `Parallel`, `Intersect`, `Angle`, `Distance`, `Length`, `Area`,
+`Slope`; Spanish, Galician, French and German names are accepted). Free letters
+become sliders that can be animated. Zoom and pan, grid/axes options, trace,
+roots, extrema and intersections, and a table of values; the geometry tools
+build constructions that update while points are dragged. Readouts are plain
+text (screen readers) and the graph is keyboard accessible.
+
+The graph is stored as a picture (PNG, 2×) plus its construction as JSON: in the
+writer an image node whose title is `ofimeo-graph:{…}` (shown as `data-graph`),
+so DOCX (`docPr/@title`) and ODT (`svg:title`) keep it and re-opening restores
+an editable graph; on slides an image shape (`slideGraph=1`) with the JSON in the
+cell data, and in PPTX in the picture name. Everything syncs through Yjs like
+other images. Double click (or Enter) edits it; viewers can open it read-only.
+The expression parser is our own (`expr.ts`) instead of mathjs/JSXGraph, to keep
+the bundle small; KaTeX (already bundled) renders the row previews.
+
 ### Spelling and grammar
 
 Offline and private: checks run in a Web Worker in the browser and no text is

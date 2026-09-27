@@ -285,6 +285,31 @@ The interface language can be changed on the home screen or in the panel.`,
 - **Tools ▸ Personal dictionary…** lists the words you added. They are shared by every app and document of this browser.
 - **Tools ▸ Check spelling as you type** / **Check grammar as you type** turn the underlines off in every app.`,
   },
+  'math-graph': {
+    title: 'Math graphs and geometry',
+    keywords: 'graphing calculator, function, plot, slider, geogebra, desmos, geometry, midpoint, construction, table of values',
+    body: `Insert a **graphing calculator** in a document or a slide with **Insert ▸ Math graph…**. The graph is saved in the document as an editable picture: double click it (or select it and press \`Enter\`) to change it. People with a view link can open it to explore, but not change it.
+
+## Functions and curves
+Type one expression per row in **Algebra**:
+- Functions: \`y = a x^2 + b\`, \`f(x) = sin(x)\`, \`g(x) = f(x - 1)\`, \`f'(x)\` (derivative)
+- Equations and inequalities: \`x^2 + y^2 = 9\`, \`y > x - 1\`, \`x = 3\`
+- Curves: \`(cos t, sin t)\` (parametric), \`r = 2cos(3θ)\` (polar)
+- Points: \`A = (1, 2)\`
+
+Letters without a value (like \`a\`) become **sliders** when you press \`Enter\`. Press ▶ to animate a slider.
+
+The **Readouts** list roots, minimum and maximum, the y-intercept and where two functions meet, as text (also read by screen readers). **Table** shows a table of values. **Settings** has the window, grid, axes, degrees and the picture size.
+
+## Geometry
+In **Geometry**, choose a tool and click on the graph: Point, Segment, Line, Ray, Circle, Polygon, Midpoint, Perpendicular, Parallel, Intersect and Angle. Constructions update when you drag the points. You can also type commands such as \`M = Midpoint(A, B)\` or \`Area(poly1)\`, and change coordinates of free points in the list.
+
+## Keyboard
+On the graph: arrow keys move the selected point (select it by its row), trace the selected function or pan; \`+\` and \`-\` zoom; \`0\` resets the view.
+
+## Files
+Word and OpenDocument files keep the graph as a picture with the construction in its title, so opening the file again in Ofimeo restores the editable graph. PDF and printing use the picture. **Download SVG** and **Download PNG** save the picture.`,
+  },
   writer: {
     title: 'Ofimeo Docs (documents)',
     keywords: 'writer word processor text document docx odt page table of contents citation bibliography comment suggest track changes review correct',

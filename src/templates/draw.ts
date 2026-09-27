@@ -191,7 +191,7 @@ function storyboard(lang: Lang): Element[] {
 const BUILDERS: Record<string, (lang: Lang) => Element[]> = { brainstorm, 'mind-map': mindMap, storyboard }
 
 export async function createDrawTemplate(id: string, lang: Lang, name: string): Promise<string> {
-  const scene = { type: 'excalidraw', version: 2, source: 'words-online', elements: BUILDERS[id](lang), appState: { gridSize: 20, viewBackgroundColor: '#ffffff' }, files: {} }
+  const scene = { type: 'excalidraw', version: 2, source: 'ofimeo', elements: BUILDERS[id](lang), appState: { gridSize: 20, viewBackgroundColor: '#ffffff' }, files: {} }
   const module = await appInfo('draw').load!()
   return module.importFile(new File([JSON.stringify(scene)], `${name}.excalidraw`, { type: 'application/json' }))
 }

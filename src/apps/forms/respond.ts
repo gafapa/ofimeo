@@ -34,7 +34,7 @@ interface Mine {
 }
 
 const mineKey = (docId: string) => `forms:mine:${docId}`
-const draftKey = (docId: string) => `words-online:forms-draft:${docId}`
+const draftKey = (docId: string) => `ofimeo:forms-draft:${docId}`
 const loadMine = async (docId: string) => ((await kvGet<Mine[]>(mineKey(docId))) ?? []).filter((m) => m && m.rid)
 const saveMine = (docId: string, list: Mine[]) => kvSet(mineKey(docId), list)
 

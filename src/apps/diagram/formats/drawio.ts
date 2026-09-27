@@ -228,7 +228,7 @@ function parseGeometryElement(el: Element): DrawioGeometry {
 // `compressed: true` each page is written in draw.io's compressed form.
 export function serializeDrawio(pages: PageRecord[], options: SerializeOptions = {}): string {
   const compressed = !!options.compressed
-  const out = [`<mxfile host="${escapeAttr(options.host ?? 'words-online')}" compressed="${compressed}">`]
+  const out = [`<mxfile host="${escapeAttr(options.host ?? 'ofimeo')}" compressed="${compressed}">`]
   for (const page of pages) {
     const open = `  <diagram id="${escapeAttr(page.id)}" name="${escapeAttr(page.name)}">`
     if (compressed) {

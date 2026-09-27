@@ -99,11 +99,11 @@ Nginx (inside Nextcloud's `server { }`, before the other `location` blocks):
 
 ```nginx
 location ^~ /office/ {
-    alias /var/www/words-online/;
+    alias /var/www/ofimeo/;
 }
 ```
 
-Apache: `Alias /office /var/www/words-online` (and a `<Directory>` granting access).
+Apache: `Alias /office /var/www/ofimeo` (and a `<Directory>` granting access).
 
 ### B. The Nextcloud app "WebAppPassword"
 
@@ -129,7 +129,7 @@ next to its other `add_header` lines: `add_header` in a `location` would
 stop the server-level ones from being inherited):
 
 ```nginx
-# 1) In the http { } block (e.g. /etc/nginx/conf.d/words-online-cors.conf)
+# 1) In the http { } block (e.g. /etc/nginx/conf.d/ofimeo-cors.conf)
 map $http_origin $wo_origin {
     default "";
     "https://office.example.org" $http_origin;   # where Ofimeo runs (one line per site)
@@ -211,7 +211,7 @@ curl -i -X OPTIONS https://cloud.school.org/remote.php/dav/files/alice/ \
 ## Security notes
 
 - Credentials: the Nextcloud address, user id, login name and **app password**
-  are stored in this browser's `localStorage` (`words-online:nextcloud`),
+  are stored in this browser's `localStorage` (`ofimeo:nextcloud`),
   like the rest of the local data; they are sent only to that Nextcloud, in the
   `Authorization` header. Anyone with access to this browser profile (or a
   script running on the same origin) could read them. That is why only app

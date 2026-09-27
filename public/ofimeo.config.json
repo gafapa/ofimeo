@@ -1,4 +1,4 @@
 {
-  "$schema": "https://raw.githubusercontent.com/gafapa/words-online/main/docs/ofimeo.config.schema.json",
+  "$schema": "https://raw.githubusercontent.com/gafapa/ofimeo/main/docs/ofimeo.config.schema.json",
   "_help": "School configuration. Empty: no school settings. Replace this file (or use Help > For administrators... to generate one). See docs/deploy-school.md."
 }

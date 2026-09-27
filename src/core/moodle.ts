@@ -98,7 +98,7 @@ interface RelayMoodle {
   maxUploadMB?: number
 }
 
-const CONSENT_KEY = 'words-online:moodle-relay-consent'
+const CONSENT_KEY = 'ofimeo:moodle-relay-consent'
 
 function relayMoodle(site: string): RelayMoodle | null | 'other-site' {
   const relay = schoolRelay()

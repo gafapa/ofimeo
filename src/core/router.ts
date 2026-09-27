@@ -43,7 +43,7 @@ export function newDocPath(type: DocType): string {
 // Ids handed out by newDocPath, so an app can tell a document created here
 // (which it may initialize, e.g. with localized names) from a shared one that
 // has not arrived yet. Kept a day, in localStorage (File ▸ New opens a new tab).
-const NEW_DOCS_KEY = 'words-online:new-docs'
+const NEW_DOCS_KEY = 'ofimeo:new-docs'
 const NEW_DOCS_MS = 24 * 3600 * 1000
 
 function readNew(): Record<string, number> {

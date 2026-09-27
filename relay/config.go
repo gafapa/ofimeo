@@ -78,7 +78,7 @@ func defaultConfig() Config {
 		TURNPort:            3478,
 		RelayPortMin:        49152,
 		RelayPortMax:        65535,
-		AppURL:              "https://gafapa.github.io/words-online/",
+		AppURL:              "https://gafapa.github.io/ofimeo/",
 		CredentialTTL:       Duration(24 * time.Hour),
 		MaxClients:          2000,
 		MaxSubscriptions:    64,
@@ -91,6 +91,9 @@ func defaultConfig() Config {
 }
 
 const configFileName = "ofimeo-relay.json"
+
+// Default AppURL before the repository was renamed from words-online.
+const legacyAppURL = "https://gafapa.github.io/words-online/"
 
 // defaultDataDir: the system location when running as a service (root),
 // else the user's configuration directory.
@@ -128,6 +131,10 @@ func loadConfig(dataDir string) (Config, error) {
 	case err == nil:
 		if err := json.Unmarshal(raw, &cfg); err != nil {
 			return cfg, fmt.Errorf("%s: %w", path, err)
+		}
+		// The default web app moved when the repository was renamed.
+		if cfg.AppURL == legacyAppURL {
+			cfg.AppURL = defaultConfig().AppURL
 		}
 	case errors.Is(err, os.ErrNotExist):
 		out, _ := json.MarshalIndent(cfg, "", "  ")

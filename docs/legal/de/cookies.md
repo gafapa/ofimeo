@@ -12,19 +12,19 @@ Die gesamte Speicherung ist eigene Speicherung (keine Speicherung Dritter), lieg
 
 | Kategorie | Technischer Name | Zweck |
 | --- | --- | --- |
-| Dokumente | IndexedDB `words-online:<id>` und `words-online:<id>:comments` | Inhalt jedes Dokuments, Kommentare, Versionsverlauf und Urheberschaft |
-| Protokoll signierter Änderungen | IndexedDB `words-online-kv` | Ermöglicht die Weitergabe von Änderungen an Dokumenten, die über Ansichts- oder Kommentarlinks geöffnet wurden, an andere Beteiligte |
-| Dokumentenverzeichnis | localStorage `words-online:docs` | Liste Ihrer Dokumente: Titel, Datum, Zugriffsschlüssel und verknüpfte Nextcloud-Datei |
-| Lokale Ordnung | localStorage `words-online:library`; IndexedDB `words-online-library` | Ordner und Schlagwörter Ihrer Dokumente, Index für die Volltextsuche und Ihre eigenen Vorlagen |
-| Sicherungen | localStorage `words-online:backup` | Datum der letzten Sicherung, Erinnerung und automatische Sicherung in Nextcloud, falls aktiviert |
-| Relay der Schule | localStorage `words-online:school-relay` | Adresse des Schul-Relays und die von ihm bereitgestellten Verbindungseinstellungen |
-| Identität | localStorage `words-online:user`, `words-online:writer-user-id` | Name und Farbe, die Ihre Mitwirkenden sehen; technische Kennung für die Urheberschaft |
-| Einstellungen | localStorage `words-online:language`, `words-online:a11y`, `words-online:spelling`, `words-online:spelling-dictionary:<Sprache>`, `words-online:zoom`, `words-online:home-view`, `wo-template-lang`, `diagram-libraries` | Sprache, Barrierefreiheit, Rechtschreibung und persönliches Wörterbuch, Zoom, Sprache der Vorlagen und gewählte Formenbibliotheken |
-| KI-Assistenten (nur wenn Sie es einschalten) | localStorage `words-online:webmcp` | Dass Sie KI-Assistenten erlaubt haben, die in diesem Browser geöffneten Dokumente zu verwenden (WebMCP; standardmäßig aus). Siehe den [Hinweis zu künstlicher Intelligenz](ai.md) |
-| Nextcloud (nur wenn eingerichtet) | localStorage `words-online:nextcloud`, `words-online:nextcloud-server`, `words-online:nextcloud-folder`, `words-online:nextcloud-format`, `words-online:nextcloud-share` | Server, Benutzername und App-Passwort, zuletzt verwendeter Ordner und Format |
+| Dokumente | IndexedDB `ofimeo:<id>` und `ofimeo:<id>:comments` | Inhalt jedes Dokuments, Kommentare, Versionsverlauf und Urheberschaft |
+| Protokoll signierter Änderungen | IndexedDB `ofimeo-kv` | Ermöglicht die Weitergabe von Änderungen an Dokumenten, die über Ansichts- oder Kommentarlinks geöffnet wurden, an andere Beteiligte |
+| Dokumentenverzeichnis | localStorage `ofimeo:docs` | Liste Ihrer Dokumente: Titel, Datum, Zugriffsschlüssel und verknüpfte Nextcloud-Datei |
+| Lokale Ordnung | localStorage `ofimeo:library`; IndexedDB `ofimeo-library` | Ordner und Schlagwörter Ihrer Dokumente, Index für die Volltextsuche und Ihre eigenen Vorlagen |
+| Sicherungen | localStorage `ofimeo:backup` | Datum der letzten Sicherung, Erinnerung und automatische Sicherung in Nextcloud, falls aktiviert |
+| Relay der Schule | localStorage `ofimeo:school-relay` | Adresse des Schul-Relays und die von ihm bereitgestellten Verbindungseinstellungen |
+| Identität | localStorage `ofimeo:user`, `ofimeo:writer-user-id` | Name und Farbe, die Ihre Mitwirkenden sehen; technische Kennung für die Urheberschaft |
+| Einstellungen | localStorage `ofimeo:language`, `ofimeo:a11y`, `ofimeo:spelling`, `ofimeo:spelling-dictionary:<Sprache>`, `ofimeo:zoom`, `ofimeo:home-view`, `wo-template-lang`, `diagram-libraries` | Sprache, Barrierefreiheit, Rechtschreibung und persönliches Wörterbuch, Zoom, Sprache der Vorlagen und gewählte Formenbibliotheken |
+| KI-Assistenten (nur wenn Sie es einschalten) | localStorage `ofimeo:webmcp` | Dass Sie KI-Assistenten erlaubt haben, die in diesem Browser geöffneten Dokumente zu verwenden (WebMCP; standardmäßig aus). Siehe den [Hinweis zu künstlicher Intelligenz](ai.md) |
+| Nextcloud (nur wenn eingerichtet) | localStorage `ofimeo:nextcloud`, `ofimeo:nextcloud-server`, `ofimeo:nextcloud-folder`, `ofimeo:nextcloud-format`, `ofimeo:nextcloud-share` | Server, Benutzername und App-Passwort, zuletzt verwendeter Ordner und Format |
 | Offline-Betrieb | Service Worker und Cache Storage `workbox-precache-*`, `excalidraw-fonts`, `spelling`, `diagram-libs-*` | Dateien der Anwendung, Schriftarten, Wörterbücher und Formen für die Offline-Nutzung |
 
-Technische Namen können sich zwischen Versionen ändern; Kategorien und Zwecke bleiben gleich. Die Schlüssel `words-online` stammen vom technischen Namen des Projekts.
+Technische Namen können sich zwischen Versionen ändern; Kategorien und Zwecke bleiben gleich. Die Schlüssel `ofimeo` stammen vom technischen Namen des Projekts.
 
 ## 3. Warum es keinen Cookie-Hinweis gibt
 

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/gafapa/words-online/main/docs/ofimeo.config.schema.json",
+  "$id": "https://raw.githubusercontent.com/gafapa/ofimeo/main/docs/ofimeo.config.schema.json",
   "title": "Ofimeo school configuration (ofimeo.config.json)",
   "description": "Put this file next to index.html (or pass it to Ofimeo Relay with --school-config). Every property is optional; values that are not valid are ignored. See docs/deploy-school.md.",
   "type": "object",

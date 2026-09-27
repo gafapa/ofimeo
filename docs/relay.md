@@ -74,7 +74,7 @@ DTLS. The relay never sees document contents.
 ## Quick start
 
 1. Download the file for your system from the
-   [releases](https://github.com/gafapa/words-online/releases) (tags
+   [releases](https://github.com/gafapa/ofimeo/releases) (tags
    `relay-v…`):
 
    | System | File |

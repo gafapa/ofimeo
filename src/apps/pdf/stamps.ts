@@ -32,7 +32,7 @@ export const gradeText = (grade: string) => t('Grade: {grade}', { grade })
 
 // ---------- Signature ----------
 
-const SIGNATURE_KEY = 'words-online:pdf-signature'
+const SIGNATURE_KEY = 'ofimeo:pdf-signature'
 
 export interface Signature {
   w: number

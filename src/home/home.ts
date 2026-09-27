@@ -163,7 +163,7 @@ export function mountHome(root: HTMLElement): void {
   registerShortcuts({ open: () => fileInput.click(), save: null, help: () => void showShortcuts() })
   // Titles and new documents from other tabs.
   window.addEventListener('storage', (e) => {
-    if (e.key === null || e.key.startsWith('words-online:')) docs.refresh()
+    if (e.key === null || e.key.startsWith('ofimeo:')) docs.refresh()
   })
 }
 

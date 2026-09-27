@@ -3,12 +3,12 @@
 // in store.ts), plus a small IndexedDB database for the content search index
 // (library-search.ts) and own templates (library-templates.ts).
 //
-//   localStorage 'words-online:library'   { folders: Folder[], tags: Tag[] }
-//   IndexedDB    'words-online-library'   stores 'texts' {id, text, indexed} and 'templates' (OwnTemplate)
+//   localStorage 'ofimeo:library'   { folders: Folder[], tags: Tag[] }
+//   IndexedDB    'ofimeo-library'   stores 'texts' {id, text, indexed} and 'templates' (OwnTemplate)
 
 import * as store from './store'
 
-const LIBRARY_KEY = 'words-online:library'
+const LIBRARY_KEY = 'ofimeo:library'
 
 export interface Folder {
   id: string
@@ -196,7 +196,7 @@ export function foldWithMap(text: string): { folded: string; map: number[] } {
 
 // ---------- IndexedDB ----------
 
-const DB_NAME = 'words-online-library'
+const DB_NAME = 'ofimeo-library'
 export type LibraryStore = 'texts' | 'templates'
 let dbPromise: Promise<IDBDatabase> | null = null
 

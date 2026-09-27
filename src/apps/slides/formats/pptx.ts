@@ -20,8 +20,8 @@ const data = (url: string) => url.replace(/^data:/, '')
 
 export async function exportPptx(pres: PresentationData, renderer: SlideRenderer): Promise<Blob> {
   const pptx = new PptxGenJS()
-  pptx.defineLayout({ name: 'WORDS_ONLINE', width: pres.width * PX, height: pres.height * PX })
-  pptx.layout = 'WORDS_ONLINE'
+  pptx.defineLayout({ name: 'OFIMEO', width: pres.width * PX, height: pres.height * PX })
+  pptx.layout = 'OFIMEO'
   pptx.title = pres.slides[0]?.name ?? ''
   const shapes = pptx.ShapeType
   const geomShape: Record<TextElement['geom'], PptxGenJS.SHAPE_NAME> = {

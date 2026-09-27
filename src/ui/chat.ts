@@ -32,8 +32,8 @@ export interface ChatMessage {
 
 export const MAX_MESSAGE = 2000
 const MAX_HISTORY = 1000
-const SENDER_KEY = 'words-online:chat-sender'
-const READ_PREFIX = 'words-online:chat-read:'
+const SENDER_KEY = 'ofimeo:chat-sender'
+const READ_PREFIX = 'ofimeo:chat-read:'
 const EMOJI = ['👍', '👏', '🙂', '😀', '😂', '😮', '🤔', '🙏', '❤️', '🎉', '✅', '❌', '❓', '❗', '👀', '💡', '📌', '📎', '✏️', '📚', '⭐', '🔥', '👋', '🙌']
 
 const chatArray = (session: Session) => session.commentsDoc.getArray<ChatMessage>('chat')

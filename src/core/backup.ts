@@ -27,7 +27,7 @@ export const BACKUP_EXT = '.ofimeo-backup'
 const FORMAT = 'ofimeo-backup'
 const VERSION = 1
 const ITERATIONS = 310000
-const SETTINGS_KEY = 'words-online:backup'
+const SETTINGS_KEY = 'ofimeo:backup'
 const DAY = 86400000
 
 export interface BackupSettings {

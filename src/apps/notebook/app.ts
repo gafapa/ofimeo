@@ -92,7 +92,7 @@ const IMAGE_MAX = 1024 * 1024
 const IMAGE_MAX_SIDE = 1600
 const FILE_MAX = 5 * 1024 * 1024
 const ZOOMS = [0.5, 0.75, 0.9, 1, 1.25, 1.5, 2]
-const LAST_PAGE_KEY = 'words-online:notebook-page:'
+const LAST_PAGE_KEY = 'ofimeo:notebook-page:'
 const PEN_COLORS = ['#1a237e', '#000000', '#c62828', '#2e7d32', '#1565c0', '#6a1b9a', '#ef6c00']
 const HIGHLIGHT_COLORS = ['#ffeb3b', '#76ff03', '#18ffff', '#ff4081', '#ffab40']
 const WIDTHS: [number, string][] = [
@@ -191,7 +191,7 @@ export function mountNotebook(session: Session, root: HTMLElement): NotebookCont
 
   // ---------- Zoom (the page has a fixed width, scaled to fit narrow windows) ----------
 
-  const zoomKey = 'words-online:notebook-zoom'
+  const zoomKey = 'ofimeo:notebook-zoom'
   let zoom = Number(readLocal(zoomKey)) || 0
   const railWidth = () => (rail.hidden || window.innerWidth <= BREAKPOINTS.narrow ? 0 : rail.offsetWidth + 16)
   // Fit: the page width (with the comments), never larger than 100 %.

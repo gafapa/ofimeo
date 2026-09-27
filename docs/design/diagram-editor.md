@@ -1,6 +1,6 @@
 # Diagram editor rewrite (maxGraph) — shared spec
 
-Project: /home/user/words-online (Vite + TypeScript, browser-only office suite). We are replacing the embedded draw.io
+Project: /home/user/ofimeo (Vite + TypeScript, browser-only office suite). We are replacing the embedded draw.io
 iframe with our own diagram editor built on **@maxgraph/core 0.24** (Apache-2.0, installed; TypeScript successor of
 mxGraph, the engine of draw.io). Files must stay compatible with draw.io (`.drawio` / mxGraphModel XML, style strings).
 

@@ -6,8 +6,8 @@ import { APP_READY, openApp, RELAYS, trackErrors, uniqueDoc } from './helpers'
 // hook of the @mcp-b/global polyfill (loaded because headless Chromium has no
 // native WebMCP).
 
-const ENGLISH = () => localStorage.setItem('words-online:language', 'en')
-const ENABLED = () => localStorage.setItem('words-online:webmcp', '1')
+const ENGLISH = () => localStorage.setItem('ofimeo:language', 'en')
+const ENABLED = () => localStorage.setItem('ofimeo:webmcp', '1')
 
 type Tools = { listTools(): { name: string }[]; executeTool(name: string, args: string): Promise<string | null> }
 

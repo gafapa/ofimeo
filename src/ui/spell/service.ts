@@ -47,7 +47,7 @@ export function updateSpellSettings(patch: Partial<SpellSettings>): void {
 // Another tab (or the word processor) changed the settings or the dictionary.
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', (e) => {
-    if (!e.key?.startsWith('words-online:spelling')) return
+    if (!e.key?.startsWith('ofimeo:spelling')) return
     current = loadSettings()
     personalSent.clear()
     notify()

@@ -42,10 +42,10 @@ function schoolNextcloud(server: HTMLInputElement): { chooser: HTMLElement | nul
   return { chooser, note: locked ? lockedNote() : null }
 }
 
-const SERVER_KEY = 'words-online:nextcloud-server'
-const FOLDER_KEY = 'words-online:nextcloud-folder'
-const FORMAT_KEY = 'words-online:nextcloud-format'
-const SHARE_KEY = 'words-online:nextcloud-share'
+const SERVER_KEY = 'ofimeo:nextcloud-server'
+const FOLDER_KEY = 'ofimeo:nextcloud-folder'
+const FORMAT_KEY = 'ofimeo:nextcloud-format'
+const SHARE_KEY = 'ofimeo:nextcloud-share'
 
 const isMac = /Mac|iPhone|iPad/.test(navigator.platform)
 const online = () => navigator.onLine
@@ -141,7 +141,7 @@ function button(label: string, onClick: () => void, className = 'nc-btn', iconNo
 // ---------- Admin help (CORS) ----------
 
 export function nginxSnippet(origin: string): string {
-  return `# 1) In the http { } block (e.g. /etc/nginx/conf.d/words-online-cors.conf)
+  return `# 1) In the http { } block (e.g. /etc/nginx/conf.d/ofimeo-cors.conf)
 map $http_origin $wo_origin {
     default "";
     "${origin}" $http_origin;   # where Ofimeo runs (one line per site)

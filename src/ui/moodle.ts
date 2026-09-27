@@ -202,7 +202,7 @@ export async function openMoodleDialog(): Promise<MoodleAccount | null> {
 
   const signInView = (): HTMLElement => {
     const school = md.schoolMoodle()
-    const lastSite = md.readLocal('words-online:moodle-site') ?? ''
+    const lastSite = md.readLocal('ofimeo:moodle-site') ?? ''
     const site = el('input', { class: 'field', type: 'url', placeholder: 'https://moodle.school.org', value: school.url ?? lastSite })
     site.readOnly = school.locked
     const user = el('input', { class: 'field', autocomplete: 'username', autocapitalize: 'none', spellcheck: false })
@@ -245,7 +245,7 @@ export async function openMoodleDialog(): Promise<MoodleAccount | null> {
       status.textContent = t('Connecting…')
       try {
         const account = await md.connect(site.value, user.value, password.value, { confirmRelay })
-        md.writeLocal('words-online:moodle-site', account.site)
+        md.writeLocal('ofimeo:moodle-site', account.site)
         password.value = ''
         toast(t('Connected to Moodle as {name}', { name: account.fullName }))
         render()

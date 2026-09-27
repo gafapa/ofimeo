@@ -23,7 +23,7 @@ export function pdfjs(): Promise<typeof PdfJs> {
 // they open the document; it is remembered for this browser tab only
 // (sessionStorage, cleared when the tab closes), so opening from the home
 // screen and exporting do not ask again.
-const PASSWORD_KEY = 'words-online:pdf-password:'
+const PASSWORD_KEY = 'ofimeo:pdf-password:'
 const passwords = {
   get(key: string): string | undefined {
     try {

@@ -37,7 +37,7 @@ is a complete example:
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/gafapa/words-online/main/docs/ofimeo.config.schema.json",
+  "$schema": "https://raw.githubusercontent.com/gafapa/ofimeo/main/docs/ofimeo.config.schema.json",
   "version": 1,
   "school": { "name": "IES Example", "logo": "school/logo.svg", "url": "https://www.school.example" },
   "defaults": { "language": "gl", "documentLanguage": "gl-ES" },
@@ -92,7 +92,7 @@ school configuration. `docker-compose.yml` runs it.
 2. Get the project and, optionally, your configuration:
 
    ```sh
-   git clone https://github.com/gafapa/words-online.git ofimeo && cd ofimeo
+   git clone https://github.com/gafapa/ofimeo.git ofimeo && cd ofimeo
    cp deploy/config/ofimeo.config.example.json deploy/config/ofimeo.config.json
    nano deploy/config/ofimeo.config.json      # or use Help ▸ For administrators… and copy the file here
    mkdir -p deploy/config/school && cp /path/to/logo.svg deploy/config/school/

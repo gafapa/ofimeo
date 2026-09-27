@@ -80,7 +80,7 @@ test('connect, see the tasks, hand in a document as PDF, disconnect', async ({ p
   const saved = await page.evaluate(() => JSON.stringify({ ...localStorage }))
   expect(saved).toContain('tok-cors')
   expect(saved).not.toContain('Secret-1')
-  expect(JSON.parse(await page.evaluate(() => localStorage.getItem('words-online:moodle') ?? '{}')).site).toBe(`${MOCK}/cors`)
+  expect(JSON.parse(await page.evaluate(() => localStorage.getItem('ofimeo:moodle') ?? '{}')).site).toBe(`${MOCK}/cors`)
   await dialog.getByRole('button', { name: 'Close' }).click()
 
   // Task list: pending ones first (by due date), then handed in / graded.

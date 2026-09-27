@@ -17,7 +17,7 @@ export function commentsMapOf(session: Session): Y.Map<unknown> {
 // (a new local document has no comments channel yet).
 export const PENDING_COMMENTS = 'pendingComments'
 
-const USER_ID_KEY = 'words-online:writer-user-id'
+const USER_ID_KEY = 'ofimeo:writer-user-id'
 
 // A per-browser id to recognise one's own comments and suggestions.
 export function userIdOf(session: Session): string {

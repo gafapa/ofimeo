@@ -41,7 +41,7 @@ export interface SheetA11y {
   refresh: () => void
 }
 
-const KEY = 'words-online:sheet-table-view'
+const KEY = 'ofimeo:sheet-table-view'
 const address = (r: number, c: number) => `${colName(c)}${r + 1}`
 
 export function setupSheetA11y(o: SheetA11yOptions): SheetA11y {

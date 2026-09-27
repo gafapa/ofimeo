@@ -25,7 +25,7 @@ const serveConfig = (page: Page, config: unknown) =>
 test('school configuration: default language locked, app hidden, templates chosen, school name and contacts', async ({ page }) => {
   const errors = trackErrors(page)
   // The browser is in English and the person chose English before: the lock wins.
-  await page.addInitScript(() => localStorage.setItem('words-online:language', 'en'))
+  await page.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
   await serveConfig(page, SCHOOL)
   await page.goto(`/${RELAYS}`)
   await expect(page.locator('.new-cards')).toBeVisible()
@@ -65,9 +65,9 @@ test('school configuration: default language locked, app hidden, templates chose
 test('school configuration: AI assistants (WebMCP) forbidden and shown as set by the school', async ({ page }) => {
   const errors = trackErrors(page)
   await page.addInitScript(() => {
-    localStorage.setItem('words-online:language', 'en')
+    localStorage.setItem('ofimeo:language', 'en')
     // Turned on in this browser before: the school's lock wins.
-    localStorage.setItem('words-online:webmcp', '1')
+    localStorage.setItem('ofimeo:webmcp', '1')
   })
   await serveConfig(page, { ...SCHOOL, defaults: {}, locked: ['webmcp'] })
   await openApp(page, 'writer')
@@ -82,7 +82,7 @@ test('school configuration: AI assistants (WebMCP) forbidden and shown as set by
 })
 
 test('Help ▸ For administrators…: the generator downloads a valid ofimeo.config.json', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('words-online:language', 'en'))
+  await page.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
   await page.goto(`/${RELAYS}`)
   await page.getByRole('button', { name: 'Help', exact: true }).click()
   await page.getByText('For administrators…', { exact: true }).click()
@@ -125,7 +125,7 @@ test('the recommended security headers do not break the app', async ({ page, bas
     },
   )
   await page.addInitScript(() => {
-    localStorage.setItem('words-online:language', 'en')
+    localStorage.setItem('ofimeo:language', 'en')
     const w = window as unknown as { cspViolations: string[] }
     w.cspViolations = []
     document.addEventListener('securitypolicyviolation', (e) => w.cspViolations.push(`${e.violatedDirective} ${e.blockedURI}`))
@@ -145,7 +145,7 @@ test('the recommended security headers do not break the app', async ({ page, bas
 
 test('school configuration: locked school relay and Nextcloud servers', async ({ page }) => {
   const errors = trackErrors(page)
-  await page.addInitScript(() => localStorage.setItem('words-online:language', 'en'))
+  await page.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
   await serveConfig(page, {
     // Nothing listens there: the relay is shown as not reachable, but still locked.
     relay: { url: 'https://127.0.0.1:9', only: true },

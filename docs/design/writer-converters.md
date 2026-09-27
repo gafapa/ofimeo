@@ -1,6 +1,6 @@
-# Converter spec (Words Online, TipTap migration)
+# Converter spec (Ofimeo, TipTap migration)
 
-Project: /home/user/words-online (Vite + TypeScript, browser-only app). The editor moved from Quill to TipTap v3
+Project: /home/user/ofimeo (Vite + TypeScript, browser-only app). The editor moved from Quill to TipTap v3
 (ProseMirror). Converters must translate between Word/ODT files and ProseMirror JSON (`JSONContent` from `@tiptap/core`).
 
 Read first: `src/formats/types.ts` (DocumentData, PageSettings, sizes), `src/formats/util.ts` (XML/image helpers — reuse them),

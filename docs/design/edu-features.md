@@ -1,6 +1,6 @@
 # Education features — shared rules for all agents
 
-Project: /home/user/words-online — browser-only collaborative office suite (Vite 8 + TypeScript, no backend,
+Project: /home/user/ofimeo — browser-only collaborative office suite (Vite 8 + TypeScript, no backend,
 PWA, Yjs + y-indexeddb, P2P over Trystero/Nostr WebRTC). Apps: writer (TipTap 3), sheet (Univer), draw
 (Excalidraw), diagram (own editor on maxGraph). Read README.md (architecture) first.
 

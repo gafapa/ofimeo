@@ -13,8 +13,9 @@
 import { createHash } from 'node:crypto'
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const root = new URL('..', import.meta.url).pathname
+const root = fileURLToPath(new URL('..', import.meta.url))
 const check = process.argv.includes('--check')
 const out = join(root, 'THIRD_PARTY_NOTICES.md')
 

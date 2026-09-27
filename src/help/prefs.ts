@@ -3,12 +3,12 @@
 //
 // Opt-outs (automated tests, kiosks, managed deployments):
 //   ?notour in the URL              turns the welcome tour and the quick starts off in this browser
-//   localStorage words-online:help:off = '1'   the same
+//   localStorage ofimeo:help:off = '1'   the same
 //   navigator.webdriver (Playwright, Selenium) skips them unless the URL has ?tour
 
-const WELCOME = 'words-online:help:welcome'
-const TIPS = 'words-online:help:tips'
-const OFF = 'words-online:help:off'
+const WELCOME = 'ofimeo:help:welcome'
+const TIPS = 'ofimeo:help:tips'
+const OFF = 'ofimeo:help:off'
 
 function read(key: string): string | null {
   try {

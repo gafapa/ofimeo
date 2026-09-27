@@ -52,7 +52,7 @@ const DEFAULTS: Prefs = {
   dictLang: 'auto',
 }
 
-const KEY = 'words-online:a11y'
+const KEY = 'ofimeo:a11y'
 let prefs = load()
 
 function load(): Prefs {

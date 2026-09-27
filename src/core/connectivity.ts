@@ -23,9 +23,11 @@
 import { defaultRelayUrls } from '@trystero-p2p/nostr'
 import { isLocked, publicRelaysAllowed, rememberRelaySchoolConfig, schoolConfig } from './school-config'
 
+// Namespace of the peer-to-peer rooms. Kept from the project's former name:
+// changing it would split peers of different versions.
 export const APP_ID = 'words-online'
-const STORAGE_KEY = 'words-online:school-relay'
-const GUIDE_URL = 'https://github.com/gafapa/words-online/blob/main/docs/relay.md'
+const STORAGE_KEY = 'ofimeo:school-relay'
+const GUIDE_URL = 'https://github.com/gafapa/ofimeo/blob/main/docs/relay.md'
 export const relayGuideUrl = GUIDE_URL
 
 export interface RelayConfig {

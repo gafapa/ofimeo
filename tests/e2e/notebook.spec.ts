@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }) => {
   // (about:blank has no storage.)
   await page.addInitScript(() => {
     try {
-      localStorage.setItem('words-online:language', 'en')
+      localStorage.setItem('ofimeo:language', 'en')
     } catch {
       // ignore
     }
@@ -138,7 +138,7 @@ test('notebook: ink strokes with the pen, undo and the eraser', async ({ page })
 test('notebook: two browsers see pages, text and ink live; a view link is read-only', async ({ browser }) => {
   const a = await (await browser.newContext()).newPage()
   const b = await (await browser.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true })).newPage()
-  for (const p of [a, b]) await p.addInitScript(() => localStorage.setItem('words-online:language', 'en'))
+  for (const p of [a, b]) await p.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
   const errors = [...trackErrors(a), ...trackErrors(b)]
   await newNotebook(a)
   await a.locator('.nb-page-title').fill('Shared notes')
@@ -173,7 +173,7 @@ test('notebook: two browsers see pages, text and ink live; a view link is read-o
   // A view link: no editing, no ink, no new pages.
   const view = await viewLink(a)
   const c = await (await browser.newContext()).newPage()
-  await c.addInitScript(() => localStorage.setItem('words-online:language', 'en'))
+  await c.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
   await c.goto(view)
   await expect(editor(c)).toContainText('and students', { timeout: 30_000 })
   await expect(editor(c)).toHaveAttribute('contenteditable', 'false')

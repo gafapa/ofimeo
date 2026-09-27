@@ -67,8 +67,8 @@ export interface TaskCache {
   tasks: MoodleTask[]
 }
 
-const ACCOUNT_KEY = 'words-online:moodle'
-const TASKS_KEY = 'words-online:moodle-tasks'
+const ACCOUNT_KEY = 'ofimeo:moodle'
+const TASKS_KEY = 'ofimeo:moodle-tasks'
 
 export function readLocal(key: string): string | null {
   try {

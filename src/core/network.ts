@@ -208,6 +208,7 @@ export class Channel {
     readonly security?: ChannelSecurity,
     readonly awareness?: awarenessProtocol.Awareness,
   ) {
+    // Signature context, kept from the project's former name: stored signed logs depend on it.
     this.context = new TextEncoder().encode(`words-online:v1:${security?.context ?? ''}:`)
     action.onMessage = (data, { peerId }) => this.onMessage(peerId, toBytes(data))
     // Non-signers keep verified envelopes to relay them to later peers.

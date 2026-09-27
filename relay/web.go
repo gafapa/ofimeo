@@ -23,6 +23,7 @@ type Web struct {
 	turn    *TURNServer
 	certs   *CertManager
 	app     *AppFiles
+	store   *BlobStore // nil: store-and-forward mailboxes are off
 	started time.Time
 	// Ports actually in use (after "auto" was resolved).
 	httpsPort, httpPort, turnTLSPort int
@@ -37,6 +38,9 @@ type ClientConfig struct {
 	ICEServers []ICEServer `json:"iceServers"`
 	TTL        int64       `json:"ttl"`
 	Expires    int64       `json:"expires"`
+	Store      *StoreInfo  `json:"store,omitempty"`
+	// ImportProxy is the path of the import proxy (proxy.go) when it is on.
+	ImportProxy string `json:"importProxy,omitempty"`
 }
 
 type ICEServer struct {
@@ -135,8 +139,10 @@ func (s *Web) clientConfig(r *http.Request) (ClientConfig, error) {
 			{URLs: []string{"stun:" + turnHost + ":" + tp}},
 			{URLs: urls, Username: user, Credential: pass},
 		},
-		TTL:     int64(ttl.Seconds()),
-		Expires: expires.Unix(),
+		TTL:         int64(ttl.Seconds()),
+		Expires:     expires.Unix(),
+		Store:       s.store.Info(),
+		ImportProxy: s.importProxyPath(),
 	}, nil
 }
 
@@ -167,6 +173,11 @@ func (s *Web) HTTPSHandler() http.Handler {
 	mux.HandleFunc("/ofimeo/ca.cer", s.handleCA)
 	mux.HandleFunc("/ofimeo/", s.handleStatus)
 	mux.HandleFunc("/ofimeo", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/ofimeo/", http.StatusFound) })
+	mux.Handle("/ofimeo/store", s.store)
+	mux.Handle("/ofimeo/store/", s.store)
+	if p := NewImportProxy(s.cfg.ImportProxy, s.log); p != nil {
+		mux.Handle(importProxyPath, p)
+	}
 	mux.Handle("/nostr", s.nostr)
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		switch {
@@ -244,6 +255,7 @@ type Status struct {
 	ServingApp   bool       `json:"serving_app"`
 	Public       bool       `json:"public"`
 	Nostr        NostrStats `json:"nostr"`
+	Store        StoreStats `json:"store"`
 	Allocations  int        `json:"turn_allocations"`
 	Cert         CertStatus `json:"certificate"`
 	Ports        PortStatus `json:"ports"`
@@ -266,6 +278,7 @@ func (s *Web) Status() Status {
 		ServingApp:   s.app != nil,
 		Public:       s.cfg.Public,
 		Nostr:        s.nostr.Stats(),
+		Store:        s.store.Stats(),
 		Allocations:  s.turn.Allocations(),
 		Cert:         s.certs.Status(),
 		Ports:        PortStatus{HTTPS: s.httpsPort, HTTP: max(s.httpPort, 0), TURN: s.cfg.TURNPort, TURNTLS: max(s.turnTLSPort, 0)},

@@ -58,6 +58,10 @@ type Config struct {
 	MaxAllocationsPerIP int `json:"max_allocations_per_ip"`
 	// LogFile: also write the log to this file ("" = standard error only).
 	LogFile string `json:"log_file"`
+	// Store: encrypted store-and-forward mailboxes (store.go).
+	Store StoreConfig `json:"store"`
+	// ImportProxy: optional fetch proxy for importing public Google/Microsoft share links (proxy.go); off by default.
+	ImportProxy ImportProxyConfig `json:"import_proxy"`
 
 	// Not in the file.
 	DataDir string `json:"-"`
@@ -78,6 +82,7 @@ func defaultConfig() Config {
 		EventsPerMinute:     600,
 		MaxAllocations:      16000,
 		MaxAllocationsPerIP: 600,
+		Store:               defaultStoreConfig(),
 	}
 }
 

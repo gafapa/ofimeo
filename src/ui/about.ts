@@ -8,6 +8,7 @@ import { listVersions } from '../core/versions'
 import * as Y from 'yjs'
 import { legalLinksNav } from '../legal/links'
 import { accessLabel } from './chrome'
+import { schoolLegalNote } from './school'
 import { el, showDialog } from './widgets'
 
 export async function aboutDialog(): Promise<void> {
@@ -21,6 +22,7 @@ export async function aboutDialog(): Promise<void> {
         class: 'hint',
         textContent: t('Documents are stored in this browser. Collaborators connect directly (WebRTC); public Nostr relays are only used to find each other.'),
       }),
+      schoolLegalNote(),
       legalLinksNav({ newTab: true }),
     ),
     [{ label: t('Close'), value: 'ok', primary: true }],

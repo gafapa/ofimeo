@@ -18,8 +18,8 @@
 //      (?relay=) cannot lock anything;
 //   2. <app folder>/ofimeo.config.json.
 
-export type LockKey = 'language' | 'documentLanguage' | 'webmcp' | 'relay' | 'nextcloud' | 'templates'
-export const LOCK_KEYS: LockKey[] = ['language', 'documentLanguage', 'webmcp', 'relay', 'nextcloud', 'templates']
+export type LockKey = 'language' | 'webmcp' | 'relay' | 'nextcloud'
+export const LOCK_KEYS: LockKey[] = ['language', 'webmcp', 'relay', 'nextcloud']
 
 const UI_LANGUAGES = ['en', 'es', 'gl', 'fr', 'de'] as const
 const APP_TYPES = ['writer', 'sheet', 'draw', 'diagram', 'slides', 'forms', 'pdf', 'notebook'] as const
@@ -158,7 +158,7 @@ export function sanitizeSchoolConfig(raw: unknown): SchoolConfig {
             .map((s) => (typeof s === 'string' ? { url: s } : s))
             .filter(isObject)
             .map((s) => ({ name: str(s.name, 120), url: httpUrl(s.url) }))
-            .filter((s): s is NextcloudPreset => !!s.url)
+            .filter((s) => !!s.url)
             .map((s) => clean(s) as NextcloudPreset)
             .slice(0, 20)
         : undefined,

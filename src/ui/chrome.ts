@@ -10,6 +10,7 @@ import { t } from '../core/i18n'
 import { updateAuthor, type Access, type Session } from '../core/session'
 import * as store from '../core/store'
 import { setupAutoVersions } from '../core/versions'
+import { setupChat } from './chat'
 import { handInToShare, setupNextcloud } from './nextcloud'
 import { el, icon, promptText, showDialog, toast } from './widgets'
 import './edu.css'
@@ -113,6 +114,7 @@ export function setupChrome(session: Session, untitled: string): void {
   setupSaveState(session)
   setupAutoVersions(session)
   setupNextcloud(session)
+  setupChat(session)
 }
 
 // Save state ("Saving…" / "Saved in this browser") for every app: an icon, always

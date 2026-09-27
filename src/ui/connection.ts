@@ -15,6 +15,8 @@ import {
   publicRelays,
   relayAddressProblem,
   relayGuideUrl,
+  relayLocked,
+  relayOnlyLocked,
   schoolRelay,
   setRelayOnly,
   setSchoolRelay,
@@ -31,6 +33,7 @@ import { t } from '../core/i18n'
 import { openRooms } from '../core/network'
 import type { Session } from '../core/session'
 import { el, showDialog, toast } from './widgets'
+import { lockedNote } from './school'
 import './connection.css'
 
 type Verdict = 'direct' | 'school' | 'blocked' | 'partial' | 'testing'
@@ -291,17 +294,25 @@ function relaySettings(onChange: () => void): HTMLElement {
           ? el('span', { textContent: [relay.config.name, relay.config.version && (/^\d/.test(relay.config.version) ? `v${relay.config.version}` : relay.config.version)].filter(Boolean).join(' ') })
           : null
       box.append(
-        el('p', {}, relay.source === 'same-origin' ? t('This app is served by the school relay:') + ' ' : t('In use:') + ' ', el('code', { textContent: relay.address }), ' ', status),
+        el(
+          'p',
+          {},
+          relay.source === 'same-origin' ? t('This app is served by the school relay:') + ' ' : t('In use:') + ' ',
+          el('code', { textContent: relay.address }),
+          ' ',
+          status,
+          relay.source === 'school' && relayLocked ? lockedNote() : null,
+        ),
       )
-      const only = el('input', { type: 'checkbox', checked: relay.only })
+      const only = el('input', { type: 'checkbox', checked: relay.only, disabled: relayOnlyLocked })
       only.addEventListener('change', () => {
         setRelayOnly(only.checked)
         changed = true
         render()
         onChange()
       })
-      box.append(el('label', { class: 'conn-check' }, only, t('Use only the school relay (not public servers)')))
-      if (relay.source !== 'same-origin') {
+      box.append(el('label', { class: 'conn-check' }, only, t('Use only the school relay (not public servers)'), relayOnlyLocked ? lockedNote() : null))
+      if (relay.source !== 'same-origin' && !relayLocked) {
         const forget = el('button', { type: 'button', textContent: t('Stop using it') })
         forget.addEventListener('click', () => {
           forgetSchoolRelay()

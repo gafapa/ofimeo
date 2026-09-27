@@ -1,0 +1,11 @@
+/* School configuration (school.ts): name and logo, privacy contacts, locked settings. */
+.school-badge { display: inline-flex; align-items: center; gap: 8px; min-width: 0; padding-left: 10px; margin-left: 2px; border-left: 1px solid var(--border); color: var(--text); text-decoration: none; }
+a.school-badge:hover .school-name { text-decoration: underline; }
+.school-logo { height: 32px; max-width: 120px; object-fit: contain; }
+.school-name { font-size: var(--fs-base); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 32ch; }
+.school-legal { margin: 0 0 6px; font-size: var(--fs-s); color: var(--muted); text-align: center; }
+.school-legal a { color: inherit; }
+.school-locked { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 8px; background: var(--info-bg); color: var(--info-fg); font-size: var(--fs-s); font-weight: 500; }
+@media (max-width: 700px) {
+  .school-name { display: none; }
+}

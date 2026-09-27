@@ -54,3 +54,37 @@ html[data-a11y-theme^='contrast'] .ofimeo-chart { border-width: 2px; }
   .sheet-print-chart { position: absolute; break-inside: avoid; background: #fff; }
   .sheet-print-chart svg { display: block; width: 100%; height: 100%; }
 }
+
+/* Accessible table view (a11y.ts): an HTML grid over the canvas. */
+.app-sheet .app-main { position: relative; }
+.sheet-a11y-view { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3); background: var(--bg); color: var(--text); overflow: auto; }
+.sheet-a11y-view[hidden] { display: none; }
+.sheet-a11y-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.sheet-a11y-bar .field { width: auto; }
+.sheet-a11y-current { font-family: var(--font-mono); font-size: var(--fs-m); padding: var(--space-1) var(--space-2); border: 1px solid var(--border); border-radius: var(--radius-s); background: var(--surface); min-height: 1.5em; white-space: pre; overflow: hidden; text-overflow: ellipsis; }
+.sheet-a11y-help, .sheet-a11y-pos { margin: 0; color: var(--muted); font-size: var(--fs-s); }
+.sheet-a11y-scroll { flex: 1; min-height: 8rem; overflow: auto; border: 1px solid var(--border); background: var(--surface); }
+.sheet-a11y-grid { border-collapse: collapse; table-layout: fixed; font-size: var(--fs-m); }
+.sheet-a11y-grid th, .sheet-a11y-grid td { border: 1px solid var(--border); height: 1.9rem; padding: 0 var(--space-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sheet-a11y-grid td { width: 7rem; max-width: 7rem; cursor: cell; }
+.sheet-a11y-grid th { background: var(--surface-alt); color: var(--text); font-weight: 600; text-align: center; }
+.sheet-a11y-grid th[role='rowheader'], .sheet-a11y-grid th.corner { width: 3rem; }
+.sheet-a11y-grid td[aria-selected='true'] { background: var(--active); color: var(--active-fg); outline: 2px solid var(--app-color); outline-offset: -2px; }
+.sheet-a11y-grid td:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
+.sheet-a11y-input { width: 100%; box-sizing: border-box; font: inherit; color: var(--text); background: var(--surface); border: 0; outline: 2px solid var(--focus); padding: 0 2px; }
+.sheet-a11y-charts-box h2 { font-size: var(--fs-l); margin: var(--space-2) 0; }
+.sheet-a11y-charts { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-2); }
+.sheet-a11y-charts li { border: 1px solid var(--border); border-radius: var(--radius-m); padding: var(--space-2) var(--space-3); background: var(--surface); }
+.sheet-a11y-charts h3 { font-size: var(--fs-m); margin: 0; }
+.sheet-a11y-charts p { margin: var(--space-1) 0; max-width: 80ch; }
+html[data-a11y-theme^='contrast'] .sheet-a11y-grid th, html[data-a11y-theme^='contrast'] .sheet-a11y-grid td { border-color: var(--text); }
+html[data-a11y-theme^='contrast'] .sheet-a11y-grid td[aria-selected='true'] { outline-width: 3px; }
+@media (forced-colors: active) {
+  .sheet-a11y-grid td[aria-selected='true'] { outline: 3px solid Highlight; forced-color-adjust: none; background: Highlight; color: HighlightText; }
+}
+
+/* Chart data as a table (dialog). */
+.chart-data-table { border-collapse: collapse; margin-top: var(--space-2); }
+.chart-data-table caption { text-align: left; font-weight: 600; padding-bottom: var(--space-1); }
+.chart-data-table th, .chart-data-table td { border: 1px solid var(--border); padding: 2px var(--space-2); text-align: left; }
+.chart-data-table td { text-align: right; font-variant-numeric: tabular-nums; }

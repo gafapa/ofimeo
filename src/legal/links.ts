@@ -3,6 +3,7 @@
 // open offline; they are in the interface language.
 
 import { language, t } from '../core/i18n'
+import { schoolLegalNote } from '../ui/school'
 import { el } from '../ui/widgets'
 import './legal.css'
 
@@ -45,5 +46,5 @@ export function legalLinksNav(options: { newTab?: boolean; className?: string } 
 
 // Footer of the home screen.
 export function legalFooter(): HTMLElement {
-  return el('footer', { class: 'legal-footer' }, legalLinksNav())
+  return el('footer', { class: 'legal-footer' }, schoolLegalNote(), legalLinksNav())
 }

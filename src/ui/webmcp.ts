@@ -8,6 +8,7 @@ import { SUITE } from '../apps/registry'
 import { language, t } from '../core/i18n'
 import type { Session } from '../core/session'
 import { isWebMcpEnabled, onWebMcpChange, onWebMcpTools, setWebMcpEnabled, startWebMcp, webMcpToolNames } from '../core/webmcp'
+import { webMcpForbidden } from '../core/school-config'
 import { ACTIVITY_EVENT, type WebMcpActivity } from '../core/webmcp/ai'
 import { el, icon, showDialog, toast, type MenuItem } from './widgets'
 import './webmcp.css'
@@ -80,6 +81,8 @@ function turnOff(): void {
 
 // Tools menu entry.
 export function webMcpMenuItem(session: Session): MenuItem {
+  // Forbidden by the school configuration: shown, but cannot be turned on.
+  if (webMcpForbidden()) return { label: `${t('Allow AI assistants (WebMCP)…')} (${t('Set by your school')})`, active: () => false, enabled: () => false }
   return {
     label: t('Allow AI assistants (WebMCP)…'),
     active: isWebMcpEnabled,

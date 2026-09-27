@@ -2,26 +2,14 @@
 // menu, status bar and settings dialogs.
 
 import { t } from '../../../core/i18n'
-import { el, showContextMenu, showDialog, toast, type MenuEntry, type MenuItem } from '../../../ui/widgets'
+import { el, showContextMenu, showDialog, toast, type MenuEntry } from '../../../ui/widgets'
 import type { SpellController } from './plugin'
-import { LANGS, type Lang } from '../../../core/spell/types'
-import { personalWords } from '../../../core/spell/settings'
-import { VARIANTS, variantName } from '../../../core/spell/variants'
+import { variantName } from '../../../core/spell/variants'
 import { describe, kindLabel, langName, showReplacement } from '../../../ui/spell/describe'
-
-export { describe, kindLabel, langName, showReplacement }
+import { personalDictionaryDialog as sharedPersonalDictionaryDialog, variantItems } from '../../../ui/spell/menu'
 import '../../../ui/spell/spell.css'
 
-
-// Variants in menus, grouped by language.
-function variantItems(run: (tag: string) => void, active: ((tag: string) => boolean) | null, enabled: () => boolean): MenuEntry[] {
-  const out: MenuEntry[] = []
-  VARIANTS.forEach((v, i) => {
-    if (i && VARIANTS[i - 1].lang !== v.lang) out.push('-')
-    out.push({ label: v.name, run: () => run(v.tag), active: active ? () => active(v.tag) : undefined, enabled })
-  })
-  return out
-}
+export { describe, kindLabel, langName, showReplacement }
 
 export function openSpellDialog(spell: SpellController): void {
   void import('./dialog').then((d) => d.spellingDialog(spell))
@@ -152,26 +140,5 @@ export async function languageToolDialog(spell: SpellController): Promise<void> 
 }
 
 export async function personalDictionaryDialog(spell: SpellController): Promise<void> {
-  const select = el('select', { class: 'field' })
-  for (const lang of LANGS) select.append(new Option(langName(lang), lang, false, lang === spell.docBase()))
-  const list = el('ul', { class: 'spell-words' })
-  const render = () => {
-    const lang = select.value as Lang
-    const words = personalWords(lang)
-    list.replaceChildren()
-    if (!words.length) list.append(el('li', { textContent: t('No words yet. Use “Add to dictionary” on an underlined word.') }))
-    for (const word of words) {
-      const remove = el('button', { type: 'button', textContent: '✕', title: t('Remove') })
-      remove.setAttribute('aria-label', t('Remove “{word}”', { word }))
-      remove.addEventListener('click', () => {
-        spell.removeFromDictionary(word, lang)
-        render()
-      })
-      list.append(el('li', {}, el('span', { textContent: word }), remove))
-    }
-  }
-  select.addEventListener('change', render)
-  render()
-  const body = el('div', {}, el('p', { textContent: t('Words you added are accepted in every document of this browser.') }), el('label', { class: 'field-label' }, t('Language'), select), list)
-  await showDialog(t('Personal dictionary'), body, [{ label: t('Close'), value: 'ok', primary: true }])
+  await sharedPersonalDictionaryDialog(spell.docBase(), (word, lang) => spell.removeFromDictionary(word, lang))
 }

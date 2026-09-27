@@ -14,7 +14,33 @@ import { safeFileName } from '../core/handin'
 import * as store from '../core/store'
 import type { DocType, RemoteLink } from '../core/store'
 import { confirmDialog, el, icon, shortcutLabel, showContextMenu, showDialog, toast, type MenuEntry } from './widgets'
+import { isLocked, schoolConfig } from '../core/school-config'
+import { lockedNote } from './school'
 import './nextcloud.css'
+
+// Nextcloud servers of the school configuration (nextcloud.servers): the first
+// one is filled in, several are offered in a list; with "nextcloud" locked, only
+// those can be used.
+function schoolNextcloud(server: HTMLInputElement): { chooser: HTMLElement | null; note: HTMLElement | null } {
+  const presets = schoolConfig().nextcloud?.servers ?? []
+  if (!presets.length) return { chooser: null, note: null }
+  const same = (a: string, b: string) => a.trim().replace(/\/+$/, '').toLowerCase() === b.trim().replace(/\/+$/, '').toLowerCase()
+  const locked = isLocked('nextcloud')
+  if (!server.value || (locked && !presets.some((p) => same(p.url, server.value)))) server.value = presets[0].url
+  server.readOnly = locked
+  let chooser: HTMLElement | null = null
+  if (presets.length > 1 || presets[0].name) {
+    const select = el('select', { class: 'field nc-presets' })
+    for (const p of presets) select.append(new Option(p.name ? `${p.name} (${p.url.replace(/^https?:\/\//, '')})` : p.url, p.url, false, same(p.url, server.value)))
+    if (!locked) select.append(new Option(t('Another server…'), '', false, !presets.some((p) => same(p.url, server.value))))
+    select.addEventListener('change', () => {
+      server.value = select.value
+      if (!select.value) server.focus()
+    })
+    chooser = el('label', { class: 'field-label' }, t('Your school’s Nextcloud'), select)
+  }
+  return { chooser, note: locked ? lockedNote() : null }
+}
 
 const SERVER_KEY = 'words-online:nextcloud-server'
 const FOLDER_KEY = 'words-online:nextcloud-folder'
@@ -315,6 +341,7 @@ export async function openAccountDialog(): Promise<NcAccount | undefined> {
   const signInView = (): HTMLElement => {
     const server = el('input', { class: 'field', type: 'url', placeholder: 'https://cloud.school.org', value: readLocal(SERVER_KEY) })
     server.setAttribute('aria-label', t('Nextcloud address'))
+    const presets = schoolNextcloud(server)
     const user = el('input', { class: 'field', autocomplete: 'username' })
     const password = el('input', { class: 'field', type: 'password', autocomplete: 'off' })
     const result = el('div', { class: 'nc-result-area' })
@@ -402,7 +429,8 @@ export async function openAccountDialog(): Promise<NcAccount | undefined> {
       { class: 'nc-signin' },
       offline ? diagnosisView({ ok: false, kind: 'offline', message: nc.errorMessage('offline') }) : null,
       el('p', { textContent: t('Open and save documents in your Nextcloud (for example your school’s). The browser talks directly to your Nextcloud.') }),
-      el('label', { class: 'field-label' }, t('Nextcloud address'), server),
+      presets.chooser,
+      el('label', { class: 'field-label' }, t('Nextcloud address'), server, presets.note),
       el('div', { class: 'nc-flow' }, button(t('Log in with Nextcloud'), () => void loginFlow(), 'nc-btn primary', LogIn), el('span', { class: 'hint', textContent: t('Opens Nextcloud in a new tab, where you approve access.') })),
       el(
         'details',

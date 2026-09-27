@@ -1,7 +1,7 @@
 // Home screen: create documents of every type, open files and list the
 // documents stored in this browser.
 
-import { ALL_ACCEPT, APPS, appForFile, appInfo, SUITE, type AppInfo } from '../apps/registry'
+import { ALL_ACCEPT, appForFile, appInfo, offeredApps, SUITE, type AppInfo } from '../apps/registry'
 import { newDocPath } from '../core/router'
 import { isOfflineCapable, whenOfflineReady } from '../core/offline'
 import { languageSelect, t, tn } from '../core/i18n'
@@ -9,6 +9,7 @@ import * as store from '../core/store'
 import { legalFooter } from '../legal/links'
 import { accessibilityButton } from '../ui/accessibility'
 import { brandMark } from '../ui/brand'
+import { schoolBadge } from '../ui/school'
 import { nameButton } from '../ui/shell'
 import { helpMenuItems } from '../ui/menus'
 import { openAccountDialog, openFromNextcloud } from '../ui/nextcloud'
@@ -68,7 +69,7 @@ export function mountHome(root: HTMLElement): void {
   const newCards = el(
     'div',
     { class: 'new-cards' },
-    ...APPS.map((app) => {
+    ...offeredApps().map((app) => {
       const card = el(
         'a',
         { class: `new-card${app.load ? '' : ' disabled'}`, href: app.load ? newDocPath(app.type) : '#', title: app.load ? app.newLabel : t('Coming soon') },
@@ -99,6 +100,7 @@ export function mountHome(root: HTMLElement): void {
         { class: 'home-bar' },
         el('span', { class: 'home-logo' }, brandMark(36)),
         el('h1', { textContent: SUITE }),
+        schoolBadge(),
         el('span', { class: 'spacer' }),
         offlineControl(),
         cloudButton,

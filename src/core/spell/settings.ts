@@ -2,7 +2,8 @@
 
 import { language } from '../i18n'
 import { LANGS, type Lang } from './types'
-import { defaultVariant } from './variants'
+import { defaultVariant, variantOf } from './variants'
+import { schoolConfig } from '../school-config'
 
 const KEY = 'words-online:spelling'
 const DICT_KEY = 'words-online:spelling-dictionary:'
@@ -57,10 +58,12 @@ export function savePersonalWords(lang: Lang, words: string[]): void {
   write(DICT_KEY + lang, [...new Set(words)].sort((a, b) => a.localeCompare(b)))
 }
 
-// Language of new text when the document has none: the interface language.
-export const UI_LANG: Lang = (LANGS as string[]).includes(language) ? (language as Lang) : 'en'
+// Language of new text when the document has none: the school's default
+// (school-config.ts, defaults.documentLanguage: "gl", "es-MX"…), else the interface language…
+const schoolVariant = variantOf(schoolConfig().defaults?.documentLanguage)
+export const UI_LANG: Lang = schoolVariant?.lang ?? ((LANGS as string[]).includes(language) ? (language as Lang) : 'en')
 // …in the browser's region when it has one ("es-MX").
-export const UI_VARIANT: string = defaultVariant(UI_LANG).tag
+export const UI_VARIANT: string = schoolVariant?.tag ?? defaultVariant(UI_LANG).tag
 
 export function isLang(value: unknown): value is Lang {
   return typeof value === 'string' && (LANGS as string[]).includes(value)

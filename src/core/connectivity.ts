@@ -12,9 +12,16 @@
 // time-limited TURN credentials, refreshed here before they expire. Nothing
 // changes when no school relay is configured.
 //
+// A school configuration (school-config.ts) can name the school relay
+// (relay.url, used unless the person chose another one; with "relay" locked,
+// always), add Nostr relays and STUN/TURN servers, and forbid the public ones
+// (features.publicRelays: false). The `school` object of a trusted relay's
+// /ofimeo/config is remembered for the next start.
+//
 // Development aid: ?ice=relay forces relayed (TURN) connections.
 
 import { defaultRelayUrls } from '@trystero-p2p/nostr'
+import { isLocked, publicRelaysAllowed, rememberRelaySchoolConfig, schoolConfig } from './school-config'
 
 export const APP_ID = 'words-online'
 const STORAGE_KEY = 'words-online:school-relay'
@@ -23,6 +30,8 @@ export const relayGuideUrl = GUIDE_URL
 
 export interface RelayConfig {
   name?: string
+  // School configuration served by the relay (--school-config), see school-config.ts.
+  school?: unknown
   version?: string
   relays: string[]
   iceServers: RTCIceServer[]
@@ -31,7 +40,7 @@ export interface RelayConfig {
   expires: number
 }
 
-export type RelaySource = 'url' | 'stored' | 'same-origin'
+export type RelaySource = 'url' | 'stored' | 'same-origin' | 'school'
 
 export interface SchoolRelay {
   address: string
@@ -112,12 +121,34 @@ export function normalizeAddress(input: string): string | null {
   }
 }
 
+// From the school configuration.
+const school = schoolConfig()
+const schoolAddress = school.relay?.url ? normalizeAddress(school.relay.url) : null
+// Public relays forbidden: only the school's servers, always.
+const forcedOnly = !publicRelaysAllowed()
+// The person cannot choose another relay (or none), nor "only".
+export const relayLocked = isLocked('relay') && !!schoolAddress
+export const relayOnlyLocked = forcedOnly || (relayLocked && school.relay?.only !== undefined)
+
+function fromSchool(stored: Stored | null): SchoolRelay | null {
+  if (!schoolAddress) return null
+  const same = stored?.address === schoolAddress
+  const only = relayOnlyLocked ? forcedOnly || !!school.relay?.only : same && stored.only !== undefined ? stored.only : !!school.relay?.only
+  return { address: schoolAddress, only, config: same ? stored.config : undefined, source: 'school' }
+}
+
 function initial(): SchoolRelay | null {
+  const value = choose()
+  return value && forcedOnly ? { ...value, only: true } : value
+}
+
+function choose(): SchoolRelay | null {
   const stored = load()
   if (document.querySelector('meta[name="ofimeo-relay"]')) {
     const config = stored?.address === location.origin ? stored.config : undefined
     return { address: location.origin, only: params.get('relaymode') === 'only' || !!stored?.only, config, source: 'same-origin' }
   }
+  if (relayLocked) return fromSchool(stored)
   const fromUrl = params.get('relay')
   if (fromUrl && /^(off|none)$/i.test(fromUrl)) {
     save(null)
@@ -130,7 +161,8 @@ function initial(): SchoolRelay | null {
     save({ address, only, config })
     return { address, only, config, source: 'url' }
   }
-  return stored ? { address: stored.address, only: !!stored.only, config: stored.config, source: 'stored' } : null
+  if (stored && stored.address === schoolAddress) return fromSchool(stored)
+  return stored ? { address: stored.address, only: !!stored.only, config: stored.config, source: 'stored' } : fromSchool(null)
 }
 
 let relay = initial()
@@ -142,7 +174,7 @@ export function schoolRelay(): SchoolRelay | null {
 // Share links carry the relay address (docPath() keeps location.search), so
 // people who open them get it too.
 function addToUrl(): void {
-  if (!relay || relay.source === 'same-origin') return
+  if (!relay || relay.source === 'same-origin' || relay.source === 'school') return
   const search = new URLSearchParams(location.search)
   if (search.get('relay') === relay.address) return
   search.set('relay', relay.address)
@@ -163,6 +195,8 @@ export async function fetchRelayConfig(address: string, timeoutMs = 8000): Promi
   if (!response.ok) throw new Error(`HTTP ${response.status}`)
   const config = (await response.json()) as RelayConfig
   if (!Array.isArray(config.relays) || !Array.isArray(config.iceServers)) throw new Error('Not an Ofimeo Relay')
+  // Applied at the next start, and only for a relay this app trusts (school-config.ts).
+  rememberRelaySchoolConfig(normalizeAddress(address) ?? address, config.school ?? null)
   return config
 }
 
@@ -193,6 +227,8 @@ export async function refreshSchoolRelay(): Promise<SchoolRelay | null> {
 
 // Saves a school relay after checking it answers; throws when it does not.
 export async function setSchoolRelay(input: string, only: boolean): Promise<SchoolRelay> {
+  if (relayLocked) throw new Error('set by your school')
+  if (forcedOnly) only = true
   const address = normalizeAddress(input)
   if (!address) throw new Error('invalid address')
   const config = await fetchRelayConfig(address)
@@ -203,12 +239,13 @@ export async function setSchoolRelay(input: string, only: boolean): Promise<Scho
 }
 
 export function setRelayOnly(only: boolean): void {
-  if (!relay) return
+  if (!relay || relayOnlyLocked) return
   relay = { ...relay, only }
   save({ address: relay.address, only, config: relay.config })
 }
 
 export function forgetSchoolRelay(): void {
+  if (relayLocked) return
   relay = null
   clearTimeout(refreshTimer)
   save(null)
@@ -245,8 +282,11 @@ export function urlRelays(): string[] | undefined {
 // public ones (or alone); undefined keeps Trystero's defaults.
 export function nostrRelays(explicit?: string[]): string[] | undefined {
   if (explicit?.length) return explicit
-  if (!relay) return undefined
-  return relay.only ? schoolNostrRelays(relay) : [...schoolNostrRelays(relay), ...publicRelays()]
+  // Nostr relays of the school configuration, with the school relay's.
+  const extra = school.nostr?.relays ?? []
+  if (!relay) return extra.length ? (forcedOnly ? extra : [...extra, ...publicRelays()]) : undefined
+  const own = [...new Set([...schoolNostrRelays(relay), ...extra])]
+  return relay.only ? own : [...own, ...publicRelays()]
 }
 
 // Every relay the app would use, for the connection test.
@@ -265,14 +305,14 @@ export const PUBLIC_ICE_SERVERS: RTCIceServer[] = [
 export const forceRelay = params.get('ice') === 'relay'
 
 export function iceServers(): RTCIceServer[] {
-  const school = relay?.config?.iceServers ?? []
-  return relay?.only ? school : [...PUBLIC_ICE_SERVERS, ...school]
+  const own = [...(relay?.config?.iceServers ?? []), ...(school.iceServers ?? [])]
+  return relay?.only || forcedOnly ? own : [...PUBLIC_ICE_SERVERS, ...own]
 }
 
 // WebRTC configuration for Trystero, or undefined to keep its defaults. The
 // getter is read each time a connection is created, so fresh credentials apply.
 export function rtcConfig(): RTCConfiguration | undefined {
-  if (!relay && !forceRelay) return undefined
+  if (!relay && !forceRelay && !school.iceServers?.length && !forcedOnly) return undefined
   const config: RTCConfiguration = {}
   Object.defineProperty(config, 'iceServers', { enumerable: true, get: iceServers })
   if (forceRelay) config.iceTransportPolicy = 'relay'

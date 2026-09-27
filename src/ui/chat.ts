@@ -12,7 +12,6 @@
 // accepted by the UI. "Clear chat history…" empties the array for everyone.
 // Keys: Alt+Shift+C opens or closes the panel; Escape closes it.
 
-import * as Y from 'yjs'
 import { MessageCircle, Smile, Send, X, Ellipsis } from 'lucide'
 import { locale, t, tn } from '../core/i18n'
 import type { Session } from '../core/session'
@@ -394,8 +393,6 @@ export function setupChat(session: Session): void {
   emojiButton.addEventListener('click', () => {
     const rect = emojiButton.getBoundingClientRect()
     const z = uiZoom()
-    showContextMenu(rect.left, rect.top - 8, [])
-    document.querySelector('.menu-panel')?.remove()
     const grid = el('div', { class: 'chat-emoji popover', role: 'dialog' })
     grid.setAttribute('aria-label', t('Insert emoji'))
     const closeGrid = (focusInput: boolean) => {
@@ -461,6 +458,3 @@ export function setupChat(session: Session): void {
   renderList()
   renderBadge()
 }
-
-// Keeps a reference so tests and tools can reach the chat of a document.
-export const chatOf = (doc: Y.Doc) => doc.getArray<ChatMessage>('chat')

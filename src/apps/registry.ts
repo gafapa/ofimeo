@@ -3,6 +3,7 @@
 import type { Session, SubmitFile } from '../core/session'
 import type { DocType } from '../core/store'
 import { t } from '../core/i18n'
+import { appHidden } from '../core/school-config'
 
 export interface AppModule {
   mount(session: Session): void | Promise<void>
@@ -125,6 +126,10 @@ export const APPS: AppInfo[] = [
     load: () => import('./pdf'),
   },
 ]
+
+// Apps a school configuration hides (features.hiddenApps) are not offered for
+// new documents; documents of that kind still open.
+export const offeredApps = (): AppInfo[] => APPS.filter((a) => !appHidden(a.type))
 
 // Name of the suite (a brand: never translated).
 export const SUITE = 'Ofimeo'

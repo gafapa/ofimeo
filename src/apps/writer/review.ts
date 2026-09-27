@@ -50,6 +50,10 @@ export interface ReviewOptions {
   rail: HTMLElement
   paper: HTMLElement
   onVisibilityChange: () => void
+  // Shared type of the text (default 'body') and the comments map (default
+  // commentsMapOf(session)); the notebook passes one of each per page.
+  field?: string
+  comments?: Y.Map<unknown>
 }
 
 export class Review {
@@ -68,15 +72,19 @@ export class Review {
   // Narrow screens show the rail as a panel on demand.
   panelOpen = false
 
+  private onComments = () => this.refresh()
+  private onText = () => {
+    this.index = null
+    this.refresh()
+  }
+  private onResize = () => this.reposition()
+
   constructor(private o: ReviewOptions) {
-    this.comments = commentsMapOf(o.session) as Y.Map<CommentRecord>
+    this.comments = (o.comments ?? commentsMapOf(o.session)) as Y.Map<CommentRecord>
     this.userId = userIdOf(o.session)
-    if (o.access === 'edit') this.adoptImported()
-    this.comments.observe(() => this.refresh())
-    o.session.doc.getXmlFragment('body').observeDeep(() => {
-      this.index = null
-      this.refresh()
-    })
+    if (o.access === 'edit' && !o.comments) this.adoptImported()
+    this.comments.observe(this.onComments)
+    this.fragment.observeDeep(this.onText)
     o.editor.on('update', () => this.refresh())
     o.rail.addEventListener('mousedown', (e) => {
       const card = (e.target as HTMLElement).closest<HTMLElement>('.rv-card')
@@ -95,8 +103,20 @@ export class Review {
         setTimeout(() => this.active === was && this.activate(null, false))
       }
     })
-    window.addEventListener('resize', () => this.reposition())
+    window.addEventListener('resize', this.onResize)
     this.refresh()
+  }
+
+  private get fragment(): Y.XmlFragment {
+    return this.o.session.doc.getXmlFragment(this.o.field ?? 'body')
+  }
+
+  // Stops observing (before the editor is destroyed).
+  destroy(): void {
+    this.comments.unobserve(this.onComments)
+    this.fragment.unobserveDeep(this.onText)
+    window.removeEventListener('resize', this.onResize)
+    cancelAnimationFrame(this.frame)
   }
 
   // Moves comments of an imported file from the document into the comments channel.
@@ -128,7 +148,7 @@ export class Review {
   }
 
   private positions(): PositionIndex {
-    this.index ??= new PositionIndex(this.o.session.doc.getXmlFragment('body'), this.o.editor.schema)
+    this.index ??= new PositionIndex(this.fragment, this.o.editor.schema)
     return this.index
   }
 

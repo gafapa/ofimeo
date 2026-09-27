@@ -12,6 +12,7 @@ import { locale, t } from '../../../core/i18n'
 import { UNIVER_COMMANDS } from '../commands'
 import { CHART_COMPONENT, chartData, DRAWING_TYPE_DOM, isChartSpec, normalizeSpec, parseA1, toA1, type Cell, type ChartSpec } from './model'
 import { chartOption, type ChartColors } from './option'
+import { chartSummary } from './summary'
 
 export interface ChartInfo {
   id: string
@@ -48,6 +49,9 @@ export function readValues(univerAPI: FUniver, spec: ChartSpec): Cell[][] {
   return sheet.getRange(range.startRow, range.startColumn, range.endRow - range.startRow + 1, range.endColumn - range.startColumn + 1).getValues() as Cell[][]
 }
 
+// Screen reader description of a chart from the live values.
+export const liveSummary = (univerAPI: FUniver, spec: ChartSpec) => chartSummary(spec, chartData(spec, readValues(univerAPI, spec), seriesLabel), formatChartNumber)
+
 export function liveOption(univerAPI: FUniver, spec: ChartSpec, colors = screenColors(), width = 480) {
   return chartOption(spec, chartData(spec, readValues(univerAPI, spec), seriesLabel), colors, formatChartNumber, width)
 }
@@ -73,6 +77,7 @@ export function registerCharts(univer: Univer, host: ChartHost): { redraw: () =>
 
   function ChartView(props: { data?: unknown; floatDomId?: string }) {
     const ref = useRef<HTMLDivElement>(null)
+    const desc = useRef<HTMLSpanElement>(null)
     const spec = isChartSpec(props.data) ? normalizeSpec(props.data) : null
     const key = JSON.stringify(spec)
     useEffect(() => {
@@ -81,7 +86,11 @@ export function registerCharts(univer: Univer, host: ChartHost): { redraw: () =>
       let disposed = false
       let chart: import('echarts/core').ECharts | null = null
       let resize: ResizeObserver | null = null
-      const render = () => chart?.setOption(liveOption(univerAPI, spec, screenColors(), node.clientWidth || 480) as never, true)
+      const render = () => {
+        if (desc.current) desc.current.textContent = liveSummary(univerAPI, spec)
+        chart?.setOption(liveOption(univerAPI, spec, screenColors(), node.clientWidth || 480) as never, true)
+      }
+      render()
       loadECharts().then(({ echarts }) => {
         if (disposed) return
         chart = echarts.init(node, null, { renderer: 'canvas' })
@@ -100,7 +109,13 @@ export function registerCharts(univer: Univer, host: ChartHost): { redraw: () =>
         chart?.dispose()
       }
     }, [key, props.floatDomId])
-    return createElement('div', { ref, className: 'ofimeo-chart', role: 'img', 'aria-label': spec?.title || t('Chart'), 'data-chart-id': props.floatDomId ?? '' })
+    // The title names the chart; the hidden summary (series and values) describes it.
+    const descId = `chart-desc-${props.floatDomId ?? ''}`
+    return createElement(
+      'div',
+      { ref, className: 'ofimeo-chart', role: 'img', 'aria-label': spec?.title || t('Chart'), 'aria-describedby': descId, 'data-chart-id': props.floatDomId ?? '' },
+      createElement('span', { ref: desc, id: descId, hidden: true }),
+    )
   }
   univerAPI.registerComponent(CHART_COMPONENT, ChartView as never)
   // Double click and right click on a chart. Univer re-renders the float DOM when

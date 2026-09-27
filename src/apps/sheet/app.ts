@@ -27,6 +27,8 @@ import { snapshotCharts } from './charts/model'
 import { registerFunctionAliases } from './stats'
 import { setupEditWarnings, type EditWarnings } from './warnings'
 import { provideWebMcpTools } from '../../core/webmcp'
+import { setupSheetA11y, type SheetA11y } from './a11y'
+import { sheetSpelling } from './spell'
 
 // Live workbook access of each open session (for hand in).
 export const sheetHandles = new WeakMap<Session, { snapshot: () => IWorkbookData; activeSheetId: () => string }>()
@@ -82,6 +84,7 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
       showContextMenu(x, y, [
         { label: t('Edit chart…'), enabled: canEdit, run: () => void editChart(id) },
         { label: t('Delete chart'), enabled: canEdit, run: () => deleteChart(univerAPI, id) },
+        { label: t('Chart data as table'), run: () => a11y?.chartTable(id) },
       ]),
   })
   followTheme(univerAPI, appElement, charts.redraw)
@@ -89,6 +92,7 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
   // Declared first: the initial rebuild runs inside the SheetSync constructor.
   let presence: SelectionPresence | undefined
   let warnings: EditWarnings | undefined
+  let a11y: SheetA11y | undefined
   // Viewers and commenters get a read-only workbook (again after every rebuild).
   const applyAccess = () => {
     if (!session.canEdit) univerAPI.getActiveWorkbook()?.setEditable(false)
@@ -105,6 +109,7 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
       applyAccess()
       presence?.render()
       warnings?.render()
+      a11y?.refresh()
     },
   })
   presence = new SelectionPresence(session, univerAPI, commands)
@@ -141,6 +146,9 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
     if (value && typeof value === 'object' && ('v' in value || 's' in value || 'p' in value)) strip(value)
     else if (value && typeof value === 'object') for (const row of Object.values(value)) for (const cell of Object.values(row ?? {})) strip(cell)
   })
+
+  // Screen readers and keyboard: live region, labels, accessible table view (a11y.ts).
+  a11y = setupSheetA11y({ session, univerAPI, commands, cmds, appElement, main: shell.main, host: container, canEdit })
 
   const snapshot = () => univerAPI.getActiveWorkbook()!.save() as IWorkbookData
   const activeSheet = () => univerAPI.getActiveWorkbook()?.getActiveSheet()
@@ -251,7 +259,9 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
   }
   let toolbarVisible = session.canEdit
   const languageLabel = el('span', { class: 'sb-text', textContent: LANGUAGE_NAMES[language], title: t('Language of function help and number formats') })
+  const spelling = sheetSpelling(session, univerAPI)
   const frameSpec = sheetFrame({
+    spelling: spelling.menu,
     session,
     univerAPI,
     cmds,
@@ -268,6 +278,9 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
     descriptiveStatistics: () => void import('./stats').then((m) => m.descriptiveStatistics(univerAPI)),
     editWarnings: () => void warnings?.dialog(),
     insertFunction: (name) => void import('./stats').then((m) => m.insertFunction(univerAPI, name)),
+    tableView: () => a11y?.tableView() ?? false,
+    setTableView: (on) => a11y?.setTableView(on),
+    chartTable: (id) => a11y?.chartTable(id),
     toolbarVisible: () => toolbarVisible,
     setToolbarVisible: (on) => {
       toolbarVisible = on

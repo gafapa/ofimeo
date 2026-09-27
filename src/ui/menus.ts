@@ -19,7 +19,7 @@
 //   ─ Keyboard shortcuts Ctrl+/ · Accessibility… Alt+Shift+A
 //   · Connection test… (when src/ui/connection.ts exists) [extra] ─ About Ofimeo
 
-import { APPS, appInfo, SUITE } from '../apps/registry'
+import { APPS, appInfo, offeredApps, SUITE } from '../apps/registry'
 import { downloadBlob, safeFileName } from '../core/handin'
 import { t } from '../core/i18n'
 import { homePath, newDocPath } from '../core/router'
@@ -80,7 +80,7 @@ export function fileMenu(session: Session, options: FileMenuOptions): Menu {
     items: [
       {
         label: t('New'),
-        submenu: [info, ...APPS.filter((a) => a !== info)].filter((a) => a.load).map((a) => ({ label: a.name, run: () => window.open(newDocPath(a.type), '_blank') })),
+        submenu: [info, ...APPS.filter((a) => a !== info)].filter((a) => a.load && offeredApps().includes(a)).map((a) => ({ label: a.name, run: () => window.open(newDocPath(a.type), '_blank') })),
       },
       { label: t('Open…'), shortcut: mod('O'), run: options.openFile },
       { label: t('Open from Nextcloud…'), enabled: online, run: () => void openFromNextcloud() },

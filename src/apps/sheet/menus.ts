@@ -30,8 +30,14 @@ export interface SheetContext {
   descriptiveStatistics: () => void
   editWarnings: () => void
   insertFunction: (name: string) => void
+  // Accessible table view (a11y.ts) and chart data as an HTML table.
+  tableView: () => boolean
+  setTableView: (on: boolean) => void
+  chartTable: (id: string) => void
   toolbarVisible: () => boolean
   setToolbarVisible: (on: boolean) => void
+  // Tools ▸ Spelling and grammar… and its settings (spell.ts).
+  spelling?: () => MenuEntry[]
 }
 
 const ALIGN = { left: 1, center: 2, right: 3, top: 1, middle: 2, bottom: 3 } as const
@@ -97,6 +103,7 @@ export function sheetFrame(ctx: SheetContext): Pick<FrameSpec, 'file' | 'edit' |
         '-',
         { label: t('Edit chart…'), visible: () => !!chart(), enabled: ctx.canEdit, run: () => chart() && ctx.editChart(chart()!) },
         { label: t('Delete chart'), visible: () => !!chart(), enabled: ctx.canEdit, run: () => chart() && ctx.deleteChart(chart()!) },
+        { label: t('Chart data as table'), visible: () => !!chart(), run: () => chart() && ctx.chartTable(chart()!) },
       ],
     },
   }
@@ -117,6 +124,7 @@ export function sheetFrame(ctx: SheetContext): Pick<FrameSpec, 'file' | 'edit' |
       },
       { label: t('Gridlines'), enabled: ctx.canEdit, active: () => !(sheet()?.hasHiddenGridLines() ?? false), run: run('gridlines') },
       { label: t('Toolbar'), enabled: ctx.canEdit, active: ctx.toolbarVisible, run: () => ctx.setToolbarVisible(!ctx.toolbarVisible()) },
+      { label: t('Accessible table view'), shortcut: 'Alt+Shift+T', active: ctx.tableView, run: () => ctx.setTableView(!ctx.tableView()) },
       '-',
       { label: t('Zoom'), submenu: zoomMenuItems(ctx.zoom) },
     ],
@@ -258,7 +266,10 @@ export function sheetFrame(ctx: SheetContext): Pick<FrameSpec, 'file' | 'edit' |
 
   const tools: Menu = {
     label: t('Tools'),
-    items: [{ label: t('Recalculate formulas'), run: () => void univerAPI.getFormula().executeCalculation() }],
+    items: [
+      ...(ctx.spelling ? [...ctx.spelling(), '-' as const] : []),
+      { label: t('Recalculate formulas'), run: () => void univerAPI.getFormula().executeCalculation() },
+    ],
   }
 
   return {
@@ -289,6 +300,7 @@ function shortcutSections(): ShortcutSection[] {
         [t('Jump to edge of data'), 'Ctrl+Arrow'],
         [t('Extend selection'), 'Shift+Arrow'],
         [t('Edit chart'), t('Double click')],
+        [t('Accessible table view'), 'Alt+Shift+T'],
       ],
     },
   ]

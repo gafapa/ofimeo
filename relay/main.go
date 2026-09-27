@@ -168,6 +168,7 @@ func newFlagSet(cfg *Config, dataDir, relayPorts *string) (*flag.FlagSet, *bool)
 	})
 	fs.Var(&cfg.CredentialTTL, "credential-ttl", "validity of the TURN credentials given to browsers (e.g. 24h)")
 	fs.StringVar(&cfg.LogFile, "log-file", cfg.LogFile, "also write the log to this file")
+	addStoreFlags(fs, &cfg.Store)
 	showHelp := fs.Bool("help", false, "show this help")
 	fs.Usage = func() {}
 	return fs, showHelp
@@ -192,6 +193,10 @@ func parseArgs(args []string) (Config, []string, error) {
 	dataDir, _ = filepath.Abs(dataDir)
 	cfg, err := loadConfig(dataDir)
 	if err != nil {
+		return cfg, nil, err
+	}
+	// Environment (containers) overrides the file; flags override both.
+	if err := applyStoreEnv(&cfg.Store); err != nil {
 		return cfg, nil, err
 	}
 	// Second pass over the loaded config: only the given flags change it.
@@ -306,7 +311,16 @@ func run(ctx context.Context, cfg Config, banner bool) error {
 	}
 
 	nostr := NewNostrRelay(&cfg, logger)
-	web := &Web{cfg: &cfg, log: logger, nostr: nostr, turn: turnSrv, certs: certs, app: app, started: time.Now(),
+	var store *BlobStore
+	if cfg.Store.Enabled {
+		if store, err = OpenBlobStore(cfg.Store, filepath.Join(cfg.DataDir, "store"), logger); err != nil {
+			httpsLn.Close()
+			_ = turnSrv.Close()
+			return fmt.Errorf("store: %w", err)
+		}
+		defer store.Close()
+	}
+	web := &Web{cfg: &cfg, log: logger, nostr: nostr, turn: turnSrv, certs: certs, app: app, store: store, started: time.Now(),
 		httpsPort: httpsPort, httpPort: httpPort, turnTLSPort: turnTLSPort, relayIP: relayIP}
 	errLog := log.New(io.Discard, "", 0)
 	httpsSrv := &http.Server{Handler: web.HTTPSHandler(), ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 2 * time.Minute, ErrorLog: errLog}

@@ -4,7 +4,7 @@
 // ODT (fo:language / fo:country).
 
 import { Extension } from '@tiptap/core'
-import { normalizeTag } from './variants'
+import { normalizeTag } from '../../../core/spell/variants'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {

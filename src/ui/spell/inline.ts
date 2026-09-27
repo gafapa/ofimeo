@@ -9,13 +9,13 @@
 // `lang` attribute is used. The checker is detached automatically once the
 // element leaves the document.
 
-import { t } from '../../../core/i18n'
-import { showContextMenu, type MenuEntry } from '../../../ui/widgets'
-import { SpellClient } from './client'
-import { loadSettings, personalWords, savePersonalWords, UI_VARIANT } from './settings'
-import type { Issue, Lang, Paragraph } from './types'
-import { describe, showReplacement } from './ui'
-import { dictOf, variantOf } from './variants'
+import { t } from '../../core/i18n'
+import { showContextMenu, type MenuEntry } from '../widgets'
+import { SpellClient } from '../../core/spell/client'
+import { loadSettings, personalWords, savePersonalWords, UI_VARIANT } from '../../core/spell/settings'
+import type { Issue, Lang, Paragraph } from '../../core/spell/types'
+import { describe, showReplacement } from './describe'
+import { dictOf, variantOf } from '../../core/spell/variants'
 import './inline.css'
 
 // One worker for every attached element.

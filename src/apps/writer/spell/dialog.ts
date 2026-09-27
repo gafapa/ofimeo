@@ -6,9 +6,9 @@ import { TextSelection } from '@tiptap/pm/state'
 import { t } from '../../../core/i18n'
 import { el } from '../../../ui/widgets'
 import type { FoundIssue, SpellController } from './plugin'
-import { LANGS } from './types'
+import { LANGS } from '../../../core/spell/types'
 import { describe, kindLabel, langName, showReplacement } from './ui'
-import { VARIANTS } from './variants'
+import { VARIANTS } from '../../../core/spell/variants'
 
 let open: HTMLDialogElement | null = null
 

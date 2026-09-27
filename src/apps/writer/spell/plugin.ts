@@ -12,11 +12,11 @@ import { Plugin, PluginKey, type Transaction } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import type { Node as PMNode } from '@tiptap/pm/model'
 import type * as Y from 'yjs'
-import { SpellClient, type CheckResult } from './client'
-import { loadSettings, personalWords, saveSettings, savePersonalWords, UI_VARIANT, type SpellSettings } from './settings'
-import { dictOf, normalizeTag, variantOf } from './variants'
-import { OBJECT, type Issue, type Lang, type Paragraph } from './types'
-import type { WorkerEvent } from './worker'
+import { SpellClient, type CheckResult } from '../../../core/spell/client'
+import { loadSettings, personalWords, saveSettings, savePersonalWords, UI_VARIANT, type SpellSettings } from '../../../core/spell/settings'
+import { dictOf, normalizeTag, variantOf } from '../../../core/spell/variants'
+import { OBJECT, type Issue, type Lang, type Paragraph } from '../../../core/spell/types'
+import type { WorkerEvent } from '../../../core/spell/worker'
 
 export const spellKey = new PluginKey<DecorationSet>('spell')
 

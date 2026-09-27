@@ -1,7 +1,7 @@
 // Vite plugin: serves the Hunspell dictionaries of the spell checker as
 // separate static files (dictionaries/<id>-<hash>.aff.txt / .dic.txt, plus
 // the license of each), and exposes their paths as `virtual:spell-dictionaries`.
-// One per regional variant (src/apps/writer/spell/variants.ts); each is only
+// One per regional variant (src/core/spell/variants.ts); each is only
 // downloaded when a text in that variant is checked.
 // Morphological fields and comments are dropped (the Galician dictionary goes
 // from 9.5 MB to 2.4 MB, 0.7 MB compressed); words and affix rules are unchanged. The `.txt`

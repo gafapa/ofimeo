@@ -7,7 +7,7 @@ import { importFileAsDocument, mountWriter, OPEN_ACCEPT } from './app'
 import { exportFile } from './formats'
 import { DEFAULT_PAGE, langTag, type DocumentData, type PageSettings } from './formats/types'
 import { t } from '../../core/i18n'
-import { UI_LANG } from './spell/settings'
+import { UI_LANG } from '../../core/spell/settings'
 import './writer.css'
 
 export const accept = OPEN_ACCEPT

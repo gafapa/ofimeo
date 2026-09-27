@@ -3,7 +3,7 @@
 // schema in src/editor/extensions.ts.
 
 import type { JSONContent } from '@tiptap/core'
-import { normalizeTag } from '../spell/variants'
+import { normalizeTag } from '../../../core/spell/variants'
 import type { CiteSettings, Source } from '../references/types'
 
 export type PageSize = 'A4' | 'A5' | 'Letter' | 'Legal'

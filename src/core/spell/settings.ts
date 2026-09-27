@@ -1,6 +1,6 @@
 // Per-browser spelling settings and personal dictionaries (localStorage).
 
-import { language } from '../../../core/i18n'
+import { language } from '../i18n'
 import { LANGS, type Lang } from './types'
 import { defaultVariant } from './variants'
 

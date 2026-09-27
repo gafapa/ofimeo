@@ -29,7 +29,7 @@ import {
 import { configureDrawioStylesheet } from './shapes'
 import { installSketch } from './shapes/sketch'
 import { installHandles } from './handles'
-import { attachSpellcheck } from '../writer/spell/inline'
+import { attachSpellcheck } from '../../ui/spell/inline'
 import { newCellId, parseGeometry, type CellRecord, type GeometryRecord } from './model'
 
 // Generated draw.io shape libraries (scripts/build-diagram-libs.mjs, see libraries.ts).

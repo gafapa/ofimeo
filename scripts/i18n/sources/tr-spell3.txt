@@ -1,0 +1,2 @@
+Allow spell check for respondents ||| Permitir el corrector ortográfico a quienes responden ||| Permitir o corrector ortográfico a quen responde
+Underlines misspelled words in written answers. Off by default in quizzes, where it could give answers away. ||| Subraya las palabras mal escritas en las respuestas escritas. Desactivado por defecto en los cuestionarios, donde podría revelar respuestas. ||| Subliña as palabras mal escritas nas respostas escritas. Desactivado por defecto nos cuestionarios, onde podería revelar respostas.

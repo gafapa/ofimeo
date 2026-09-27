@@ -1,0 +1,88 @@
+This section ||| Esta sección ||| Esta sección
+Whole document ||| Todo el documento ||| Todo o documento
+Apply to ||| Aplicar a ||| Aplicar a
+Number of columns ||| Número de columnas ||| Número de columnas
+Spacing ||| Espaciado ||| Espazado
+Line between columns ||| Línea entre columnas ||| Liña entre columnas
+Insert a continuous section break to change the number of columns within a page. ||| Inserta un salto de sección continuo para cambiar el número de columnas dentro de una página. ||| Insire unha quebra de sección continua para cambiar o número de columnas dentro dunha páxina.
+Headings 1–3 ||| Títulos 1–3 ||| Títulos 1–3
+Headings 1–6 ||| Títulos 1–6 ||| Títulos 1–6
+Update table of contents ||| Actualizar tabla de contenido ||| Actualizar táboa de contidos
+Table of contents ||| Tabla de contenido ||| Táboa de contidos
+Citation… ||| Cita… ||| Cita…
+Section break ||| Salto de sección ||| Quebra de sección
+Next page ||| Página siguiente ||| Páxina seguinte
+Continuous ||| Continuo ||| Continua
+One column ||| Una columna ||| Unha columna
+Two columns ||| Dos columnas ||| Dúas columnas
+Three columns ||| Tres columnas ||| Tres columnas
+More columns… ||| Más columnas… ||| Máis columnas…
+Columns ||| Columnas ||| Columnas
+APA (7th edition) ||| APA (7.ª edición) ||| APA (7.ª edición)
+MLA (9th edition) ||| MLA (9.ª edición) ||| MLA (9.ª edición)
+Chicago (author-date) ||| Chicago (autor-fecha) ||| Chicago (autor-data)
+References ||| Referencias ||| Referencias
+Insert citation… ||| Insertar cita… ||| Inserir cita…
+Insert bibliography ||| Insertar bibliografía ||| Inserir bibliografía
+Import sources (BibTeX, RIS)… ||| Importar fuentes (BibTeX, RIS)… ||| Importar fontes (BibTeX, RIS)…
+Citation style ||| Estilo de cita ||| Estilo de cita
+Citation language ||| Idioma de las citas ||| Idioma das citas
+Document language ||| Idioma del documento ||| Idioma do documento
+Sources… ||| Fuentes… ||| Fontes…
+PDF document (.pdf) ||| Documento PDF (.pdf) ||| Documento PDF (.pdf)
+Update table ||| Actualizar tabla ||| Actualizar táboa
+No headings yet: use the Heading styles and update the table. ||| Aún no hay títulos: usa los estilos de título y actualiza la tabla. ||| Aínda non hai títulos: usa os estilos de título e actualiza a táboa.
+Section break (continuous) ||| Salto de sección (continuo) ||| Quebra de sección (continua)
+Section break (next page) ||| Salto de sección (página siguiente) ||| Quebra de sección (páxina seguinte)
+Book ||| Libro ||| Libro
+Book chapter ||| Capítulo de libro ||| Capítulo de libro
+Journal article ||| Artículo de revista ||| Artigo de revista
+Web page ||| Página web ||| Páxina web
+Report ||| Informe ||| Informe
+Thesis ||| Tesis ||| Tese
+Other ||| Otro ||| Outro
+Journal ||| Revista ||| Revista
+Book title ||| Título del libro ||| Título do libro
+Website ||| Sitio web ||| Sitio web
+Published in ||| Publicado en ||| Publicado en
+Editors (one per line: Family, Given) ||| Editores (uno por línea: Apellidos, Nombre) ||| Editores (un por liña: Apelidos, Nome)
+Edition ||| Edición ||| Edición
+University ||| Universidad ||| Universidade
+Institution ||| Institución ||| Institución
+Publisher ||| Editorial ||| Editorial
+Place ||| Lugar ||| Lugar
+Volume ||| Volumen ||| Volume
+Issue ||| Número ||| Número
+Pages ||| Páginas ||| Páxinas
+Report number ||| Número de informe ||| Número de informe
+Kind of thesis ||| Tipo de tesis ||| Tipo de tese
+Accessed on (YYYY-MM-DD) ||| Consultado el (AAAA-MM-DD) ||| Consultado o (AAAA-MM-DD)
+García Pérez, Ana ||| García Pérez, Ana ||| García Pérez, Ana
+2024 or 2024-05-17 ||| 2024 o 2024-05-17 ||| 2024 ou 2024-05-17
+Authors (one per line: Family, Given; organizations in braces) ||| Autores (uno por línea: Apellidos, Nombre; organizaciones entre llaves) ||| Autores (un por liña: Apelidos, Nome; organizacións entre chaves)
+Edit source ||| Editar fuente ||| Editar fonte
+New source ||| Nueva fuente ||| Nova fonte
+A source needs at least a title or an author ||| Una fuente necesita al menos un título o un autor ||| Unha fonte necesita polo menos un título ou un autor
+{n} sources imported ||| {n} fuentes importadas ||| {n} fontes importadas
+Could not read the file: {message} ||| No se pudo leer el archivo: {message} ||| Non se puido ler o ficheiro: {message}
+No sources yet. Add one or import a BibTeX or RIS file (Zotero, Mendeley, Google Scholar…). ||| Aún no hay fuentes. Añade una o importa un archivo BibTeX o RIS (Zotero, Mendeley, Google Académico…). ||| Aínda non hai fontes. Engade unha ou importa un ficheiro BibTeX ou RIS (Zotero, Mendeley, Google Académico…).
+Delete source ||| Eliminar fuente ||| Eliminar fonte
+New source… ||| Nueva fuente… ||| Nova fonte…
+Import BibTeX / RIS… ||| Importar BibTeX / RIS… ||| Importar BibTeX / RIS…
+Export BibTeX ||| Exportar BibTeX ||| Exportar BibTeX
+Sources ||| Fuentes ||| Fontes
+Search sources ||| Buscar fuentes ||| Buscar fontes
+e.g. 23 or 23-25 ||| p. ej., 23 o 23-25 ||| p. ex., 23 ou 23-25
+Page or other locator (optional) ||| Página u otra referencia (opcional) ||| Páxina ou outra referencia (opcional)
+Remove citation ||| Quitar cita ||| Quitar cita
+Edit citation ||| Editar cita ||| Editar cita
+Insert citation ||| Insertar cita ||| Inserir cita
+Missing source ||| Fuente no encontrada ||| Fonte non atopada
+No citations yet: insert citations and the bibliography lists their sources. ||| Aún no hay citas: inserta citas y la bibliografía mostrará sus fuentes. ||| Aínda non hai citas: insire citas e a bibliografía mostrará as súas fontes.
+This .doc file is not a Word 97-2003 document; save it as .docx first ||| Este archivo .doc no es un documento de Word 97-2003; guárdalo primero como .docx ||| Este ficheiro .doc non é un documento de Word 97-2003; gárdao primeiro como .docx
+The document is protected with a password ||| El documento está protegido con contraseña ||| O documento está protexido con contrasinal
+Could not read the document text ||| No se pudo leer el texto del documento ||| Non se puido ler o texto do documento
+Preparing the PDF for printing… ||| Preparando el PDF para imprimir… ||| Preparando o PDF para imprimir…
+Not an Excel workbook ||| No es un libro de Excel ||| Non é un libro de Excel
+Only Excel 97-2003 (BIFF8) workbooks can be opened ||| Solo se pueden abrir libros de Excel 97-2003 (BIFF8) ||| Só se poden abrir libros de Excel 97-2003 (BIFF8)
+The workbook is protected with a password ||| El libro está protegido con contraseña ||| O libro está protexido con contrasinal

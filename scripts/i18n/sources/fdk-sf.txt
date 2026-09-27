@@ -1,0 +1,48 @@
+Add the selected cells ||| Ajouter les cellules sélectionnées ||| Ausgewählte Zellen hinzufügen
+All borders ||| Toutes les bordures ||| Alle Rahmenlinien
+As shown in the sheet (dates, percentages, decimals) ||| Comme affichées dans la feuille (dates, pourcentages, décimales) ||| Wie im Blatt angezeigt (Datumsangaben, Prozente, Dezimalstellen)
+Automatic (landscape for wide sheets) ||| Automatique (paysage pour les feuilles larges) ||| Automatisch (Querformat für breite Blätter)
+Borders ||| Bordures ||| Rahmenlinien
+Bottom border ||| Bordure inférieure ||| Rahmenlinie unten
+CSV files keep only the values of the current sheet: no formatting, formulas or other sheets. ||| Les fichiers CSV ne gardent que les valeurs de la feuille active : ni mise en forme, ni formules, ni autres feuilles. ||| CSV-Dateien enthalten nur die Werte des aktuellen Blatts: keine Formatierung, keine Formeln und keine anderen Blätter.
+Changing a marked range asks for a confirmation first, so that formulas or headers are not changed by accident. Marked cells have an orange outline. ||| Modifier une plage marquée demande d’abord une confirmation, pour que les formules ou les en-têtes ne soient pas modifiés par accident. Les cellules marquées ont un contour orange. ||| Das Ändern eines markierten Bereichs erfordert zuerst eine Bestätigung, damit Formeln oder Überschriften nicht versehentlich geändert werden. Markierte Zellen haben einen orangefarbenen Rahmen.
+Columns without numbers were left out: {n} ||| Colonnes sans nombres ignorées : {n} ||| Spalten ohne Zahlen wurden ausgelassen: {n}
+Comma (,) ||| Virgule (,) ||| Komma (,)
+Double bottom border ||| Double bordure inférieure ||| Doppelte Rahmenlinie unten
+Download as CSV ||| Télécharger en CSV ||| Als CSV herunterladen
+Edit anyway ||| Modifier quand même ||| Trotzdem bearbeiten
+Edit these cells? ||| Modifier ces cellules ? ||| Diese Zellen bearbeiten?
+Editing these cells now asks for a confirmation ||| Modifier ces cellules demande désormais une confirmation ||| Das Bearbeiten dieser Zellen erfordert jetzt eine Bestätigung
+Find in the form ||| Rechercher dans le formulaire ||| Im Formular suchen
+Fit to page width ||| Ajuster à la largeur de la page ||| An Seitenbreite anpassen
+Inside borders ||| Bordures intérieures ||| Innere Rahmenlinien
+Left border ||| Bordure gauche ||| Rahmenlinie links
+Letter ||| Lettre US ||| Letter (US)
+Margins ||| Marges ||| Ränder
+Mark all that apply ||| Cochez toutes les réponses qui conviennent ||| Alle zutreffenden ankreuzen
+Narrow ||| Étroites ||| Schmal
+No borders ||| Aucune bordure ||| Keine Rahmenlinien
+No ranges are marked yet. ||| Aucune plage n’est encore marquée. ||| Noch keine Bereiche markiert.
+Notifications ||| Notifications ||| Benachrichtigungen
+Outside borders ||| Bordures extérieures ||| Äußere Rahmenlinien
+Page setup applies to your printouts only. ||| La mise en page ne s’applique qu’à vos impressions. ||| Die Seiteneinrichtung gilt nur für Ihre Ausdrucke.
+Plain values ||| Valeurs brutes ||| Reine Werte
+Print gridlines ||| Imprimer le quadrillage ||| Gitternetzlinien drucken
+Print selection… ||| Imprimer la sélection… ||| Auswahl drucken…
+Repeat the first row on every page ||| Répéter la première ligne sur chaque page ||| Erste Zeile auf jeder Seite wiederholen
+Right border ||| Bordure droite ||| Rahmenlinie rechts
+Scale (%) ||| Échelle (%) ||| Skalierung (%)
+Semicolon (;), for Excel in languages with a decimal comma ||| Point-virgule (;), pour Excel dans les langues à virgule décimale ||| Semikolon (;), für Excel in Sprachen mit Dezimalkomma
+Spreadsheet toolbar ||| Barre d’outils du tableur ||| Symbolleiste der Tabelle
+The range has no numbers ||| La plage ne contient pas de nombres ||| Der Bereich enthält keine Zahlen
+The range {range} is marked “Warn before editing”, so that it is not changed by accident. Edit it anyway? ||| La plage {range} est marquée « Avertir avant de modifier », pour éviter les modifications accidentelles. La modifier quand même ? ||| Der Bereich {range} ist mit „Vor dem Bearbeiten warnen“ markiert, damit er nicht versehentlich geändert wird. Trotzdem bearbeiten?
+These cells are marked “Warn before editing” ||| Ces cellules sont marquées « Avertir avant de modifier » ||| Diese Zellen sind mit „Vor dem Bearbeiten warnen“ markiert
+Thick outside border ||| Bordure extérieure épaisse ||| Dicke äußere Rahmenlinie
+This is not a security feature: everyone with an edit link can confirm and change the cells. To stop others from changing the spreadsheet, share a view link instead. ||| Ce n’est pas une mesure de sécurité : toute personne disposant d’un lien de modification peut confirmer et modifier les cellules. Pour empêcher d’autres personnes de modifier le tableur, partagez plutôt un lien en lecture seule. ||| Das ist keine Sicherheitsfunktion: Alle mit einem Bearbeitungslink können bestätigen und die Zellen ändern. Damit andere die Tabelle nicht ändern können, teilen Sie stattdessen einen Link zum Ansehen.
+This link is incomplete: it does not include the keys of the form. Ask the person who sent it for the whole link. ||| Ce lien est incomplet : il ne contient pas les clés du formulaire. Demandez le lien complet à la personne qui vous l’a envoyé. ||| Dieser Link ist unvollständig: Er enthält die Schlüssel des Formulars nicht. Bitten Sie die Person, die ihn gesendet hat, um den vollständigen Link.
+Top border ||| Bordure supérieure ||| Rahmenlinie oben
+Use Ctrl+V to paste into a field ||| Utilisez Ctrl+V pour coller dans un champ ||| Mit Strg+V in ein Feld einfügen
+Warn before editing ||| Avertir avant de modifier ||| Vor dem Bearbeiten warnen
+Warn before editing… ||| Avertir avant de modifier… ||| Vor dem Bearbeiten warnen…
+{n} point ||| {n} point ||| {n} Punkt
+{n} points ||| {n} points ||| {n} Punkte

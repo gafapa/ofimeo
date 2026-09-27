@@ -1,0 +1,125 @@
+Math graph… ||| Gráfica matemática… ||| Gráfica matemática…
+Math graph ||| Gráfica matemática ||| Gráfica matemática
+Insert math graph ||| Insertar gráfica matemática ||| Inserir gráfica matemática
+Edit math graph ||| Editar gráfica matemática ||| Editar gráfica matemática
+Move ||| Mover ||| Mover
+Point ||| Punto ||| Punto
+Segment ||| Segmento ||| Segmento
+Line ||| Recta ||| Recta
+Ray ||| Semirrecta ||| Semirrecta
+Circle ||| Circunferencia ||| Circunferencia
+Polygon ||| Polígono ||| Polígono
+Midpoint ||| Punto medio ||| Punto medio
+Perpendicular ||| Perpendicular ||| Perpendicular
+Parallel ||| Paralela ||| Paralela
+Intersect ||| Intersección ||| Intersección
+Angle ||| Ángulo ||| Ángulo
+Drag points to move them, drag the background to pan, use the wheel to zoom. ||| Arrastra los puntos para moverlos, arrastra el fondo para desplazar la vista y usa la rueda para hacer zoom. ||| Arrastra os puntos para movelos, arrastra o fondo para desprazar a vista e usa a roda para facer zoom.
+Click to place a point. ||| Haz clic para colocar un punto. ||| Fai clic para colocar un punto.
+Click two points. ||| Haz clic en dos puntos. ||| Fai clic en dous puntos.
+Click the start point, then a point on the ray. ||| Haz clic en el origen y luego en un punto de la semirrecta. ||| Fai clic na orixe e despois nun punto da semirrecta.
+Click the center, then a point on the circle. ||| Haz clic en el centro y luego en un punto de la circunferencia. ||| Fai clic no centro e despois nun punto da circunferencia.
+Click the vertices, then the first one again (or press Enter). ||| Haz clic en los vértices y luego otra vez en el primero (o pulsa Intro). ||| Fai clic nos vértices e despois outra vez no primeiro (ou preme Intro).
+Click a line or segment, then a point. ||| Haz clic en una recta o un segmento y luego en un punto. ||| Fai clic nunha recta ou un segmento e despois nun punto.
+Click two lines, segments or circles. ||| Haz clic en dos rectas, segmentos o circunferencias. ||| Fai clic en dúas rectas, segmentos ou circunferencias.
+Click three points: one arm, the vertex, the other arm. ||| Haz clic en tres puntos: un lado, el vértice y el otro lado. ||| Fai clic en tres puntos: un lado, o vértice e o outro lado.
+Graph panels ||| Paneles de la gráfica ||| Paneis da gráfica
+Algebra ||| Álgebra ||| Álxebra
+Geometry ||| Geometría ||| Xeometría
+Expressions ||| Expresiones ||| Expresións
+Add expression ||| Añadir expresión ||| Engadir expresión
+Examples: y = a x^2 + b, f(x) = sin(x), x^2 + y^2 = 9, y > x − 1, (cos t, sin t), r = 2cos(3θ), A = (1, 2), M = Midpoint(A, B) ||| Ejemplos: y = a x^2 + b, f(x) = sin(x), x^2 + y^2 = 9, y > x − 1, (cos t, sin t), r = 2cos(3θ), A = (1, 2), M = PuntoMedio(A, B) ||| Exemplos: y = a x^2 + b, f(x) = sin(x), x^2 + y^2 = 9, y > x − 1, (cos t, sin t), r = 2cos(3θ), A = (1, 2), M = PuntoMedio(A, B)
+Sliders ||| Deslizadores ||| Esvaradores
+Add slider ||| Añadir deslizador ||| Engadir esvarador
+Construction tools ||| Herramientas de construcción ||| Ferramentas de construción
+Free points ||| Puntos libres ||| Puntos libres
+Commands can also be typed in Algebra: Segment(A, B), Line, Ray, Circle(A, B), Polygon(A, B, C), Midpoint(A, B), Perpendicular(s1, C), Parallel(s1, C), Intersect(c1, c2), Angle(A, B, C), Distance(A, B), Area(poly1). ||| También puedes escribir órdenes en Álgebra: Segmento(A, B), Recta, Semirrecta, Circunferencia(A, B), Polígono(A, B, C), PuntoMedio(A, B), Perpendicular(s1, C), Paralela(s1, C), Interseca(c1, c2), Ángulo(A, B, C), Distancia(A, B), Área(poly1). Se guardan con su nombre en inglés. ||| Tamén podes escribir ordes en Álxebra: Segmento(A, B), Recta, Semirrecta, Circunferencia(A, B), Polígono(A, B, C), PuntoMedio(A, B), Perpendicular(s1, C), Paralela(s1, C), Interseca(c1, c2), Ángulo(A, B, C), Distancia(A, B), Área(poly1). Gárdanse co seu nome en inglés.
+Start x ||| x inicial ||| x inicial
+Step ||| Paso ||| Paso
+x min ||| x mín. ||| x mín.
+x max ||| x máx. ||| x máx.
+y min ||| y mín. ||| y mín.
+y max ||| y máx. ||| y máx.
+Width (px) ||| Ancho (px) ||| Largo (px)
+Height (px) ||| Alto (px) ||| Alto (px)
+Window ||| Ventana ||| Xanela
+Display ||| Visualización ||| Visualización
+Grid ||| Cuadrícula ||| Cuadrícula
+Axes ||| Ejes ||| Eixos
+Axis numbers ||| Números en los ejes ||| Números nos eixos
+Show roots, extrema and intersections ||| Mostrar raíces, extremos e intersecciones ||| Mostrar raíces, extremos e interseccións
+Show segment lengths ||| Mostrar la longitud de los segmentos ||| Mostrar a lonxitude dos segmentos
+Angles in degrees for sin, cos and tan ||| Ángulos en grados para sin, cos y tan ||| Ángulos en graos para sin, cos e tan
+Snap points to the grid ||| Ajustar los puntos a la cuadrícula ||| Axustar os puntos á cuadrícula
+Picture size ||| Tamaño de la imagen ||| Tamaño da imaxe
+graph ||| gráfica ||| gráfica
+Graph ||| Gráfica ||| Gráfica
+Arrow keys move the selected point, trace the selected function or pan; + and − zoom; 0 resets the view. ||| Las flechas mueven el punto seleccionado, recorren la función seleccionada o desplazan la vista; + y − hacen zoom; 0 restablece la vista. ||| As frechas moven o punto seleccionado, percorren a función seleccionada ou desprazan a vista; + e − fan zoom; 0 restablece a vista.
+Readouts ||| Lecturas ||| Lecturas
+Standard view ||| Vista estándar ||| Vista estándar
+Equal scale on both axes ||| Misma escala en los dos ejes ||| A mesma escala nos dous eixos
+Download SVG ||| Descargar SVG ||| Descargar SVG
+Download PNG ||| Descargar PNG ||| Descargar PNG
+Color of expression {n} ||| Color de la expresión {n} ||| Cor da expresión {n}
+Expression {n} ||| Expresión {n} ||| Expresión {n}
+Hide expression {n} ||| Ocultar la expresión {n} ||| Ocultar a expresión {n}
+Delete expression {n} ||| Eliminar la expresión {n} ||| Eliminar a expresión {n}
+Press Enter to add sliders for {names} ||| Pulsa Intro para añadir deslizadores para {names} ||| Preme Intro para engadir esvaradores para {names}
+{name} does not exist (the objects do not meet) ||| {name} no existe (los objetos no se cortan) ||| {name} non existe (os obxectos non se cortan)
+Sliders added: {names} ||| Deslizadores añadidos: {names} ||| Esvaradores engadidos: {names}
+Slider {name} ||| Deslizador {name} ||| Esvarador {name}
+Value of {name} ||| Valor de {name} ||| Valor de {name}
+Pause {name} ||| Pausar {name} ||| Pausar {name}
+Play {name} ||| Animar {name} ||| Animar {name}
+Limits ||| Límites ||| Límites
+Min ||| Mín. ||| Mín.
+Max ||| Máx. ||| Máx.
+Delete slider {name} ||| Eliminar el deslizador {name} ||| Eliminar o esvarador {name}
+Letters without a value (like a in y = a x^2) become sliders. ||| Las letras sin valor (como a en y = a x^2) se convierten en deslizadores. ||| As letras sen valor (como a en y = a x^2) convértense en esvaradores.
+No free points yet. ||| Aún no hay puntos libres. ||| Aínda non hai puntos libres.
+{axis} of {name} ||| {axis} de {name} ||| {axis} de {name}
+Point {name} created ||| Punto {name} creado ||| Punto {name} creado
+Nothing drawn yet. ||| Aún no hay nada dibujado. ||| Aínda non hai nada debuxado.
+Add a function to see its table of values. ||| Añade una función para ver su tabla de valores. ||| Engade unha función para ver a súa táboa de valores.
+Table of values ||| Tabla de valores ||| Táboa de valores
+Unexpected “{token}” ||| «{token}» inesperado ||| «{token}» inesperado
+Missing “{token}” ||| Falta «{token}» ||| Falta «{token}»
+{command} needs {n} points ||| {command} necesita {n} puntos ||| {command} necesita {n} puntos
+{name} is not defined ||| {name} no está definido ||| {name} non está definido
+{name} takes one value ||| {name} admite un valor ||| {name} admite un valor
+{name} takes two values ||| {name} admite dos valores ||| {name} admite dous valores
+Incomplete expression ||| Expresión incompleta ||| Expresión incompleta
+Add “=” or an inequality ||| Añade «=» o una desigualdad ||| Engade «=» ou unha desigualdade
+A point has two coordinates ||| Un punto tiene dos coordenadas ||| Un punto ten dúas coordenadas
+A point is not a number here ||| Aquí se espera un número, no un punto ||| Aquí agárdase un número, non un punto
+Circular definition ||| Definición circular ||| Definición circular
+Circle needs a center and a point or a radius ||| Circunferencia necesita un centro y un punto o un radio ||| Circunferencia necesita un centro e un punto ou un raio
+Polygon needs at least 3 points ||| Polígono necesita al menos 3 puntos ||| Polígono necesita polo menos 3 puntos
+Intersect needs two lines or circles ||| Intersección necesita dos rectas o circunferencias ||| Intersección necesita dúas rectas ou circunferencias
+Intersect works with lines, segments and circles ||| Intersección funciona con rectas, segmentos y circunferencias ||| Intersección funciona con rectas, segmentos e circunferencias
+Distance needs two objects ||| Distancia necesita dos objetos ||| Distancia necesita dous obxectos
+Distance needs two points, or a point and a line ||| Distancia necesita dos puntos, o un punto y una recta ||| Distancia necesita dous puntos, ou un punto e unha recta
+Area needs a polygon or a circle ||| Área necesita un polígono o una circunferencia ||| Área necesita un polígono ou unha circunferencia
+Slope needs a line ||| Pendiente necesita una recta ||| Pendente necesita unha recta
+Invalid expression ||| Expresión no válida ||| Expresión non válida
+{command} needs a line and a point ||| {command} necesita una recta y un punto ||| {command} necesita unha recta e un punto
+{command} needs one object ||| {command} necesita un objeto ||| {command} necesita un obxecto
+{command} works with segments, circles and polygons ||| {command} funciona con segmentos, circunferencias y polígonos ||| {command} funciona con segmentos, circunferencias e polígonos
+undefined ||| no definido ||| non definido
+error ||| error ||| erro
+Roots: {list} ||| Raíces: {list} ||| Raíces: {list}
+No roots in view ||| Sin raíces a la vista ||| Sen raíces á vista
+Minimum: {list} ||| Mínimo: {list} ||| Mínimo: {list}
+Maximum: {list} ||| Máximo: {list} ||| Máximo: {list}
+y-intercept: {value} ||| Corte con el eje y: {value} ||| Corte co eixo y: {value}
+midpoint of {a} and {b} ||| punto medio de {a} y {b} ||| punto medio de {a} e {b}
+intersection of {a} and {b} ||| intersección de {a} y {b} ||| intersección de {a} e {b}
+Segment {name} from {a} to {b}, length {length} ||| Segmento {name} de {a} a {b}, longitud {length} ||| Segmento {name} de {a} a {b}, lonxitude {length}
+Line {name}: {equation} ||| Recta {name}: {equation} ||| Recta {name}: {equation}
+Ray {name} from {a} through {b} ||| Semirrecta {name} desde {a} por {b} ||| Semirrecta {name} desde {a} por {b}
+Circle {name}: center {center}, radius {radius} ||| Circunferencia {name}: centro {center}, radio {radius} ||| Circunferencia {name}: centro {center}, raio {radius}
+Polygon {name}: area {area}, perimeter {perimeter} ||| Polígono {name}: área {area}, perímetro {perimeter} ||| Polígono {name}: área {area}, perímetro {perimeter}
+Angle {name} = {value}° ||| Ángulo {name} = {value}° ||| Ángulo {name} = {value}°
+{f} and {g} meet at {point} ||| {f} y {g} se cortan en {point} ||| {f} e {g} córtanse en {point}
+Show ||| Mostrar ||| Mostrar
+Hide ||| Ocultar ||| Ocultar

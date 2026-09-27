@@ -10,3 +10,4 @@ public/.well-known
 playwright.*.tmp.config.ts
 playwright.*.config.ts
 !playwright.config.ts
+scripts/i18n/sources/.lock

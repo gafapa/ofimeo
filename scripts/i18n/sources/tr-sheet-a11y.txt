@@ -1,0 +1,36 @@
+empty ||| vacía ||| baleira
+Formula ||| Fórmula ||| Fórmula
+selected ||| seleccionado ||| seleccionado
+Name box (cell reference) ||| Cuadro de nombres (referencia de celda) ||| Caixa de nomes (referencia de cela)
+Formula bar ||| Barra de fórmulas ||| Barra de fórmulas
+Spreadsheet grid ||| Cuadrícula de la hoja de cálculo ||| Grella da folla de cálculo
+Alt+Shift+T switches to the accessible table view, made for screen readers. F10 opens the menu bar. ||| Alt+Mayús+T cambia a la vista de tabla accesible, pensada para lectores de pantalla. F10 abre la barra de menús. ||| Alt+Maiús+T cambia á vista de táboa accesible, pensada para lectores de pantalla. F10 abre a barra de menús.
+Accessible table view ||| Vista de tabla accesible ||| Vista de táboa accesible
+Back to the grid view ||| Volver a la cuadrícula ||| Volver á grella
+Go to cell ||| Ir a la celda ||| Ir á cela
+Switch to accessible table view ||| Cambiar a la vista de tabla accesible ||| Cambiar á vista de táboa accesible
+Sheet {name} ||| Hoja {name} ||| Folla {name}
+Row ||| Fila ||| Fila
+Rows {from}–{to} of {total} · Columns {first}–{last} ||| Filas {from}–{to} de {total} · Columnas {first}–{last} ||| Filas {from}–{to} de {total} · Columnas {first}–{last}
+Arrow keys move between cells; Ctrl+Home and Ctrl+End go to the start and end of the data. Enter or F2 edits the cell (formulas start with =), Delete clears it, Ctrl+Z undoes. Ctrl+Page Up and Ctrl+Page Down change the sheet. ||| Las flechas mueven entre celdas; Ctrl+Inicio y Ctrl+Fin van al principio y al final de los datos. Intro o F2 edita la celda (las fórmulas empiezan por =), Supr la borra, Ctrl+Z deshace. Ctrl+Re Pág y Ctrl+Av Pág cambian de hoja. ||| As frechas moven entre celas; Ctrl+Inicio e Ctrl+Fin van ao principio e ao final dos datos. Intro ou F2 edita a cela (as fórmulas comezan por =), Supr bórraa, Ctrl+Z desfai. Ctrl+Re Páx e Ctrl+Av Páx cambian de folla.
+Arrow keys move between cells; Ctrl+Home and Ctrl+End go to the start and end of the data. Ctrl+Page Up and Ctrl+Page Down change the sheet. This spreadsheet is view only. ||| Las flechas mueven entre celdas; Ctrl+Inicio y Ctrl+Fin van al principio y al final de los datos. Ctrl+Re Pág y Ctrl+Av Pág cambian de hoja. Esta hoja de cálculo es de solo lectura. ||| As frechas moven entre celas; Ctrl+Inicio e Ctrl+Fin van ao principio e ao final dos datos. Ctrl+Re Páx e Ctrl+Av Páx cambian de folla. Esta folla de cálculo é só de lectura.
+Chart data as table ||| Datos del gráfico como tabla ||| Datos do gráfico como táboa
+Edit cell {cell} ||| Editar la celda {cell} ||| Editar a cela {cell}
+Saved ||| Guardado ||| Gardado
+Cleared ||| Borrada ||| Borrada
+Type a cell reference such as B12 ||| Escribe una referencia de celda como B12 ||| Escribe unha referencia de cela como B12
+Grid view ||| Vista de cuadrícula ||| Vista de grella
+Column chart ||| Gráfico de columnas ||| Gráfico de columnas
+Bar chart ||| Gráfico de barras ||| Gráfico de barras
+Line chart ||| Gráfico de líneas ||| Gráfico de liñas
+Area chart ||| Gráfico de áreas ||| Gráfico de áreas
+Pie chart ||| Gráfico circular ||| Gráfico circular
+Doughnut chart ||| Gráfico de anillo ||| Gráfico de anel
+Scatter chart ||| Gráfico de dispersión ||| Gráfico de dispersión
+{count} series, {points} points. ||| {count} series, {points} puntos. ||| {count} series, {points} puntos.
+no values ||| sin valores ||| sen valores
+{name}: from {first} to {last}; minimum {min} ({minAt}), maximum {max} ({maxAt}). ||| {name}: de {first} a {last}; mínimo {min} ({minAt}), máximo {max} ({maxAt}). ||| {name}: de {first} a {last}; mínimo {min} ({minAt}), máximo {max} ({maxAt}).
+And {count} more series. ||| Y {count} series más. ||| E {count} series máis.
+Category ||| Categoría ||| Categoría
+Source cells: {range} ||| Celdas de origen: {range} ||| Celas de orixe: {range}
+Chart data ||| Datos del gráfico ||| Datos do gráfico

@@ -1,0 +1,13 @@
+Connectors ||| Conectores ||| Conectores
+Fill color… ||| Color de relleno… ||| Cor de recheo…
+Line color… ||| Color de línea… ||| Cor de liña…
+SVG image (selection) ||| Imagen SVG (selección) ||| Imaxe SVG (selección)
+PNG image (selection) ||| Imagen PNG (selección) ||| Imaxe PNG (selección)
+Find in labels ||| Buscar en los textos ||| Buscar nos textos
+Previous match ||| Resultado anterior ||| Resultado anterior
+Next match ||| Resultado siguiente ||| Resultado seguinte
+{n} of {total} ||| {n} de {total} ||| {n} de {total}
+Current slide as PNG ||| Diapositiva actual como PNG ||| Diapositiva actual como PNG
+All slides as PNG (.zip) ||| Todas las diapositivas como PNG (.zip) ||| Todas as diapositivas como PNG (.zip)
+Bold / italic / underline ||| Negrita / cursiva / subrayado ||| Negra / cursiva / subliñado
+Bigger / smaller text ||| Texto más grande / más pequeño ||| Texto máis grande / máis pequeno

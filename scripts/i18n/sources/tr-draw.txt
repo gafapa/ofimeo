@@ -1,0 +1,35 @@
+The drawing is empty ||| El dibujo está vacío ||| O debuxo está baleiro
+{n} element selected ||| {n} elemento seleccionado ||| {n} elemento seleccionado
+{n} elements selected ||| {n} elementos seleccionados ||| {n} elementos seleccionados
+{n} element ||| {n} elemento ||| {n} elemento
+{n} elements ||| {n} elementos ||| {n} elementos
+White ||| Blanco ||| Branco
+Light gray ||| Gris claro ||| Gris claro
+Light blue ||| Azul claro ||| Azul claro
+Light yellow ||| Amarillo claro ||| Amarelo claro
+Light rose ||| Rosa claro ||| Rosa claro
+Export image… ||| Exportar imagen… ||| Exportar imaxe…
+Elements ||| Elementos ||| Elementos
+Images ||| Imágenes ||| Imaxes
+Clear canvas ||| Limpiar lienzo ||| Limpar lenzo
+This deletes every element of the drawing for everyone. You can undo it. ||| Se eliminarán todos los elementos del dibujo para todas las personas. Puedes deshacerlo. ||| Eliminaranse todos os elementos do debuxo para todas as persoas. Podes desfacelo.
+Clear ||| Limpiar ||| Limpar
+Clear canvas… ||| Limpiar lienzo… ||| Limpar lenzo…
+Custom color… ||| Color personalizado… ||| Cor personalizada…
+Zoom to fit ||| Ajustar al contenido ||| Axustar ao contido
+Zoom to selection ||| Ajustar a la selección ||| Axustar á selección
+Snap to objects ||| Ajustar a los objetos ||| Axustar aos obxectos
+Zen mode ||| Modo zen ||| Modo zen
+Statistics ||| Estadísticas ||| Estatísticas
+Canvas background ||| Fondo del lienzo ||| Fondo do lenzo
+Freehand drawing ||| Dibujo a mano alzada ||| Debuxo a man alzada
+Web embed ||| Página web insertada ||| Páxina web inserida
+Diagram from Mermaid… ||| Diagrama desde Mermaid… ||| Diagrama desde Mermaid…
+Library… ||| Biblioteca… ||| Biblioteca…
+Select ||| Seleccionar ||| Seleccionar
+Hand (move the canvas) ||| Mano (mover el lienzo) ||| Man (mover o lenzo)
+Eraser ||| Borrador ||| Goma de borrar
+Laser pointer ||| Puntero láser ||| Punteiro láser
+Keep the selected tool active ||| Mantener activa la herramienta seleccionada ||| Manter activa a ferramenta seleccionada
+All drawing shortcuts… ||| Todos los atajos de dibujo… ||| Todos os atallos de debuxo…
+Bring forward / send backward ||| Traer adelante / enviar atrás ||| Traer adiante / enviar atrás

@@ -1,0 +1,13 @@
+Connectors ||| Connecteurs ||| Verbinder
+Fill color… ||| Couleur de remplissage… ||| Füllfarbe…
+Line color… ||| Couleur de ligne… ||| Linienfarbe…
+SVG image (selection) ||| Image SVG (sélection) ||| SVG-Bild (Auswahl)
+PNG image (selection) ||| Image PNG (sélection) ||| PNG-Bild (Auswahl)
+Find in labels ||| Rechercher dans les textes ||| In Beschriftungen suchen
+Previous match ||| Résultat précédent ||| Vorheriger Treffer
+Next match ||| Résultat suivant ||| Nächster Treffer
+{n} of {total} ||| {n} sur {total} ||| {n} von {total}
+Current slide as PNG ||| Diapositive actuelle en PNG ||| Aktuelle Folie als PNG
+All slides as PNG (.zip) ||| Toutes les diapositives en PNG (.zip) ||| Alle Folien als PNG (.zip)
+Bold / italic / underline ||| Gras / italique / souligné ||| Fett / kursiv / unterstrichen
+Bigger / smaller text ||| Texte plus grand / plus petit ||| Text größer / kleiner

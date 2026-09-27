@@ -1,0 +1,29 @@
+A document needs at least one page. ||| Un document doit contenir au moins une page. ||| Ein Dokument braucht mindestens eine Seite.
+Add comment ||| Ajouter un commentaire ||| Kommentar hinzufügen
+Click on a page, or press Enter, to place the stamp. Esc to stop. ||| Cliquez sur une page, ou appuyez sur Entrée, pour placer le tampon. Échap pour arrêter. ||| Klicken Sie auf eine Seite oder drücken Sie die Eingabetaste, um den Stempel zu setzen. Esc zum Beenden.
+Click on a page, or press Enter, to place your signature. ||| Cliquez sur une page, ou appuyez sur Entrée, pour placer votre signature. ||| Klicken Sie auf eine Seite oder drücken Sie die Eingabetaste, um Ihre Unterschrift zu setzen.
+Could not copy. Use {shortcut} instead. ||| Impossible de copier. Utilisez {shortcut}. ||| Kopieren nicht möglich. Verwenden Sie {shortcut}.
+Delete page… ||| Supprimer la page… ||| Seite löschen…
+Enter the password… ||| Saisir le mot de passe… ||| Passwort eingeben…
+Markdown (.md) ||| Markdown (.md) ||| Markdown (.md)
+Move page down ||| Descendre la page ||| Seite nach unten
+Move page up ||| Monter la page ||| Seite nach oben
+Move the page (thumbnails) ||| Déplacer la page (miniatures) ||| Seite verschieben (Miniaturen)
+No comments yet. Use "Add comment", or choose the sticky note tool (N) and click on a page (or press Enter). ||| Aucun commentaire pour l'instant. Utilisez « Ajouter un commentaire », ou choisissez l'outil note (N) et cliquez sur une page (ou appuyez sur Entrée). ||| Noch keine Kommentare. Verwenden Sie „Kommentar hinzufügen“ oder wählen Sie das Notizwerkzeug (N) und klicken Sie auf eine Seite (oder drücken Sie die Eingabetaste).
+Page menu (thumbnails) ||| Menu de la page (miniatures) ||| Seitenmenü (Miniaturen)
+Password required ||| Mot de passe requis ||| Passwort erforderlich
+Place the chosen annotation on the current page ||| Placer l'annotation choisie sur la page actuelle ||| Die gewählte Anmerkung auf der aktuellen Seite platzieren
+Rotate left ||| Faire pivoter à gauche ||| Nach links drehen
+Rotate right ||| Faire pivoter à droite ||| Nach rechts drehen
+Some content could not be imported: {list} ||| Une partie du contenu n'a pas pu être importée : {list} ||| Einige Inhalte konnten nicht importiert werden: {list}
+The PDF could not be read. ||| Impossible de lire le PDF. ||| Das PDF konnte nicht gelesen werden.
+The file could not be read. ||| Impossible de lire le fichier. ||| Die Datei konnte nicht gelesen werden.
+The file is damaged or is not a PDF. ||| Le fichier est endommagé ou n'est pas un PDF. ||| Die Datei ist beschädigt oder kein PDF.
+The password is not correct. Try again. ||| Le mot de passe est incorrect. Réessayez. ||| Das Passwort ist falsch. Versuchen Sie es erneut.
+This PDF is protected with a password. ||| Ce PDF est protégé par un mot de passe. ||| Dieses PDF ist passwortgeschützt.
+This PDF is protected. Enter its password to open it. ||| Ce PDF est protégé. Saisissez son mot de passe pour l'ouvrir. ||| Dieses PDF ist geschützt. Geben Sie das Passwort ein, um es zu öffnen.
+This file is not an RTF document ||| Ce fichier n'est pas un document RTF ||| Diese Datei ist kein RTF-Dokument
+This removes the page and everything written on it from the document. Undo brings it back. ||| La page et tout ce qui y est écrit sont retirés du document. Annuler la rétablit. ||| Die Seite und alles, was darauf steht, wird aus dem Dokument entfernt. Rückgängig stellt sie wieder her.
+endnotes ||| notes de fin ||| Endnoten
+some pictures ||| certaines images ||| einige Bilder
+text boxes and drawings ||| zones de texte et dessins ||| Textfelder und Zeichnungen

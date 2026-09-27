@@ -1,0 +1,83 @@
+Fine ||| Fin ||| Fein
+Page title ||| Titre de la page ||| Seitentitel
+Sections and pages ||| Sections et pages ||| Abschnitte und Seiten
+Type your notes… ||| Écris tes notes… ||| Schreibe deine Notizen…
+This notebook has no sections yet. ||| Ce bloc-notes n’a pas encore de section. ||| Dieses Notizbuch hat noch keine Abschnitte.
+This section has no pages yet. ||| Cette section n’a pas encore de page. ||| Dieser Abschnitt hat noch keine Seiten.
+Add page ||| Ajouter une page ||| Seite hinzufügen
+Section {n} ||| Section {n} ||| Abschnitt {n}
+Could not read the picture {name} ||| Impossible de lire l’image {name} ||| Das Bild {name} konnte nicht gelesen werden
+“{name}” is too large to keep in the notebook ({size}; at most {max}) ||| « {name} » est trop volumineux pour le bloc-notes ({size} ; au maximum {max}) ||| „{name}“ ist zu groß für das Notizbuch ({size}; höchstens {max})
+Could not import: {message} ||| Impossible d’importer : {message} ||| Import nicht möglich: {message}
+Open a page to print it ||| Ouvrez une page pour l’imprimer ||| Öffnen Sie eine Seite, um sie zu drucken
+Notebook as Markdown (.zip) ||| Bloc-notes en Markdown (.zip) ||| Notizbuch als Markdown (.zip)
+Remove tag ||| Retirer la balise ||| Tag entfernen
+Tag summary… ||| Résumé des balises… ||| Tag-Übersicht…
+Tag summary ||| Résumé des balises ||| Tag-Übersicht
+Draw ||| Dessin ||| Zeichnen
+Typing ||| Texte ||| Schreiben
+Highlighter ||| Surligneur ||| Textmarker
+Pen color ||| Couleur du stylo ||| Stiftfarbe
+Highlighter color ||| Couleur du surligneur ||| Textmarkerfarbe
+Thickness ||| Épaisseur ||| Strichstärke
+Draw with the stylus ||| Dessiner avec le stylet ||| Mit dem Eingabestift zeichnen
+Clear ink on this page ||| Effacer l’encre de cette page ||| Tinte auf dieser Seite löschen
+Notebook ||| Bloc-notes ||| Notizbuch
+Notebooks ||| Blocs-notes ||| Notizbücher
+Ofimeo Notebook ||| Ofimeo Bloc-notes ||| Ofimeo Notizbuch
+New notebook ||| Nouveau bloc-notes ||| Neues Notizbuch
+Untitled notebook ||| Bloc-notes sans titre ||| Unbenanntes Notizbuch
+New subpage ||| Nouvelle sous-page ||| Neue Unterseite
+New section ||| Nouvelle section ||| Neuer Abschnitt
+Rename section… ||| Renommer la section… ||| Abschnitt umbenennen…
+Rename section ||| Renommer la section ||| Abschnitt umbenennen
+Delete section ||| Supprimer la section ||| Abschnitt löschen
+Search notebook ||| Rechercher dans le bloc-notes ||| Notizbuch durchsuchen
+Import Markdown files or ZIP… ||| Importer des fichiers Markdown ou un ZIP… ||| Markdown-Dateien oder ZIP importieren…
+Import a folder of Markdown files… ||| Importer un dossier de fichiers Markdown… ||| Ordner mit Markdown-Dateien importieren…
+Section name ||| Nom de la section ||| Name des Abschnitts
+Current page ||| Page actuelle ||| Aktuelle Seite
+Current section ||| Section actuelle ||| Aktueller Abschnitt
+Print section… ||| Imprimer la section… ||| Abschnitt drucken…
+Sections ||| Sections ||| Abschnitte
+Picture… ||| Image… ||| Bild…
+File… ||| Fichier… ||| Datei…
+Date and time ||| Date et heure ||| Datum und Uhrzeit
+Heading {n} ||| Titre {n} ||| Überschrift {n}
+Tag ||| Balise ||| Tag
+Tags: To do, Important, Question, Remember ||| Balises : À faire, Important, Question, À retenir ||| Tags: Aufgabe, Wichtig, Frage, Merken
+Move a page or section ||| Déplacer une page ou une section ||| Seite oder Abschnitt verschieben
+Make subpage / promote (page list) ||| Faire une sous-page / remonter (liste des pages) ||| Unterseite machen / hochstufen (Seitenliste)
+Type / pen / highlighter / eraser ||| Texte / stylo / surligneur / gomme ||| Schreiben / Stift / Textmarker / Radiergummi
+Print page ||| Imprimer la page ||| Seite drucken
+Print page… ||| Imprimer la page… ||| Seite drucken…
+Attach file ||| Joindre un fichier ||| Datei anhängen
+{n} page imported ||| {n} page importée ||| {n} Seite importiert
+{n} pages imported ||| {n} pages importées ||| {n} Seiten importiert
+{n} page ||| {n} page ||| {n} Seite
+{n} pages ||| {n} pages ||| {n} Seiten
+Ink ||| Encre ||| Tinte
+No Markdown files were found ||| Aucun fichier Markdown trouvé ||| Keine Markdown-Dateien gefunden
+To do ||| À faire ||| Aufgabe
+Important ||| Important ||| Wichtig
+Remember ||| À retenir ||| Merken
+Clear search ||| Effacer la recherche ||| Suche löschen
+Search results ||| Résultats de la recherche ||| Suchergebnisse
+Delete the section “{name}” and its {n} pages? You can undo it with Undo or restore an earlier version. ||| Supprimer la section « {name} » et ses {n} pages ? Vous pouvez annuler avec Annuler ou restaurer une version antérieure. ||| Abschnitt „{name}“ und seine {n} Seiten löschen? Sie können das mit Rückgängig aufheben oder eine frühere Version wiederherstellen.
+Delete the page “{name}”? You can undo it with Undo or restore an earlier version. ||| Supprimer la page « {name} » ? Vous pouvez annuler avec Annuler ou restaurer une version antérieure. ||| Seite „{name}“ löschen? Sie können das mit Rückgängig aufheben oder eine frühere Version wiederherstellen.
+Export section ||| Exporter la section ||| Abschnitt exportieren
+Export page ||| Exporter la page ||| Seite exportieren
+New page below ||| Nouvelle page en dessous ||| Neue Seite darunter
+Make subpage ||| Faire une sous-page ||| Zur Unterseite machen
+Promote subpage ||| Remonter d’un niveau ||| Eine Ebene höher
+Move to section ||| Déplacer vers la section ||| In Abschnitt verschieben
+Section options ||| Options de la section ||| Abschnittsoptionen
+Page options ||| Options de la page ||| Seitenoptionen
+No pages match “{query}” ||| Aucune page ne correspond à « {query} » ||| Keine Seite passt zu „{query}“
+Every to-do is done. ||| Tout est fait. ||| Alle Aufgaben sind erledigt.
+No tagged notes yet. Put the cursor in a paragraph and choose a tag in the toolbar (Tag) or with Ctrl+Shift+1 to 4. ||| Aucune note balisée pour l’instant. Placez le curseur dans un paragraphe et choisissez une balise dans la barre d’outils (Balise) ou avec Ctrl+Maj+1 à 4. ||| Noch keine markierten Notizen. Setzen Sie den Cursor in einen Absatz und wählen Sie einen Tag in der Symbolleiste (Tag) oder mit Strg+Umschalt+1 bis 4.
+Only open to-dos ||| Seulement les tâches à faire ||| Nur offene Aufgaben
+Sections are the colored tabs; add pages and subpages in the list next to them and drag to reorder. ||| Les sections sont les onglets de couleur ; ajoutez des pages et sous-pages dans la liste voisine et faites-les glisser pour les réordonner. ||| Abschnitte sind die farbigen Register; fügen Sie daneben Seiten und Unterseiten hinzu und ziehen Sie sie zum Umsortieren.
+Tag paragraphs as To do, Important, Question or Remember (Ctrl+Shift+1 to 4); Tag summary collects them. ||| Balisez les paragraphes À faire, Important, Question ou À retenir (Ctrl+Maj+1 à 4) ; le Résumé des balises les rassemble. ||| Markieren Sie Absätze als Aufgabe, Wichtig, Frage oder Merken (Strg+Umschalt+1 bis 4); die Tag-Übersicht sammelt sie.
+Pen, Highlighter and Eraser in the toolbar draw over the page; a stylus follows your pressure. ||| Stylo, Surligneur et Gomme de la barre d’outils dessinent sur la page ; le stylet suit votre pression. ||| Stift, Textmarker und Radiergummi in der Symbolleiste zeichnen auf der Seite; ein Eingabestift folgt Ihrem Druck.
+Paste or drop pictures and files onto the page; File ▸ Download as exports a page, a section or the notebook. ||| Collez ou déposez des images et des fichiers sur la page ; Fichier ▸ Télécharger au format exporte une page, une section ou le bloc-notes. ||| Fügen Sie Bilder und Dateien ein oder ziehen Sie sie auf die Seite; Datei ▸ Herunterladen als exportiert eine Seite, einen Abschnitt oder das Notizbuch.

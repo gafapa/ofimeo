@@ -1,0 +1,83 @@
+Fine ||| Fino ||| Fino
+Page title ||| Título de la página ||| Título da páxina
+Sections and pages ||| Secciones y páginas ||| Seccións e páxinas
+Type your notes… ||| Escribe tus apuntes… ||| Escribe os teus apuntamentos…
+This notebook has no sections yet. ||| Este cuaderno aún no tiene secciones. ||| Este caderno aínda non ten seccións.
+This section has no pages yet. ||| Esta sección aún no tiene páginas. ||| Esta sección aínda non ten páxinas.
+Add page ||| Añadir página ||| Engadir páxina
+Section {n} ||| Sección {n} ||| Sección {n}
+Could not read the picture {name} ||| No se pudo leer la imagen {name} ||| Non se puido ler a imaxe {name}
+“{name}” is too large to keep in the notebook ({size}; at most {max}) ||| «{name}» es demasiado grande para guardarlo en el cuaderno ({size}; como máximo {max}) ||| «{name}» é demasiado grande para gardalo no caderno ({size}; como máximo {max})
+Could not import: {message} ||| No se pudo importar: {message} ||| Non se puido importar: {message}
+Open a page to print it ||| Abre una página para imprimirla ||| Abre unha páxina para imprimila
+Notebook as Markdown (.zip) ||| Cuaderno en Markdown (.zip) ||| Caderno en Markdown (.zip)
+Remove tag ||| Quitar etiqueta ||| Quitar etiqueta
+Tag summary… ||| Resumen de etiquetas… ||| Resumo de etiquetas…
+Tag summary ||| Resumen de etiquetas ||| Resumo de etiquetas
+Draw ||| Dibujar ||| Debuxar
+Typing ||| Escribir ||| Escribir
+Highlighter ||| Resaltador ||| Marcador
+Pen color ||| Color del bolígrafo ||| Cor do bolígrafo
+Highlighter color ||| Color del resaltador ||| Cor do marcador
+Thickness ||| Grosor ||| Grosor
+Draw with the stylus ||| Dibujar con el lápiz óptico ||| Debuxar co lapis óptico
+Clear ink on this page ||| Borrar la tinta de esta página ||| Borrar a tinta desta páxina
+Notebook ||| Cuaderno ||| Caderno
+Notebooks ||| Cuadernos ||| Cadernos
+Ofimeo Notebook ||| Ofimeo Cuaderno ||| Ofimeo Caderno
+New notebook ||| Nuevo cuaderno ||| Novo caderno
+Untitled notebook ||| Cuaderno sin título ||| Caderno sen título
+New subpage ||| Nueva subpágina ||| Nova subpáxina
+New section ||| Nueva sección ||| Nova sección
+Rename section… ||| Cambiar nombre de la sección… ||| Cambiar o nome da sección…
+Rename section ||| Cambiar nombre de la sección ||| Cambiar o nome da sección
+Delete section ||| Eliminar sección ||| Eliminar sección
+Search notebook ||| Buscar en el cuaderno ||| Buscar no caderno
+Import Markdown files or ZIP… ||| Importar archivos Markdown o ZIP… ||| Importar ficheiros Markdown ou ZIP…
+Import a folder of Markdown files… ||| Importar una carpeta de archivos Markdown… ||| Importar un cartafol de ficheiros Markdown…
+Section name ||| Nombre de la sección ||| Nome da sección
+Current page ||| Página actual ||| Páxina actual
+Current section ||| Sección actual ||| Sección actual
+Print section… ||| Imprimir sección… ||| Imprimir sección…
+Sections ||| Secciones ||| Seccións
+Picture… ||| Imagen… ||| Imaxe…
+File… ||| Archivo… ||| Ficheiro…
+Date and time ||| Fecha y hora ||| Data e hora
+Heading {n} ||| Título {n} ||| Título {n}
+Tag ||| Etiqueta ||| Etiqueta
+Tags: To do, Important, Question, Remember ||| Etiquetas: Tarea, Importante, Pregunta, Recordar ||| Etiquetas: Tarefa, Importante, Pregunta, Lembrar
+Move a page or section ||| Mover una página o sección ||| Mover unha páxina ou sección
+Make subpage / promote (page list) ||| Convertir en subpágina / subir de nivel (lista de páginas) ||| Converter en subpáxina / subir de nivel (lista de páxinas)
+Type / pen / highlighter / eraser ||| Escribir / bolígrafo / resaltador / borrador ||| Escribir / bolígrafo / marcador / goma
+Print page ||| Imprimir página ||| Imprimir páxina
+Print page… ||| Imprimir página… ||| Imprimir páxina…
+Attach file ||| Adjuntar archivo ||| Anexar ficheiro
+{n} page imported ||| {n} página importada ||| {n} páxina importada
+{n} pages imported ||| {n} páginas importadas ||| {n} páxinas importadas
+{n} page ||| {n} página ||| {n} páxina
+{n} pages ||| {n} páginas ||| {n} páxinas
+Ink ||| Tinta ||| Tinta
+No Markdown files were found ||| No se encontraron archivos Markdown ||| Non se atoparon ficheiros Markdown
+To do ||| Tarea ||| Tarefa
+Important ||| Importante ||| Importante
+Remember ||| Recordar ||| Lembrar
+Clear search ||| Borrar la búsqueda ||| Borrar a busca
+Search results ||| Resultados de la búsqueda ||| Resultados da busca
+Delete the section “{name}” and its {n} pages? You can undo it with Undo or restore an earlier version. ||| ¿Eliminar la sección «{name}» y sus {n} páginas? Puedes deshacerlo con Deshacer o restaurar una versión anterior. ||| Eliminar a sección «{name}» e as súas {n} páxinas? Podes desfacelo con Desfacer ou restaurar unha versión anterior.
+Delete the page “{name}”? You can undo it with Undo or restore an earlier version. ||| ¿Eliminar la página «{name}»? Puedes deshacerlo con Deshacer o restaurar una versión anterior. ||| Eliminar a páxina «{name}»? Podes desfacelo con Desfacer ou restaurar unha versión anterior.
+Export section ||| Exportar sección ||| Exportar sección
+Export page ||| Exportar página ||| Exportar páxina
+New page below ||| Nueva página debajo ||| Nova páxina debaixo
+Make subpage ||| Convertir en subpágina ||| Converter en subpáxina
+Promote subpage ||| Subir de nivel ||| Subir de nivel
+Move to section ||| Mover a la sección ||| Mover á sección
+Section options ||| Opciones de la sección ||| Opcións da sección
+Page options ||| Opciones de la página ||| Opcións da páxina
+No pages match “{query}” ||| Ninguna página coincide con «{query}» ||| Ningunha páxina coincide con «{query}»
+Every to-do is done. ||| Todas las tareas están hechas. ||| Todas as tarefas están feitas.
+No tagged notes yet. Put the cursor in a paragraph and choose a tag in the toolbar (Tag) or with Ctrl+Shift+1 to 4. ||| Aún no hay notas etiquetadas. Pon el cursor en un párrafo y elige una etiqueta en la barra de herramientas (Etiqueta) o con Ctrl+Mayús+1 a 4. ||| Aínda non hai notas etiquetadas. Pon o cursor nun parágrafo e escolle unha etiqueta na barra de ferramentas (Etiqueta) ou con Ctrl+Maiús+1 a 4.
+Only open to-dos ||| Solo tareas pendientes ||| Só tarefas pendentes
+Sections are the colored tabs; add pages and subpages in the list next to them and drag to reorder. ||| Las secciones son las pestañas de colores; añade páginas y subpáginas en la lista de al lado y arrastra para ordenarlas. ||| As seccións son as lapelas de cores; engade páxinas e subpáxinas na lista do lado e arrastra para ordenalas.
+Tag paragraphs as To do, Important, Question or Remember (Ctrl+Shift+1 to 4); Tag summary collects them. ||| Etiqueta párrafos como Tarea, Importante, Pregunta o Recordar (Ctrl+Mayús+1 a 4); Resumen de etiquetas los reúne. ||| Etiqueta parágrafos como Tarefa, Importante, Pregunta ou Lembrar (Ctrl+Maiús+1 a 4); Resumo de etiquetas xúntaos.
+Pen, Highlighter and Eraser in the toolbar draw over the page; a stylus follows your pressure. ||| Bolígrafo, Resaltador y Borrador de la barra de herramientas dibujan sobre la página; el lápiz óptico sigue tu presión. ||| Bolígrafo, Marcador e Goma da barra de ferramentas debuxan sobre a páxina; o lapis óptico segue a túa presión.
+Paste or drop pictures and files onto the page; File ▸ Download as exports a page, a section or the notebook. ||| Pega o suelta imágenes y archivos en la página; Archivo ▸ Descargar como exporta una página, una sección o el cuaderno. ||| Pega ou solta imaxes e ficheiros na páxina; Ficheiro ▸ Descargar como exporta unha páxina, unha sección ou o caderno.

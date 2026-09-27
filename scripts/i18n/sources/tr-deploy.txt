@@ -1,0 +1,57 @@
+The browser’s language ||| El idioma del navegador ||| O idioma do navegador
+The interface language ||| El idioma de la interfaz ||| O idioma da interface
+All templates ||| Todas las plantillas ||| Todos os modelos
+No templates ||| Ninguna plantilla ||| Ningún modelo
+Only the ones selected below ||| Solo las seleccionadas abajo ||| Só os seleccionados abaixo
+Preview of ofimeo.config.json ||| Vista previa de ofimeo.config.json ||| Vista previa de ofimeo.config.json
+Without public servers, give a school relay or Nostr relays, or people will not find each other. ||| Sin servidores públicos, indica un relé del centro o relés Nostr; si no, las personas no se encontrarán. ||| Sen servidores públicos, indica un relé do centro ou relés Nostr; se non, as persoas non se atoparán.
+Addresses must start with https://: {value} ||| Las direcciones deben empezar por https://: {value} ||| Os enderezos deben comezar por https://: {value}
+Could not copy ||| No se pudo copiar ||| Non se puido copiar
+This form writes ofimeo.config.json, the configuration of {suite} for your school. Put the file next to index.html on your server (or give it to Ofimeo Relay with --school-config). Every browser applies it the next time it opens {suite}. ||| Este formulario crea ofimeo.config.json, la configuración de {suite} para tu centro. Pon el archivo junto a index.html en tu servidor (o dáselo a Ofimeo Relay con --school-config). Cada navegador la aplica la próxima vez que abre {suite}. ||| Este formulario crea ofimeo.config.json, a configuración de {suite} para o teu centro. Pon o ficheiro xunto a index.html no teu servidor (ou dállo a Ofimeo Relay con --school-config). Cada navegador aplícaa a próxima vez que abre {suite}.
+Deployment guide for schools ||| Guía de instalación para centros educativos ||| Guía de instalación para centros educativos
+School ||| Centro educativo ||| Centro educativo
+Logo ||| Logotipo ||| Logotipo
+An image next to index.html (for example school/logo.svg) or an https:// address. ||| Una imagen junto a index.html (por ejemplo school/logo.svg) o una dirección https://. ||| Unha imaxe xunto a index.html (por exemplo school/logo.svg) ou un enderezo https://.
+Languages ||| Idiomas ||| Idiomas
+Language of new documents (spelling) ||| Idioma de los documentos nuevos (ortografía) ||| Idioma dos documentos novos (ortografía)
+People cannot change the interface language ||| No se puede cambiar el idioma de la interfaz ||| Non se pode cambiar o idioma da interface
+School relay (Ofimeo Relay) ||| Relé del centro (Ofimeo Relay) ||| Relé do centro (Ofimeo Relay)
+People cannot choose another relay ||| No se puede elegir otro relé ||| Non se pode escoller outro relé
+Allow public servers (Nostr relays and STUN) ||| Permitir servidores públicos (relés Nostr y STUN) ||| Permitir servidores públicos (relés Nostr e STUN)
+Other Nostr relays (one per line) ||| Otros relés Nostr (uno por línea) ||| Outros relés Nostr (un por liña)
+TURN server addresses ||| Direcciones del servidor TURN ||| Enderezos do servidor TURN
+TURN user name ||| Usuario TURN ||| Usuario TURN
+TURN password ||| Contraseña TURN ||| Contrasinal TURN
+Documents for people who are offline ||| Documentos para quien no está conectado ||| Documentos para quen non está conectado
+Where encrypted changes may wait until the other people connect. ||| Dónde pueden esperar los cambios cifrados hasta que las demás personas se conecten. ||| Onde poden agardar os cambios cifrados ata que as demais persoas se conecten.
+Nextcloud folder ||| Carpeta de Nextcloud ||| Cartafol de Nextcloud
+Nextcloud servers (one per line: name | address) ||| Servidores Nextcloud (uno por línea: nombre | dirección) ||| Servidores Nextcloud (un por liña: nome | enderezo)
+Only these servers can be used ||| Solo se pueden usar estos servidores ||| Só se poden usar estes servidores
+Moodle address ||| Dirección de Moodle ||| Enderezo de Moodle
+Students see their Moodle assignments and hand in to them (docs/moodle.md). ||| El alumnado ve sus tareas de Moodle y las entrega (docs/moodle.md). ||| O alumnado ve as súas tarefas de Moodle e entrégaas (docs/moodle.md).
+Always through the school relay (the relay must be started with --moodle-url) ||| Siempre a través del relé del centro (el relé debe iniciarse con --moodle-url) ||| Sempre a través do relé do centro (o relé debe iniciarse con --moodle-url)
+Only this Moodle can be used ||| Solo se puede usar este Moodle ||| Só se pode usar este Moodle
+Features ||| Funciones ||| Funcións
+Allow AI features ||| Permitir funciones de IA ||| Permitir funcións de IA
+Allow AI assistants (WebMCP) ||| Permitir asistentes de IA (WebMCP) ||| Permitir asistentes de IA (WebMCP)
+Apps offered for new documents ||| Aplicaciones disponibles para documentos nuevos ||| Aplicacións dispoñibles para documentos novos
+Privacy and legal information ||| Privacidad e información legal ||| Privacidade e información legal
+Shown above the legal links. Your school is responsible for the data it processes; see Information for schools. ||| Se muestra encima de los enlaces legales. Tu centro es responsable de los datos que trata; consulta Información para centros educativos. ||| Móstrase enriba das ligazóns legais. O teu centro é responsable dos datos que trata; consulta Información para centros educativos.
+Organization ||| Organización ||| Organización
+Contact e-mail ||| Correo de contacto ||| Correo de contacto
+Privacy e-mail ||| Correo de privacidad ||| Correo de privacidade
+Data protection officer e-mail ||| Correo del delegado de protección de datos ||| Correo do delegado de protección de datos
+Privacy policy address ||| Dirección de la política de privacidad ||| Enderezo da política de privacidade
+Legal notice address ||| Dirección del aviso legal ||| Enderezo do aviso legal
+Configuration for your school ||| Configuración para tu centro ||| Configuración para o teu centro
+Download ofimeo.config.json ||| Descargar ofimeo.config.json ||| Descargar ofimeo.config.json
+Set by your school ||| Lo establece tu centro ||| Establéceo o teu centro
+School logo ||| Logotipo del centro ||| Logotipo do centro
+Managed by {name} ||| Gestionado por {name} ||| Xestionado por {name}
+Contact ||| Contacto ||| Contacto
+Data protection officer ||| Delegado de protección de datos ||| Delegado de protección de datos
+School privacy policy ||| Política de privacidad del centro ||| Política de privacidade do centro
+School legal notice ||| Aviso legal del centro ||| Aviso legal do centro
+Another server… ||| Otro servidor… ||| Outro servidor…
+Your school’s Nextcloud ||| El Nextcloud de tu centro ||| O Nextcloud do teu centro
+For administrators… ||| Para administradores… ||| Para administradores…

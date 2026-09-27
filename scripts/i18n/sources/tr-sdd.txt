@@ -1,0 +1,5 @@
+{label} ({n} of {total}) ||| {label} ({n} de {total}) ||| {label} ({n} de {total})
+Heading ||| Encabezado ||| Encabezamento
+Item {n} ||| Elemento {n} ||| Elemento {n}
+Not an OpenDocument presentation ||| No es una presentación OpenDocument ||| Non é unha presentación OpenDocument
+PDF document (all pages) ||| Documento PDF (todas las páginas) ||| Documento PDF (todas as páxinas)

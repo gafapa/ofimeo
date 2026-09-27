@@ -1,0 +1,25 @@
+AI access on ||| Acceso de IA activado ||| Acceso de IA activado
+AI assistant access is on ||| El acceso de asistentes de IA está activado ||| O acceso de asistentes de IA está activado
+AI assistant ||| Asistente de IA ||| Asistente de IA
+AI assistants can no longer use this document ||| Los asistentes de IA ya no pueden usar este documento ||| Os asistentes de IA xa non poden usar este documento
+AI assistants can now use this document ||| Los asistentes de IA ya pueden usar este documento ||| Os asistentes de IA xa poden usar este documento
+AI assistants can use this document (WebMCP). Click for details or to turn it off. ||| Los asistentes de IA pueden usar este documento (WebMCP). Haz clic para ver los detalles o desactivarlo. ||| Os asistentes de IA poden usar este documento (WebMCP). Fai clic para ver os detalles ou desactivalo.
+Add comments. ||| Añadir comentarios. ||| Engadir comentarios.
+Allow AI assistants (WebMCP)… ||| Permitir asistentes de IA (WebMCP)… ||| Permitir asistentes de IA (WebMCP)…
+Allow AI assistants? ||| ¿Permitir asistentes de IA? ||| Permitir asistentes de IA?
+Allow ||| Permitir ||| Permitir
+Before changes by the AI assistant ||| Antes de los cambios del asistente de IA ||| Antes dos cambios do asistente de IA
+Changes by the AI assistant ||| Cambios del asistente de IA ||| Cambios do asistente de IA
+It never gets your share links, access keys, other documents or anything outside this document. ||| Nunca recibe tus enlaces para compartir, tus claves de acceso, otros documentos ni nada fuera de este documento. ||| Nunca recibe as túas ligazóns para compartir, as túas claves de acceso, outros documentos nin nada fóra deste documento.
+Make changes. Each change can be undone in one step and is recorded as the AI assistant’s in the version history. ||| Hacer cambios. Cada cambio se puede deshacer en un paso y queda registrado como del asistente de IA en el historial de versiones. ||| Facer cambios. Cada cambio pódese desfacer nun paso e queda rexistrado como do asistente de IA no historial de versións.
+More about AI assistants and privacy ||| Más sobre los asistentes de IA y la privacidad ||| Máis sobre os asistentes de IA e a privacidade
+Propose changes to the text. They are added as suggestions that you accept or reject. ||| Proponer cambios en el texto. Se añaden como sugerencias que tú aceptas o rechazas. ||| Propoñer cambios no texto. Engádense como suxestións que ti aceptas ou rexeitas.
+Read the open document and its comments. ||| Leer el documento abierto y sus comentarios. ||| Ler o documento aberto e os seus comentarios.
+The assistant’s provider processes what it reads under its own terms. {suite} does not include or choose any assistant. ||| El proveedor del asistente trata lo que lee según sus propias condiciones. {suite} no incluye ni elige ningún asistente. ||| O provedor do asistente trata o que le segundo as súas propias condicións. {suite} non inclúe nin escolle ningún asistente.
+This setting applies to every document you open in this browser. You can turn it off at any time from the Tools menu or the indicator in the top bar. ||| Este ajuste se aplica a todos los documentos que abras en este navegador. Puedes desactivarlo en cualquier momento desde el menú Herramientas o desde el indicador de la barra superior. ||| Este axuste aplícase a todos os documentos que abras neste navegador. Podes desactivalo en calquera momento desde o menú Ferramentas ou desde o indicador da barra superior.
+Turn off ||| Desactivar ||| Desactivar
+With the access you have to this document, it can: ||| Con el acceso que tienes a este documento, puede: ||| Co acceso que tes a este documento, pode:
+An AI assistant you use in this browser (for example, a browser extension or the browser’s own agent) will be able to work with the document open in this tab through WebMCP. ||| Un asistente de IA que uses en este navegador (por ejemplo, una extensión o el propio agente del navegador) podrá trabajar con el documento abierto en esta pestaña a través de WebMCP. ||| Un asistente de IA que uses neste navegador (por exemplo, unha extensión ou o propio axente do navegador) poderá traballar co documento aberto nesta lapela a través de WebMCP.
+Tools offered: {tools} ||| Herramientas ofrecidas: {tools} ||| Ferramentas ofrecidas: {tools}
+Last used: {tool} at {time} ||| Último uso: {tool} a las {time} ||| Último uso: {tool} ás {time}
+The AI assistant used {tool} ||| El asistente de IA usó {tool} ||| O asistente de IA usou {tool}

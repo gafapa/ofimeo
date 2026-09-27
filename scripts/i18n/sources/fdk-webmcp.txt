@@ -1,0 +1,25 @@
+AI access on ||| Accès IA activé ||| KI-Zugriff aktiv
+AI assistant access is on ||| L’accès des assistants IA est activé ||| Der Zugriff für KI-Assistenten ist aktiviert
+AI assistant ||| Assistant IA ||| KI-Assistent
+AI assistants can no longer use this document ||| Les assistants IA ne peuvent plus utiliser ce document ||| KI-Assistenten können dieses Dokument nicht mehr verwenden
+AI assistants can now use this document ||| Les assistants IA peuvent désormais utiliser ce document ||| KI-Assistenten können dieses Dokument jetzt verwenden
+AI assistants can use this document (WebMCP). Click for details or to turn it off. ||| Les assistants IA peuvent utiliser ce document (WebMCP). Cliquez pour voir les détails ou le désactiver. ||| KI-Assistenten können dieses Dokument verwenden (WebMCP). Klicken Sie für Details oder zum Ausschalten.
+Add comments. ||| Ajouter des commentaires. ||| Kommentare hinzufügen.
+Allow AI assistants (WebMCP)… ||| Autoriser les assistants IA (WebMCP)… ||| KI-Assistenten erlauben (WebMCP)…
+Allow AI assistants? ||| Autoriser les assistants IA ? ||| KI-Assistenten erlauben?
+Allow ||| Autoriser ||| Erlauben
+Before changes by the AI assistant ||| Avant les modifications de l’assistant IA ||| Vor den Änderungen des KI-Assistenten
+Changes by the AI assistant ||| Modifications de l’assistant IA ||| Änderungen des KI-Assistenten
+It never gets your share links, access keys, other documents or anything outside this document. ||| Il ne reçoit jamais vos liens de partage, vos clés d’accès, d’autres documents ni rien en dehors de ce document. ||| Er erhält niemals Ihre Freigabelinks, Zugriffsschlüssel, andere Dokumente oder irgendetwas außerhalb dieses Dokuments.
+Make changes. Each change can be undone in one step and is recorded as the AI assistant’s in the version history. ||| Apporter des modifications. Chaque modification peut être annulée en une étape et est enregistrée comme celle de l’assistant IA dans l’historique des versions. ||| Änderungen vornehmen. Jede Änderung lässt sich in einem Schritt rückgängig machen und wird im Versionsverlauf dem KI-Assistenten zugeordnet.
+More about AI assistants and privacy ||| En savoir plus sur les assistants IA et la confidentialité ||| Mehr über KI-Assistenten und Datenschutz
+Propose changes to the text. They are added as suggestions that you accept or reject. ||| Proposer des modifications du texte. Elles sont ajoutées comme suggestions que vous acceptez ou refusez. ||| Änderungen am Text vorschlagen. Sie werden als Vorschläge hinzugefügt, die Sie annehmen oder ablehnen.
+Read the open document and its comments. ||| Lire le document ouvert et ses commentaires. ||| Das geöffnete Dokument und seine Kommentare lesen.
+The assistant’s provider processes what it reads under its own terms. {suite} does not include or choose any assistant. ||| Le fournisseur de l’assistant traite ce qu’il lit selon ses propres conditions. {suite} n’inclut ni ne choisit aucun assistant. ||| Der Anbieter des Assistenten verarbeitet, was er liest, nach seinen eigenen Bedingungen. {suite} enthält keinen Assistenten und wählt keinen aus.
+This setting applies to every document you open in this browser. You can turn it off at any time from the Tools menu or the indicator in the top bar. ||| Ce réglage s’applique à tous les documents que vous ouvrez dans ce navigateur. Vous pouvez le désactiver à tout moment depuis le menu Outils ou l’indicateur de la barre supérieure. ||| Diese Einstellung gilt für alle Dokumente, die Sie in diesem Browser öffnen. Sie können sie jederzeit im Menü Extras oder über die Anzeige in der oberen Leiste ausschalten.
+Turn off ||| Désactiver ||| Ausschalten
+With the access you have to this document, it can: ||| Avec l’accès dont vous disposez sur ce document, il peut : ||| Mit Ihrem Zugriff auf dieses Dokument kann er:
+An AI assistant you use in this browser (for example, a browser extension or the browser’s own agent) will be able to work with the document open in this tab through WebMCP. ||| Un assistant IA que vous utilisez dans ce navigateur (par exemple une extension ou l’agent du navigateur lui-même) pourra travailler avec le document ouvert dans cet onglet via WebMCP. ||| Ein KI-Assistent, den Sie in diesem Browser verwenden (zum Beispiel eine Browsererweiterung oder der eigene Agent des Browsers), kann über WebMCP mit dem in diesem Tab geöffneten Dokument arbeiten.
+Tools offered: {tools} ||| Outils proposés : {tools} ||| Angebotene Werkzeuge: {tools}
+Last used: {tool} at {time} ||| Dernière utilisation : {tool} à {time} ||| Zuletzt verwendet: {tool} um {time}
+The AI assistant used {tool} ||| L’assistant IA a utilisé {tool} ||| Der KI-Assistent hat {tool} verwendet

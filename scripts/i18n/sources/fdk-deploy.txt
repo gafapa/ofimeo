@@ -1,0 +1,57 @@
+The browser’s language ||| La langue du navigateur ||| Die Sprache des Browsers
+The interface language ||| La langue de l’interface ||| Die Sprache der Oberfläche
+All templates ||| Tous les modèles ||| Alle Vorlagen
+No templates ||| Aucun modèle ||| Keine Vorlagen
+Only the ones selected below ||| Seulement ceux sélectionnés ci-dessous ||| Nur die unten ausgewählten
+Preview of ofimeo.config.json ||| Aperçu de ofimeo.config.json ||| Vorschau von ofimeo.config.json
+Without public servers, give a school relay or Nostr relays, or people will not find each other. ||| Sans serveurs publics, indiquez un relais de l’établissement ou des relais Nostr, sinon les personnes ne se trouveront pas. ||| Ohne öffentliche Server geben Sie ein Schul-Relay oder Nostr-Relays an, sonst finden sich die Personen nicht.
+Addresses must start with https://: {value} ||| Les adresses doivent commencer par https:// : {value} ||| Adressen müssen mit https:// beginnen: {value}
+Could not copy ||| Impossible de copier ||| Kopieren nicht möglich
+This form writes ofimeo.config.json, the configuration of {suite} for your school. Put the file next to index.html on your server (or give it to Ofimeo Relay with --school-config). Every browser applies it the next time it opens {suite}. ||| Ce formulaire crée ofimeo.config.json, la configuration de {suite} pour votre établissement. Placez le fichier à côté de index.html sur votre serveur (ou donnez-le à Ofimeo Relay avec --school-config). Chaque navigateur l’applique la prochaine fois qu’il ouvre {suite}. ||| Dieses Formular erstellt ofimeo.config.json, die Konfiguration von {suite} für Ihre Schule. Legen Sie die Datei neben index.html auf Ihren Server (oder übergeben Sie sie Ofimeo Relay mit --school-config). Jeder Browser wendet sie beim nächsten Öffnen von {suite} an.
+Deployment guide for schools ||| Guide d’installation pour les établissements ||| Installationsanleitung für Schulen
+School ||| Établissement ||| Schule
+Logo ||| Logo ||| Logo
+An image next to index.html (for example school/logo.svg) or an https:// address. ||| Une image à côté de index.html (par exemple school/logo.svg) ou une adresse https://. ||| Ein Bild neben index.html (zum Beispiel school/logo.svg) oder eine https://-Adresse.
+Languages ||| Langues ||| Sprachen
+Language of new documents (spelling) ||| Langue des nouveaux documents (orthographe) ||| Sprache neuer Dokumente (Rechtschreibung)
+People cannot change the interface language ||| La langue de l’interface ne peut pas être modifiée ||| Die Sprache der Oberfläche kann nicht geändert werden
+School relay (Ofimeo Relay) ||| Relais de l’établissement (Ofimeo Relay) ||| Schul-Relay (Ofimeo Relay)
+People cannot choose another relay ||| Impossible de choisir un autre relais ||| Es kann kein anderes Relay gewählt werden
+Allow public servers (Nostr relays and STUN) ||| Autoriser les serveurs publics (relais Nostr et STUN) ||| Öffentliche Server erlauben (Nostr-Relays und STUN)
+Other Nostr relays (one per line) ||| Autres relais Nostr (un par ligne) ||| Weitere Nostr-Relays (eines pro Zeile)
+TURN server addresses ||| Adresses du serveur TURN ||| Adressen des TURN-Servers
+TURN user name ||| Utilisateur TURN ||| TURN-Benutzername
+TURN password ||| Mot de passe TURN ||| TURN-Passwort
+Documents for people who are offline ||| Documents pour les personnes hors ligne ||| Dokumente für Personen, die offline sind
+Where encrypted changes may wait until the other people connect. ||| Où les modifications chiffrées peuvent attendre que les autres personnes se connectent. ||| Wo verschlüsselte Änderungen warten können, bis sich die anderen Personen verbinden.
+Nextcloud folder ||| Dossier Nextcloud ||| Nextcloud-Ordner
+Nextcloud servers (one per line: name | address) ||| Serveurs Nextcloud (un par ligne : nom | adresse) ||| Nextcloud-Server (einer pro Zeile: Name | Adresse)
+Only these servers can be used ||| Seuls ces serveurs peuvent être utilisés ||| Nur diese Server können verwendet werden
+Moodle address ||| Adresse de Moodle ||| Moodle-Adresse
+Students see their Moodle assignments and hand in to them (docs/moodle.md). ||| Les élèves voient leurs devoirs Moodle et les rendent (docs/moodle.md). ||| Schülerinnen und Schüler sehen ihre Moodle-Aufgaben und geben sie ab (docs/moodle.md).
+Always through the school relay (the relay must be started with --moodle-url) ||| Toujours via le relais de l’établissement (le relais doit être lancé avec --moodle-url) ||| Immer über das Schul-Relay (das Relay muss mit --moodle-url gestartet werden)
+Only this Moodle can be used ||| Seul ce Moodle peut être utilisé ||| Nur dieses Moodle kann verwendet werden
+Features ||| Fonctions ||| Funktionen
+Allow AI features ||| Autoriser les fonctions d’IA ||| KI-Funktionen erlauben
+Allow AI assistants (WebMCP) ||| Autoriser les assistants IA (WebMCP) ||| KI-Assistenten erlauben (WebMCP)
+Apps offered for new documents ||| Applications proposées pour les nouveaux documents ||| Für neue Dokumente angebotene Apps
+Privacy and legal information ||| Confidentialité et informations légales ||| Datenschutz und rechtliche Hinweise
+Shown above the legal links. Your school is responsible for the data it processes; see Information for schools. ||| Affiché au-dessus des liens légaux. Votre établissement est responsable des données qu’il traite ; voir Informations pour les établissements. ||| Wird über den rechtlichen Links angezeigt. Ihre Schule ist für die von ihr verarbeiteten Daten verantwortlich; siehe Informationen für Schulen.
+Organization ||| Organisation ||| Organisation
+Contact e-mail ||| E-mail de contact ||| Kontakt-E-Mail
+Privacy e-mail ||| E-mail pour la confidentialité ||| E-Mail für Datenschutz
+Data protection officer e-mail ||| E-mail du délégué à la protection des données ||| E-Mail des Datenschutzbeauftragten
+Privacy policy address ||| Adresse de la politique de confidentialité ||| Adresse der Datenschutzerklärung
+Legal notice address ||| Adresse des mentions légales ||| Adresse des Impressums
+Configuration for your school ||| Configuration pour votre établissement ||| Konfiguration für Ihre Schule
+Download ofimeo.config.json ||| Télécharger ofimeo.config.json ||| ofimeo.config.json herunterladen
+Set by your school ||| Défini par votre établissement ||| Von Ihrer Schule festgelegt
+School logo ||| Logo de l’établissement ||| Logo der Schule
+Managed by {name} ||| Géré par {name} ||| Verwaltet von {name}
+Contact ||| Contact ||| Kontakt
+Data protection officer ||| Délégué à la protection des données ||| Datenschutzbeauftragter
+School privacy policy ||| Politique de confidentialité de l’établissement ||| Datenschutzerklärung der Schule
+School legal notice ||| Mentions légales de l’établissement ||| Impressum der Schule
+Another server… ||| Autre serveur… ||| Anderer Server…
+Your school’s Nextcloud ||| Le Nextcloud de votre établissement ||| Die Nextcloud Ihrer Schule
+For administrators… ||| Pour les administrateurs… ||| Für Administratoren…

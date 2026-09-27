@@ -1,0 +1,178 @@
+Encryption needs a secure connection (https). ||| Le chiffrement nécessite une connexion sécurisée (https). ||| Die Verschlüsselung erfordert eine sichere Verbindung (https).
+This file is not an Ofimeo backup. ||| Ce fichier n’est pas une sauvegarde Ofimeo. ||| Diese Datei ist keine Ofimeo-Sicherung.
+This backup was made with a newer version of Ofimeo. ||| Cette sauvegarde a été créée avec une version plus récente d’Ofimeo. ||| Diese Sicherung wurde mit einer neueren Version von Ofimeo erstellt.
+This backup is protected with a password. ||| Cette sauvegarde est protégée par un mot de passe. ||| Diese Sicherung ist mit einem Passwort geschützt.
+Wrong password. ||| Mot de passe incorrect. ||| Falsches Passwort.
+This file is not an Ofimeo template. ||| Ce fichier n’est pas un modèle Ofimeo. ||| Diese Datei ist keine Ofimeo-Vorlage.
+No Nextcloud account is linked. ||| Aucun compte Nextcloud n’est associé. ||| Es ist kein Nextcloud-Konto verknüpft.
+Search in titles and content ||| Rechercher dans les titres et le contenu ||| In Titeln und Inhalt suchen
+Sort by ||| Trier par ||| Sortieren nach
+Last modified ||| Dernière modification ||| Zuletzt geändert
+Filter by app ||| Filtrer par application ||| Nach App filtern
+Folders and tags ||| Dossiers et étiquettes ||| Ordner und Tags
+More actions for {name} ||| Autres actions pour {name} ||| Weitere Aktionen für {name}
+New subfolder… ||| Nouveau sous-dossier… ||| Neuer Unterordner…
+Rename… ||| Renommer… ||| Umbenennen…
+Move to top level ||| Déplacer au niveau supérieur ||| Auf die oberste Ebene verschieben
+Delete folder… ||| Supprimer le dossier… ||| Ordner löschen…
+Red ||| Rouge ||| Rot
+Orange ||| Orange ||| Orange
+Yellow ||| Jaune ||| Gelb
+Green ||| Vert ||| Grün
+Cyan ||| Cyan ||| Cyan
+Blue ||| Bleu ||| Blau
+Purple ||| Violet ||| Lila
+Pink ||| Rose ||| Rosa
+Grey ||| Gris ||| Grau
+Delete tag… ||| Supprimer l’étiquette… ||| Tag löschen…
+New tag ||| Nouvelle étiquette ||| Neuer Tag
+Tag “{tag}” added ||| Étiquette « {tag} » ajoutée ||| Tag „{tag}“ hinzugefügt
+Trash ||| Corbeille ||| Papierkorb
+Folders ||| Dossiers ||| Ordner
+Tags ||| Étiquettes ||| Tags
+Rename folder ||| Renommer le dossier ||| Ordner umbenennen
+Delete folder ||| Supprimer le dossier ||| Ordner löschen
+Delete the folder “{name}” and its subfolders? The documents in them are not deleted: they move to the parent folder. ||| Supprimer le dossier « {name} » et ses sous-dossiers ? Les documents qu’ils contiennent ne sont pas supprimés : ils vont dans le dossier parent. ||| Den Ordner „{name}“ und seine Unterordner löschen? Die Dokumente darin werden nicht gelöscht, sondern in den übergeordneten Ordner verschoben.
+Tag name ||| Nom de l’étiquette ||| Name des Tags
+Rename tag ||| Renommer l’étiquette ||| Tag umbenennen
+Delete tag ||| Supprimer l’étiquette ||| Tag löschen
+Delete the tag “{name}”? The documents keep everything else. ||| Supprimer l’étiquette « {name} » ? Les documents ne changent pas autrement. ||| Den Tag „{name}“ löschen? Sonst ändert sich an den Dokumenten nichts.
+Top level (no folder) ||| Niveau supérieur (sans dossier) ||| Oberste Ebene (kein Ordner)
+New folder… ||| Nouveau dossier… ||| Neuer Ordner…
+New tag… ||| Nouvelle étiquette… ||| Neuer Tag…
+Delete for good ||| Supprimer définitivement ||| Endgültig löschen
+Delete for good… ||| Supprimer définitivement… ||| Endgültig löschen…
+Move to folder… ||| Déplacer vers un dossier… ||| In Ordner verschieben…
+Back up… ||| Sauvegarder… ||| Sichern…
+Move to the trash ||| Mettre à la corbeille ||| In den Papierkorb verschieben
+Selected documents ||| Documents sélectionnés ||| Ausgewählte Dokumente
+Clear selection ||| Annuler la sélection ||| Auswahl aufheben
+Move… ||| Déplacer… ||| Verschieben…
+Tag: {name} ||| Étiquette : {name} ||| Tag: {name}
+Empty trash… ||| Vider la corbeille… ||| Papierkorb leeren…
+Empty trash ||| Vider la corbeille ||| Papierkorb leeren
+The trash is empty. ||| La corbeille est vide. ||| Der Papierkorb ist leer.
+This folder is empty. Drag documents here or use “Move to folder…”. ||| Ce dossier est vide. Faites glisser des documents ici ou utilisez « Déplacer vers un dossier… ». ||| Dieser Ordner ist leer. Ziehen Sie Dokumente hierher oder verwenden Sie „In Ordner verschieben…“.
+No documents have this tag. ||| Aucun document n’a cette étiquette. ||| Kein Dokument hat diesen Tag.
+Deleted ||| Supprimé ||| Gelöscht
+Select “{title}” ||| Sélectionner « {title} » ||| „{title}“ auswählen
+{n} document moved to the top level ||| {n} document déplacé au niveau supérieur ||| {n} Dokument auf die oberste Ebene verschoben
+{n} documents moved to the top level ||| {n} documents déplacés au niveau supérieur ||| {n} Dokumente auf die oberste Ebene verschoben
+{n} document moved to “{folder}” ||| {n} document déplacé vers « {folder} » ||| {n} Dokument nach „{folder}“ verschoben
+{n} documents moved to “{folder}” ||| {n} documents déplacés vers « {folder} » ||| {n} Dokumente nach „{folder}“ verschoben
+Move {n} document ||| Déplacer {n} document ||| {n} Dokument verschieben
+Move {n} documents ||| Déplacer {n} documents ||| {n} Dokumente verschieben
+{n} document moved to the trash ||| {n} document mis à la corbeille ||| {n} Dokument in den Papierkorb verschoben
+{n} documents moved to the trash ||| {n} documents mis à la corbeille ||| {n} Dokumente in den Papierkorb verschoben
+{n} document restored ||| {n} document restauré ||| {n} Dokument wiederhergestellt
+{n} documents restored ||| {n} documents restaurés ||| {n} Dokumente wiederhergestellt
+Delete {n} document from this browser for good? This cannot be undone. Collaborators keep their copies. ||| Supprimer définitivement {n} document de ce navigateur ? Cette action est irréversible. Les collaborateurs conservent leurs copies. ||| {n} Dokument endgültig aus diesem Browser löschen? Das kann nicht rückgängig gemacht werden. Mitwirkende behalten ihre Kopien.
+Delete {n} documents from this browser for good? This cannot be undone. Collaborators keep their copies. ||| Supprimer définitivement {n} documents de ce navigateur ? Cette action est irréversible. Les collaborateurs conservent leurs copies. ||| {n} Dokumente endgültig aus diesem Browser löschen? Das kann nicht rückgängig gemacht werden. Mitwirkende behalten ihre Kopien.
+{n} selected ||| Sélectionnés : {n} ||| {n} ausgewählt
+Delete {n} document in the trash for good? This cannot be undone. ||| Supprimer définitivement {n} document de la corbeille ? Cette action est irréversible. ||| {n} Dokument im Papierkorb endgültig löschen? Das kann nicht rückgängig gemacht werden.
+Delete {n} documents in the trash for good? This cannot be undone. ||| Supprimer définitivement {n} documents de la corbeille ? Cette action est irréversible. ||| {n} Dokumente im Papierkorb endgültig löschen? Das kann nicht rückgängig gemacht werden.
+Documents in the trash are deleted for good after {n} day. ||| Les documents de la corbeille sont supprimés définitivement après {n} jour. ||| Dokumente im Papierkorb werden nach {n} Tag endgültig gelöscht.
+Documents in the trash are deleted for good after {n} days. ||| Les documents de la corbeille sont supprimés définitivement après {n} jours. ||| Dokumente im Papierkorb werden nach {n} Tagen endgültig gelöscht.
+{n} document ||| {n} document ||| {n} Dokument
+{n} documents ||| {n} documents ||| {n} Dokumente
+This document cannot be downloaded from here ||| Ce document ne peut pas être téléchargé d’ici ||| Dieses Dokument kann nicht von hier heruntergeladen werden
+Spreadsheets are downloaded from the app: open them and use File ▸ Download as. ||| Les feuilles de calcul se téléchargent depuis l’application : ouvrez-les et utilisez Fichier ▸ Télécharger au format. ||| Tabellen werden in der App heruntergeladen: Öffnen Sie sie und verwenden Sie Datei ▸ Herunterladen als.
+Preparing the download… ||| Préparation du téléchargement… ||| Download wird vorbereitet…
+Ofimeo documents ||| Documents Ofimeo ||| Ofimeo-Dokumente
+Storage and backup ||| Stockage et sauvegarde ||| Speicher und Sicherung
+Automatic backup saved to Nextcloud: {path} ||| Sauvegarde automatique enregistrée dans Nextcloud : {path} ||| Automatische Sicherung in Nextcloud gespeichert: {path}
+The automatic backup to Nextcloud failed: {message} ||| La sauvegarde automatique dans Nextcloud a échoué : {message} ||| Die automatische Sicherung in Nextcloud ist fehlgeschlagen: {message}
+{n} document was deleted from the trash after 30 days ||| {n} document a été supprimé de la corbeille après 30 jours ||| {n} Dokument wurde nach 30 Tagen aus dem Papierkorb gelöscht
+{n} documents were deleted from the trash after 30 days ||| {n} documents ont été supprimés de la corbeille après 30 jours ||| {n} Dokumente wurden nach 30 Tagen aus dem Papierkorb gelöscht
+My templates ||| Mes modèles ||| Meine Vorlagen
+Templates imported: {n} ||| Modèles importés : {n} ||| Importierte Vorlagen: {n}
+Import template… ||| Importer un modèle… ||| Vorlage importieren…
+From Nextcloud… ||| Depuis Nextcloud… ||| Aus Nextcloud…
+Export as file ||| Exporter comme fichier ||| Als Datei exportieren
+Share to Nextcloud (Plantillas) ||| Partager dans Nextcloud (Plantillas) ||| In Nextcloud teilen (Plantillas)
+Delete… ||| Supprimer… ||| Löschen…
+Template name ||| Nom du modèle ||| Name der Vorlage
+Description (optional) ||| Description (facultatif) ||| Beschreibung (optional)
+Edit template ||| Modifier le modèle ||| Vorlage bearbeiten
+Delete template ||| Supprimer le modèle ||| Vorlage löschen
+Delete the template “{name}”? Documents created from it are kept. ||| Supprimer le modèle « {name} » ? Les documents créés à partir de celui-ci sont conservés. ||| Die Vorlage „{name}“ löschen? Daraus erstellte Dokumente bleiben erhalten.
+Save any document as a template with File ▸ Save as template…, or import a template file. ||| Enregistrez n’importe quel document comme modèle avec Fichier ▸ Enregistrer comme modèle…, ou importez un fichier de modèle. ||| Speichern Sie ein beliebiges Dokument mit Datei ▸ Als Vorlage speichern… als Vorlage oder importieren Sie eine Vorlagendatei.
+There are no templates in the Nextcloud folder {folder} ||| Il n’y a aucun modèle dans le dossier Nextcloud {folder} ||| Im Nextcloud-Ordner {folder} gibt es keine Vorlagen
+Templates in the Nextcloud folder {folder}: ||| Modèles du dossier Nextcloud {folder} : ||| Vorlagen im Nextcloud-Ordner {folder}:
+Templates from Nextcloud ||| Modèles depuis Nextcloud ||| Vorlagen aus Nextcloud
+Import ||| Importer ||| Importieren
+The template keeps the current content only: no comments, version history or sharing links. It is saved in this browser; you can export it as a file to share it. ||| Le modèle ne conserve que le contenu actuel : ni commentaires, ni historique des versions, ni liens de partage. Il est enregistré dans ce navigateur ; vous pouvez l’exporter comme fichier pour le partager. ||| Die Vorlage enthält nur den aktuellen Inhalt: keine Kommentare, keinen Versionsverlauf und keine Freigabelinks. Sie wird in diesem Browser gespeichert; zum Teilen können Sie sie als Datei exportieren.
+Save as template ||| Enregistrer comme modèle ||| Als Vorlage speichern
+Template “{name}” saved. Find it on the home screen under My templates. ||| Modèle « {name} » enregistré. Retrouvez-le sur l’écran d’accueil, dans Mes modèles. ||| Vorlage „{name}“ gespeichert. Sie finden sie auf der Startseite unter „Meine Vorlagen“.
+Could not save the template: {message} ||| Impossible d’enregistrer le modèle : {message} ||| Die Vorlage konnte nicht gespeichert werden: {message}
+Never ||| Jamais ||| Nie
+Your documents are stored only in this browser. ||| Vos documents sont stockés uniquement dans ce navigateur. ||| Ihre Dokumente werden nur in diesem Browser gespeichert.
+Clearing the browser data (history, cookies and site data) deletes them for good. Back up regularly, or save them to Nextcloud. ||| Effacer les données du navigateur (historique, cookies et données de site) les supprime définitivement. Sauvegardez-les régulièrement ou enregistrez-les dans Nextcloud. ||| Wenn Sie die Browserdaten (Verlauf, Cookies und Websitedaten) löschen, werden sie endgültig gelöscht. Sichern Sie sie regelmäßig oder speichern Sie sie in Nextcloud.
+Storage used ||| Stockage utilisé ||| Belegter Speicher
+{used} used of {quota} available to this site ||| {used} utilisés sur {quota} disponibles pour ce site ||| {used} von {quota} für diese Website verfügbarem Speicher belegt
+This browser does not report how much storage is used. ||| Ce navigateur n’indique pas l’espace de stockage utilisé. ||| Dieser Browser gibt nicht an, wie viel Speicher belegt ist.
+Protected: the browser will not delete these documents to free up space. ||| Protégé : le navigateur ne supprimera pas ces documents pour libérer de l’espace. ||| Geschützt: Der Browser löscht diese Dokumente nicht, um Speicherplatz freizugeben.
+Protect storage ||| Protéger le stockage ||| Speicher schützen
+Storage is now protected ||| Le stockage est maintenant protégé ||| Der Speicher ist jetzt geschützt
+The browser did not allow it. Installing Ofimeo as an app or bookmarking it usually helps. ||| Le navigateur ne l’a pas autorisé. Installer Ofimeo comme application ou l’ajouter aux favoris aide généralement. ||| Der Browser hat es nicht erlaubt. Meist hilft es, Ofimeo als App zu installieren oder ein Lesezeichen anzulegen.
+Not protected: the browser may delete these documents when space runs low. ||| Non protégé : le navigateur peut supprimer ces documents si l’espace vient à manquer. ||| Nicht geschützt: Der Browser kann diese Dokumente löschen, wenn der Speicherplatz knapp wird.
+Back up all documents… ||| Sauvegarder tous les documents… ||| Alle Dokumente sichern…
+Restore backup… ||| Restaurer une sauvegarde… ||| Sicherung wiederherstellen…
+Storage ||| Stockage ||| Speicher
+Backup ||| Sauvegarde ||| Sicherung
+Last backup: {date} ||| Dernière sauvegarde : {date} ||| Letzte Sicherung: {date}
+Remind me when there is no backup for ||| Me le rappeler en l’absence de sauvegarde depuis ||| Erinnern, wenn es keine Sicherung gibt seit
+Automatic backup to Nextcloud ||| Sauvegarde automatique dans Nextcloud ||| Automatische Sicherung in Nextcloud
+Link a Nextcloud account to back up your documents there automatically. ||| Associez un compte Nextcloud pour y sauvegarder automatiquement vos documents. ||| Verknüpfen Sie ein Nextcloud-Konto, um Ihre Dokumente dort automatisch zu sichern.
+Back up to Nextcloud now ||| Sauvegarder dans Nextcloud maintenant ||| Jetzt in Nextcloud sichern
+Backing up… ||| Sauvegarde en cours… ||| Sicherung läuft…
+Nothing to back up ||| Rien à sauvegarder ||| Nichts zu sichern
+The backup could not be saved to Nextcloud: {message} ||| La sauvegarde n’a pas pu être enregistrée dans Nextcloud : {message} ||| Die Sicherung konnte nicht in Nextcloud gespeichert werden: {message}
+Back up to {account} every ||| Sauvegarder dans {account} tous les ||| In {account} sichern alle
+Password for the automatic backups (optional) ||| Mot de passe des sauvegardes automatiques (facultatif) ||| Passwort für die automatischen Sicherungen (optional)
+Last automatic backup: {date} ||| Dernière sauvegarde automatique : {date} ||| Letzte automatische Sicherung: {date}
+There are no documents to back up ||| Il n’y a aucun document à sauvegarder ||| Es gibt keine Dokumente zu sichern
+It also contains the keys to edit them: anyone who has the file can open them. Protect it with a password if you store it somewhere others can reach. ||| Il contient aussi les clés pour les modifier : toute personne qui possède le fichier peut les ouvrir. Protégez-le par un mot de passe si vous le stockez là où d’autres peuvent y accéder. ||| Sie enthält auch die Schlüssel zum Bearbeiten: Wer die Datei hat, kann sie öffnen. Schützen Sie sie mit einem Passwort, wenn Sie sie an einem für andere zugänglichen Ort ablegen.
+Password (optional) ||| Mot de passe (facultatif) ||| Passwort (optional)
+Repeat the password ||| Répétez le mot de passe ||| Passwort wiederholen
+Back up selected documents ||| Sauvegarder les documents sélectionnés ||| Ausgewählte Dokumente sichern
+Back up all documents ||| Sauvegarder tous les documents ||| Alle Dokumente sichern
+Back up ||| Sauvegarder ||| Sichern
+The passwords do not match. ||| Les mots de passe ne correspondent pas. ||| Die Passwörter stimmen nicht überein.
+Backup saved ||| Sauvegarde enregistrée ||| Sicherung gespeichert
+The backup failed: {message} ||| La sauvegarde a échoué : {message} ||| Die Sicherung ist fehlgeschlagen: {message}
+Restore backup ||| Restaurer une sauvegarde ||| Sicherung wiederherstellen
+Restoring… ||| Restauration… ||| Wird wiederhergestellt…
+Password ||| Mot de passe ||| Passwort
+Added ||| Ajoutés ||| Hinzugefügt
+Merged with changes ||| Fusionnés avec des modifications ||| Mit Änderungen zusammengeführt
+Already up to date ||| Déjà à jour ||| Bereits aktuell
+Could not be restored: ||| N’ont pas pu être restaurés : ||| Konnten nicht wiederhergestellt werden:
+Documents that are open in another tab show the restored content after reloading that tab. ||| Les documents ouverts dans un autre onglet affichent le contenu restauré après le rechargement de cet onglet. ||| In einem anderen Tab geöffnete Dokumente zeigen den wiederhergestellten Inhalt, nachdem dieser Tab neu geladen wurde.
+Backup restored ||| Sauvegarde restaurée ||| Sicherung wiederhergestellt
+You have never made a backup. ||| Vous n’avez jamais fait de sauvegarde. ||| Sie haben noch nie eine Sicherung erstellt.
+Back up now ||| Sauvegarder maintenant ||| Jetzt sichern
+Storage and backup… ||| Stockage et sauvegarde… ||| Speicher und Sicherung…
+Dismiss ||| Ignorer ||| Ausblenden
+Clearing the browser data deletes the documents stored here. ||| Effacer les données du navigateur supprime les documents stockés ici. ||| Wenn Sie die Browserdaten löschen, werden die hier gespeicherten Dokumente gelöscht.
+Your documents are saved in this browser ||| Vos documents sont enregistrés dans ce navigateur ||| Ihre Dokumente werden in diesem Browser gespeichert
+The browser will keep them even when space runs low. Clearing the browser data still deletes them: make backups from time to time. ||| Le navigateur les conservera même si l’espace vient à manquer. Effacer les données du navigateur les supprime quand même : faites des sauvegardes de temps en temps. ||| Der Browser behält sie auch bei knappem Speicherplatz. Wenn Sie die Browserdaten löschen, werden sie trotzdem gelöscht: Erstellen Sie ab und zu Sicherungen.
+Ofimeo asked the browser to keep them even when space runs low. Clearing the browser data deletes them: make backups from time to time. ||| Ofimeo a demandé au navigateur de les conserver même si l’espace vient à manquer. Effacer les données du navigateur les supprime : faites des sauvegardes de temps en temps. ||| Ofimeo hat den Browser gebeten, sie auch bei knappem Speicherplatz zu behalten. Wenn Sie die Browserdaten löschen, werden sie gelöscht: Erstellen Sie ab und zu Sicherungen.
+{n} only in this browser ||| {n} uniquement dans ce navigateur ||| {n} nur in diesem Browser
+{n} in the trash ||| {n} dans la corbeille ||| {n} im Papierkorb
+{n} day ||| {n} jour ||| {n} Tag
+{n} days ||| {n} jours ||| {n} Tage
+The backup file will contain {n} document with its version history and comments. ||| Le fichier de sauvegarde contiendra {n} document avec son historique des versions et ses commentaires. ||| Die Sicherungsdatei enthält {n} Dokument mit Versionsverlauf und Kommentaren.
+The backup file will contain {n} documents with their version history and comments. ||| Le fichier de sauvegarde contiendra {n} documents avec leur historique des versions et leurs commentaires. ||| Die Sicherungsdatei enthält {n} Dokumente mit Versionsverlauf und Kommentaren.
+The backup of {date} contains {n} document. Documents that are already in this browser are merged with their copy in the backup (nothing is lost); the others are added. ||| La sauvegarde du {date} contient {n} document. Les documents déjà présents dans ce navigateur sont fusionnés avec leur copie de la sauvegarde (rien n’est perdu) ; les autres sont ajoutés. ||| Die Sicherung vom {date} enthält {n} Dokument. Dokumente, die bereits in diesem Browser sind, werden mit ihrer Kopie in der Sicherung zusammengeführt (nichts geht verloren); die anderen werden hinzugefügt.
+The backup of {date} contains {n} documents. Documents that are already in this browser are merged with their copy in the backup (nothing is lost); the others are added. ||| La sauvegarde du {date} contient {n} documents. Les documents déjà présents dans ce navigateur sont fusionnés avec leur copie de la sauvegarde (rien n’est perdu) ; les autres sont ajoutés. ||| Die Sicherung vom {date} enthält {n} Dokumente. Dokumente, die bereits in diesem Browser sind, werden mit ihrer Kopie in der Sicherung zusammengeführt (nichts geht verloren); die anderen werden hinzugefügt.
+{n} added ||| Ajoutés : {n} ||| Hinzugefügt: {n}
+{n} merged with changes ||| Fusionnés avec des modifications : {n} ||| Mit Änderungen zusammengeführt: {n}
+{n} already up to date ||| Déjà à jour : {n} ||| Bereits aktuell: {n}
+{n} template added ||| {n} modèle ajouté ||| {n} Vorlage hinzugefügt
+{n} templates added ||| {n} modèles ajoutés ||| {n} Vorlagen hinzugefügt
+The last backup was {n} day ago. ||| La dernière sauvegarde date d’il y a {n} jour. ||| Die letzte Sicherung ist {n} Tag her.
+The last backup was {n} days ago. ||| La dernière sauvegarde date d’il y a {n} jours. ||| Die letzte Sicherung ist {n} Tage her.
+{n} document exists only in this browser. ||| {n} document existe uniquement dans ce navigateur. ||| {n} Dokument existiert nur in diesem Browser.
+{n} documents exist only in this browser. ||| {n} documents existent uniquement dans ce navigateur. ||| {n} Dokumente existieren nur in diesem Browser.
+Save as template… ||| Enregistrer comme modèle… ||| Als Vorlage speichern…

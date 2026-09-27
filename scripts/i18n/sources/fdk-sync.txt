@@ -1,0 +1,27 @@
+Syncing with {name}… ||| Synchronisation avec {name}… ||| Synchronisierung mit {name}…
+Synced to {name} ||| Synchronisé sur {name} ||| Mit {name} synchronisiert
+Not yet synced to {name} ||| Pas encore synchronisé sur {name} ||| Noch nicht mit {name} synchronisiert
+Waiting to sync to {name} ||| En attente de synchronisation sur {name} ||| Wartet auf Synchronisierung mit {name}
+Up to date from {name} ||| À jour depuis {name} ||| Aktuell von {name}
+Could not sync to {name} ||| Impossible de synchroniser sur {name} ||| Synchronisierung mit {name} fehlgeschlagen
+Encrypted copy up to date (last checked {time}). People who open the document later get your changes even if you are offline. ||| Copie chiffrée à jour (dernière vérification : {time}). Les personnes qui ouvriront le document plus tard recevront vos modifications, même si vous êtes hors ligne. ||| Verschlüsselte Kopie aktuell (zuletzt geprüft: {time}). Wer das Dokument später öffnet, erhält Ihre Änderungen, auch wenn Sie offline sind.
+This link can only read: changes from {name} are downloaded, nothing is uploaded. ||| Ce lien permet seulement de lire : les modifications de {name} sont téléchargées, rien n’est envoyé. ||| Dieser Link kann nur lesen: Änderungen von {name} werden heruntergeladen, nichts wird hochgeladen.
+Your latest changes will be uploaded (encrypted) in a moment. ||| Vos dernières modifications seront envoyées (chiffrées) dans un instant. ||| Ihre letzten Änderungen werden gleich (verschlüsselt) hochgeladen.
+{name} cannot be reached now. Your changes are kept in this browser and uploaded when it is reachable again. ||| {name} est injoignable pour le moment. Vos modifications sont conservées dans ce navigateur et seront envoyées dès qu’il sera de nouveau accessible. ||| {name} ist gerade nicht erreichbar. Ihre Änderungen bleiben in diesem Browser und werden hochgeladen, sobald es wieder erreichbar ist.
+Error: {message} ||| Erreur : {message} ||| Fehler: {message}
+Could not sync. ||| Synchronisation impossible. ||| Synchronisierung fehlgeschlagen.
+Checking for changes… ||| Recherche de modifications… ||| Suche nach Änderungen…
+Sync without being online together ||| Synchroniser sans être en ligne en même temps ||| Synchronisieren, ohne gleichzeitig online zu sein
+Keeps an encrypted copy of the changes so that people who are never online at the same time still get them (for example, you edit in class and your teacher corrects at night). The server only sees encrypted data; the key travels in the document link. ||| Conserve une copie chiffrée des modifications pour que les personnes qui ne sont jamais en ligne en même temps les reçoivent quand même (par exemple, vous modifiez en classe et votre enseignant corrige le soir). Le serveur ne voit que des données chiffrées ; la clé voyage dans le lien du document. ||| Bewahrt eine verschlüsselte Kopie der Änderungen auf, damit Personen, die nie gleichzeitig online sind, sie trotzdem erhalten (zum Beispiel bearbeiten Sie im Unterricht und Ihre Lehrkraft korrigiert abends). Der Server sieht nur verschlüsselte Daten; der Schlüssel steckt im Dokumentlink.
+Turned off by your school. ||| Désactivé par votre établissement. ||| Von Ihrer Schule deaktiviert.
+Needs a school relay that keeps encrypted copies (Ofimeo Relay). ||| Nécessite un relais d’établissement qui conserve des copies chiffrées (Ofimeo Relay). ||| Erfordert ein Schul-Relay, das verschlüsselte Kopien speichert (Ofimeo Relay).
+Copies are deleted after {days} days without changes. ||| Les copies sont supprimées après {days} jours sans modification. ||| Kopien werden nach {days} Tagen ohne Änderungen gelöscht.
+On the school relay ({name}) ||| Sur le relais de l’établissement ({name}) ||| Auf dem Schul-Relay ({name})
+On the school relay ||| Sur le relais de l’établissement ||| Auf dem Schul-Relay
+In a Nextcloud folder ||| Dans un dossier Nextcloud ||| In einem Nextcloud-Ordner
+Connect a Nextcloud account first (File → Nextcloud account…). ||| Connectez d’abord un compte Nextcloud (Fichier → Compte Nextcloud…). ||| Verbinden Sie zuerst ein Nextcloud-Konto (Datei → Nextcloud-Konto…).
+Nextcloud folder for encrypted copies ||| Dossier Nextcloud pour les copies chiffrées ||| Nextcloud-Ordner für verschlüsselte Kopien
+Folder ||| Dossier ||| Ordner
+To sync with other people, use a folder shared with them in Nextcloud. ||| Pour synchroniser avec d’autres personnes, utilisez un dossier partagé avec elles dans Nextcloud. ||| Um mit anderen zu synchronisieren, verwenden Sie einen mit ihnen in Nextcloud geteilten Ordner.
+This link can only read: changes are downloaded, nothing is uploaded. ||| Ce lien permet seulement de lire : les modifications sont téléchargées, rien n’est envoyé. ||| Dieser Link kann nur lesen: Änderungen werden heruntergeladen, nichts wird hochgeladen.
+Sync now ||| Synchroniser maintenant ||| Jetzt synchronisieren

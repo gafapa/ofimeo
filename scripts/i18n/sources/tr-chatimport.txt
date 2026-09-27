@@ -1,0 +1,57 @@
+Import from link… ||| Importar desde un enlace… ||| Importar desde unha ligazón…
+Import a file shared from Google Drive, OneDrive or SharePoint ||| Importar un archivo compartido desde Google Drive, OneDrive o SharePoint ||| Importar un ficheiro compartido desde Google Drive, OneDrive ou SharePoint
+Chat ||| Chat ||| Chat
+Chat settings ||| Ajustes del chat ||| Axustes do chat
+Close chat ||| Cerrar el chat ||| Pechar o chat
+Write a message… (@ to mention) ||| Escribe un mensaje… (@ para mencionar) ||| Escribe unha mensaxe… (@ para mencionar)
+Insert emoji ||| Insertar emoji ||| Inserir emoji
+People to mention ||| Personas que mencionar ||| Persoas que mencionar
+You ||| Tú ||| Ti
+Someone ||| Alguien ||| Alguén
+No messages yet. Messages are seen by everyone who has this document open. ||| Aún no hay mensajes. Los mensajes los ve todo el que tiene este documento abierto. ||| Aínda non hai mensaxes. As mensaxes véas todo o que ten este documento aberto.
+The chat is turned off for this document. Turn it on again in the chat settings (⋯). ||| El chat está desactivado en este documento. Vuelve a activarlo en los ajustes del chat (⋯). ||| O chat está desactivado neste documento. Volve activalo nos axustes do chat (⋯).
+The chat is turned off for this document. ||| El chat está desactivado en este documento. ||| O chat está desactivado neste documento.
+You can read the chat. To write, you need a comment or edit link. ||| Puedes leer el chat. Para escribir necesitas un enlace para comentar o editar. ||| Podes ler o chat. Para escribir necesitas unha ligazón para comentar ou editar.
+Turn on chat for this document ||| Activar el chat en este documento ||| Activar o chat neste documento
+Turn off chat for this document ||| Desactivar el chat en este documento ||| Desactivar o chat neste documento
+Clear chat history… ||| Borrar el historial del chat… ||| Borrar o historial do chat…
+Clear chat history ||| Borrar el historial del chat ||| Borrar o historial do chat
+All messages are deleted for everyone who has this document. This cannot be undone. ||| Se borran todos los mensajes para todos los que tienen este documento. No se puede deshacer. ||| Bórranse todas as mensaxes para todos os que teñen este documento. Non se pode desfacer.
+Chat history cleared ||| Historial del chat borrado ||| Historial do chat borrado
+{name} mentioned you in the chat ||| {name} te ha mencionado en el chat ||| {name} mencionoute no chat
+{n} unread message ||| {n} mensaje sin leer ||| {n} mensaxe sen ler
+{n} unread messages ||| {n} mensajes sin leer ||| {n} mensaxes sen ler
+This does not look like a link. ||| Esto no parece un enlace. ||| Isto non parece unha ligazón.
+This is a “Publish to the web” link. Use the normal share link instead (Share ▸ Copy link). ||| Es un enlace de «Publicar en la Web». Usa el enlace normal para compartir (Compartir ▸ Copiar enlace). ||| É unha ligazón de «Publicar na web». Usa a ligazón normal para compartir (Compartir ▸ Copiar ligazón).
+Google Drawings cannot be imported. Download it as an image instead. ||| Los dibujos de Google no se pueden importar. Descárgalo como imagen. ||| Os debuxos de Google non se poden importar. Descárgao como imaxe.
+Google Forms cannot be imported. Create the form again in Ofimeo Forms. ||| Los formularios de Google no se pueden importar. Crea el formulario de nuevo en Ofimeo Formularios. ||| Os formularios de Google non se poden importar. Crea o formulario de novo en Ofimeo Formularios.
+This is a link to a folder. Open the folder and copy the link of one file. ||| Es un enlace a una carpeta. Abre la carpeta y copia el enlace de un archivo. ||| É unha ligazón a un cartafol. Abre o cartafol e copia a ligazón dun ficheiro.
+Only links to Google Docs, Sheets, Slides and Drive files, and to OneDrive or SharePoint files are supported. ||| Solo se admiten enlaces a Documentos, Hojas de cálculo, Presentaciones y archivos de Google Drive, y a archivos de OneDrive o SharePoint. ||| Só se admiten ligazóns a Documentos, Follas de cálculo, Presentacións e ficheiros de Google Drive, e a ficheiros de OneDrive ou SharePoint.
+The file is not shared publicly. Ask its owner to share it as “Anyone with the link”, or download it yourself (step 1). ||| El archivo no está compartido públicamente. Pide a su propietario que lo comparta como «Cualquier persona con el enlace» o descárgalo tú (paso 1). ||| O ficheiro non está compartido publicamente. Pídelle ao seu propietario que o comparta como «Calquera persoa coa ligazón» ou descárgao ti (paso 1).
+The file was not found. Check the link. ||| No se ha encontrado el archivo. Comprueba el enlace. ||| Non se atopou o ficheiro. Comproba a ligazón.
+The file is too large for the school relay. Download it yourself (step 1). ||| El archivo es demasiado grande para el relé del centro. Descárgalo tú (paso 1). ||| O ficheiro é demasiado grande para o relé do centro. Descárgao ti (paso 1).
+The school relay is busy. Try again in a moment. ||| El relé del centro está ocupado. Inténtalo de nuevo en un momento. ||| O relé do centro está ocupado. Téntao de novo nun momento.
+The school relay does not accept this link. ||| El relé del centro no acepta este enlace. ||| O relé do centro non acepta esta ligazón.
+The school relay could not download the file ({status}). ||| El relé del centro no ha podido descargar el archivo ({status}). ||| O relé do centro non puido descargar o ficheiro ({status}).
+Imported ||| Importado ||| Importado
+The school relay could not download the file. ||| El relé del centro no ha podido descargar el archivo. ||| O relé do centro non puido descargar o ficheiro.
+Choose the downloaded file… ||| Elegir el archivo descargado… ||| Escoller o ficheiro descargado…
+Drop the downloaded file here ||| Suelta aquí el archivo descargado ||| Solta aquí o ficheiro descargado
+Open the downloaded file ||| Abrir el archivo descargado ||| Abrir o ficheiro descargado
+Browsers do not let web apps download files from Google or Microsoft directly, so the file goes through your Downloads folder. Ofimeo never sees your Google or Microsoft account. ||| Los navegadores no permiten que las aplicaciones web descarguen archivos de Google o Microsoft directamente, así que el archivo pasa por tu carpeta de Descargas. Ofimeo nunca ve tu cuenta de Google o Microsoft. ||| Os navegadores non permiten que as aplicacións web descarguen ficheiros de Google ou Microsoft directamente, así que o ficheiro pasa polo teu cartafol de Descargas. Ofimeo nunca ve a túa conta de Google ou Microsoft.
+Download as .{format} from {provider} ||| Descargar como .{format} desde {provider} ||| Descargar como .{format} desde {provider}
+Download from {provider} ||| Descargar desde {provider} ||| Descargar desde {provider}
+Other formats ||| Otros formatos ||| Outros formatos
+Try another download address ||| Probar otra dirección de descarga ||| Probar outro enderezo de descarga
+If Google asks you to sign in or to request access, the file is not shared publicly: sign in with an account that can open it, or ask its owner to share it as “Anyone with the link”. You can also open the file and use File ▸ Download. ||| Si Google te pide iniciar sesión o solicitar acceso, el archivo no está compartido públicamente: inicia sesión con una cuenta que pueda abrirlo o pide a su propietario que lo comparta como «Cualquier persona con el enlace». También puedes abrir el archivo y usar Archivo ▸ Descargar. ||| Se Google che pide iniciar sesión ou solicitar acceso, o ficheiro non está compartido publicamente: inicia sesión cunha conta que poida abrilo ou pídelle ao seu propietario que o comparta como «Calquera persoa coa ligazón». Tamén podes abrir o ficheiro e usar Ficheiro ▸ Descargar.
+If a page opens instead of a download, sign in if asked, then use File ▸ Save as ▸ Download a copy (Word, Excel, PowerPoint) or the Download button of OneDrive or SharePoint. ||| Si se abre una página en lugar de una descarga, inicia sesión si te lo pide y usa Archivo ▸ Guardar como ▸ Descargar una copia (Word, Excel, PowerPoint) o el botón Descargar de OneDrive o SharePoint. ||| Se se abre unha páxina en lugar dunha descarga, inicia sesión se cho pide e usa Ficheiro ▸ Gardar como ▸ Descargar unha copia (Word, Excel, PowerPoint) ou o botón Descargar de OneDrive ou SharePoint.
+Import directly through the school relay ||| Importar directamente a través del relé del centro ||| Importar directamente a través do relé do centro
+Downloading through the school relay… ||| Descargando a través del relé del centro… ||| Descargando a través do relé do centro…
+Your school relay can download public files for you: ||| El relé de tu centro puede descargar por ti los archivos públicos: ||| O relé do teu centro pode descargar por ti os ficheiros públicos:
+Or do it yourself in two steps: ||| O hazlo tú en dos pasos: ||| Ou faino ti en dous pasos:
+1. Download the file ||| 1. Descarga el archivo ||| 1. Descarga o ficheiro
+Open the link ||| Abrir el enlace ||| Abrir a ligazón
+2. Open it in Ofimeo ||| 2. Ábrelo en Ofimeo ||| 2. Ábreo en Ofimeo
+Paste the share link of a file in Google Drive (Docs, Sheets, Slides) or in Microsoft OneDrive or SharePoint. ||| Pega el enlace para compartir de un archivo de Google Drive (Documentos, Hojas de cálculo, Presentaciones) o de Microsoft OneDrive o SharePoint. ||| Pega a ligazón para compartir dun ficheiro de Google Drive (Documentos, Follas de cálculo, Presentacións) ou de Microsoft OneDrive ou SharePoint.
+Import from link ||| Importar desde un enlace ||| Importar desde unha ligazón
+Share link ||| Enlace para compartir ||| Ligazón para compartir

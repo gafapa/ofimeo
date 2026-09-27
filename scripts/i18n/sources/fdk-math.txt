@@ -1,0 +1,125 @@
+Math graph… ||| Graphique mathématique… ||| Mathematischer Graph…
+Math graph ||| Graphique mathématique ||| Mathematischer Graph
+Insert math graph ||| Insérer un graphique mathématique ||| Mathematischen Graphen einfügen
+Edit math graph ||| Modifier le graphique mathématique ||| Mathematischen Graphen bearbeiten
+Move ||| Déplacer ||| Verschieben
+Point ||| Point ||| Punkt
+Segment ||| Segment ||| Strecke
+Line ||| Droite ||| Gerade
+Ray ||| Demi-droite ||| Strahl
+Circle ||| Cercle ||| Kreis
+Polygon ||| Polygone ||| Vieleck
+Midpoint ||| Milieu ||| Mittelpunkt
+Perpendicular ||| Perpendiculaire ||| Senkrechte
+Parallel ||| Parallèle ||| Parallele
+Intersect ||| Intersection ||| Schnittpunkt
+Angle ||| Angle ||| Winkel
+Drag points to move them, drag the background to pan, use the wheel to zoom. ||| Faites glisser les points pour les déplacer, le fond pour déplacer la vue, et utilisez la molette pour zoomer. ||| Ziehen Sie Punkte, um sie zu verschieben, den Hintergrund, um die Ansicht zu verschieben, und zoomen Sie mit dem Mausrad.
+Click to place a point. ||| Cliquez pour placer un point. ||| Klicken Sie, um einen Punkt zu setzen.
+Click two points. ||| Cliquez sur deux points. ||| Klicken Sie auf zwei Punkte.
+Click the start point, then a point on the ray. ||| Cliquez sur l’origine, puis sur un point de la demi-droite. ||| Klicken Sie auf den Anfangspunkt, dann auf einen Punkt des Strahls.
+Click the center, then a point on the circle. ||| Cliquez sur le centre, puis sur un point du cercle. ||| Klicken Sie auf den Mittelpunkt, dann auf einen Punkt des Kreises.
+Click the vertices, then the first one again (or press Enter). ||| Cliquez sur les sommets, puis de nouveau sur le premier (ou appuyez sur Entrée). ||| Klicken Sie auf die Ecken und dann erneut auf die erste (oder drücken Sie die Eingabetaste).
+Click a line or segment, then a point. ||| Cliquez sur une droite ou un segment, puis sur un point. ||| Klicken Sie auf eine Gerade oder Strecke, dann auf einen Punkt.
+Click two lines, segments or circles. ||| Cliquez sur deux droites, segments ou cercles. ||| Klicken Sie auf zwei Geraden, Strecken oder Kreise.
+Click three points: one arm, the vertex, the other arm. ||| Cliquez sur trois points : un côté, le sommet, l’autre côté. ||| Klicken Sie auf drei Punkte: einen Schenkel, den Scheitel, den anderen Schenkel.
+Graph panels ||| Panneaux du graphique ||| Bereiche des Graphen
+Algebra ||| Algèbre ||| Algebra
+Geometry ||| Géométrie ||| Geometrie
+Expressions ||| Expressions ||| Ausdrücke
+Add expression ||| Ajouter une expression ||| Ausdruck hinzufügen
+Examples: y = a x^2 + b, f(x) = sin(x), x^2 + y^2 = 9, y > x − 1, (cos t, sin t), r = 2cos(3θ), A = (1, 2), M = Midpoint(A, B) ||| Exemples : y = a x^2 + b, f(x) = sin(x), x^2 + y^2 = 9, y > x − 1, (cos t, sin t), r = 2cos(3θ), A = (1, 2), M = Milieu(A, B) ||| Beispiele: y = a x^2 + b, f(x) = sin(x), x^2 + y^2 = 9, y > x − 1, (cos t, sin t), r = 2cos(3θ), A = (1, 2), M = Mittelpunkt(A, B)
+Sliders ||| Curseurs ||| Schieberegler
+Add slider ||| Ajouter un curseur ||| Schieberegler hinzufügen
+Construction tools ||| Outils de construction ||| Konstruktionswerkzeuge
+Free points ||| Points libres ||| Freie Punkte
+Commands can also be typed in Algebra: Segment(A, B), Line, Ray, Circle(A, B), Polygon(A, B, C), Midpoint(A, B), Perpendicular(s1, C), Parallel(s1, C), Intersect(c1, c2), Angle(A, B, C), Distance(A, B), Area(poly1). ||| Vous pouvez aussi taper des commandes dans Algèbre : Segment(A, B), Droite, DemiDroite, Cercle(A, B), Polygone(A, B, C), Milieu(A, B), Perpendiculaire(s1, C), Parallèle(s1, C), Intersection(c1, c2), Angle(A, B, C), Distance(A, B), Aire(poly1). Elles sont enregistrées avec leur nom anglais. ||| Befehle können auch unter Algebra eingegeben werden: Strecke(A, B), Gerade, Strahl, Kreis(A, B), Vieleck(A, B, C), Mittelpunkt(A, B), Senkrechte(s1, C), Parallele(s1, C), Schneide(c1, c2), Winkel(A, B, C), Abstand(A, B), Fläche(poly1). Sie werden mit ihrem englischen Namen gespeichert.
+Start x ||| x de départ ||| Start-x
+Step ||| Pas ||| Schrittweite
+x min ||| x min ||| x min
+x max ||| x max ||| x max
+y min ||| y min ||| y min
+y max ||| y max ||| y max
+Width (px) ||| Largeur (px) ||| Breite (px)
+Height (px) ||| Hauteur (px) ||| Höhe (px)
+Window ||| Fenêtre ||| Fenster
+Display ||| Affichage ||| Anzeige
+Grid ||| Grille ||| Gitter
+Axes ||| Axes ||| Achsen
+Axis numbers ||| Graduations des axes ||| Achsenbeschriftung
+Show roots, extrema and intersections ||| Afficher racines, extremums et intersections ||| Nullstellen, Extrema und Schnittpunkte anzeigen
+Show segment lengths ||| Afficher la longueur des segments ||| Streckenlängen anzeigen
+Angles in degrees for sin, cos and tan ||| Angles en degrés pour sin, cos et tan ||| Winkel in Grad für sin, cos und tan
+Snap points to the grid ||| Aimanter les points à la grille ||| Punkte am Gitter einrasten
+Picture size ||| Taille de l’image ||| Bildgröße
+graph ||| graphique ||| Graph
+Graph ||| Graphique ||| Graph
+Arrow keys move the selected point, trace the selected function or pan; + and − zoom; 0 resets the view. ||| Les flèches déplacent le point sélectionné, parcourent la fonction sélectionnée ou déplacent la vue ; + et − zooment ; 0 rétablit la vue. ||| Die Pfeiltasten verschieben den ausgewählten Punkt, verfolgen die ausgewählte Funktion oder verschieben die Ansicht; + und − zoomen; 0 setzt die Ansicht zurück.
+Readouts ||| Relevés ||| Messwerte
+Standard view ||| Vue standard ||| Standardansicht
+Equal scale on both axes ||| Même échelle sur les deux axes ||| Gleicher Maßstab auf beiden Achsen
+Download SVG ||| Télécharger en SVG ||| Als SVG herunterladen
+Download PNG ||| Télécharger en PNG ||| Als PNG herunterladen
+Color of expression {n} ||| Couleur de l’expression {n} ||| Farbe von Ausdruck {n}
+Expression {n} ||| Expression {n} ||| Ausdruck {n}
+Hide expression {n} ||| Masquer l’expression {n} ||| Ausdruck {n} ausblenden
+Delete expression {n} ||| Supprimer l’expression {n} ||| Ausdruck {n} löschen
+Press Enter to add sliders for {names} ||| Appuyez sur Entrée pour ajouter des curseurs pour {names} ||| Drücken Sie die Eingabetaste, um Schieberegler für {names} hinzuzufügen
+{name} does not exist (the objects do not meet) ||| {name} n’existe pas (les objets ne se coupent pas) ||| {name} existiert nicht (die Objekte schneiden sich nicht)
+Sliders added: {names} ||| Curseurs ajoutés : {names} ||| Schieberegler hinzugefügt: {names}
+Slider {name} ||| Curseur {name} ||| Schieberegler {name}
+Value of {name} ||| Valeur de {name} ||| Wert von {name}
+Pause {name} ||| Mettre {name} en pause ||| {name} anhalten
+Play {name} ||| Animer {name} ||| {name} animieren
+Limits ||| Limites ||| Grenzen
+Min ||| Min ||| Min
+Max ||| Max ||| Max
+Delete slider {name} ||| Supprimer le curseur {name} ||| Schieberegler {name} löschen
+Letters without a value (like a in y = a x^2) become sliders. ||| Les lettres sans valeur (comme a dans y = a x^2) deviennent des curseurs. ||| Buchstaben ohne Wert (wie a in y = a x^2) werden zu Schiebereglern.
+No free points yet. ||| Pas encore de points libres. ||| Noch keine freien Punkte.
+{axis} of {name} ||| {axis} de {name} ||| {axis} von {name}
+Point {name} created ||| Point {name} créé ||| Punkt {name} erstellt
+Nothing drawn yet. ||| Rien n’est encore tracé. ||| Noch nichts gezeichnet.
+Add a function to see its table of values. ||| Ajoutez une fonction pour voir son tableau de valeurs. ||| Fügen Sie eine Funktion hinzu, um ihre Wertetabelle zu sehen.
+Table of values ||| Tableau de valeurs ||| Wertetabelle
+Unexpected “{token}” ||| « {token} » inattendu ||| Unerwartetes „{token}“
+Missing “{token}” ||| « {token} » manquant ||| „{token}“ fehlt
+{command} needs {n} points ||| {command} demande {n} points ||| {command} braucht {n} Punkte
+{name} is not defined ||| {name} n’est pas défini ||| {name} ist nicht definiert
+{name} takes one value ||| {name} prend une valeur ||| {name} nimmt einen Wert
+{name} takes two values ||| {name} prend deux valeurs ||| {name} nimmt zwei Werte
+Incomplete expression ||| Expression incomplète ||| Unvollständiger Ausdruck
+Add “=” or an inequality ||| Ajoutez « = » ou une inégalité ||| Fügen Sie „=“ oder eine Ungleichung hinzu
+A point has two coordinates ||| Un point a deux coordonnées ||| Ein Punkt hat zwei Koordinaten
+A point is not a number here ||| Un nombre est attendu ici, pas un point ||| Hier wird eine Zahl erwartet, kein Punkt
+Circular definition ||| Définition circulaire ||| Zirkuläre Definition
+Circle needs a center and a point or a radius ||| Cercle demande un centre et un point ou un rayon ||| Kreis braucht einen Mittelpunkt und einen Punkt oder einen Radius
+Polygon needs at least 3 points ||| Polygone demande au moins 3 points ||| Vieleck braucht mindestens 3 Punkte
+Intersect needs two lines or circles ||| Intersection demande deux droites ou cercles ||| Schnittpunkt braucht zwei Geraden oder Kreise
+Intersect works with lines, segments and circles ||| Intersection fonctionne avec des droites, segments et cercles ||| Schnittpunkt funktioniert mit Geraden, Strecken und Kreisen
+Distance needs two objects ||| Distance demande deux objets ||| Abstand braucht zwei Objekte
+Distance needs two points, or a point and a line ||| Distance demande deux points, ou un point et une droite ||| Abstand braucht zwei Punkte oder einen Punkt und eine Gerade
+Area needs a polygon or a circle ||| Aire demande un polygone ou un cercle ||| Fläche braucht ein Vieleck oder einen Kreis
+Slope needs a line ||| Pente demande une droite ||| Steigung braucht eine Gerade
+Invalid expression ||| Expression non valide ||| Ungültiger Ausdruck
+{command} needs a line and a point ||| {command} demande une droite et un point ||| {command} braucht eine Gerade und einen Punkt
+{command} needs one object ||| {command} demande un objet ||| {command} braucht ein Objekt
+{command} works with segments, circles and polygons ||| {command} fonctionne avec des segments, cercles et polygones ||| {command} funktioniert mit Strecken, Kreisen und Vielecken
+undefined ||| non défini ||| nicht definiert
+error ||| erreur ||| Fehler
+Roots: {list} ||| Racines : {list} ||| Nullstellen: {list}
+No roots in view ||| Aucune racine visible ||| Keine Nullstellen im Bild
+Minimum: {list} ||| Minimum : {list} ||| Minimum: {list}
+Maximum: {list} ||| Maximum : {list} ||| Maximum: {list}
+y-intercept: {value} ||| Ordonnée à l’origine : {value} ||| y-Achsenabschnitt: {value}
+midpoint of {a} and {b} ||| milieu de {a} et {b} ||| Mittelpunkt von {a} und {b}
+intersection of {a} and {b} ||| intersection de {a} et {b} ||| Schnittpunkt von {a} und {b}
+Segment {name} from {a} to {b}, length {length} ||| Segment {name} de {a} à {b}, longueur {length} ||| Strecke {name} von {a} nach {b}, Länge {length}
+Line {name}: {equation} ||| Droite {name} : {equation} ||| Gerade {name}: {equation}
+Ray {name} from {a} through {b} ||| Demi-droite {name} d’origine {a} passant par {b} ||| Strahl {name} von {a} durch {b}
+Circle {name}: center {center}, radius {radius} ||| Cercle {name} : centre {center}, rayon {radius} ||| Kreis {name}: Mittelpunkt {center}, Radius {radius}
+Polygon {name}: area {area}, perimeter {perimeter} ||| Polygone {name} : aire {area}, périmètre {perimeter} ||| Vieleck {name}: Fläche {area}, Umfang {perimeter}
+Angle {name} = {value}° ||| Angle {name} = {value}° ||| Winkel {name} = {value}°
+{f} and {g} meet at {point} ||| {f} et {g} se coupent en {point} ||| {f} und {g} schneiden sich in {point}
+Show ||| Afficher ||| Anzeigen
+Hide ||| Masquer ||| Ausblenden

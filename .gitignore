@@ -8,3 +8,5 @@ playwright-report/
 public/legal
 public/.well-known
 playwright.*.tmp.config.ts
+playwright.*.config.ts
+!playwright.config.ts

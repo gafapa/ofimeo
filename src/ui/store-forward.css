@@ -17,3 +17,7 @@
 @media (max-width: 760px) {
   .sf-state-label { display: none; }
 }
+.sf-settings { border-top: 1px solid var(--divider); padding-top: 8px; }
+.sf-settings h3 { margin: 4px 0; font-size: var(--fs-base); font-weight: 600; }
+.sf-settings p { margin: 4px 0; }
+.sf-settings button { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: var(--radius-m); padding: 6px 12px; }

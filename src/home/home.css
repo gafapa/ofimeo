@@ -177,3 +177,5 @@ body:has(.home) { overflow: auto; }
   .doc-table.list .doc-row .row-check { opacity: 1; }
 }
 .doc-head span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Moodle account button (src/ui/moodle.ts): no room on phones; File → Moodle account… and Hand in still offer it. */
+@media (max-width: 480px) { .home-bar .md-home-button { display: none; } }

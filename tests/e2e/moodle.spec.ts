@@ -171,10 +171,12 @@ test('a Moodle without CORS and no relay: a clear message', async ({ page }) => 
 })
 
 test('390px: task panel and hand-in dialog fit', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 800 })
   await page.goto(`/${RELAYS}`)
   await connectMoodle(page, `${MOCK}/cors`)
   await page.locator('dialog.dlg').getByRole('button', { name: 'Close' }).click()
+  // Phones: no room for the header button (File → Moodle account… and Hand in offer it).
+  await page.setViewportSize({ width: 390, height: 800 })
+  await expect(page.locator('.md-home-button')).toBeHidden()
   const panel = page.locator('.home-moodle')
   await expect(panel.locator('.md-task-name').first()).toBeVisible()
   await panel.locator('.md-task', { hasText: 'Essay' }).locator('summary').click()

@@ -73,7 +73,7 @@ export function setupStoreForwardStatus(session: Session): void {
 
 // Settings section for the connection dialog.
 export function storeForwardSettings(session?: Session): HTMLElement {
-  const section = el('section', { class: 'conn-relay sf-settings' })
+  const section = el('section', { class: 'sf-settings' })
   let unsubscribe: (() => void) | undefined
   const render = async () => {
     const relay = await relayStoreChoice()

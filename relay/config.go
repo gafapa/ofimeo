@@ -60,6 +60,8 @@ type Config struct {
 	LogFile string `json:"log_file"`
 	// Store: encrypted store-and-forward mailboxes (store.go).
 	Store StoreConfig `json:"store"`
+	// SchoolConfig: the school's ofimeo.config.json, served to the web app (school.go).
+	SchoolConfig string `json:"school_config"`
 	// ImportProxy: optional fetch proxy for importing public Google/Microsoft share links (proxy.go); off by default.
 	ImportProxy ImportProxyConfig `json:"import_proxy"`
 

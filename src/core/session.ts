@@ -17,6 +17,8 @@
 //                         fills submitFiles / restoreVersion from the app's index.ts
 //   session.shareUrl(a)   link granting access `a` (never more than this browser has)
 //   session.copyUrl()     link that makes a private copy for whoever opens it
+//   session.storeForward  encrypted mailboxes on the school relay / Nextcloud, for
+//                         people who are never online together (store-forward/)
 
 import * as Y from 'yjs'
 import { IndexeddbPersistence } from 'y-indexeddb'
@@ -24,6 +26,7 @@ import { Awareness, removeAwarenessStates } from 'y-protocols/awareness'
 import { accessRank, keysForAccess, mergeKeys, newLinkKeys, type Access, type DocKeys, type LinkKeys } from './keys'
 import { isRemoteOrigin, RoomProvider, type ChannelSecurity } from './network'
 import { absoluteUrl, docPath } from './router'
+import { startStoreForward, type StoreForward } from './store-forward'
 import * as store from './store'
 import { t } from './i18n'
 
@@ -95,6 +98,8 @@ export interface Session {
   copyUrl: () => string
   // Present when the link carried keys that were ignored (they did not match this document).
   warning?: string
+  // Store-and-forward sync (absent without WebCrypto).
+  storeForward?: StoreForward
 }
 
 export async function openSession(type: store.DocType, docId: string, docKey: string, linkKeys: LinkKeys = {}): Promise<Session> {
@@ -122,7 +127,16 @@ export async function openSession(type: store.DocType, docId: string, docKey: st
   const security = (verifier: CryptoKey | undefined, signer: CryptoKey | undefined, channel: string): ChannelSecurity | undefined =>
     keys.signed ? { verifier: verifier!, signer, context: `${docId}:${channel}`, logKey: store.signedLogKey(docId, channel) } : undefined
   const room = new RoomProvider(doc, awareness, { roomId: docId, password: docKey, relays, security: security(keys.editVerifier, keys.editSigner, 'yjs') })
-  room.addChannel('cmt', commentsDoc, security(keys.commentVerifier, keys.commentSigner, 'cmt'))
+  const comments = room.addChannel('cmt', commentsDoc, security(keys.commentVerifier, keys.commentSigner, 'cmt'))
+  // Mailboxes are written with the channel's signing key (derived from the room secret for legacy documents).
+  const storeForward = startStoreForward({
+    docId,
+    docKey,
+    targets: [
+      { name: 'yjs', channel: room.mainChannel, keys: keys.signed ? { pub: keys.link.verify, signer: keys.editSigner } : {} },
+      { name: 'cmt', channel: comments, keys: keys.signed ? { pub: keys.link.cverify, signer: keys.commentSigner } : {} },
+    ],
+  })
   window.addEventListener('beforeunload', () => {
     removeAwarenessStates(awareness, [doc.clientID], 'unload')
     void room.destroy()
@@ -148,6 +162,7 @@ export async function openSession(type: store.DocType, docId: string, docKey: st
     shareUrl: (level = access) => absoluteUrl(docPath(type, docId, docKey, keysForAccess(keys.link, accessRank(level) > accessRank(access) ? access : level))),
     copyUrl: () => absoluteUrl(docPath(type, docId, docKey, keysForAccess(keys.link, 'view'), true)),
     warning: ignoredLink ? t('This link carries keys that do not match this document; it was opened with the access you already had.') : undefined,
+    storeForward,
   }
   if (session.canEdit) recordAuthor(session)
   return session

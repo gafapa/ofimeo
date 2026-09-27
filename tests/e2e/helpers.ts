@@ -1,7 +1,9 @@
 import type { Page } from '@playwright/test'
 
 // Local relay only (see playwright.config.ts).
-export const RELAYS = '?relays=ws://127.0.0.1:7790'
+// E2E_RELAY_PORT: another port when several test runs share the machine.
+export const RELAY_PORT = Number(process.env.E2E_RELAY_PORT || 7790)
+export const RELAYS = `?relays=ws://127.0.0.1:${RELAY_PORT}`
 
 export const APP_READY: Record<string, string> = {
   writer: '.ProseMirror',

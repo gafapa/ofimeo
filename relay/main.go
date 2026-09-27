@@ -59,6 +59,8 @@ func main() {
 		err = cmdService("start", args)
 	case "stop-service":
 		err = cmdService("stop", args)
+	case "healthcheck":
+		err = cmdHealthcheck(args)
 	case "version":
 		fmt.Println("ofimeo-relay", version, runtime.GOOS+"/"+runtime.GOARCH)
 	case "help":
@@ -99,6 +101,7 @@ Usage:
   ofimeo-relay install-service [options] install and start as a system service
   ofimeo-relay uninstall-service         remove the service
   ofimeo-relay start-service | stop-service
+  ofimeo-relay healthcheck [port]       exit 0 when the local HTTPS server answers (containers)
   ofimeo-relay version | help | ayuda (help in Spanish)
 
 Options (saved defaults live in <data dir>/ofimeo-relay.json; options given here win):
@@ -122,6 +125,7 @@ Uso:
   ofimeo-relay install-service [opciones]  instalar e iniciar como servicio del sistema
   ofimeo-relay uninstall-service           quitar el servicio
   ofimeo-relay start-service | stop-service
+  ofimeo-relay healthcheck [puerto]        sale con 0 si el servidor HTTPS local responde (contenedores)
   ofimeo-relay version | help (ayuda en inglés) | ayuda
 
 Opciones (los valores guardados están en <carpeta de datos>/ofimeo-relay.json; las opciones indicadas aquí tienen prioridad):
@@ -169,6 +173,7 @@ func newFlagSet(cfg *Config, dataDir, relayPorts *string) (*flag.FlagSet, *bool)
 	fs.Var(&cfg.CredentialTTL, "credential-ttl", "validity of the TURN credentials given to browsers (e.g. 24h)")
 	fs.StringVar(&cfg.LogFile, "log-file", cfg.LogFile, "also write the log to this file")
 	addStoreFlags(fs, &cfg.Store)
+	fs.StringVar(&cfg.SchoolConfig, "school-config", cfg.SchoolConfig, "the school's ofimeo.config.json, served to the web app (see docs/deploy-school.md)")
 	showHelp := fs.Bool("help", false, "show this help")
 	fs.Usage = func() {}
 	return fs, showHelp
@@ -197,6 +202,9 @@ func parseArgs(args []string) (Config, []string, error) {
 	}
 	// Environment (containers) overrides the file; flags override both.
 	if err := applyStoreEnv(&cfg.Store); err != nil {
+		return cfg, nil, err
+	}
+	if err := applyDeployEnv(&cfg); err != nil {
 		return cfg, nil, err
 	}
 	// Second pass over the loaded config: only the given flags change it.
@@ -265,6 +273,9 @@ func run(ctx context.Context, cfg Config, banner bool) error {
 		if app, err = OpenApp(cfg.ServeApp); err != nil {
 			return fmt.Errorf("--serve-app: %w", err)
 		}
+	}
+	if err := validateSchoolConfig(&cfg); err != nil {
+		return err
 	}
 
 	httpsPort := cfg.HTTPSPort

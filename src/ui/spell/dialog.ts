@@ -32,6 +32,8 @@ export interface SpellSource {
   start?(items: SpellItem[]): number
   // Shows the item (selects the cell, opens the slide); from/to are offsets in its text.
   reveal(item: SpellItem, from: number, to: number): void
+  // Where the flagged text is on screen, to outline it while the dialog has the focus.
+  rects?(item: SpellItem, from: number, to: number): DOMRect[]
   // Replaces text[from, to) of the item; false when it could not be changed.
   replace(item: SpellItem, from: number, to: number, text: string): boolean
   editable(): boolean
@@ -120,6 +122,24 @@ export function openSpellingDialog(source: SpellSource): void {
   )
   document.body.append(dialog)
   dialog.show()
+
+  // Outline of the current issue in the page (fields do not show their
+  // selection while the focus is in the dialog).
+  const marks = el('div', { class: 'spell-current-layer' })
+  document.body.append(marks)
+  const place = () => {
+    marks.replaceChildren()
+    const f = current
+    if (!f || !source.rects) return
+    for (const r of source.rects(f.item, f.from, f.to)) {
+      const box = el('div', { class: `spell-current ${f.issue.kind}` })
+      Object.assign(box.style, { left: `${r.left - 2}px`, top: `${r.top - 2}px`, width: `${r.width + 4}px`, height: `${r.height + 4}px` })
+      marks.append(box)
+    }
+  }
+  const onScroll = () => place()
+  window.addEventListener('scroll', onScroll, true)
+  window.addEventListener('resize', onScroll)
 
   const cache = new Map<string, CheckResult>()
   const ignoredOnce = new Set<string>()
@@ -210,6 +230,7 @@ export function openSpellingDialog(source: SpellSource): void {
     list.replaceChildren()
     change.value = ''
     if (!found) {
+      marks.replaceChildren()
       where.textContent = ''
       kind.textContent = ''
       message.textContent = ''
@@ -229,6 +250,7 @@ export function openSpellingDialog(source: SpellSource): void {
     const mark = el('mark', { class: found.issue.kind, textContent: text.slice(found.from, found.to) })
     context.replaceChildren((found.from > 120 ? '…' : '') + before, mark, after + (found.to + 120 < text.length ? '…' : ''))
     source.reveal(found.item, found.from, found.to)
+    requestAnimationFrame(() => current === found && place())
     const suggestions = found.issue.rule === 'spelling' ? suggest(found.text, found.dict) : Promise.resolve(found.issue.replacements)
     void suggestions.then((list2) => {
       if (current !== found) return
@@ -275,6 +297,8 @@ export function openSpellingDialog(source: SpellSource): void {
     }
     items = source.items()
     pos = { index: found.index, offset: end ?? found.from + 1 }
+    // Replacing in a field moves the focus there: keep working in the dialog.
+    if (!dialog.contains(document.activeElement)) bChange.focus({ preventScroll: true })
     void next()
   }
 
@@ -293,6 +317,9 @@ export function openSpellingDialog(source: SpellSource): void {
     walking++
     unsubscribe()
     unsubscribeLang()
+    window.removeEventListener('scroll', onScroll, true)
+    window.removeEventListener('resize', onScroll)
+    marks.remove()
     dialog.remove()
     source.close?.()
   }

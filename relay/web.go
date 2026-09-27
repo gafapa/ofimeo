@@ -41,6 +41,8 @@ type ClientConfig struct {
 	Store      *StoreInfo  `json:"store,omitempty"`
 	// ImportProxy is the path of the import proxy (proxy.go) when it is on.
 	ImportProxy string `json:"importProxy,omitempty"`
+	// School is the school's ofimeo.config.json (school.go), when given.
+	School json.RawMessage `json:"school,omitempty"`
 }
 
 type ICEServer struct {
@@ -143,6 +145,7 @@ func (s *Web) clientConfig(r *http.Request) (ClientConfig, error) {
 		Expires:     expires.Unix(),
 		Store:       s.store.Info(),
 		ImportProxy: s.importProxyPath(),
+		School:      s.schoolJSON(),
 	}, nil
 }
 
@@ -178,6 +181,7 @@ func (s *Web) HTTPSHandler() http.Handler {
 	if p := NewImportProxy(s.cfg.ImportProxy, s.log); p != nil {
 		mux.Handle(importProxyPath, p)
 	}
+	s.registerSchoolRoutes(mux)
 	mux.Handle("/nostr", s.nostr)
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		switch {

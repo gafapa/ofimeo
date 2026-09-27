@@ -169,6 +169,16 @@ class Mirror {
   }
 }
 
+// Screen rectangles of text in a <textarea> or <input> (visible part only).
+export function textFieldRects(field: HTMLTextAreaElement | HTMLInputElement, from: number, to: number): DOMRect[] {
+  const mirror = new Mirror(field)
+  try {
+    return mirror.rects(from, to)
+  } finally {
+    mirror.remove()
+  }
+}
+
 export function attachSpellcheck(element: HTMLElement, lang?: () => string | null | undefined): () => void {
   const langOf = () => variantOf(lang?.() ?? element.closest('[lang]')?.getAttribute('lang')) ?? variantOf(UI_VARIANT)!
   const field = isTextField(element) ? element : null

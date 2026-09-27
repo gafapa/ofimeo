@@ -1,0 +1,11 @@
+/* Links to the legal pages: home screen footer and About dialog. */
+
+.legal-links { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); font-size: var(--fs-m); }
+.legal-links a { color: var(--muted); text-decoration: none; }
+.legal-links a:hover { color: var(--text); text-decoration: underline; }
+.legal-links a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--radius-xs); }
+
+.legal-footer { max-width: 960px; margin: var(--space-5) auto 0; padding: var(--space-4) 24px var(--space-5); border-top: 1px solid var(--border); }
+@media (max-width: 600px) { .legal-footer { padding: var(--space-4); } }
+
+.about .legal-links { margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border); }

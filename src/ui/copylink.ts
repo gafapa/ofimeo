@@ -8,7 +8,7 @@ import './edu.css'
 
 export async function runCopyLink(root: HTMLElement, route: CopyLinkRoute): Promise<void> {
   const info = appInfo(route.type)
-  document.title = `${t('Making your copy…')} · Words Online`
+  document.title = `${t('Making your copy…')} · Ofimeo`
   const message = el('p', { class: 'copy-message' })
   const box = el(
     'div',

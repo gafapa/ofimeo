@@ -6,6 +6,7 @@ import JSZip from 'jszip'
 import type { PresentationData } from '../model'
 import type { SlideRenderer } from '../render'
 import { gradientPng, slideContents, toPng, type Paragraph, type Run, type SlideElement, type TableElement, type TextElement } from './elements'
+import { timeline, type Animation, type Direction } from '../animations'
 
 const inch = (px: number) => `${(px / 96).toFixed(4)}in`
 const pt = (px: number) => `${Math.round(px * 0.75 * 10) / 10}pt`
@@ -52,21 +53,37 @@ export async function exportOdp(pres: PresentationData, renderer: SlideRenderer)
   }
 
   const pages: string[] = []
+  let shapeId = 0
   const contents = await slideContents(pres, renderer)
   for (const [index, content] of contents.entries()) {
     const bg = content.background
     const parts: string[] = []
+    const transition = transitionAttrs(content.slide.transition, content.slide.transitionDuration)
     const pageStyle = styles.get(
       'drawing-page',
       Array.isArray(bg)
-        ? '<style:drawing-page-properties draw:fill="none" presentation:background-visible="true" presentation:background-objects-visible="true"/>'
-        : `<style:drawing-page-properties draw:fill="solid" draw:fill-color="${bg}" presentation:background-visible="true" presentation:background-objects-visible="true"/>`,
+        ? `<style:drawing-page-properties draw:fill="none" presentation:background-visible="true" presentation:background-objects-visible="true"${transition}/>`
+        : `<style:drawing-page-properties draw:fill="solid" draw:fill-color="${bg}" presentation:background-visible="true" presentation:background-objects-visible="true"${transition}/>`,
     )
     if (Array.isArray(bg)) {
       const href = addPicture(gradientPng(bg, pres.width, pres.height))
       parts.push(imageFrame(styles, href, 0, 0, pres.width, pres.height, 0))
     }
-    for (const e of content.elements) parts.push(await element(styles, e, addPicture))
+    // Shapes of animated objects get ids for the animation targets.
+    const animated = new Set((content.slide.animations ?? []).map((a) => a.cell))
+    const targets = new Map<string, string[]>()
+    for (const e of content.elements) {
+      let xml = await element(styles, e, addPicture)
+      if (e.cell && animated.has(e.cell)) {
+        xml = xml.replace(/<(draw:custom-shape|draw:frame|draw:line)\b/g, (m) => {
+          const id = `anim${++shapeId}`
+          targets.set(e.cell!, [...(targets.get(e.cell!) ?? []), id])
+          return `${m} draw:id="${id}" xml:id="${id}"`
+        })
+      }
+      parts.push(xml)
+    }
+    parts.push(animationsXml(content.slide.animations ?? [], targets))
     const notes = content.slide.notes
       ? `<presentation:notes><draw:frame presentation:class="notes" svg:x="0.8in" svg:y="5in" svg:width="6.9in" svg:height="4in"><draw:text-box>${content.slide.notes
           .split('\n')
@@ -81,7 +98,8 @@ export async function exportOdp(pres: PresentationData, renderer: SlideRenderer)
     'xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" ' +
     'xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" ' +
     'xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:presentation="urn:oasis:names:tc:opendocument:xmlns:presentation:1.0" ' +
-    'xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" office:version="1.3"'
+    'xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:anim="urn:oasis:names:tc:opendocument:xmlns:animation:1.0" ' +
+    'xmlns:smil="urn:oasis:names:tc:opendocument:xmlns:smil-compatible:1.0" office:version="1.3"'
   const lists =
     '<text:list-style style:name="LB"><text:list-level-style-bullet text:level="1" text:bullet-char="•"><style:list-level-properties text:space-before="0in" text:min-label-width="0.3in"/></text:list-level-style-bullet></text:list-style>' +
     '<text:list-style style:name="LN"><text:list-level-style-number text:level="1" style:num-format="1" style:num-suffix="."><style:list-level-properties text:space-before="0in" text:min-label-width="0.35in"/></text:list-level-style-number></text:list-style>'
@@ -100,7 +118,7 @@ export async function exportOdp(pres: PresentationData, renderer: SlideRenderer)
   )
   zip.file(
     'meta.xml',
-    `<?xml version="1.0" encoding="UTF-8"?><office:document-meta ${ns} xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0"><office:meta><meta:generator>Words Online</meta:generator></office:meta></office:document-meta>`,
+    `<?xml version="1.0" encoding="UTF-8"?><office:document-meta ${ns} xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0"><office:meta><meta:generator>Ofimeo</meta:generator><meta:user-defined meta:name="OfimeoTheme">${esc(pres.theme.id)}</meta:user-defined></office:meta></office:document-meta>`,
   )
   zip.file(
     'META-INF/manifest.xml',
@@ -226,4 +244,107 @@ function span(styles: Styles, r: Run): string {
 
 function esc(s: string): string {
   return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!)
+}
+
+// ---------- Animations and transitions ----------
+
+function transitionAttrs(type: string | undefined, duration = 500): string {
+  if (!type || type === 'none') return ''
+  const [t, sub] = type === 'fade' ? ['fade', 'crossfade'] : type === 'push' ? ['pushWipe', 'fromRight'] : type === 'wipe' ? ['barWipe', 'leftToRight'] : ['', '']
+  if (!t) return ''
+  const speed = duration <= 500 ? 'fast' : duration < 1000 ? 'medium' : 'slow'
+  return ` smil:type="${t}" smil:subtype="${sub}" smil:dur="${duration / 1000}s" presentation:transition-speed="${speed}"`
+}
+
+const secs = (ms: number) => `${Math.round(ms) / 1000}s`
+const FLY: Record<Direction, [string, string, string]> = {
+  left: ['from-left', 'x', '0-width/2'],
+  right: ['from-right', 'x', '1+width/2'],
+  top: ['from-top', 'y', '0-height/2'],
+  bottom: ['from-bottom', 'y', '1+height/2'],
+}
+const WIPE: Record<Direction, [string, string, string]> = {
+  left: ['from-left', 'barWipe', 'leftToRight'],
+  right: ['from-right', 'barWipe', 'leftToRight'],
+  top: ['from-top', 'barWipe', 'topToBottom'],
+  bottom: ['from-bottom', 'barWipe', 'topToBottom'],
+}
+
+// The page's main sequence of effects (LibreOffice Impress presets).
+function animationsXml(anims: Animation[], targets: Map<string, string[]>): string {
+  const tl = timeline(anims, new Set(targets.keys()))
+  if (!tl.steps.length) return ''
+  const steps = tl.steps.map((step, si) => {
+    const effects = step.effects.map(({ anim, start }, ei) => {
+      const nodeType = ei === 0 && anim.trigger === 'click' ? 'on-click' : anim.trigger === 'after' ? 'after-previous' : 'with-previous'
+      return (targets.get(anim.cell) ?? []).map((id) => effect(anim, id, start, nodeType)).join('')
+    })
+    const begin = si === 0 && tl.auto ? '0s' : 'next'
+    return `<anim:par smil:begin="${begin}"><anim:par smil:begin="0s">${effects.join('')}</anim:par></anim:par>`
+  })
+  return `<anim:par presentation:node-type="timing-root"><anim:seq presentation:node-type="main-sequence">${steps.join('')}</anim:seq></anim:par>`
+}
+
+function effect(a: Animation, id: string, start: number, nodeType: string): string {
+  const dur = secs(Math.max(1, a.duration))
+  const set = (to: 'visible' | 'hidden', begin = '0s') => `<anim:set smil:begin="${begin}" smil:dur="0.001s" smil:fill="hold" smil:targetElement="${id}" smil:attributeName="visibility" smil:to="${to}"/>`
+  const filter = (type: string, subtype: string, out = false) => `<anim:transitionFilter smil:dur="${dur}" smil:targetElement="${id}" smil:type="${type}" smil:subtype="${subtype}"${out ? ' smil:mode="out"' : ''}/>`
+  const move = (attr: string, from: string, to: string) => `<anim:animate smil:fill="hold" smil:targetElement="${id}" smil:attributeName="${attr}" smil:values="${from};${to}" smil:keyTimes="0;1" presentation:additive="base" smil:dur="${dur}"/>`
+  let preset = ''
+  let sub = ''
+  let body = ''
+  const cls = a.kind
+  if (a.kind === 'emphasis') {
+    if (a.effect === 'spin') {
+      preset = 'ooo-emphasis-spin'
+      body = `<anim:animateTransform smil:dur="${dur}" smil:fill="hold" smil:targetElement="${id}" smil:by="360" svg:type="rotate"/>`
+    } else if (a.effect === 'teeter') {
+      preset = 'ooo-emphasis-teeter'
+      body = `<anim:animateTransform smil:dur="${dur}" smil:fill="hold" smil:targetElement="${id}" smil:values="0;6;-6;6;-6;0" smil:keyTimes="0;0.2;0.4;0.6;0.8;1" svg:type="rotate"/>`
+    } else {
+      preset = 'ooo-emphasis-grow-and-shrink'
+      body = `<anim:animateTransform smil:dur="${secs(Math.max(1, a.duration / 2))}" smil:autoReverse="true" smil:fill="hold" smil:targetElement="${id}" smil:to="1.12,1.12" svg:type="scale"/>`
+    }
+  } else {
+    const entering = a.kind === 'entrance'
+    const kind = entering ? 'entrance' : 'exit'
+    const hideAt = secs(Math.max(0, a.duration - 1))
+    switch (a.effect) {
+      case 'appear':
+        preset = entering ? 'ooo-entrance-appear' : 'ooo-exit-disappear'
+        body = set(entering ? 'visible' : 'hidden')
+        break
+      case 'fade':
+        preset = `ooo-${kind}-fade-${entering ? 'in' : 'out'}`
+        body = entering ? set('visible') + filter('fade', 'crossfade') : filter('fade', 'crossfade', true) + set('hidden', hideAt)
+        break
+      case 'fly': {
+        const [subtype, attr, outside] = FLY[a.direction] ?? FLY.left
+        preset = `ooo-${kind}-fly-${entering ? 'in' : 'out'}`
+        sub = subtype
+        body = entering ? set('visible') + move(attr, outside, attr) : move(attr, attr, outside) + set('hidden', hideAt)
+        break
+      }
+      case 'zoom':
+        preset = entering ? 'ooo-entrance-zoom' : 'ooo-exit-zoom'
+        sub = 'in'
+        body = entering
+          ? set('visible') + move('width', '0', 'width') + move('height', '0', 'height') + filter('fade', 'crossfade')
+          : move('width', 'width', '0') + move('height', 'height', '0') + filter('fade', 'crossfade', true) + set('hidden', hideAt)
+        break
+      case 'wipe': {
+        const [subtype, type, subType] = WIPE[a.direction] ?? WIPE.left
+        preset = `ooo-${kind}-wipe`
+        sub = subtype
+        const reverse = a.direction === 'right' || a.direction === 'bottom' ? ' smil:direction="reverse"' : ''
+        body = entering
+          ? set('visible') + filter(type, subType).replace('/>', `${reverse}/>`)
+          : filter(type, subType, true).replace('/>', `${reverse}/>`) + set('hidden', hideAt)
+        break
+      }
+      default:
+        body = set(entering ? 'visible' : 'hidden')
+    }
+  }
+  return `<anim:par smil:begin="${secs(start)}" smil:fill="hold" presentation:node-type="${nodeType}" presentation:preset-class="${cls}" presentation:preset-id="${preset}"${sub ? ` presentation:preset-sub-type="${sub}"` : ''}>${body}</anim:par>`
 }

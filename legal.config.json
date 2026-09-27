@@ -1,0 +1,58 @@
+{
+  "_help": "Owner data for the legal pages (docs/legal) and /.well-known/security.txt. Fill in every empty value before publishing; empty values are shown as highlighted [placeholders]. Build with LEGAL_STRICT=1 to fail while any remains. See docs/legal/README.md.",
+  "siteName": "Ofimeo",
+  "siteUrl": "https://ofimeo.com",
+  "lastUpdated": "2026-09-26",
+  "owner": {
+    "_help": "Titular of the website (LSSI-CE art. 10) and data controller (GDPR art. 13.1.a). phone and registry are optional (registry: only for companies or registered entities).",
+    "name": "Pablo Gallego Falcón",
+    "nif": "35320739F",
+    "address": "Conchidos Cerponzóns nº 8, 36152 Pontevedra (Pontevedra), España",
+    "email": "pablo@ofimeo.com",
+    "phone": "",
+    "registry": ""
+  },
+  "dpo": {
+    "_help": "Data Protection Officer (GDPR arts. 37-39, LOPDGDD art. 34). Leave both empty when none is designated: the texts then say so and give privacyEmail. Mandatory for public bodies and schools that deploy their own instance.",
+    "name": "",
+    "email": ""
+  },
+  "privacyEmail": "pablo@ofimeo.com",
+  "jurisdiction": "",
+  "_jurisdiction_help": "jurisdiction: optional forum clause (e.g. 'los juzgados y tribunales de Pontevedra'); empty = the courts that correspond under the applicable law.",
+  "hosting": {
+    "_help": "Who serves the static files. Defaults describe GitHub Pages; change them for a school or Consellería server. Any value can be a plain string or one per language ({\"es\": …, \"gl\": …, \"en\": …, \"fr\": …, \"de\": …}).",
+    "provider": "GitHub, Inc. (GitHub Pages)",
+    "country": {
+      "es": "Estados Unidos",
+      "gl": "Estados Unidos",
+      "en": "United States",
+      "fr": "États-Unis",
+      "de": "USA"
+    },
+    "transfers": {
+      "es": "el Marco de Privacidad de Datos UE-EE. UU.",
+      "gl": "o Marco de Privacidade de Datos UE-EUA",
+      "en": "the EU-U.S. Data Privacy Framework",
+      "fr": "le cadre de protection des données UE-États-Unis",
+      "de": "den Datenschutzrahmen EU-USA (EU-U.S. Data Privacy Framework)"
+    },
+    "privacyUrl": "https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement"
+  },
+  "accessibility": {
+    "_help": "Accessibility statement (RD 1112/2018). status: 'partial' (until an audit says otherwise), 'full' or 'none'. method: 'self' (self-assessment) or 'audit' (external audit). reviewedOn: optional. complaintBody: only for public-sector owners (the body that handles accessibility complaints); empty = private owner, voluntary statement.",
+    "status": "partial",
+    "preparedOn": "2026-09-26",
+    "reviewedOn": "",
+    "method": "self",
+    "contactEmail": "",
+    "complaintBody": ""
+  },
+  "security": {
+    "_help": "security.txt (RFC 9116). contact: a mailto: or https: URI. expires: ISO date; empty = build date + 180 days. policy: optional URL.",
+    "contact": "mailto:pablo@ofimeo.com",
+    "expires": "",
+    "policy": "",
+    "languages": "es, gl, en"
+  }
+}

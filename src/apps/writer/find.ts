@@ -135,6 +135,7 @@ export function setupFindPanel(editor: Editor, panel: HTMLElement): { open: (rep
   panel.querySelector('[data-next]')!.addEventListener('click', () => step(1))
   panel.querySelector('[data-prev]')!.addEventListener('click', () => step(-1))
   panel.querySelector('[data-replace-one]')!.addEventListener('click', () => {
+    if (!editor.isEditable) return
     const s = state()
     const match = s.matches[s.current]
     if (!match) return
@@ -143,6 +144,7 @@ export function setupFindPanel(editor: Editor, panel: HTMLElement): { open: (rep
     reveal()
   })
   panel.querySelector('[data-replace-all]')!.addEventListener('click', () => {
+    if (!editor.isEditable) return
     const s = state()
     if (!s.matches.length) return
     const { tr } = editor.state
@@ -166,7 +168,8 @@ export function setupFindPanel(editor: Editor, panel: HTMLElement): { open: (rep
   return {
     open(replace = false) {
       panel.hidden = false
-      replaceRow.hidden = !replace
+      // Viewers and commenters only get Find (Ctrl+H and the toolbar included).
+      replaceRow.hidden = !replace || !editor.isEditable
       const { from, to } = editor.state.selection
       const selected = editor.state.doc.textBetween(from, to, ' ')
       if (selected && selected.length < 100) findInput.value = selected

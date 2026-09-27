@@ -43,6 +43,7 @@ import {
   type ShapeConstructor,
 } from '@maxgraph/core'
 import { DrawioStencil } from './stencils'
+import { HANDLE_FACTORY, createHandle } from '../handles'
 
 // An mxGraph-style constructor (callable with .call(this)).
 type LegacyCtor = { (this: object, ...args: unknown[]): void; prototype: object }
@@ -243,8 +244,8 @@ function createNamespace(base: string, constants: Record<string, unknown>): Reco
       addStencil: (name: string, stencil: DrawioStencil) => StencilShapeRegistry.add(name, stencil),
       libraries: {},
     },
-    // Editing handles for adjustable shape parameters are not supported.
-    Graph: { handleFactory: {}, createHandle: () => null },
+    // Handles for adjustable shape parameters, shared with our own shapes (handles.ts).
+    Graph: { handleFactory: HANDLE_FACTORY, createHandle },
   }
 }
 

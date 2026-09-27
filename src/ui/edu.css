@@ -1,27 +1,27 @@
 /* Permissions, hand in and version history (shared by every app). */
 
 .access-badge {
-  font-size: 12px; padding: 2px 8px; border-radius: 10px; white-space: nowrap;
-  background: #fef7e0; color: #7a4f01; border: 1px solid #f4d58d;
+  font-size: var(--fs-s); padding: 2px 8px; border-radius: var(--radius-pill); white-space: nowrap;
+  background: var(--warn-bg); color: var(--warn-fg); border: 1px solid var(--warn-border);
 }
-.handin-btn { border: 1px solid var(--border); background: var(--surface); border-radius: 18px; padding: 6px 14px; white-space: nowrap; }
+.handin-btn { border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-pill); padding: 6px 14px; white-space: nowrap; }
 .handin-btn:hover { background: var(--hover); }
 
 .share-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px; }
-.share-tab { border: 1px solid var(--border); background: var(--surface); border-radius: 16px; padding: 4px 12px; font-size: 13px; }
-.share-tab.active { background: var(--active); border-color: var(--active); color: #041e49; }
+.share-tab { border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-pill); padding: 4px 12px; font-size: var(--fs-m); }
+.share-tab.active { background: var(--active); border-color: var(--active); color: var(--active-fg); }
 .share-desc { margin: 4px 0; }
 
 .version-head { display: flex; align-items: flex-start; gap: 12px; }
 .version-head .hint { flex: 1; margin: 0 0 8px; }
 .version-save, .version-actions button {
-  border: 1px solid var(--border); background: var(--surface); border-radius: 6px; padding: 4px 10px; white-space: nowrap;
+  border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-m); padding: 4px 10px; white-space: nowrap;
 }
 .version-list { max-height: 55vh; overflow: auto; border-top: 1px solid var(--border); }
 .version-row { display: flex; align-items: center; gap: 12px; padding: 8px 2px; border-bottom: 1px solid var(--border); }
 .version-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .version-label { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.version-meta { color: var(--muted); font-size: 12px; }
+.version-meta { color: var(--muted); font-size: var(--fs-s); }
 .version-actions { display: flex; gap: 6px; }
 
 

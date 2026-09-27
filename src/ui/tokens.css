@@ -1,0 +1,160 @@
+/* Design tokens: the single source of colors, spacing, radii, type, shadows and
+   layers for the suite (imported first by base.css). Light values live on :root;
+   the dark and high-contrast themes (accessibility preferences, set as
+   data-a11y-theme on <html>) only redefine tokens, never component rules.
+
+   Breakpoints (CSS variables cannot be used in media queries, so use the numbers):
+     --bp-phone   600px   phones: icon-only buttons, one scrolling menu row
+     --bp-narrow  760px   narrow windows and tablets in portrait: side panels become sheets
+     --bp-tablet  900px   writer fits the page to the width by default
+   Also exported to TypeScript as BREAKPOINTS in src/ui/frame.ts.
+
+   --app-color is set per app on .app by renderShell (AppInfo.color). */
+
+:root {
+  /* ---------- Brand and app ---------- */
+  --brand: #1a73e8;
+  --brand-fg: #ffffff;
+  --app-color: var(--brand);
+  --on-app: #ffffff; /* text on app colors and avatars (same in every theme) */
+  --paper: #ffffff; /* documents and canvases keep light paper in every theme */
+  --paper-fg: #000000;
+
+  /* ---------- Surfaces and text ---------- */
+  --bg: #f0f2f5;
+  --canvas: #e8eaed;
+  --surface: #ffffff;
+  --surface-alt: #f8f9fa;
+  --text: #1f2328;
+  --muted: #5f6368;
+  --border: #dadce0;
+  --divider: #c7c7c7;
+  --hover: #eef1f4;
+  --hover-strong: rgb(0 0 0 / 0.08);
+  --active: #d3e3fd;
+  --active-fg: #041e49;
+  --accent: #1a73e8;
+  --on-accent: #ffffff;
+  --focus: #1a73e8;
+  --overlay: rgb(0 0 0 / 0.35);
+
+  /* ---------- Semantic ---------- */
+  --ok: #188038;
+  --on-ok: #ffffff;
+  --success-bg: #e6f4ea;
+  --success-fg: #137333;
+  --warn: #b06000;
+  --warn-strong: #e37400;
+  --warn-bg: #fef7e0;
+  --warn-fg: #7a4f01;
+  --warn-border: #f4d58d;
+  --danger: #d93025;
+  --danger-strong: #c5221f;
+  --danger-text: #b3261e;
+  --on-danger: #ffffff;
+  --info-bg: #e8f0fe;
+  --info-fg: #0b5394;
+  --info-border: #aecbfa;
+  --folder: #0082c9;
+
+  /* ---------- Toolbar, toast, floating bubbles ---------- */
+  --toolbar-bg: #edf2fa;
+  --toolbar-fg: #444746;
+  --toolbar-hover: rgb(68 71 70 / 0.08);
+  --field-border-strong: #747775;
+  --toast-bg: #323232;
+  --toast-fg: #ffffff;
+  --bubble-bg: #202124;
+  --bubble-fg: #ffffff;
+
+  /* ---------- Type ---------- */
+  --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, monospace;
+  --font-logo: Arial, sans-serif;
+  --doc-font: Calibri, Carlito, 'Segoe UI', Arial, sans-serif;
+  --fs-xs: 11px;
+  --fs-s: 12px;
+  --fs-m: 13px;
+  --fs-base: 14px;
+  --fs-l: 16px;
+  --fs-xl: 18px;
+  --fs-xxl: 20px;
+
+  /* ---------- Spacing ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+
+  /* ---------- Radii: controls 4, buttons and fields 6, panels and cards 8, dialogs 12, pills ---------- */
+  --radius-xs: 2px;
+  --radius-s: 4px;
+  --radius-m: 6px;
+  --radius-l: 8px;
+  --radius-xl: 12px;
+  --radius-pill: 999px;
+
+  /* ---------- Shadows ---------- */
+  --shadow: 0 1px 3px rgb(60 64 67 / 0.3), 0 4px 8px 3px rgb(60 64 67 / 0.12);
+  --shadow-s: 0 1px 4px rgb(0 0 0 / 0.12);
+
+  /* ---------- Layers ---------- */
+  --z-ruler: 990;
+  --z-menu: 1000;
+  --z-panel: 1001;
+  --z-bubble: 1500;
+  --z-toast: 2000;
+  --z-skip: 3000;
+
+  color-scheme: light;
+}
+
+/* ---------- Dark theme ---------- */
+
+html[data-a11y-theme='dark'] {
+  --bg: #202124; --canvas: #141517; --surface: #2b2c30; --surface-alt: #303134; --text: #e8eaed; --muted: #b4b8bd;
+  --border: #53575d; --divider: #53575d; --hover: #3a3c41; --hover-strong: rgb(255 255 255 / 0.1);
+  --active: #27456f; --active-fg: #e8eaed; --accent: #8ab4f8; --on-accent: #0b1a33; --focus: #8ab4f8;
+  --ok: #81c995; --on-ok: #0b1a33; --success-bg: #1e3a2a; --success-fg: #81c995;
+  --warn: #fdd663; --warn-bg: #3d3314; --warn-fg: #fdd663; --warn-border: #6b5a1e;
+  --danger: #f28b82; --danger-text: #f28b82;
+  --info-bg: #1f3350; --info-fg: #aecbfa; --info-border: #3c5a85; --folder: #6bb8e8;
+  --toolbar-bg: #33363b; --toolbar-fg: #e3e3e3; --toolbar-hover: rgb(255 255 255 / 0.08); --field-border-strong: #53575d;
+  --toast-bg: #e8eaed; --toast-fg: #202124;
+  color-scheme: dark;
+}
+
+/* ---------- High contrast (dark) ---------- */
+
+html[data-a11y-theme='contrast-dark'] {
+  --brand: #ffff00; --brand-fg: #000;
+  --bg: #000; --canvas: #000; --surface: #000; --surface-alt: #000; --text: #fff; --muted: #e6e6e6;
+  --border: #fff; --divider: #fff; --hover: #333; --hover-strong: #333;
+  --active: #0a3a8c; --active-fg: #fff; --accent: #ffff00; --on-accent: #000; --focus: #ffff00;
+  --ok: #3dff8b; --on-ok: #000; --success-bg: #000; --success-fg: #3dff8b;
+  --warn: #ffd000; --warn-bg: #000; --warn-fg: #ffd000; --warn-border: #ffd000;
+  --danger: #ff6b6b; --danger-text: #ff6b6b;
+  --info-bg: #000; --info-fg: #fff; --info-border: #fff; --folder: #7fd3ff;
+  --toolbar-bg: #000; --toolbar-fg: #fff; --toolbar-hover: #333; --field-border-strong: #fff;
+  --toast-bg: #fff; --toast-fg: #000;
+  --shadow: 0 0 0 2px #fff; --shadow-s: 0 0 0 1px #fff;
+  color-scheme: dark;
+}
+
+/* ---------- High contrast (light) ---------- */
+
+html[data-a11y-theme='contrast-light'] {
+  --brand: #0000c2; --brand-fg: #fff;
+  --bg: #fff; --canvas: #fff; --surface: #fff; --surface-alt: #fff; --text: #000; --muted: #1f1f1f;
+  --border: #000; --divider: #000; --hover: #e0e0e0; --hover-strong: #e0e0e0;
+  --active: #c7dcff; --active-fg: #000; --accent: #0000c2; --on-accent: #fff; --focus: #c20000;
+  --ok: #005c1a; --on-ok: #fff; --success-bg: #fff; --success-fg: #005c1a;
+  --warn: #6b3d00; --warn-bg: #fff; --warn-fg: #000; --warn-border: #000;
+  --danger: #a00000; --danger-text: #a00000;
+  --info-bg: #fff; --info-fg: #000; --info-border: #000; --folder: #004a80;
+  --toolbar-bg: #fff; --toolbar-fg: #000; --toolbar-hover: #e0e0e0; --field-border-strong: #000;
+  --toast-bg: #000; --toast-fg: #fff;
+  --shadow: 0 0 0 2px #000; --shadow-s: 0 0 0 1px #000;
+  color-scheme: light;
+}

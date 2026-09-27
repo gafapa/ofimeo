@@ -7,9 +7,14 @@ import { appInfo } from '../apps/registry'
 import { language, t } from '../core/i18n'
 import type { DocType } from '../core/store'
 import { el, toast } from '../ui/widgets'
-import { TEMPLATES } from './catalog'
+import { mountMyTemplates } from '../home/my-templates'
+import { TEMPLATES as CATALOG } from './catalog'
+import { appHidden, templateAllowed } from '../core/school-config'
 import { LANG_NAMES, type Lang, type Template } from './types'
 import './gallery.css'
+
+// The school configuration can choose the templates (features.templates) and hide apps.
+const TEMPLATES = CATALOG.filter((tpl) => templateAllowed(tpl.id) && !appHidden(tpl.app))
 
 const LANG_KEY = 'wo-template-lang'
 const COLLAPSED_COUNT = 8
@@ -126,12 +131,14 @@ export function mountTemplates(container: HTMLElement): void {
     return button
   }
 
+  const mine = el('div', { class: 'my-templates' })
   container.replaceChildren(
     el('div', { class: 'home-section-title' }, el('h2', { textContent: t('Templates') }), el('span', { class: 'tpl-lang-wrap' }, el('span', { class: 'tpl-lang-label', textContent: t('Content language') }), langSwitch)),
-    filters,
-    grid,
-    more,
+    ...(TEMPLATES.length ? [filters, grid, more] : []),
+    mine,
   )
+  // Own templates (File ▸ Save as template…).
+  mountMyTemplates(mine)
   renderLang()
   renderFilters()
   renderCards()

@@ -26,7 +26,32 @@ const grid = (x: number, y: number, cols: number, rows: number, cw: number, rh: 
 // Sheet thumbnails: a full-bleed grid.
 const sheet = (body: string) => svg(body, '#fff')
 
+// Form thumbnails: a header card and question cards with options.
+const form = (body: string) => svg(rect(34, 4, 92, 24, '#fff', '#dadce0', 3) + rect(34, 4, 92, 3, '#00897b') + line(40, 14, 90, 14, '#202124', 3) + line(40, 21, 104, 21) + body, '#e8eaed')
+const card = (y: number, h: number, body: string) => rect(34, y, 92, h, '#fff', '#dadce0', 3) + line(40, y + 7, 84, y + 7, '#5f6368', 2) + body
+const choices = (y: number, n: number, square = false) =>
+  Array.from({ length: n }, (_, i) => (square ? rect(40, y + i * 7 - 2, 4, 4, '#fff', '#5f6368') : circle(42, y + i * 7, 2.2, '#fff', '#5f6368')) + line(48, y + i * 7, 76, y + i * 7, '#dadce0', 2)).join('')
+
+// Notebook thumbnails: coloured section tabs, a page list and the open page.
+const notebook = (tabs: string[], body: string) =>
+  svg(
+    tabs.map((c, i) => rect(6, 8 + i * 12, 30, 9, c, 'none', 2)).join('') +
+      rect(40, 6, 4, 88, '#e8eaed') +
+      rect(46, 6, 108, 90, '#fff', '#dadce0') +
+      rect(46, 6, 108, 2, tabs[0]) +
+      body.replace(/x1="48"/g, 'x1="52"').replace(/x="48"/g, 'x="52"'),
+    '#f1f3f4',
+  )
+const tagRow = (y: number, color: string) => circle(55, y, 2.5, color) + line(60, y, 120, y, '#dadce0', 2)
+
 export const THUMBS: Record<string, () => string> = {
+  'nb-class-notes': () => notebook(['#1e88e5', '#43a047', '#e53935'], heading(18, '#202124', 44) + textLines(30, 3) + tagRow(52, '#f29900') + tagRow(60, '#8e24aa') + textLines(72, 2)),
+  'nb-lab-notebook': () => notebook(['#00897b', '#3949ab'], heading(18, '#202124', 40) + textLines(28, 2) + grid(52, 44, 3, 4, 20, 7, '#e0f2f1') + tagRow(80, '#8e24aa')),
+  'nb-reading-journal': () => notebook(['#8e24aa', '#fb8c00'], heading(18, '#202124', 48) + textLines(28, 2) + rect(52, 44, 3, 14, '#c4c7c5') + textLines(46, 2, 58, 56) + tagRow(66, '#8e24aa') + tagRow(74, '#f29900') + line(52, 86, 110, 90, '#1a237e', 1.5)),
+  'form-self-assessment': () => form(card(32, 34, grid(40, 43, 5, 3, 16, 7, '#e0f2f1')) + card(70, 26, [0, 1, 2, 3, 4].map((i) => circle(48 + i * 16, 86, 2.5, '#fff', '#5f6368')).join(''))),
+  'form-review-quiz': () => form(card(32, 32, choices(44, 3) + rect(96, 40, 22, 7, '#e6f4ea', '#188038', 3)) + card(68, 30, choices(80, 3, true))),
+  'form-family-survey': () => form(card(32, 26, [0, 1, 2, 3, 4].map((i) => circle(48 + i * 16, 48, 2.5, i === 3 ? '#00897b' : '#fff', '#5f6368')).join('')) + card(62, 34, choices(74, 3, true))),
+  'form-peer-rubric': () => form(card(32, 18, line(40, 44, 110, 44, '#dadce0', 1)) + card(54, 44, grid(40, 64, 5, 4, 16, 7, '#e0f2f1'))),
   'learning-situation': () => page(heading(14, '#174ea6', 56) + grid(48, 20, 2, 4, 32, 5, '#f1f3f4') + heading(46) + textLines(52, 2) + heading(66) + grid(48, 71, 3, 3, 21.3, 6)),
   rubric: () =>
     page(heading(14, '#174ea6', 44) + grid(48, 22, 5, 6, 12.8, 11, '#dbe7f7', (_r, c) => (c === 0 ? '#f1f3f4' : null)) + textLines(92, 1)),
@@ -100,6 +125,28 @@ export const THUMBS: Record<string, () => string> = {
         line(26, 38, 110, 38, '#fff', 5) +
         line(26, 50, 80, 50, '#e6f4ea', 3),
     ),
+  'class-presentation': () =>
+    svg(
+      rect(14, 12, 132, 76, '#fff', '#dadce0') +
+        rect(14, 12, 4, 76, '#e8710a') +
+        line(26, 24, 84, 24, '#1f2937', 4) +
+        [0, 1, 2, 3].map((i) => rect(26 + i * 29, 38, 25, 40, '#feefe3', '#e8710a', 3) + circle(33 + i * 29, 45, 3.5, '#e8710a')).join(''),
+    ),
+  'project-report': () =>
+    svg(
+      rect(14, 12, 132, 76, '#fff', '#dadce0') +
+        rect(14, 12, 4, 76, '#9334e6') +
+        line(26, 24, 80, 24, '#1f2937', 4) +
+        grid(26, 36, 3, 4, 36, 10, '#9334e6', (r) => (r % 2 ? '#fff' : '#f3e8fd')),
+    ),
+  'lesson-plan': () =>
+    svg(
+      rect(14, 12, 132, 76, '#fff', '#dadce0') +
+        rect(14, 12, 4, 76, '#00897b') +
+        line(26, 24, 92, 24, '#1f2937', 4) +
+        grid(26, 34, 4, 4, 27, 10, '#00897b', (r) => (r % 2 ? '#fff' : '#e0f2f1')) +
+        textLines(80, 1, 26, 90),
+    ),
   brainstorm: () =>
     svg(
       [
@@ -116,6 +163,31 @@ export const THUMBS: Record<string, () => string> = {
         ['#ffec99', '#b2f2bb', '#ffc9c9', '#d0bfff', '#ffd8a8', '#99e9f2']
           .map((c, i) => rect([8, 66, 124][i % 3], i < 3 ? 6 : 80, 28, 14, c, '#1e1e1e', 2))
           .join(''),
+      '#fff',
+    ),
+  'mind-map': () =>
+    svg(
+      [
+        [34, 24],
+        [126, 24],
+        [34, 76],
+        [126, 76],
+      ]
+        .map(([x, y]) => line(80, 50, x, y, '#adb5bd', 1.5) + line(x, y, x - 22, y + (y < 50 ? -14 : 14), '#ced4da', 1) + line(x, y, x + 22, y + (y < 50 ? -14 : 14), '#ced4da', 1))
+        .join('') +
+        `<ellipse cx="80" cy="50" rx="22" ry="12" fill="#ffec99" stroke="#1e1e1e"/>` +
+        ['#a5d8ff', '#b2f2bb', '#ffc9c9', '#d0bfff'].map((c, i) => rect(i % 2 ? 112 : 20, i < 2 ? 18 : 70, 28, 12, c, '#1e1e1e', 2)).join(''),
+      '#fff',
+    ),
+  storyboard: () =>
+    svg(
+      [0, 1, 2, 3, 4, 5]
+        .map((i) => {
+          const x = 10 + (i % 3) * 49
+          const y = 8 + Math.floor(i / 3) * 46
+          return rect(x, y, 42, 28, '#f8f9fa', '#1e1e1e', 2) + line(x, y + 34, x + 34, y + 34, '#adb5bd', 1.5) + line(x, y + 39, x + 24, y + 39, '#ced4da', 1.5)
+        })
+        .join(''),
       '#fff',
     ),
 }

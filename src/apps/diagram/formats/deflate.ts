@@ -110,3 +110,118 @@ export function deflateRawSync(data: Uint8Array): Uint8Array {
   writeLiteral(w, 256)
   return w.finish()
 }
+
+// Minimal synchronous raw INFLATE (RFC 1951: stored, fixed and dynamic blocks),
+// for draw.io's compressed stencils (shape=stencil(…)) that render synchronously.
+const CL_ORDER = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]
+
+interface Huffman {
+  counts: Uint16Array
+  symbols: Uint16Array
+}
+
+function huffman(lengths: ArrayLike<number>): Huffman {
+  const counts = new Uint16Array(16)
+  for (let i = 0; i < lengths.length; i++) counts[lengths[i]]++
+  counts[0] = 0
+  const offs = new Uint16Array(16)
+  for (let i = 1; i < 16; i++) offs[i] = offs[i - 1] + counts[i - 1]
+  const symbols = new Uint16Array(lengths.length)
+  for (let i = 0; i < lengths.length; i++) if (lengths[i]) symbols[offs[lengths[i]]++] = i
+  return { counts, symbols }
+}
+
+export function inflateRawSync(data: Uint8Array): Uint8Array {
+  let pos = 0
+  let bitBuf = 0
+  let bitCnt = 0
+  let out = new Uint8Array(Math.max(1024, data.length * 4))
+  let len = 0
+  const need = (n: number) => {
+    if (len + n <= out.length) return
+    const next = new Uint8Array(Math.max(out.length * 2, len + n))
+    next.set(out.subarray(0, len))
+    out = next
+  }
+  const bits = (n: number) => {
+    while (bitCnt < n) {
+      if (pos >= data.length) throw new Error('Unexpected end of compressed data')
+      bitBuf |= data[pos++] << bitCnt
+      bitCnt += 8
+    }
+    const v = bitBuf & ((1 << n) - 1)
+    bitBuf >>>= n
+    bitCnt -= n
+    return v
+  }
+  const decode = (h: Huffman) => {
+    let code = 0
+    let first = 0
+    let index = 0
+    for (let l = 1; l < 16; l++) {
+      code |= bits(1)
+      const count = h.counts[l]
+      if (code - count < first) return h.symbols[index + (code - first)]
+      index += count
+      first = (first + count) << 1
+      code <<= 1
+    }
+    throw new Error('Invalid Huffman code')
+  }
+  const fixedLit = huffman(Array.from({ length: 288 }, (_, i) => (i < 144 ? 8 : i < 256 ? 9 : i < 280 ? 7 : 8)))
+  const fixedDist = huffman(new Array(30).fill(5))
+  let final = 0
+  while (!final) {
+    final = bits(1)
+    const type = bits(2)
+    if (type === 0) {
+      bitBuf = 0
+      bitCnt = 0
+      const n = data[pos] | (data[pos + 1] << 8)
+      pos += 4
+      need(n)
+      out.set(data.subarray(pos, pos + n), len)
+      len += n
+      pos += n
+      continue
+    }
+    let lit = fixedLit
+    let dist = fixedDist
+    if (type === 2) {
+      const hlit = bits(5) + 257
+      const hdist = bits(5) + 1
+      const hclen = bits(4) + 4
+      const cl = new Uint8Array(19)
+      for (let i = 0; i < hclen; i++) cl[CL_ORDER[i]] = bits(3)
+      const clh = huffman(cl)
+      const lengths = new Uint8Array(hlit + hdist)
+      for (let i = 0; i < hlit + hdist; ) {
+        const sym = decode(clh)
+        if (sym < 16) lengths[i++] = sym
+        else {
+          const [rep, prev] = sym === 16 ? [3 + bits(2), lengths[i - 1]] : sym === 17 ? [3 + bits(3), 0] : [11 + bits(7), 0]
+          lengths.fill(prev, i, i + rep)
+          i += rep
+        }
+      }
+      lit = huffman(lengths.subarray(0, hlit))
+      dist = huffman(lengths.subarray(hlit))
+    } else if (type !== 1) throw new Error('Invalid block type')
+    for (;;) {
+      const sym = decode(lit)
+      if (sym < 256) {
+        need(1)
+        out[len++] = sym
+      } else if (sym === 256) break
+      else {
+        const li = sym - 257
+        const length = LENGTH_BASE[li] + bits(LENGTH_EXTRA[li])
+        const di = decode(dist)
+        const d = DIST_BASE[di] + bits(DIST_EXTRA[di])
+        need(length)
+        for (let k = 0; k < length; k++, len++) out[len] = out[len - d]
+      }
+    }
+  }
+  return out.subarray(0, len)
+}

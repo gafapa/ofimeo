@@ -4,13 +4,18 @@
 import './ui/base.css'
 import { appInfo } from './apps/registry'
 import { t } from './core/i18n'
-import { parseRoute } from './core/router'
+import { newDocPath, parseRoute } from './core/router'
+import { DOC_TYPES, type DocType } from './core/store'
 import { registerServiceWorker } from './core/offline'
 import { openSession } from './core/session'
+import { onboardingOff } from './help/prefs'
 
 registerServiceWorker()
 
 const root = document.getElementById('root')!
+// "#new=<app>" (the installed app's shortcuts): a new document of that app.
+const fresh = new URLSearchParams(location.hash.replace(/^#/, '')).get('new') as DocType | null
+if (fresh && DOC_TYPES.includes(fresh)) history.replaceState(null, '', newDocPath(fresh))
 const route = parseRoute()
 
 // Switching documents is done through the URL; a clean reload keeps state simple.
@@ -44,6 +49,8 @@ if (route.kind === 'home') {
       // Handle for automated browser tests in development builds only.
       if (import.meta.env.DEV) Object.assign(window, { session })
       await module.mount(session)
+      // First time this app is opened in this browser: its quick start tips (src/help).
+      if (!onboardingOff()) void import('./help/tour').then((m) => m.maybeQuickStart(session)).catch(() => {})
     } catch (err) {
       console.error(err)
       notice(t('This document cannot be opened'), (err as Error).message)

@@ -5,11 +5,11 @@ import Collaboration from '@tiptap/extension-collaboration'
 import { NodeSelection } from '@tiptap/pm/state'
 import { Bold, Italic, Underline, TextAlignStart, TextAlignCenter, TextAlignEnd, Hash } from 'lucide'
 import { headerFooterExtensions } from './editor/extensions'
-import { PAGE_SIZES_MM, type PageSettings, type PageSize } from './formats/types'
-import * as store from '../../core/store'
-import { colorPalette, el, icon, promptText, shortcutLabel, showDialog, toast } from '../../ui/widgets'
+import { MAX_COLUMNS, PAGE_SIZES_MM, type PageSettings, type PageSize } from './formats/types'
+import { allSections, currentSectionIndex, setSections } from './sections'
+import { colorPalette, el, icon, promptText, showDialog, toast } from '../../ui/widgets'
 import type { WriterContext } from './app'
-import { locale, t } from '../../core/i18n'
+import { t } from '../../core/i18n'
 
 const isMac = /Mac|iPhone|iPad/.test(navigator.platform)
 const mod = isMac ? '⌘' : 'Ctrl+'
@@ -22,48 +22,8 @@ export async function pasteHint(): Promise<void> {
   )
 }
 
-export async function about(): Promise<void> {
-  await showDialog(
-    'Words Online',
-    el(
-      'div',
-      {},
-      el('p', { textContent: t('A collaborative word processor that runs entirely in your browser.') }),
-      el('p', {
-        class: 'hint',
-        textContent:
-          t('Documents are stored in this browser. Collaborators connect directly (WebRTC); public Nostr relays are only used to find each other.'),
-      }),
-    ),
-    [{ label: t('Close'), value: 'ok', primary: true }],
-  )
-}
-
-export async function shortcuts(): Promise<void> {
-  const rows: [string, string][] = [
-    [t('Bold / Italic / Underline'), `${mod}B / ${mod}I / ${mod}U`],
-    [t('Strikethrough'), `${mod}Shift+S`],
-    [t('Superscript / Subscript'), `${mod}. / ${mod},`],
-    [t('Headings 1–6'), `${mod}Alt+1 … 6`],
-    [t('Normal text'), `${mod}Alt+0`],
-    [t('Align left / center / right / justify'), `${mod}Shift+L / E / R / J`],
-    [t('Bulleted / numbered / checklist'), `${mod}Shift+8 / 7 / 9`],
-    [t('Indent / outdent'), 'Tab / Shift+Tab'],
-    [t('Line break in paragraph'), 'Shift+Enter'],
-    [t('Page break'), `${mod}Enter`],
-    [t('Insert link'), `${mod}K`],
-    [t('Insert footnote'), `${mod}Alt+F`],
-    [t('Find / replace'), `${mod}F / ${mod}H`],
-    [t('Spelling and grammar'), 'F7'],
-    [t('Undo / redo'), `${mod}Z / ${mod}Y`],
-    [t('Clear formatting'), `${mod}\\`],
-    [t('Open file'), `${mod}O`],
-    [t('Print'), `${mod}P`],
-  ]
-  const table = el('table', { class: 'shortcuts' })
-  for (const [label, keys] of rows) table.append(el('tr', {}, el('td', { textContent: label }), el('td', {}, el('kbd', { textContent: shortcutLabel(keys) }))))
-  await showDialog(t('Keyboard shortcuts'), table, [{ label: t('Close'), value: 'ok', primary: true }], true)
-}
+// Kept for callers of the old writer API; the dialog lives in the shared frame.
+export { aboutDialog as about } from '../../ui/about'
 
 export async function wordCount(ctx: WriterContext): Promise<void> {
   const { editor } = ctx
@@ -84,6 +44,7 @@ export async function wordCount(ctx: WriterContext): Promise<void> {
 
 export async function editLink(ctx: WriterContext): Promise<void> {
   const { editor } = ctx
+  if (!editor.isEditable) return
   const current = editor.getAttributes('link').href ?? ''
   const { from, to, empty } = editor.state.selection
   const text = el('input', { class: 'field', value: empty ? '' : editor.state.doc.textBetween(from, to, ' ') })
@@ -95,6 +56,7 @@ export async function editLink(ctx: WriterContext): Promise<void> {
     { label: t('Apply'), value: 'ok', primary: true },
   ]
   const result = await showDialog(current ? t('Edit link') : t('Insert link'), body, buttons)
+  if (!editor.isEditable) return
   if (result === 'remove') {
     editor.chain().focus().extendMarkRange('link').unsetLink().run()
     return
@@ -176,29 +138,22 @@ export async function specialCharacters(ctx: WriterContext): Promise<void> {
   await showDialog(t('Special characters'), grid, [{ label: t('Close'), value: 'ok', primary: true }])
 }
 
-export async function openDocuments(ctx: WriterContext): Promise<void> {
-  const list = el('ul', { class: 'doc-list' })
-  const render = () => {
-    list.replaceChildren(
-      ...store.listDocs().filter((d) => d.type === 'writer').map((d) => {
-        const link = el('a', { href: ctx.openUrl(d.id, d.key), textContent: d.title || t('Untitled document') })
-        if (d.id === ctx.session.docId) link.classList.add('current')
-        const del = el('button', { type: 'button', textContent: t('Delete'), disabled: d.id === ctx.session.docId })
-        del.addEventListener('click', async () => {
-          if (!confirm(t('Delete “{title}” from this browser?', { title: link.textContent ?? '' }))) return
-          await store.deleteDoc(d.id)
-          render()
-        })
-        return el('li', {}, link, el('small', { textContent: new Date(d.updated).toLocaleString(locale) }), del)
-      }),
-    )
-  }
-  render()
-  await showDialog(t('Documents in this browser'), list, [{ label: t('Close'), value: 'ok', primary: true }], true)
+// "Apply to" choice when the document has several sections.
+function applyToField(ctx: WriterContext, count: number): { field: HTMLElement | null; target: () => number | null } {
+  if (count < 2) return { field: null, target: () => null }
+  const select = el(
+    'select',
+    { class: 'field' },
+    el('option', { value: 'section', textContent: t('This section') }),
+    el('option', { value: 'all', textContent: t('Whole document') }),
+  )
+  const index = currentSectionIndex(ctx.editor)
+  return { field: el('label', { class: 'field-label span2' }, t('Apply to'), select), target: () => (select.value === 'all' ? null : index) }
 }
 
 export async function pageSetup(ctx: WriterContext): Promise<void> {
-  const page = ctx.getPage()
+  const sections = allSections(ctx)
+  const page = sections[currentSectionIndex(ctx.editor)].page
   const size = el('select', { class: 'field' })
   for (const s of Object.keys(PAGE_SIZES_MM) as PageSize[]) {
     const [w, h] = PAGE_SIZES_MM[s]
@@ -215,6 +170,7 @@ export async function pageSetup(ctx: WriterContext): Promise<void> {
   const bottom = margin(t('Bottom'), page.margins.bottom)
   const left = margin(t('Left'), page.margins.left)
   const right = margin(t('Right'), page.margins.right)
+  const apply = applyToField(ctx, sections.length)
   const body = el(
     'div',
     { class: 'form grid2' },
@@ -224,6 +180,7 @@ export async function pageSetup(ctx: WriterContext): Promise<void> {
     bottom.label,
     left.label,
     right.label,
+    ...(apply.field ? [apply.field] : []),
     el('p', { class: 'hint span2', textContent: t('Page setup applies to everyone editing this document.') }),
   )
   if ((await showDialog(t('Page setup'), body, [{ label: t('Cancel'), value: 'cancel' }, { label: t('Apply'), value: 'ok', primary: true }])) !== 'ok') return
@@ -241,7 +198,38 @@ export async function pageSetup(ctx: WriterContext): Promise<void> {
       right: mm(right.input, page.margins.right),
     },
   }
-  ctx.setPage(next)
+  setSections(ctx, apply.target(), (s) => ({ ...s, page: next }))
+}
+
+// Text columns of the section at the cursor (or the whole document).
+export async function columnsDialog(ctx: WriterContext, preset?: number): Promise<void> {
+  const sections = allSections(ctx)
+  const index = currentSectionIndex(ctx.editor)
+  const current = sections[index].columns
+  if (preset) {
+    setSections(ctx, sections.length > 1 ? index : null, (s) => ({ ...s, columns: { ...s.columns, count: preset } }))
+    return
+  }
+  const count = el('select', { class: 'field' })
+  for (let n = 1; n <= MAX_COLUMNS; n++) count.append(el('option', { value: String(n), textContent: String(n) }))
+  count.value = String(current.count)
+  const gap = el('input', { type: 'number', min: '0', max: '5', step: '0.1', value: String(current.gap / 10), class: 'field' })
+  const line = el('input', { type: 'checkbox' })
+  line.checked = current.separator
+  const apply = applyToField(ctx, sections.length)
+  const body = el(
+    'div',
+    { class: 'form grid2' },
+    el('label', { class: 'field-label' }, t('Number of columns'), count),
+    el('label', { class: 'field-label' }, `${t('Spacing')} (cm)`, gap),
+    el('label', { class: 'check span2' }, line, ' ', t('Line between columns')),
+    ...(apply.field ? [apply.field] : []),
+    el('p', { class: 'hint span2', textContent: t('Insert a continuous section break to change the number of columns within a page.') }),
+  )
+  if ((await showDialog(t('Columns'), body, [{ label: t('Cancel'), value: 'cancel' }, { label: t('Apply'), value: 'ok', primary: true }])) !== 'ok') return
+  const g = parseFloat(gap.value)
+  const columns = { count: Number(count.value), gap: Number.isFinite(g) ? clamp(g * 10, 0, 50) : current.gap, separator: line.checked }
+  setSections(ctx, apply.target(), (s) => ({ ...s, columns }))
 }
 
 // Header and footer are edited in small collaborative editors bound to their own fragments.
@@ -300,6 +288,17 @@ export async function editHeaderFooter(ctx: WriterContext): Promise<void> {
     el('p', { class: 'hint', textContent: t('Shown on every page. Use # to insert the page number. Changes are shared with collaborators.') }),
   )
   const shown = showDialog(t('Header and footer'), body, [{ label: t('Done'), value: 'ok', primary: true }], true)
+  // Esc closes the dialog (ProseMirror's base keymap would take it to select the parent node).
+  body.addEventListener(
+    'keydown',
+    (e) => {
+      if (e.key !== 'Escape') return
+      e.preventDefault()
+      e.stopPropagation()
+      body.closest('dialog')?.close('ok')
+    },
+    true,
+  )
   header.commands.focus('end')
   await shown
   header.destroy()

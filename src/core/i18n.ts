@@ -2,6 +2,10 @@
 // language with {var} placeholders filled in; English is the key and the fallback.
 // The catalog of the language is loaded (top-level await) before any module that
 // imports this one runs, so t() can be used anywhere, even at module level.
+// The school configuration (school-config.ts) is loaded first: it can set the
+// default language or lock it.
+
+import { isLocked, schoolConfig } from './school-config'
 
 export type Language = 'en' | 'es' | 'gl' | 'fr' | 'de'
 
@@ -38,7 +42,9 @@ export function detectLanguage(): Language {
   return 'en'
 }
 
-export const language: Language = saved() ?? detectLanguage()
+const schoolLanguage = schoolConfig().defaults?.language
+export const languageLocked = !!schoolLanguage && isLocked('language')
+export const language: Language = (languageLocked ? schoolLanguage : null) ?? saved() ?? schoolLanguage ?? detectLanguage()
 
 // Locale for Intl formatting (dates, numbers) and third-party editors.
 export const locale = { en: 'en', es: 'es-ES', gl: 'gl-ES', fr: 'fr-FR', de: 'de-DE' }[language]
@@ -70,6 +76,7 @@ export function tn(n: number, one: string, other: string, vars?: Record<string, 
 
 // Saves the preference (null: follow the browser) and reloads the page.
 export function setLanguage(code: Language | null): void {
+  if (languageLocked) return
   try {
     if (code) localStorage.setItem(STORAGE_KEY, code)
     else localStorage.removeItem(STORAGE_KEY)
@@ -86,6 +93,10 @@ export function languageSelect(className = 'language-select'): HTMLSelectElement
   select.setAttribute('aria-label', t('Language'))
   select.title = t('Language')
   for (const { code, name } of languages) select.append(new Option(name, code, false, code === language))
+  if (languageLocked) {
+    select.disabled = true
+    select.title = `${t('Language')}: ${t('Set by your school')}`
+  }
   select.addEventListener('change', () => setLanguage(select.value as Language))
   return select
 }

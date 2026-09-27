@@ -13,10 +13,12 @@
 //   session.authors       Y.Map in the document: String(Yjs clientID) -> {name, color},
 //                         written by editors when they first change the document
 //                         in a session (authorship colors, version authors)
-//   session.hooks         optional app hooks (hand in, restore, print); main.ts
+//   session.hooks         optional app hooks (hand in, restore, print, export formats); main.ts
 //                         fills submitFiles / restoreVersion from the app's index.ts
 //   session.shareUrl(a)   link granting access `a` (never more than this browser has)
 //   session.copyUrl()     link that makes a private copy for whoever opens it
+//   session.storeForward  encrypted mailboxes on the school relay / Nextcloud, for
+//                         people who are never online together (store-forward/)
 
 import * as Y from 'yjs'
 import { IndexeddbPersistence } from 'y-indexeddb'
@@ -24,6 +26,7 @@ import { Awareness, removeAwarenessStates } from 'y-protocols/awareness'
 import { accessRank, keysForAccess, mergeKeys, newLinkKeys, type Access, type DocKeys, type LinkKeys } from './keys'
 import { isRemoteOrigin, RoomProvider, type ChannelSecurity } from './network'
 import { absoluteUrl, docPath } from './router'
+import { startStoreForward, type StoreForward } from './store-forward'
 import * as store from './store'
 import { t } from './i18n'
 
@@ -39,7 +42,32 @@ export interface SubmitFile {
   blob: Blob
 }
 
+// A file format the document can be saved in (e.g. to Nextcloud).
+export interface ExportOption {
+  ext: string // 'docx'
+  label: string // 'Word (.docx)'
+  suffix?: string // added to the file name before the extension: ' (flattened)'
+  build: () => Promise<Blob>
+}
+
+// Editor-only state an app keeps outside the shared document (a form's answer
+// key, see apps/forms/state.ts). Copies, templates and versions made by editors
+// include it; links never carry it.
+export interface PrivateStateHooks {
+  // The state to copy (Y.encodeStateAsUpdate of a private Y.Doc), or null.
+  snapshot: () => Uint8Array | null
+  // Keeps the current state with version `id`, and returns a version's state.
+  saveVersion: (id: string) => void
+  version: (id: string) => Uint8Array | null
+  // Replaces the current state (version restore).
+  restore: (state: Uint8Array) => void
+}
+
 export interface SessionHooks {
+  // Editor-only state outside the shared document (see PrivateStateHooks).
+  privateState?: PrivateStateHooks
+  // Formats for "Save to Nextcloud", the app's usual download formats (first: default).
+  exportFormats?: () => ExportOption[]
   // Files in the app's original formats for "Hand in".
   submitFiles?: () => Promise<SubmitFile[]>
   // Replaces the document content with a version's state (default: generic restore).
@@ -70,6 +98,8 @@ export interface Session {
   copyUrl: () => string
   // Present when the link carried keys that were ignored (they did not match this document).
   warning?: string
+  // Store-and-forward sync (absent without WebCrypto).
+  storeForward?: StoreForward
 }
 
 export async function openSession(type: store.DocType, docId: string, docKey: string, linkKeys: LinkKeys = {}): Promise<Session> {
@@ -97,7 +127,16 @@ export async function openSession(type: store.DocType, docId: string, docKey: st
   const security = (verifier: CryptoKey | undefined, signer: CryptoKey | undefined, channel: string): ChannelSecurity | undefined =>
     keys.signed ? { verifier: verifier!, signer, context: `${docId}:${channel}`, logKey: store.signedLogKey(docId, channel) } : undefined
   const room = new RoomProvider(doc, awareness, { roomId: docId, password: docKey, relays, security: security(keys.editVerifier, keys.editSigner, 'yjs') })
-  room.addChannel('cmt', commentsDoc, security(keys.commentVerifier, keys.commentSigner, 'cmt'))
+  const comments = room.addChannel('cmt', commentsDoc, security(keys.commentVerifier, keys.commentSigner, 'cmt'))
+  // Mailboxes are written with the channel's signing key (derived from the room secret for legacy documents).
+  const storeForward = startStoreForward({
+    docId,
+    docKey,
+    targets: [
+      { name: 'yjs', channel: room.mainChannel, keys: keys.signed ? { pub: keys.link.verify, signer: keys.editSigner } : {} },
+      { name: 'cmt', channel: comments, keys: keys.signed ? { pub: keys.link.cverify, signer: keys.commentSigner } : {} },
+    ],
+  })
   window.addEventListener('beforeunload', () => {
     removeAwarenessStates(awareness, [doc.clientID], 'unload')
     void room.destroy()
@@ -123,6 +162,7 @@ export async function openSession(type: store.DocType, docId: string, docKey: st
     shareUrl: (level = access) => absoluteUrl(docPath(type, docId, docKey, keysForAccess(keys.link, accessRank(level) > accessRank(access) ? access : level))),
     copyUrl: () => absoluteUrl(docPath(type, docId, docKey, keysForAccess(keys.link, 'view'), true)),
     warning: ignoredLink ? t('This link carries keys that do not match this document; it was opened with the access you already had.') : undefined,
+    storeForward,
   }
   if (session.canEdit) recordAuthor(session)
   return session

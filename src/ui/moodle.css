@@ -1,0 +1,78 @@
+/* Moodle: account dialog, home task panel, hand in (src/ui/moodle.ts) */
+
+.md-btn {
+  display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); border-radius: var(--radius-m); padding: 6px 12px; min-height: 36px; font: inherit;
+}
+.md-btn:hover:not(:disabled) { background: var(--hover); }
+.md-btn:disabled { opacity: 0.6; }
+.md-btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.md-btn.primary:hover:not(:disabled) { background: var(--accent); filter: brightness(1.08); }
+.md-btn.danger { color: var(--danger-text); }
+.md-btn.small { padding: 2px 10px; min-height: 30px; font-size: var(--fs-s); }
+.md-row-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+
+.md-account, .md-handin { max-width: 520px; }
+.md-account .field-label, .md-handin .field-label { margin: 10px 0; }
+.md-who { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; color: var(--ok); }
+.md-who div { display: flex; flex-direction: column; color: var(--text); min-width: 0; }
+.md-who a { color: var(--accent); font-size: var(--fs-m); overflow-wrap: anywhere; }
+.md-privacy { border-top: 1px solid var(--border); padding-top: 8px; margin-top: 12px; }
+.md-sso { border: 1px solid var(--info-border); background: var(--info-bg); color: var(--info-fg); border-radius: var(--radius-m); padding: 8px 10px; }
+.md-error { color: var(--danger-text); margin: 8px 0; }
+.md-status p { margin: 8px 0; }
+.md-replace { font-weight: 500; }
+.md-statement { border: 1px solid var(--border); border-radius: var(--radius-m); padding: 8px 10px; margin: 10px 0; background: var(--surface-alt); }
+.md-statement-label { display: flex; gap: 10px; align-items: flex-start; }
+.md-statement-label input { margin-top: 4px; flex: none; width: 18px; height: 18px; }
+.md-statement-label p { margin: 0 0 4px; }
+.md-task-info p { margin: 4px 0; }
+.md-done .md-ok { display: flex; gap: 8px; align-items: center; color: var(--ok); font-weight: 500; }
+.md-done .md-ok span { color: var(--text); }
+
+/* Home panel */
+.home-moodle { padding: 8px 0 16px; }
+.md-head-tools { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.md-updated { color: var(--muted); font-size: var(--fs-s); }
+.md-empty { border: 1px dashed var(--border); border-radius: var(--radius-l); padding: 12px 16px; background: var(--surface); }
+.md-empty p { margin: 0 0 10px; }
+.md-group-title { font-size: var(--fs-m); font-weight: 600; color: var(--muted); margin: 12px 0 6px; }
+.md-tasks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.md-task { border: 1px solid var(--border); border-radius: var(--radius-l); background: var(--surface); }
+.md-task[open] { box-shadow: var(--shadow-s); }
+.md-task-summary { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; padding: 10px 14px; cursor: pointer; list-style: none; }
+.md-task-summary::-webkit-details-marker { display: none; }
+.md-task-summary:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; border-radius: var(--radius-l); }
+.md-task-main { display: flex; flex-direction: column; min-width: 0; flex: 1 1 220px; }
+.md-course { color: var(--muted); font-size: var(--fs-s); }
+.md-task-name { font-weight: 500; overflow-wrap: anywhere; }
+.md-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.md-chip { border-radius: var(--radius-pill); padding: 2px 10px; font-size: var(--fs-s); border: 1px solid var(--border); white-space: nowrap; }
+.md-chip.ok { background: var(--success-bg); color: var(--success-fg); border-color: transparent; }
+.md-chip.warn { background: var(--info-bg); color: var(--info-fg); border-color: var(--info-border); font-weight: 600; }
+.md-chip.danger { color: var(--danger-text); border-color: var(--danger); }
+.md-chip.info { color: var(--text); }
+.md-task-body { padding: 0 14px 12px; border-top: 1px solid var(--divider, var(--border)); }
+.md-intro { overflow-wrap: anywhere; }
+.md-intro img, .md-feedback img { max-width: 100%; height: auto; }
+.md-intro table, .md-feedback table { border-collapse: collapse; display: block; overflow-x: auto; }
+.md-intro td, .md-intro th { border: 1px solid var(--border); padding: 2px 6px; }
+.md-intro a, .md-feedback a, .md-open-link, .md-files a { color: var(--accent); }
+.md-files { list-style: none; padding: 0; margin: 8px 0; display: flex; flex-direction: column; gap: 6px; }
+.md-files li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.md-files a { display: inline-flex; align-items: center; gap: 4px; overflow-wrap: anywhere; }
+.md-size { color: var(--muted); font-size: var(--fs-s); }
+.md-facts { display: grid; grid-template-columns: max-content 1fr; gap: 2px 12px; margin: 8px 0; font-size: var(--fs-m); }
+.md-facts dt { color: var(--muted); }
+.md-facts dd { margin: 0; overflow-wrap: anywhere; }
+.md-feedback { border-left: 3px solid var(--ok); padding: 2px 10px; margin: 8px 0; background: var(--surface-alt); }
+.md-feedback h4 { margin: 6px 0; font-size: var(--fs-base); }
+.md-open-link { display: inline-flex; align-items: center; gap: 4px; }
+
+@media (max-width: 600px) {
+  .md-home-button .btn-label { display: none; }
+  .md-facts { grid-template-columns: 1fr; }
+  .md-facts dd { margin-bottom: 4px; }
+  .md-task-summary { padding: 10px 12px; }
+  .md-task-body { padding: 0 12px 12px; }
+}

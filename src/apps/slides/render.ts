@@ -8,6 +8,7 @@ import { applyLook, buildCells } from '../diagram/graph'
 import { prepareItems } from '../diagram/libraries'
 import type { CellRecord } from '../diagram/model'
 import { PLACEHOLDER_HINTS, type Role, type Theme } from './model'
+import type { SlideLayer } from './player'
 
 const SVG_NS = 'http://www.w3.org/2000/svg'
 
@@ -90,7 +91,7 @@ export function addBackground(svg: SVGSVGElement, background: string | [string, 
 
 export interface RenderInput {
   cells: CellRecord[]
-  background: string | [string, string]
+  background: string | [string, string] | null
 }
 
 // Draws slides with an offscreen graph that has the editor's look and theme.
@@ -143,8 +144,42 @@ export class SlideRenderer {
     // Background in slide coordinates, under the content group.
     const w = Math.ceil(width * scale)
     const h = Math.ceil(height * scale)
-    addBackground(svg, input.background, w, h)
+    if (input.background) addBackground(svg, input.background, w, h)
     return svg
+  }
+
+  // The slide as layers for presenting: runs of static objects, and each
+  // animated top-level object alone, in drawing order (the first with the background).
+  renderLayers(input: RenderInput, animated: Set<string>, width: number, height: number): SlideLayer[] {
+    this.load(input.cells)
+    this.graph.refresh()
+    const area = { x: 0, y: 0, width, height }
+    const layers: SlideLayer[] = []
+    let run: Cell[] = []
+    const flush = (force = false) => {
+      if (!run.length && !(force && !layers.length)) return
+      const svg = renderSvg(this.graph, { area, border: 0, background: null, cells: run.length ? run : [] })
+      if (!layers.length && input.background) addBackground(svg, input.background, Math.ceil(width), Math.ceil(height))
+      layers.push({ svg })
+      run = []
+    }
+    const view = this.graph.view
+    for (const cell of this.topCells()) {
+      const id = cell.getId() ?? ''
+      if (!animated.has(id)) {
+        run.push(cell)
+        continue
+      }
+      flush(true)
+      const state = view.getState(cell)
+      const s = view.scale
+      const tr = view.translate
+      const b = state ? this.graph.getBoundingBox([cell]) : null
+      const box = b ? { x: b.x / s - tr.x, y: b.y / s - tr.y, w: b.width / s, h: b.height / s } : { x: 0, y: 0, w: width, h: height }
+      layers.push({ svg: renderSvg(this.graph, { area, border: 0, background: null, cells: [cell] }), cell: id, box })
+    }
+    flush(true)
+    return layers
   }
 
   // The rendered states of the loaded slide, top-level cells in drawing order.

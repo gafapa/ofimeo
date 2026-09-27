@@ -1,14 +1,14 @@
-// Paragraph language: a `lang` attribute on paragraphs and headings, rendered
-// as the HTML lang attribute (used by the checker, screen readers and
-// hyphenation) and written to DOCX (w:lang) and ODT (fo:language).
+// Paragraph language: a `lang` attribute on paragraphs and headings (a
+// regional variant, "en-GB"), rendered as the HTML lang attribute (used by the
+// checker, screen readers and hyphenation) and written to DOCX (w:lang) and
+// ODT (fo:language / fo:country).
 
 import { Extension } from '@tiptap/core'
-import { langFromTag, LANG_TAG } from './settings'
-import type { Lang } from './types'
+import { normalizeTag } from '../../../core/spell/variants'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
-    paragraphLanguage: { setParagraphLanguage: (lang: Lang | null) => ReturnType }
+    paragraphLanguage: { setParagraphLanguage: (lang: string | null) => ReturnType }
   }
 }
 
@@ -22,8 +22,8 @@ export const ParagraphLanguage = Extension.create({
       attributes: {
         lang: {
           default: null,
-          parseHTML: (el) => langFromTag(el.getAttribute('lang')),
-          renderHTML: (attrs) => (attrs.lang ? { lang: LANG_TAG[attrs.lang as Lang] ?? attrs.lang } : {}),
+          parseHTML: (el) => normalizeTag(el.getAttribute('lang')),
+          renderHTML: (attrs) => (attrs.lang ? { lang: normalizeTag(attrs.lang) ?? attrs.lang } : {}),
         },
       },
     },

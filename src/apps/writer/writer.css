@@ -9,7 +9,7 @@
 }
 .find-row { display: flex; gap: 4px; align-items: center; }
 .find-row input { flex: 1; min-width: 0; padding: 5px 8px; border: 1px solid var(--border); border-radius: 4px; }
-.find-row button { border: 1px solid var(--border); background: var(--surface); border-radius: 4px; padding: 4px 8px; }
+.find-row button { border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-s); padding: 4px 8px; display: inline-flex; align-items: center; justify-content: center; }
 .find-count { color: var(--muted); font-size: 12px; min-width: 56px; text-align: right; }
 .find-option { color: var(--muted); font-size: 13px; }
 .find-match { background: #fde293; }
@@ -21,44 +21,56 @@
 .canvas-row { display: flex; align-items: flex-start; gap: 16px; width: max-content; min-width: 100%; justify-content: center; }
 .zoom-wrap { flex: none; }
 .paper {
-  --page-height: 1123px;
   position: relative;
   transform-origin: 0 0;
-  background: var(--surface);
-  box-shadow: var(--shadow);
   font-family: var(--doc-font);
   font-size: 11pt;
   line-height: 1.15;
   color: #000;
 }
+/* Sheets are drawn by the page layer; the paper itself stays transparent (gaps show the canvas). */
+#paper.paper { background: transparent; box-shadow: none; }
+.page-layer { position: absolute; inset: 0; pointer-events: none; }
+.page-sheet { position: absolute; background: var(--paper); box-shadow: var(--shadow); }
+#page-sheets { z-index: 0; }
+#editor { position: absolute; left: 0; top: 0; width: 100%; z-index: 1; }
+.page-chrome { z-index: 2; }
 .page-header, .page-footer {
-  display: flex; flex-direction: column; overflow: hidden; color: #333; font-size: 10pt;
-  cursor: default;
+  position: absolute; display: flex; flex-direction: column; overflow: hidden; color: #333; font-size: 10pt;
+  cursor: default; pointer-events: auto;
 }
 .page-header { justify-content: flex-end; padding-bottom: 8px !important; }
 .page-footer { justify-content: flex-start; padding-top: 8px !important; }
 .page-header:hover, .page-footer:hover { background: rgb(26 115 232 / 0.04); outline: 1px dashed rgb(26 115 232 / 0.3); outline-offset: -1px; }
 .paper .page-header p, .paper .page-footer p { margin: 0; }
-.page-header:empty::after, .page-footer:empty::after { content: ''; }
-
-.page-spacer { user-select: none; position: relative; }
-/* Like Word, space before is dropped at the top of a page. */
-.page-spacer + * { margin-top: 0 !important; }
-.page-fill { height: var(--fill); }
-.page-gap {
-  background: var(--canvas);
-  box-shadow: inset 0 6px 6px -6px rgb(60 64 67 / 0.4), inset 0 -6px 6px -6px rgb(60 64 67 / 0.4);
-}
+.page-notes-box { position: absolute; display: flex; flex-direction: column; justify-content: flex-end; }
+.column-line { position: absolute; width: 0; border-left: 1px solid #555; }
 .page-notes { display: flow-root; font-size: 9pt; line-height: 1.2; }
 .paper .page-notes hr { width: 33%; margin: 7px 0 8px; border: 0; border-top: 1px solid #555; height: 0; }
 .page-note { padding: 1px 0; }
 .page-note sup { font-size: 0.75em; }
 .page-notes.measure { position: absolute; left: -10000px; top: 0; visibility: hidden; padding: 0; }
 
+/* Paged editor: blocks are placed by the pagination (node decorations). Containers
+   (lists, quotes) stay in the flow and only their children are placed. */
+.ProseMirror.paged { position: relative; height: 100%; padding: 0; }
+.ProseMirror.paged > * { position: absolute; left: var(--content-left); right: var(--content-right); top: 0; }
+.ProseMirror.paged > :is(ul, ol, blockquote) { position: static; margin-left: var(--content-left); margin-right: var(--content-right); }
+.ProseMirror.paged :is(ul, ol, blockquote) { margin-top: 0; }
+.ProseMirror.paged blockquote { border-left: 0; padding-left: 0; }
+.ProseMirror.paged blockquote > :not(ul, ol, blockquote) { border-left: 3px solid #ccc; padding-left: 12pt; }
+.ProseMirror.paged [data-page-split] { margin: 0; }
+.ProseMirror .section-break { height: 0; margin: 4px 0; border-top: 1px dashed #9aa0a6; position: relative; }
+.ProseMirror .section-break::after {
+  content: attr(data-label); position: absolute; left: 50%; top: -8px; transform: translateX(-50%);
+  background: var(--paper); color: #777; font: 11px system-ui, sans-serif; padding: 0 6px; white-space: nowrap;
+}
+.ProseMirror .section-break.ProseMirror-selectednode { border-top-color: var(--accent); }
+
 /* ---------- Header & footer dialog ---------- */
 
 .hf-dialog { display: flex; flex-direction: column; gap: 6px; }
-.hf-toolbar { display: flex; gap: 2px; background: #edf2fa; border-radius: 8px; padding: 3px; }
+.hf-toolbar { display: flex; gap: 2px; background: var(--toolbar-bg); border-radius: var(--radius-l); padding: 3px; }
 .hf-label { display: flex; justify-content: space-between; color: var(--muted); font-size: 13px; margin-top: 6px; }
 .link-btn { border: 0; background: none; color: var(--accent); padding: 0; }
 .hf-editor { border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-family: var(--doc-font); font-size: 10pt; min-height: 48px; }
@@ -171,14 +183,12 @@
 .ProseMirror .sg-active { background: rgb(26 115 232 / 0.12); }
 .ProseMirror.show-authorship .author-run { background: color-mix(in srgb, var(--author-color) 22%, transparent); box-shadow: inset 0 -2px 0 var(--author-color); }
 
-.status-mode { padding: 1px 8px; border-radius: 10px; background: var(--active); font-size: 12px; }
-.status-mode.suggesting { background: #e6f4ea; color: #137333; }
-.status-comments { border: 1px solid var(--border); background: var(--surface); border-radius: 10px; padding: 1px 8px; font-size: 12px; }
+.status-mode { padding: 1px 8px; border-radius: var(--radius-pill); background: var(--active); font-size: var(--fs-s); }
+.status-mode.suggesting { background: var(--success-bg); color: var(--success-fg); }
+.status-comments { border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-pill); padding: 1px 8px; font-size: var(--fs-s); }
 @media (min-width: 761px) { .status-comments { display: none; } }
-.toolbar .tb-review .tb-mode { width: 118px; }
+.toolbar .tb-review .tb-mode { width: 108px; }
 .tb-access { align-self: center; padding: 0 8px; color: var(--muted); font-size: 13px; }
-.toolbar.readonly .tb-group:not(.tb-review) :is(button, select, input) { pointer-events: none; opacity: 0.4; }
-.toolbar.readonly .tb-group:is(:first-child, :nth-child(2)) :is(button, select, input):not(:disabled) { pointer-events: auto; opacity: 1; }
 
 .contrib-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .contrib-table th { text-align: left; color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--border); padding: 6px; }
@@ -208,14 +218,90 @@
   .ProseMirror .comment-hl { background: none; border: 0; }
   .canvas { padding: 0; overflow: visible; background: #fff; }
   .zoom-wrap { width: auto !important; height: auto !important; margin: 0; }
-  /* Exactly N sheets: absorbs sub-pixel rounding that would add a blank page. */
-  .paper { transform: none !important; box-shadow: none; height: calc(var(--pages, 1) * var(--page-height)); overflow: hidden; }
-  .page-gap { display: none; }
-  .page-fill { height: calc(var(--fill) - 4px); }
-  .page-spacer .page-footer { break-after: page; }
+  .paper { transform: none !important; overflow: hidden; }
+  .page-sheet { box-shadow: none; }
   .page-header:hover, .page-footer:hover { outline: 0; background: none; }
+  .ProseMirror .section-break { border: 0; }
+  .ProseMirror .section-break::after { display: none; }
   .ProseMirror .page-break { border: 0; margin: 0; }
   .ProseMirror .page-break::after { display: none; }
   .ProseMirror sup.footnote-ref { color: inherit; }
   .find-match { background: none; }
 }
+
+/* ---------- Table of contents, citations, bibliography ---------- */
+
+.ProseMirror .toc { display: block; margin: 0 0 8pt; cursor: default; }
+.ProseMirror .toc-title { font-size: 16pt; font-weight: 700; margin: 0 0 6pt; display: flex; align-items: center; gap: 8px; }
+.ProseMirror .toc-update {
+  font: 12px var(--font-ui); font-weight: 400; border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  border-radius: var(--radius-s); padding: 1px 8px; opacity: 0; transition: opacity 0.15s;
+}
+.ProseMirror .toc:hover .toc-update, .ProseMirror .toc.ProseMirror-selectednode .toc-update, .ProseMirror .toc-update:focus { opacity: 1; }
+.ProseMirror.paged .toc > * { margin: 0; }
+.ProseMirror .toc-entry { margin: 0 0 3pt; }
+.ProseMirror .toc-entry.toc-l1 { font-weight: 700; margin-top: 3pt; }
+.ProseMirror .toc-l2 { padding-left: 0.5cm; }
+.ProseMirror .toc-l3 { padding-left: 1cm; }
+.ProseMirror .toc-l4 { padding-left: 1.5cm; }
+.ProseMirror .toc-l5 { padding-left: 2cm; }
+.ProseMirror .toc-l6 { padding-left: 2.5cm; }
+.ProseMirror .toc-link { display: flex; align-items: baseline; color: inherit; text-decoration: none; cursor: pointer; }
+.ProseMirror .toc-link:hover .toc-text { text-decoration: underline; }
+.ProseMirror .toc-leader { flex: 1; border-bottom: 1.5px dotted #666; margin: 0 4px; min-width: 12px; transform: translateY(-3px); }
+.ProseMirror .toc-empty { color: #777; font-style: italic; }
+.ProseMirror .toc.ProseMirror-selectednode { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ProseMirror.paged .toc.ProseMirror-selectednode > * { outline: 1px solid var(--accent); }
+@media print { .ProseMirror .toc-update { display: none; } }
+.ProseMirror .citation { cursor: pointer; border-radius: 2px; }
+.ProseMirror .citation:hover { background: rgb(26 115 232 / 0.08); }
+.ProseMirror .citation.ProseMirror-selectednode { outline: 1px solid var(--accent); }
+.ProseMirror .bibliography { display: block; margin: 0 0 8pt; cursor: default; }
+.ProseMirror .bib-entry { margin: 0 0 6pt; padding-left: 1.27cm; text-indent: -1.27cm; line-height: 1.5; }
+.ProseMirror .bib-empty { color: #777; font-style: italic; }
+.ProseMirror .bibliography.ProseMirror-selectednode { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ProseMirror.paged .bibliography.ProseMirror-selectednode > * { outline: 1px solid var(--accent); }
+.source-list { max-height: 45vh; overflow: auto; border: 1px solid var(--border); border-radius: var(--radius-m); }
+.source-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--divider); font-size: var(--fs-m); }
+.source-row:last-child { border-bottom: 0; }
+.source-list > .hint { padding: 10px; margin: 0; }
+.source-type { flex: none; font-size: var(--fs-xs); color: var(--muted); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 0 6px; }
+.source-label { flex: 1; min-width: 0; }
+.source-row button, .source-tools button { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: var(--radius-s); padding: 3px 10px; }
+.source-tools { display: flex; flex-wrap: wrap; gap: 6px; }
+.source-form textarea { resize: vertical; }
+
+/* PDF export: what should not be in the file (like printing). */
+.pdf-export .collaboration-carets__caret, .pdf-export .collaboration-carets__label { display: none; }
+.pdf-export .ProseMirror .comment-hl { background: none; border: 0; }
+.pdf-export .ProseMirror :is(.spell-error, .grammar-error, .style-error) { text-decoration: none; }
+.pdf-export .ProseMirror :is(.page-break, .section-break) { border-color: transparent; }
+.pdf-export .ProseMirror :is(.page-break, .section-break)::after { display: none; }
+.pdf-export .find-match { background: none; }
+.pdf-export .ProseMirror sup.footnote-ref { color: inherit; }
+.pdf-export .ProseMirror :is(.toc, .bibliography).ProseMirror-selectednode, .pdf-export .ProseMirror.paged :is(.toc, .bibliography).ProseMirror-selectednode > * { outline: 0; }
+.pdf-export .page-header, .pdf-export .page-footer { outline: 0 !important; background: none !important; }
+
+/* Mail merge fields (editor/merge.ts). */
+.merge-chip { display: inline-block; padding: 0 4px; border-radius: 4px; background: #e8f0fe; color: #174ea6; border: 1px solid #aecbfa; font: inherit; line-height: 1.3; white-space: pre-wrap; }
+button.merge-chip { cursor: pointer; padding: 2px 6px; font-size: var(--fs-s); }
+.merge-chip.merge-if { background: #fef7e0; color: #7a4b00; border-color: #fdd663; }
+.merge-chip.preview { background: #e6f4ea; color: inherit; border-color: #a8dab5; }
+.ProseMirror .merge-chip.ProseMirror-selectednode { outline: 2px solid var(--accent); }
+.pdf-export .merge-chip, .printing .merge-chip { background: none; border-color: transparent; color: inherit; }
+
+
+/* Charts (editor/chart.ts): fixed-size picture, caption, tools for editors. */
+.chart-figure { position: relative; margin: 8px auto; display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 100%; }
+.chart-figure .chart-box { position: relative; max-width: 100%; background: #fff; }
+.chart-figure .chart-img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.chart-figure figcaption { font-size: 0.9em; font-style: italic; color: #444; text-align: center; max-width: 100%; }
+.chart-figure .chart-resize { position: absolute; right: -5px; bottom: -5px; width: 10px; height: 10px; border: 1px solid var(--accent); background: #fff; cursor: nwse-resize; display: none; }
+.chart-figure .chart-tools { position: absolute; top: 4px; right: 4px; display: none; gap: 4px; }
+.chart-figure .chart-tools button { font: 12px var(--font-ui, sans-serif); padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); color: var(--text); cursor: pointer; }
+.chart-figure .chart-tools [hidden] { display: none; }
+.ProseMirror[contenteditable='true'] .chart-figure.ProseMirror-selectednode .chart-resize { display: block; }
+.ProseMirror .chart-figure:hover .chart-tools, .ProseMirror .chart-figure.ProseMirror-selectednode .chart-tools { display: flex; }
+.chart-figure.ProseMirror-selectednode .chart-box { outline: 2px solid var(--accent); }
+.pdf-export .chart-figure .chart-tools, .pdf-export .chart-figure .chart-resize, .printing .chart-figure .chart-tools { display: none !important; }
+.pdf-export .chart-figure.ProseMirror-selectednode .chart-box { outline: none; }

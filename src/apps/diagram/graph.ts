@@ -28,6 +28,8 @@ import {
 } from '@maxgraph/core'
 import { configureDrawioStylesheet } from './shapes'
 import { installSketch } from './shapes/sketch'
+import { installHandles } from './handles'
+import { attachSpellcheck } from '../../ui/spell/inline'
 import { newCellId, parseGeometry, type CellRecord, type GeometryRecord } from './model'
 
 // Generated draw.io shape libraries (scripts/build-diagram-libs.mjs, see libraries.ts).
@@ -211,6 +213,8 @@ export function createGraph(container: HTMLElement): EditorGraph {
   EdgeHandlerConfig.virtualBendsEnabled = true
   HandleConfig.fillColor = SELECTION_COLOR
   HandleConfig.strokeColor = SELECTION_COLOR
+  // Yellow handles for shape parameters (size, arcSize, callout tail…), like draw.io.
+  installHandles()
 
   const graph = new Graph(container, undefined, [
     CellEditorHandler,
@@ -318,12 +322,25 @@ export function createGraph(container: HTMLElement): EditorGraph {
 function richTextEditing(graph: Graph): void {
   const editor = graph.getPlugin<CellEditorHandler>('CellEditorHandler')
   if (!editor) return
-  // The browser's spell checker, in the interface language, while a label is edited.
+  // Esc ends editing and keeps the typed text, like draw.io and PowerPoint.
+  editor.escapeCancelsEditing = false
+  // The browser's spell checker (when ours is off), in the document language
+  // (the container's lang attribute, see spell.ts) while a label is edited.
   const init = editor.init.bind(editor)
   editor.init = () => {
     init()
     editor.textarea?.setAttribute('spellcheck', 'true')
-    editor.textarea?.setAttribute('lang', document.documentElement.lang)
+    editor.textarea?.setAttribute('lang', graph.container?.closest('[lang]')?.getAttribute('lang') ?? document.documentElement.lang)
+  }
+  // Our spelling and grammar checker (language: the container's lang attribute). The
+  // editor reuses one element that leaves the page after each edit, which
+  // detaches the checker, so it is attached again every time editing starts.
+  const startEditing = editor.startEditing.bind(editor)
+  let detachSpellcheck: (() => void) | null = null
+  editor.startEditing = (cell, trigger) => {
+    startEditing(cell, trigger)
+    detachSpellcheck?.()
+    detachSpellcheck = editor.textarea?.isConnected ? attachSpellcheck(editor.textarea, () => graph.container?.closest('[lang]')?.getAttribute('lang')) : null
   }
   const isRich = (cell: Cell) => String((cell.getStyle() as Record<string, unknown> | null)?.html ?? '') === '1'
   const getInitialValue = editor.getInitialValue.bind(editor)

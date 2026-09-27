@@ -1,10 +1,12 @@
 // Custom document nodes and paragraph attributes for a word-processor schema.
 
 import { Extension, Node, mergeAttributes } from '@tiptap/core'
+import { t } from '../../../core/i18n'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     pageBreak: { setPageBreak: () => ReturnType }
+    sectionBreak: { insertSectionBreak: (attrs: Record<string, unknown>) => ReturnType }
     footnote: { insertFootnote: (content: string) => ReturnType }
     pageNumber: { insertPageNumber: (kind: 'page' | 'total') => ReturnType }
     paragraphFormat: {
@@ -35,6 +37,60 @@ export const PageBreak = Node.create({
         () =>
         ({ chain }) =>
           chain().insertContent([{ type: this.name }, { type: 'paragraph' }]).run(),
+    }
+  },
+})
+
+// Section break: starts a new section (on a new page or continuous) whose page
+// setup and columns are the node's attributes (see formats/types.ts sectionAttrs).
+const SECTION_ATTRS: Record<string, unknown> = {
+  start: 'nextPage',
+  size: 'A4',
+  orientation: 'portrait',
+  marginTop: 25,
+  marginRight: 25,
+  marginBottom: 25,
+  marginLeft: 25,
+  columns: 1,
+  columnGap: 12.5,
+  columnSeparator: false,
+}
+
+export const SectionBreak = Node.create({
+  name: 'sectionBreak',
+  group: 'block',
+  atom: true,
+  selectable: true,
+  addAttributes: () =>
+    Object.fromEntries(
+      Object.entries(SECTION_ATTRS).map(([name, def]) => [
+        name,
+        {
+          default: def,
+          parseHTML: (el: HTMLElement) => {
+            const raw = el.getAttribute(`data-${name.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase())}`)
+            if (raw === null) return def
+            return typeof def === 'number' ? Number(raw) || def : typeof def === 'boolean' ? raw === 'true' : raw
+          },
+          renderHTML: (attrs: Record<string, unknown>) => ({ [`data-${name.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase())}`]: String(attrs[name]) }),
+        },
+      ]),
+    ),
+  parseHTML: () => [{ tag: 'div[data-section-break]' }],
+  renderHTML: ({ node, HTMLAttributes }) => [
+    'div',
+    mergeAttributes(HTMLAttributes, {
+      'data-section-break': '',
+      class: 'section-break',
+      'data-label': node.attrs.start === 'continuous' ? t('Section break (continuous)') : t('Section break (next page)'),
+    }),
+  ],
+  addCommands() {
+    return {
+      insertSectionBreak:
+        (attrs) =>
+        ({ chain }) =>
+          chain().insertContent([{ type: this.name, attrs }, { type: 'paragraph' }]).run(),
     }
   },
 })

@@ -14,7 +14,7 @@
 import * as Y from 'yjs'
 import { Cell, InternalEvent, type EventObject, type UndoableEdit } from '@maxgraph/core'
 import { cellToRecord, geometryFromJson, recordToCell, styleFromString, type DataCell, type EditorGraph } from './graph'
-import { CELL_FIELDS, emptyPage, type CellRecord, type PageRecord } from './model'
+import { CELL_FIELDS, PAGE_ATTRS, emptyPage, type CellRecord, type PageAttrs, type PageRecord } from './model'
 
 type FieldMap = Y.Map<string | number>
 type CellsMap = Y.Map<FieldMap>
@@ -59,7 +59,8 @@ export class DiagramSync {
   }
 
   static readPages(doc: Y.Doc): PageRecord[] {
-    return orderedPages(doc.getMap<PageMeta>(PAGES_KEY)).map(({ id, name }) => ({ id, name, cells: readCells(doc.getMap<FieldMap>(cellsKey(id))) }))
+    const pages = doc.getMap<PageMeta>(PAGES_KEY)
+    return orderedPages(pages).map(({ id, name }) => ({ id, name, ...readAttrs(pages.get(id)), cells: readCells(doc.getMap<FieldMap>(cellsKey(id))) }))
   }
 
   // ---------- Pages ----------
@@ -76,9 +77,9 @@ export class DiagramSync {
     this.doc.transact(() => writePage(this.doc, this.blank(this.page), 0), this)
   }
 
-  addPage(name: string, cells?: CellRecord[]): string {
+  addPage(name: string, cells?: CellRecord[], attrs?: PageAttrs): string {
     this.materialize()
-    const page = emptyPage(crypto.randomUUID(), name)
+    const page: PageRecord = { ...emptyPage(crypto.randomUUID(), name), ...attrs }
     if (cells) page.cells = cells
     const pos = Math.max(0, ...[...this.pages.values()].map((p) => Number(p.get('pos')) || 0)) + 1
     this.doc.transact(() => writePage(this.doc, page, pos), this)
@@ -111,6 +112,24 @@ export class DiagramSync {
     const prev = index > 0 ? pos(index - 1) : pos(0) - 2
     const next = index < list.length ? pos(index) : prev + 2
     this.doc.transact(() => this.pages.get(id)?.set('pos', (prev + next) / 2), this)
+    this.onPagesChange()
+  }
+
+  // Page settings (background, page size) of a page.
+  pageAttrs(id = this.page): PageAttrs {
+    return readAttrs(this.pages.get(id))
+  }
+
+  setPageAttrs(values: Partial<Record<keyof PageAttrs, string | number | null>>, id = this.page): void {
+    this.materialize()
+    this.doc.transact(() => {
+      const meta = this.pages.get(id)
+      if (!meta) return
+      for (const [k, v] of Object.entries(values)) {
+        if (v === null || v === undefined || v === '') meta.delete(k)
+        else meta.set(k, v)
+      }
+    }, this)
     this.onPagesChange()
   }
 
@@ -359,9 +378,22 @@ function styleString(cell: Cell): string {
 // ---------- Yjs helpers ----------
 
 function writePage(doc: Y.Doc, page: PageRecord, pos: number): void {
-  doc.getMap<PageMeta>(PAGES_KEY).set(page.id, new Y.Map<string | number>([['name', page.name], ['pos', pos]]))
+  const attrs = PAGE_ATTRS.filter((k) => page[k] !== undefined && page[k] !== '').map((k): [string, string | number] => [k, page[k]!])
+  doc.getMap<PageMeta>(PAGES_KEY).set(page.id, new Y.Map<string | number>([['name', page.name], ['pos', pos], ...attrs]))
   const cells = doc.getMap<FieldMap>(cellsKey(page.id))
   for (const rec of page.cells) writeRecord(cells, rec)
+}
+
+function readAttrs(meta: PageMeta | undefined): PageAttrs {
+  const out: PageAttrs = {}
+  if (!meta) return out
+  const bg = meta.get('background')
+  if (typeof bg === 'string' && bg) out.background = bg
+  for (const k of ['pageWidth', 'pageHeight'] as const) {
+    const v = Number(meta.get(k))
+    if (v > 0) out[k] = v
+  }
+  return out
 }
 
 function readCells(cells: CellsMap): CellRecord[] {

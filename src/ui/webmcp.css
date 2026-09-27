@@ -1,0 +1,27 @@
+/* WebMCP indicator in the app bar (src/ui/webmcp.ts). */
+.webmcp-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--info-border);
+  border-radius: var(--radius-pill);
+  background: var(--info-bg);
+  color: var(--info-fg);
+  font-size: var(--fs-s);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.webmcp-indicator[hidden] { display: none; }
+.webmcp-indicator:hover { background: var(--hover-strong); }
+.webmcp-indicator:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.webmcp-indicator.busy svg { animation: webmcp-pulse 0.75s ease-in-out 2; }
+@keyframes webmcp-pulse { 50% { transform: scale(1.25); } }
+@media (prefers-reduced-motion: reduce) { .webmcp-indicator.busy svg { animation: none; } }
+@media (max-width: 600px) {
+  .webmcp-indicator { padding: 0; width: 34px; height: 34px; justify-content: center; }
+}
+.webmcp-dialog ul { margin: 0 0 12px; padding-left: 20px; }
+.webmcp-dialog li { margin: 4px 0; }
+.webmcp-dialog .mono { font-family: var(--font-mono); overflow-wrap: anywhere; }

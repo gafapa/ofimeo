@@ -1,5 +1,7 @@
 // Presentations app: slides built on the diagram editor (maxGraph, draw.io
-// shapes, Yjs pages/cells sync, presence, shape and format panels). Each slide
+// shapes, Yjs pages/cells sync, presence, shape and format panels) inside the
+// shared app frame (src/ui/frame.ts: menu bar, keys, toolbar with a pinned
+// "Present" button, status bar with save state and zoom). Each slide
 // is a diagram page with a fixed frame at (0, 0) of the slide size; what lies
 // outside the frame stays in the document but is not presented or exported.
 
@@ -17,6 +19,8 @@ import {
   PaintBucket,
   List,
   ListOrdered,
+  MessageSquarePlus,
+  Sparkles,
   PanelRight,
   Play,
   Plus,
@@ -29,14 +33,15 @@ import {
   Undo2,
 } from 'lucide'
 import { appInfo } from '../registry'
-import { homePath, newDocPath } from '../../core/router'
 import type { Session } from '../../core/session'
 import { t } from '../../core/i18n'
 import { setupChrome } from '../../ui/chrome'
+import { mountFrame } from '../../ui/frame'
+import { provideWebMcpTools } from '../../core/webmcp'
 import { renderShell } from '../../ui/shell'
-import { documentMenuItems } from '../../ui/versions'
-import { colorPalette, createMenuBar, el, icon, openPopover, showContextMenu, showDialog, tableGrid, toast, type MenuEntry } from '../../ui/widgets'
-import { createDiagramEditor, mod, showShortcuts } from '../diagram/editor'
+import { mod } from '../../ui/shortcuts'
+import { colorPalette, confirmDialog, el, icon, openPopover, showContextMenu, tableGrid, toast, type Menu, type MenuEntry } from '../../ui/widgets'
+import { createDiagramEditor, shortcutSections } from '../diagram/editor'
 import { svgToPng } from '../diagram/export'
 import { setStyleKey, styleFromString } from '../diagram/graph'
 import { cellsKey } from '../diagram/sync'
@@ -65,11 +70,19 @@ import {
   type Role,
 } from './model'
 import { NotesEditor } from './notes'
+import { graphSpelling } from '../diagram/spell'
+import { attachSpellcheck, textFieldRects } from '../../ui/spell/inline'
 import { Presentation, presenters } from './present'
 import { SlideRenderer, editingCell, installTheme, svgDataUrl } from './render'
 import { SlideList } from './slidelist'
+import { TRANSITION_NAMES, animationsMap, copyAnimations, readAnimations, timeline, type TransitionType } from './animations'
+import { AnimationPane } from './animpane'
+import { CommentsPane } from './comments'
+import { setupSlideCharts } from './charts'
+import { editSlideGraph, isGraphCell } from './mathgraph'
+import type { PlayableSlide } from './player'
 
-export const SLIDES_ACCEPT = '.pptx'
+export const SLIDES_ACCEPT = '.pptx,.ppt,.odp'
 const THUMB_WIDTH = 176
 
 type Style = Record<string, unknown>
@@ -87,7 +100,7 @@ export function mountSlides(session: Session, root: HTMLElement): void {
   const title = () => String(meta.get('title') || info.untitled).replace(/[\\/:*?"<>|]+/g, '_')
 
   const canvas = el('div', { class: 'diagram-canvas slides-canvas' })
-  const frame = el('div', { class: 'slide-frame' })
+  const slideFrame = el('div', { class: 'slide-frame' })
   const printArea = el('div', { class: 'slides-print' })
   const fileInput = el('input', { type: 'file', accept: SLIDES_ACCEPT, hidden: true })
   const imageInput = el('input', { type: 'file', accept: 'image/*', hidden: true })
@@ -115,9 +128,8 @@ export function mountSlides(session: Session, root: HTMLElement): void {
     textSize: [320, 60],
     formatEmpty: () => (ready ? slideSection() : el('div')),
     openFile: (file) => void openFile(file),
-    print: () => void printPdf(),
     onKey: (e) => onKey(e),
-    contextItems: (selected) => (selected ? [] : slideContextItems()),
+    contextItems: (selected) => (selected ? objectContextItems() : slideContextItems()),
     onPagesChange: () => refreshList(),
     onPageShown: () => pageShown(),
     blankPage: blankSlide,
@@ -127,7 +139,7 @@ export function mountSlides(session: Session, root: HTMLElement): void {
   installTheme(graph, () => theme, !readOnly)
   // Groups and tables scale their content when resized.
   graph.setRecursiveResize(true)
-  canvas.prepend(frame)
+  canvas.prepend(slideFrame)
   const renderer = new SlideRenderer(() => theme)
 
   // ---------- Slide frame ----------
@@ -136,11 +148,11 @@ export function mountSlides(session: Session, root: HTMLElement): void {
   const updateFrame = () => {
     const s = view.scale
     const tr = view.translate
-    frame.style.left = `${tr.x * s}px`
-    frame.style.top = `${tr.y * s}px`
-    frame.style.width = `${size.width * s}px`
-    frame.style.height = `${size.height * s}px`
-    frame.style.background = backgroundCss(slideBackground())
+    slideFrame.style.left = `${tr.x * s}px`
+    slideFrame.style.top = `${tr.y * s}px`
+    slideFrame.style.width = `${size.width * s}px`
+    slideFrame.style.height = `${size.height * s}px`
+    slideFrame.style.background = backgroundCss(slideBackground())
   }
   for (const event of [InternalEvent.SCALE, InternalEvent.TRANSLATE, InternalEvent.SCALE_AND_TRANSLATE]) view.addListener(event, updateFrame)
 
@@ -174,7 +186,8 @@ export function mountSlides(session: Session, root: HTMLElement): void {
     const id = sync.addPage(`${page.name} (${t('copy')})`, sync.pageRecords(source))
     placeAfter(id, source)
     const m = readSlideMeta(doc, source)
-    writeSlideMeta(doc, id, { layout: m.layout ?? null, background: m.background ?? null })
+    writeSlideMeta(doc, id, { layout: m.layout ?? null, background: m.background ?? null, transition: m.transition ?? null, transitionDuration: m.transitionDuration ?? null })
+    copyAnimations(doc, source, id)
     const notes = notesText(doc, source).toString()
     if (notes) notesText(doc, id).insert(0, notes)
     sync.showPage(id)
@@ -182,13 +195,7 @@ export function mountSlides(session: Session, root: HTMLElement): void {
   const hasContent = (id: string) => sync.pageRecords(id).some((r) => r.parent && r.value)
   const deleteSlide = async (id = sync.page) => {
     if (readOnly || slides().length <= 1) return
-    if (hasContent(id)) {
-      const ok = await showDialog(t('Delete slide'), el('p', { textContent: t('Delete this slide for everyone?') }), [
-        { label: t('Cancel'), value: 'cancel' },
-        { label: t('Delete'), value: 'ok', primary: true },
-      ])
-      if (ok !== 'ok') return
-    }
+    if (hasContent(id) && !(await confirmDialog(t('Delete slide'), t('Delete this slide for everyone?'), { confirmLabel: t('Delete'), danger: true }))) return
     sync.deletePage(id)
   }
   const moveSlide = (dir: -1 | 1) => {
@@ -341,12 +348,25 @@ export function mountSlides(session: Session, root: HTMLElement): void {
   }
   const isEquation = (cell: Cell | null) => !!cell && String((cell.getStyle() as Style | null)?.slideEq ?? '') === '1'
   const isCellEditable = graph.isCellEditable.bind(graph)
-  graph.isCellEditable = (cell: Cell) => !isEquation(cell) && isCellEditable(cell)
+  graph.isCellEditable = (cell: Cell) => !isEquation(cell) && !isGraphCell(cell) && isCellEditable(cell)
+  const graphHost = { graph, readOnly, inBatch: (fn: () => void) => editor.inBatch(fn), insertAtCenter: (cells: Cell[]) => editor.insertAtCenter(cells) }
+  // Charts (linked to spreadsheets or with typed data): double click edits them.
+  const charts = setupSlideCharts(session, editor)
   graph.addListener(InternalEvent.DOUBLE_CLICK, (_sender: unknown, evt: EventObject) => {
     const cell = evt.getProperty('cell') as Cell | null
+    if (charts.isChart(cell) && !readOnly) {
+      evt.consume()
+      void charts.edit(cell)
+      return
+    }
     if (isEquation(cell)) {
       evt.consume()
       void insertEquation(cell!)
+    }
+    // Math graphs open the graph editor (read-only for viewers).
+    if (isGraphCell(cell)) {
+      evt.consume()
+      void editSlideGraph(graphHost, cell!)
     }
   })
   imageInput.addEventListener('change', () => {
@@ -368,6 +388,44 @@ export function mountSlides(session: Session, root: HTMLElement): void {
     readOnly,
   )
   const notes = new NotesEditor(readOnly, () => sync.materialize())
+
+  // Animation and comment panes (right side).
+  const relayout = () => requestAnimationFrame(() => editor.fit())
+  const animPane = new AnimationPane({
+    doc,
+    graph,
+    canvas,
+    readOnly,
+    page: () => sync.page,
+    materialize: () => sync.materialize(),
+    preview: () => present(true),
+    onToggle: relayout,
+  })
+  const commentsPane = new CommentsPane({
+    session,
+    graph,
+    canvas,
+    page: () => sync.page,
+    slides: () => slides(),
+    showSlide: (id) => showSlide(id),
+    onToggle: relayout,
+    onCounts: (counts) => {
+      list.setComments(counts)
+      refreshList()
+    },
+  })
+  const toggleAnimations = () => {
+    if (!animPane.visible) commentsPane.toggle(false)
+    animPane.toggle()
+  }
+  const toggleComments = () => {
+    if (!commentsPane.visible) animPane.toggle(false)
+    commentsPane.toggle()
+  }
+  const addComment = () => {
+    animPane.toggle(false)
+    commentsPane.startComment()
+  }
   const leftTabs = el('div', { class: 'slides-left-tabs', role: 'tablist' })
   const left = el('aside', { class: 'slides-left' }, leftTabs, list.element, editor.sidebar.element)
   const tabButton = (label: string, panel: 'slides' | 'shapes') => {
@@ -436,6 +494,7 @@ export function mountSlides(session: Session, root: HTMLElement): void {
         markDirty(page.id)
         presentation.refresh()
       })
+      animationsMap(doc, page.id).observeDeep(() => presentation.refresh())
     }
   }
   slideMetaMap(doc).observeDeep((events) => {
@@ -445,6 +504,7 @@ export function mountSlides(session: Session, root: HTMLElement): void {
     }
     updateFrame()
     editor.format.render()
+    animPane.schedule()
     presentation.refresh()
   })
   meta.observe((e) => {
@@ -462,6 +522,7 @@ export function mountSlides(session: Session, root: HTMLElement): void {
 
   // ---------- Status, list and page changes ----------
 
+  let lastContext = { x: 0, y: 0 }
   const slideLabel = el('span', { class: 'slides-count' })
   const refreshList = () => {
     observePages()
@@ -475,6 +536,8 @@ export function mountSlides(session: Session, root: HTMLElement): void {
     if (slides().some((p) => !thumbKeys.has(p.id))) markDirty()
   }
   const pageShown = () => {
+    animPane.pageShown()
+    commentsPane.pageShown()
     notes.bind(notesText(doc, sync.page))
     updateFrame()
     refreshList()
@@ -482,9 +545,29 @@ export function mountSlides(session: Session, root: HTMLElement): void {
 
   // ---------- Presenting ----------
 
+  // A slide as layers with its animations and transition, for presenting.
+  const playable = (id: string): PlayableSlide => {
+    const cells = sync.pageRecords(id)
+    const rootId = cells.find((c) => !c.parent)?.id
+    const layers = new Set(cells.filter((c) => c.parent === rootId).map((c) => c.id))
+    const top = new Set(cells.filter((c) => c.parent && layers.has(c.parent)).map((c) => c.id))
+    const tl = timeline(readAnimations(doc, id), top)
+    const animated = new Set(tl.steps.flatMap((st) => st.effects.map((e) => e.anim.cell)))
+    const m = readSlideMeta(doc, id)
+    const type = (m.transition && m.transition in TRANSITION_NAMES ? m.transition : 'none') as TransitionType
+    return {
+      id,
+      width: size.width,
+      height: size.height,
+      layers: renderer.renderLayers({ cells, background: slideBackground(id) }, animated, size.width, size.height),
+      timeline: tl,
+      transition: { type, duration: Number(m.transitionDuration) || 500 },
+    }
+  }
   const presentation = new Presentation({
     slides: () => slides(),
     render: (id) => renderer.render({ cells: sync.pageRecords(id), background: slideBackground(id) }, size.width, size.height),
+    playable,
     notes: (id) => notesText(doc, id).toString(),
     size: () => size,
     awareness: session.awareness,
@@ -521,7 +604,17 @@ export function mountSlides(session: Session, root: HTMLElement): void {
     theme,
     slides: slides().map((p) => {
       const m = readSlideMeta(doc, p.id)
-      return { id: p.id, name: p.name, cells: sync.pageRecords(p.id), notes: notesText(doc, p.id).toString(), background: m.background, layout: m.layout }
+      return {
+        id: p.id,
+        name: p.name,
+        cells: sync.pageRecords(p.id),
+        notes: notesText(doc, p.id).toString(),
+        background: m.background,
+        layout: m.layout,
+        animations: readAnimations(doc, p.id),
+        transition: m.transition,
+        transitionDuration: Number(m.transitionDuration) || undefined,
+      }
     }),
   })
   const download = (blob: Blob, name: string) => {
@@ -590,8 +683,13 @@ export function mountSlides(session: Session, root: HTMLElement): void {
     fileInput.value = ''
     if (file) void openFile(file)
   })
-  // "Hand in" → print: one slide per page.
+  // "Hand in" → print (also File ▸ Print… and Ctrl+P): one slide per page.
   session.hooks.print = () => void printPdf()
+  // File ▸ Download as and "Save to Nextcloud".
+  session.hooks.exportFormats = () => [
+    { ext: 'pptx', label: t('PowerPoint (.pptx)'), build: async () => (await import('./formats/pptx')).exportPptx(presentationData(), renderer) },
+    { ext: 'odp', label: t('OpenDocument presentation (.odp)'), build: async () => (await import('./formats/odp')).exportOdp(presentationData(), renderer) },
+  ]
 
   // ---------- Menus ----------
 
@@ -615,112 +713,174 @@ export function mountSlides(session: Session, root: HTMLElement): void {
     { label: t('Layout'), submenu: layoutMenu(), enabled: editable() },
     { label: t('Background color…'), run: () => chooseBackground(), enabled: editable() },
     { label: t('Reset background'), run: () => setBackground(null), enabled: editable(() => !!readSlideMeta(doc, sync.page).background) },
+    '-',
+    { label: t('Transition'), submenu: transitionMenu(), enabled: editable() },
+    { label: t('Animations…'), run: () => animPane.toggle(true), active: () => animPane.visible },
   ]
+  const transitionMenu = (): MenuEntry[] =>
+    (Object.entries(TRANSITION_NAMES) as [TransitionType, string][]).map(([id, name]) => ({
+      label: name,
+      run: () => {
+        sync.materialize()
+        writeSlideMeta(doc, sync.page, { transition: id === 'none' ? null : id })
+      },
+      active: () => (readSlideMeta(doc, sync.page).transition ?? 'none') === id,
+      enabled: editable(),
+    }))
+  const objectContextItems = (): MenuEntry[] => [
+    ...chartContextItems(),
+    { label: t('Add animation…'), run: () => animPane.addMenu(lastContext.x, lastContext.y), enabled: editable() },
+    { label: t('Comment'), run: addComment, enabled: () => session.canComment },
+  ]
+  const chartContextItems = (): MenuEntry[] => {
+    const cell = graph.getSelectionCell()
+    if (!charts.isChart(cell)) return []
+    return [
+      { label: t('Edit chart…'), run: () => void charts.edit(cell), enabled: editable() },
+      { label: t('Update from source'), run: () => void charts.refresh(cell), enabled: editable() },
+      '-',
+    ]
+  }
   const slideContextItems = (): MenuEntry[] => [
     { label: t('New slide'), run: () => addSlide(), enabled: editable() },
     { label: t('Layout'), submenu: layoutMenu(), enabled: editable() },
     { label: t('Background color…'), run: () => chooseBackground(), enabled: editable() },
   ]
   const chooseBackground = () => openPopover(bgAnchor(), colorPalette((c) => setBackground(c), t('Theme background')))
-  const bgAnchor = () => (document.querySelector('.slides-bg-button') as HTMLElement | null) ?? shell.toolbar
+  const bgAnchor = () => shell.toolbar.querySelector<HTMLElement>('.slides-bg-button:not(.tb-overflowed *)') ?? shell.toolbar
 
-  createMenuBar(shell.menubar, [
-    {
-      label: t('File'),
-      items: [
-        { label: t('New presentation'), run: () => window.open(newDocPath('slides'), '_blank') },
-        { label: t('Open file (.pptx)…'), run: () => fileInput.click() },
-        { label: t('All documents'), run: () => (location.href = homePath()) },
-        { label: t('Share…'), run: () => document.getElementById('btn-share')!.click() },
-        '-',
-        { label: t('Download PowerPoint (.pptx)'), run: () => void downloadPptx() },
-        { label: t('Download OpenDocument (.odp)'), run: () => void downloadOdp() },
-        { label: t('Download PDF'), run: () => void printPdf() },
-        { label: t('Download slide as PNG'), run: () => void downloadPng(false) },
-        { label: t('Download all slides as PNG (.zip)'), run: () => void downloadPng(true) },
-        '-',
-        ...documentMenuItems(session),
-        '-',
-        { label: t('Print'), shortcut: mod('P'), run: () => void printPdf() },
+  const viewMenu: Menu = {
+    label: t('View'),
+    items: [
+      { label: t('Slides panel'), run: toggleLeft, active: () => !left.hidden },
+      { label: t('Speaker notes'), run: toggleNotes, active: () => !notes.element.hidden },
+      { label: t('Animations'), run: toggleAnimations, active: () => animPane.visible },
+      { label: t('Comments'), run: toggleComments, active: () => commentsPane.visible },
+      ...editor.panelMenu().filter((item) => item === '-' || item.label !== t('Shapes')),
+      '-',
+      ...editor.zoomMenu(),
+    ],
+  }
+  const insert: Menu = {
+    label: t('Insert'),
+    items: [
+      { label: t('New slide'), shortcut: mod('M'), run: () => addSlide(), enabled: editable() },
+      { label: t('Text box'), run: insertTextBox, enabled: editable() },
+      { label: t('Image…'), run: () => imageInput.click(), enabled: editable() },
+      { label: t('Table…'), run: () => openPopover(tableAnchor(), tableGrid(insertTable, 8)), enabled: editable() },
+      { label: t('Equation…'), run: () => void insertEquation(), enabled: editable() },
+      { label: t('Chart…'), run: () => void charts.insert(), enabled: editable() },
+      { label: t('Math graph…'), run: () => void editSlideGraph(graphHost), enabled: editable() },
+      { label: t('Comment'), shortcut: mod('Alt+M'), run: addComment, enabled: () => session.canComment },
+      { label: t('Shapes'), run: () => showLeft('shapes'), enabled: editable() },
+    ],
+  }
+  const formatMenu: Menu = {
+    label: t('Format'),
+    items: [
+      { label: t('Bold'), shortcut: mod('B'), run: () => toggleFontBit(1, 'bold'), enabled: editable() },
+      { label: t('Italic'), shortcut: mod('I'), run: () => toggleFontBit(2, 'italic'), enabled: editable() },
+      { label: t('Underline'), shortcut: mod('U'), run: () => toggleFontBit(4, 'underline'), enabled: editable() },
+      { label: t('Bulleted list'), run: () => toggleList(false), enabled: editable() },
+      { label: t('Numbered list'), run: () => toggleList(true), enabled: editable() },
+      { label: t('Bigger text'), shortcut: mod('Shift+>'), run: () => fontSizeStep(1), enabled: editable() },
+      { label: t('Smaller text'), shortcut: mod('Shift+<'), run: () => fontSizeStep(-1), enabled: editable() },
+      '-',
+      { label: t('Theme'), submenu: themeMenu(), enabled: editable() },
+      { label: t('Slide size'), submenu: sizeMenu(), enabled: editable() },
+      { label: t('Layout'), submenu: layoutMenu(), enabled: editable() },
+      { label: t('Background color…'), run: () => chooseBackground(), enabled: editable() },
+    ],
+  }
+  const presentMenu: Menu = {
+    label: t('Present'),
+    items: [
+      { label: t('From the beginning'), shortcut: 'F5', run: () => present(false) },
+      { label: t('From the current slide'), shortcut: 'Shift+F5', run: () => present(true) },
+      { label: t('Presenter view'), run: () => present(true, true) },
+      '-',
+      { label: t('Follow the presenter'), run: followPresenter, enabled: () => presenters(session.awareness, doc.clientID).length > 0 },
+    ],
+  }
+  // Keys of the frame do nothing while presenting (the presentation owns the keyboard).
+  const unlessPresenting = (fn: () => void) => () => {
+    if (!presentation.active) fn()
+  }
+  // Spelling and grammar: slide labels and speaker notes (Tools, F7); notes are
+  // also checked as they are typed, in the document language.
+  const spelling = graphSpelling(session, editor, {
+    pageLabel: (_name, index) => t('Slide {n}', { n: index + 1 }),
+    showPage: (id) => showSlide(id),
+    extraItems: (id, index) => {
+      const text = notesText(doc, id).toString()
+      return text.trim() ? [{ key: `${id}/notes`, label: `${t('Slide {n}', { n: index + 1 })} · ${t('Speaker notes')}`, text, extra: 'notes' }] : []
+    },
+    replaceExtra: (item, from, to, text) => {
+      const notesDoc = notesText(doc, item.page)
+      if (notesDoc.toString().slice(from, to) !== item.text.slice(from, to)) return false
+      sync.materialize()
+      doc.transact(() => {
+        notesDoc.delete(from, to - from)
+        if (text) notesDoc.insert(from, text)
+      })
+      return true
+    },
+    revealExtra: (_item, from, to) => {
+      if (notes.element.hidden) toggleNotes()
+      notes.select(from, to)
+    },
+    rectsExtra: (_item, from, to) => textFieldRects(notes.area, from, to),
+  })
+  if (!readOnly) attachSpellcheck(notes.area, spelling.language.tag)
+  const frame = mountFrame({
+    session,
+    shell,
+    file: {
+      openFile: unlessPresenting(() => fileInput.click()),
+      print: () => void printPdf(),
+      download: [
+        { label: t('PDF (via Print)'), run: () => void printPdf() },
+        { label: t('Current slide as PNG'), run: () => void downloadPng(false) },
+        { label: t('All slides as PNG (.zip)'), run: () => void downloadPng(true) },
+      ],
+      slots: { print: [{ label: t('Slide size'), submenu: sizeMenu(), enabled: editable() }] },
+      details: () => [
+        [t('Slides'), String(slides().length)],
+        [t('Theme'), theme.name],
+        [t('Slide size'), size.ratio],
       ],
     },
-    { label: t('Edit'), items: editor.editMenu() },
-    {
-      label: t('View'),
-      items: [
-        { label: t('Slides panel'), run: toggleLeft, active: () => !left.hidden },
-        { label: t('Speaker notes'), run: toggleNotes, active: () => !notes.element.hidden },
-        ...editor.panelMenu().filter((item) => item === '-' || item.label !== t('Shapes')),
-        '-',
-        ...editor.zoomMenu(),
-      ],
+    edit: { label: t('Edit'), items: editor.editMenu() },
+    menus: { view: viewMenu, insert, format: formatMenu, app: [{ label: t('Arrange'), items: editor.arrangeMenu(false) }, { label: t('Slide'), items: slideMenu() }], tools: { label: t('Tools'), items: spelling.menu() }, review: [presentMenu] },
+    help: {
+      sections: () =>
+        shortcutSections(t('Presentation'), [
+          [t('New slide'), 'Ctrl+M'],
+          [t('Bold / italic / underline'), 'Ctrl+B / Ctrl+I / Ctrl+U'],
+          [t('Bigger / smaller text'), 'Ctrl+Shift+> / Ctrl+Shift+<'],
+          [t('Comment'), 'Ctrl+Alt+M'],
+          [t('Spelling and grammar'), 'F7'],
+          [t('Next / previous slide'), t('Page Down / Page Up')],
+          [t('Present from the beginning / current slide'), 'F5 / Shift+F5'],
+          [t('While presenting'), t('Arrows, Space, click · L: laser · B: black screen · Esc')],
+        ]),
     },
-    {
-      label: t('Insert'),
-      items: [
-        { label: t('New slide'), shortcut: mod('M'), run: () => addSlide(), enabled: editable() },
-        { label: t('Text box'), run: insertTextBox, enabled: editable() },
-        { label: t('Image…'), run: () => imageInput.click(), enabled: editable() },
-        { label: t('Table…'), run: () => openPopover(tableButton, tableGrid(insertTable, 8)), enabled: editable() },
-        { label: t('Equation…'), run: () => void insertEquation(), enabled: editable() },
-        { label: t('Shapes'), run: () => showLeft('shapes'), enabled: editable() },
-      ],
-    },
-    {
-      label: t('Format'),
-      items: [
-        { label: t('Bold'), shortcut: mod('B'), run: () => toggleFontBit(1, 'bold'), enabled: editable() },
-        { label: t('Italic'), shortcut: mod('I'), run: () => toggleFontBit(2, 'italic'), enabled: editable() },
-        { label: t('Underline'), shortcut: mod('U'), run: () => toggleFontBit(4, 'underline'), enabled: editable() },
-        { label: t('Bulleted list'), run: () => toggleList(false), enabled: editable() },
-        { label: t('Numbered list'), run: () => toggleList(true), enabled: editable() },
-        { label: t('Bigger text'), shortcut: mod('Shift+>'), run: () => fontSizeStep(1), enabled: editable() },
-        { label: t('Smaller text'), shortcut: mod('Shift+<'), run: () => fontSizeStep(-1), enabled: editable() },
-        '-',
-        { label: t('Theme'), submenu: themeMenu(), enabled: editable() },
-        { label: t('Slide size'), submenu: sizeMenu(), enabled: editable() },
-        { label: t('Layout'), submenu: layoutMenu(), enabled: editable() },
-        { label: t('Background color…'), run: () => chooseBackground(), enabled: editable() },
-      ],
-    },
-    { label: t('Arrange'), items: editor.arrangeMenu(false) },
-    { label: t('Slide'), items: slideMenu() },
-    {
-      label: t('Present'),
-      items: [
-        { label: t('From the beginning'), shortcut: 'F5', run: () => present(false) },
-        { label: t('From the current slide'), shortcut: 'Shift+F5', run: () => present(true) },
-        { label: t('Presenter view'), run: () => present(true, true) },
-        '-',
-        { label: t('Follow the presenter'), run: followPresenter, enabled: () => presenters(session.awareness, doc.clientID).length > 0 },
-      ],
-    },
-    {
-      label: t('Help'),
-      items: [
-        {
-          label: t('Keyboard shortcuts'),
-          run: () =>
-            showShortcuts([
-              [t('New slide'), mod('M')],
-              [t('Next / previous slide'), t('Page Down / Page Up')],
-              [t('Present from the beginning / current slide'), 'F5 / Shift+F5'],
-              [t('While presenting'), t('Arrows, Space, click · L: laser · B: black screen · Esc')],
-            ]),
-        },
-      ],
-    },
-  ])
+    keys: { find: unlessPresenting(editor.find) },
+    zoom: editor.zoomTarget,
+  })
+  // AI assistants (WebMCP, off by default): the tool module loads only when turned on.
+  provideWebMcpTools(session, () => import('./webmcp').then((m) => m.slidesTools(session, editor)))
 
   // ---------- Toolbar ----------
 
-  const tbGroup = (...items: HTMLElement[]) => shell.toolbar.append(el('div', { class: 'tb-group' }, ...items))
-  const { tbButton } = editor
+  const tb = frame.toolbar
   const always = () => true
-  const tableButton = tbButton(Table, t('Insert table'), () => openPopover(tableButton, tableGrid(insertTable, 8)), editable(always))
-  const bgButton = tbButton(PaintBucket, t('Slide background'), () => chooseBackground(), editable(always))
-  bgButton.classList.add('slides-bg-button')
+  const hasText = () => editingText() || editor.hasSelection()
+  const tableButton = tb.button(Table, t('Insert table'), () => openPopover(tableButton, tableGrid(insertTable, 8)), { enabled: editable(always) })
+  const tableAnchor = () => (tableButton.closest('.tb-overflowed') ? shell.toolbar : tableButton)
+  const bgButton = tb.button(PaintBucket, t('Slide background'), () => chooseBackground(), { enabled: editable(always), class: 'slides-bg-button' })
   const layoutSelect = el('select', { class: 'tb-select', title: t('Layout') })
+  layoutSelect.setAttribute('aria-label', t('Layout'))
   layoutSelect.append(el('option', { value: '', textContent: t('Layout'), disabled: true }), ...LAYOUTS.map((l) => el('option', { value: l.id, textContent: layoutName(l.id) })))
   layoutSelect.addEventListener('change', () => {
     if (layoutSelect.value) applyLayout(layoutSelect.value as LayoutId)
@@ -728,49 +888,51 @@ export function mountSlides(session: Session, root: HTMLElement): void {
     canvas.focus()
   })
   layoutSelect.value = ''
-  const newSlideButton = tbButton(Plus, `${t('New slide')} (${mod('M')})`, () => addSlide(), editable(always))
-  const textColor = editor.colorTool(Baseline, t('Text color'), setTextColor, t('Theme color'), () => editingText() || editor.hasSelection())
+  const textColor = tb.colorButton(Baseline, t('Text color'), () => undefined, setTextColor, t('Theme color'))
+  tb.onRefresh(() => (textColor.disabled = !editable(hasText)()))
   const presentButton = el('button', { type: 'button', class: 'primary slides-present-btn' })
   presentButton.append(icon(Play), document.createTextNode(t('Present')))
   presentButton.addEventListener('click', () => present(true))
   presentButton.title = t('Present from the current slide (Shift+F5)')
 
   if (!readOnly) {
-    tbGroup(newSlideButton, layoutSelect)
-    tbGroup(
-      tbButton(Undo2, `${t('Undo')} (${mod('Z')})`, editor.undo, editable(() => editor.undoManager.canUndo())),
-      tbButton(Redo2, `${t('Redo')} (${mod('Y')})`, editor.redo, editable(() => editor.undoManager.canRedo())),
+    tb.group(tb.button(Plus, t('New slide'), () => addSlide(), { shortcut: mod('M'), enabled: editable(always) }), layoutSelect)
+    tb.group(
+      tb.button(Undo2, t('Undo'), editor.undo, { shortcut: mod('Z'), enabled: editable(() => editor.undoManager.canUndo()) }),
+      tb.button(Redo2, t('Redo'), editor.redo, { shortcut: mod('Y'), enabled: editable(() => editor.undoManager.canRedo()) }),
     )
-  }
-  tbGroup(...editor.zoomTools())
-  if (!readOnly) {
-    const hasText = () => editingText() || editor.hasSelection()
-    tbGroup(
-      tbButton(Bold, `${t('Bold')} (${mod('B')})`, () => toggleFontBit(1, 'bold'), editable(hasText)),
-      tbButton(Italic, `${t('Italic')} (${mod('I')})`, () => toggleFontBit(2, 'italic'), editable(hasText)),
-      tbButton(Underline, `${t('Underline')} (${mod('U')})`, () => toggleFontBit(4, 'underline'), editable(hasText)),
+    tb.group(
+      tb.button(Bold, t('Bold'), () => toggleFontBit(1, 'bold'), { shortcut: mod('B'), enabled: editable(hasText) }),
+      tb.button(Italic, t('Italic'), () => toggleFontBit(2, 'italic'), { shortcut: mod('I'), enabled: editable(hasText) }),
+      tb.button(Underline, t('Underline'), () => toggleFontBit(4, 'underline'), { shortcut: mod('U'), enabled: editable(hasText) }),
       textColor,
-      tbButton(AArrowUp, t('Bigger text'), () => fontSizeStep(1), editable(hasText)),
-      tbButton(AArrowDown, t('Smaller text'), () => fontSizeStep(-1), editable(hasText)),
+      tb.button(AArrowUp, t('Bigger text'), () => fontSizeStep(1), { shortcut: mod('Shift+>'), enabled: editable(hasText) }),
+      tb.button(AArrowDown, t('Smaller text'), () => fontSizeStep(-1), { shortcut: mod('Shift+<'), enabled: editable(hasText) }),
     )
-    tbGroup(
-      tbButton(AlignLeft, t('Align left'), () => setAlign('left'), editable(hasText)),
-      tbButton(AlignCenter, t('Center'), () => setAlign('center'), editable(hasText)),
-      tbButton(AlignRight, t('Align right'), () => setAlign('right'), editable(hasText)),
-      tbButton(List, t('Bulleted list'), () => toggleList(false), editable(hasText)),
-      tbButton(ListOrdered, t('Numbered list'), () => toggleList(true), editable(hasText)),
+    tb.group(
+      tb.button(AlignLeft, t('Align left'), () => setAlign('left'), { enabled: editable(hasText) }),
+      tb.button(AlignCenter, t('Center'), () => setAlign('center'), { enabled: editable(hasText) }),
+      tb.button(AlignRight, t('Align right'), () => setAlign('right'), { enabled: editable(hasText) }),
+      tb.button(List, t('Bulleted list'), () => toggleList(false), { enabled: editable(hasText) }),
+      tb.button(ListOrdered, t('Numbered list'), () => toggleList(true), { enabled: editable(hasText) }),
     )
-    tbGroup(
-      tbButton(Type, t('Text box'), insertTextBox, editable(always)),
-      tbButton(ImagePlus, t('Image'), () => imageInput.click(), editable(always)),
-      tbButton(Shapes, t('Shapes'), () => showLeft(editor.sidebar.element.hidden ? 'shapes' : 'slides'), editable(always), () => !editor.sidebar.element.hidden),
+    tb.group(
+      tb.button(Type, t('Text box'), insertTextBox, { enabled: editable(always) }),
+      tb.button(ImagePlus, t('Image'), () => imageInput.click(), { enabled: editable(always) }),
+      tb.button(Shapes, t('Shapes'), () => showLeft(editor.sidebar.element.hidden ? 'shapes' : 'slides'), { enabled: editable(always), active: () => !editor.sidebar.element.hidden }),
       tableButton,
-      tbButton(Sigma, t('Equation'), () => void insertEquation(), editable(always)),
+      tb.button(Sigma, t('Equation'), () => void insertEquation(), { enabled: editable(always) }),
     )
-    tbGroup(bgButton, tbButton(PanelRight, t('Format panel'), () => editor.togglePanel(editor.format.element), undefined, () => !editor.format.element.hidden))
+    tb.group(bgButton, tb.button(PanelRight, t('Format panel'), () => editor.togglePanel(editor.format.element), { active: () => !editor.format.element.hidden }))
   }
-  const followGroup = el('div', { class: 'tb-group slides-present-group' }, followBtn, presentButton)
-  shell.toolbar.append(el('span', { class: 'spacer' }), followGroup)
+  const panes = [
+    ...(readOnly ? [] : [tb.button(Sparkles, t('Animations'), toggleAnimations, { active: () => animPane.visible })]),
+    ...(session.canComment ? [tb.button(MessageSquarePlus, t('Comments'), toggleComments, { active: () => commentsPane.visible })] : []),
+  ]
+  if (panes.length) tb.group(...panes, { keep: true })
+  // "Present" (and "Follow" while someone presents) stays visible at the right end.
+  tb.group(followBtn, presentButton, { pinned: true, keep: true, class: 'slides-present-group' })
+  editor.onToolbar(tb.refresh)
 
   // ---------- Keyboard ----------
 
@@ -784,6 +946,10 @@ export function mountSlides(session: Session, root: HTMLElement): void {
     }
     if (key === 'F5') {
       present(e.shiftKey)
+      return done()
+    }
+    if (modKey && e.altKey && e.code === 'KeyM') {
+      addComment()
       return done()
     }
     if (modKey && key.toLowerCase() === 'm' && !readOnly) {
@@ -865,10 +1031,13 @@ export function mountSlides(session: Session, root: HTMLElement): void {
   // ---------- Layout ----------
 
   const center = el('div', { class: 'slides-center' }, canvas, notes.element)
-  const body = el('div', { class: 'diagram-body slides-body' }, left, center, editor.format.element)
+  const body = el('div', { class: 'diagram-body slides-body' }, left, center, editor.format.element, animPane.element, commentsPane.element)
+  // Where the last context menu opened (for menus opened from it).
+  canvas.addEventListener('contextmenu', (e) => (lastContext = { x: e.clientX, y: e.clientY }), true)
   shell.main.append(body)
-  shell.statusbar.append(slideLabel, el('span', { class: 'spacer' }), editor.selectionLabel, editor.zoomLabel)
-  editor.zoomLabel.addEventListener('click', editor.actualSize)
+  frame.status?.left.append(slideLabel)
+  frame.status?.addRight(editor.selectionLabel)
+  editor.onZoom(() => frame.status?.zoom?.update())
   list.setAspect(size.width, size.height)
   if (window.matchMedia('(max-width: 800px)').matches) {
     left.hidden = true
@@ -878,18 +1047,9 @@ export function mountSlides(session: Session, root: HTMLElement): void {
 
   ready = true
   editor.start()
+  tb.refresh()
   // Remote edits while presenting show up on the presented slide.
   if (import.meta.env.DEV) Object.assign(window, { slidesPresentation: presentation, slidesData: presentationData, slidesApp: { addSlide, applyLayout, present, followPresenter, downloadPptx, downloadOdp, printPdf, insertTable } })
-
-  // Save indicator: changes are stored locally as they happen.
-  const saveState = document.getElementById('save-state')!
-  let saveTimer = 0
-  doc.on('update', () => {
-    saveState.textContent = t('Saving…')
-    clearTimeout(saveTimer)
-    saveTimer = window.setTimeout(() => (saveState.textContent = t('Saved in this browser')), 600)
-  })
-  saveState.textContent = t('Saved in this browser')
 }
 
 function parseData(cell: Cell): Record<string, unknown> {

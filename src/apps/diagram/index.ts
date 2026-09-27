@@ -17,9 +17,15 @@ export function mount(session: Session): void {
 
 // Imports a draw.io file into a new local document; returns its path.
 export async function importFile(file: File): Promise<string> {
-  const { parseDrawio } = await import('./formats/drawio')
-  const pages = await parseDrawio(await file.text())
-  const title = file.name.replace(/\.(drawio|xml)$/i, '')
+  let pages
+  if (/\.vs[dts]x$/i.test(file.name)) {
+    const { parseVsdx } = await import('./formats/vsdx')
+    pages = await parseVsdx(await file.arrayBuffer())
+  } else {
+    const { parseDrawio } = await import('./formats/drawio')
+    pages = await parseDrawio(await file.text())
+  }
+  const title = file.name.replace(/\.(drawio|xml|vsdx|vssx|vstx)$/i, '')
   return createLocalDocument('diagram', title, (doc) => DiagramSync.setPages(doc, pages))
 }
 
@@ -30,7 +36,7 @@ export async function submitFiles(session: Session): Promise<SubmitFile[]> {
   const pages = DiagramSync.readPages(session.doc)
   const title = String(session.doc.getMap('meta').get('title') || t('Untitled diagram'))
   const files: SubmitFile[] = [{ name: `${title}.drawio`, blob: new Blob([serializeDrawio(pages)], { type: 'application/vnd.jgraph.mxfile' }) }]
-  for (const [i, svg] of (await renderPages(pages.map((p) => orderCells(p.cells)))).entries()) {
+  for (const [i, svg] of (await renderPages(pages.map((p) => orderCells(p.cells)), pages.map((p) => (p.background && p.background !== 'none' ? p.background : '#ffffff')))).entries()) {
     const name = pages.length > 1 ? `${title} - ${i + 1} ${pages[i].name}` : title
     files.push({ name: `${name}.svg`, blob: new Blob([svgToString(svg)], { type: 'image/svg+xml' }) })
     files.push({ name: `${name}.png`, blob: await svgToPng(svg) })
@@ -38,14 +44,14 @@ export async function submitFiles(session: Session): Promise<SubmitFile[]> {
   return files
 }
 
-async function renderPages(pages: Parameters<typeof buildCells>[0][]): Promise<SVGSVGElement[]> {
+export async function renderPages(pages: Parameters<typeof buildCells>[0][], backgrounds: string[]): Promise<SVGSVGElement[]> {
   const host = document.createElement('div')
   host.style.cssText = 'position:fixed;left:-20000px;top:0;width:1200px;height:900px;overflow:hidden'
   document.body.append(host)
   const graph = createGraph(host)
   try {
     const model = graph.getDataModel()
-    return pages.map((cells) => {
+    return pages.map((cells, i) => {
       const root = buildCells(cells)[0]
       model.beginUpdate()
       try {
@@ -53,7 +59,7 @@ async function renderPages(pages: Parameters<typeof buildCells>[0][]): Promise<S
       } finally {
         model.endUpdate()
       }
-      return renderSvg(graph)
+      return renderSvg(graph, { background: backgrounds[i] })
     })
   } finally {
     graph.destroy()

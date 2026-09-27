@@ -50,6 +50,10 @@ export interface ReviewOptions {
   rail: HTMLElement
   paper: HTMLElement
   onVisibilityChange: () => void
+  // Shared type of the text (default 'body') and the comments map (default
+  // commentsMapOf(session)); the notebook passes one of each per page.
+  field?: string
+  comments?: Y.Map<unknown>
 }
 
 export class Review {
@@ -68,15 +72,19 @@ export class Review {
   // Narrow screens show the rail as a panel on demand.
   panelOpen = false
 
+  private onComments = () => this.refresh()
+  private onText = () => {
+    this.index = null
+    this.refresh()
+  }
+  private onResize = () => this.reposition()
+
   constructor(private o: ReviewOptions) {
-    this.comments = commentsMapOf(o.session) as Y.Map<CommentRecord>
+    this.comments = (o.comments ?? commentsMapOf(o.session)) as Y.Map<CommentRecord>
     this.userId = userIdOf(o.session)
-    if (o.access === 'edit') this.adoptImported()
-    this.comments.observe(() => this.refresh())
-    o.session.doc.getXmlFragment('body').observeDeep(() => {
-      this.index = null
-      this.refresh()
-    })
+    if (o.access === 'edit' && !o.comments) this.adoptImported()
+    this.comments.observe(this.onComments)
+    this.fragment.observeDeep(this.onText)
     o.editor.on('update', () => this.refresh())
     o.rail.addEventListener('mousedown', (e) => {
       const card = (e.target as HTMLElement).closest<HTMLElement>('.rv-card')
@@ -89,10 +97,26 @@ export class Review {
       const sg = target.closest<HTMLElement>('[data-suggestion]')
       if (hl) this.activate(`c:${hl.dataset.commentIds!.split(' ').pop()}`, false)
       else if (sg) this.activate(this.suggestionKeys.get(sg.dataset.suggestion!) ?? `s:${sg.dataset.suggestion}`, false)
-      else if (this.active) this.activate(null, false)
+      // Deferred: the editor applies the clicked caret position first.
+      else if (this.active) {
+        const was = this.active
+        setTimeout(() => this.active === was && this.activate(null, false))
+      }
     })
-    window.addEventListener('resize', () => this.reposition())
+    window.addEventListener('resize', this.onResize)
     this.refresh()
+  }
+
+  private get fragment(): Y.XmlFragment {
+    return this.o.session.doc.getXmlFragment(this.o.field ?? 'body')
+  }
+
+  // Stops observing (before the editor is destroyed).
+  destroy(): void {
+    this.comments.unobserve(this.onComments)
+    this.fragment.unobserveDeep(this.onText)
+    window.removeEventListener('resize', this.onResize)
+    cancelAnimationFrame(this.frame)
   }
 
   // Moves comments of an imported file from the document into the comments channel.
@@ -124,7 +148,7 @@ export class Review {
   }
 
   private positions(): PositionIndex {
-    this.index ??= new PositionIndex(this.o.session.doc.getXmlFragment('body'), this.o.editor.schema)
+    this.index ??= new PositionIndex(this.fragment, this.o.editor.schema)
     return this.index
   }
 
@@ -167,6 +191,10 @@ export class Review {
       for (const s of this.suggestions) if (this.suggestionKeys.get(s.id) === this.active) decorations.push(Decoration.inline(s.from, s.to, { class: 'sg-active' }))
     }
     const set = DecorationSet.create(editor.state.doc, decorations)
+    // Read a pending DOM selection (a click the editor has not processed yet)
+    // first; otherwise this transaction would write the old selection back and
+    // the next keystroke would replace the previously selected text.
+    ;(editor.view as unknown as { domObserver?: { flush(): void } }).domObserver?.flush()
     editor.view.dispatch(editor.state.tr.setMeta(reviewKey, set).setMeta('addToHistory', false))
     this.render()
   }

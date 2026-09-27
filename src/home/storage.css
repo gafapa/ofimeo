@@ -1,0 +1,48 @@
+/* Storage and backup dialog, backup reminder, persistent-storage notice */
+
+.storage-dialog { display: flex; flex-direction: column; gap: var(--space-2); max-height: min(70vh, 640px); overflow: auto; }
+.storage-dialog h3 { margin: var(--space-3) 0 0; font-size: var(--fs-l); font-weight: 500; }
+.storage-dialog p { margin: 0; }
+.storage-warning { background: var(--warn-bg); color: var(--warn-fg); border: 1px solid var(--warn-border); border-radius: var(--radius-m); padding: var(--space-2) var(--space-3); font-size: var(--fs-m); }
+.storage-usage meter { width: 100%; height: 12px; }
+.storage-persist { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); padding: var(--space-2) var(--space-3); border-radius: var(--radius-m); font-size: var(--fs-m); }
+.storage-persist.ok { background: var(--success-bg); color: var(--success-fg); }
+.storage-persist.warn { background: var(--info-bg); color: var(--info-fg); border: 1px solid var(--info-border); }
+.storage-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.storage-row { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); font-size: var(--fs-m); }
+.field.inline { width: auto; }
+.storage-auto { display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start; }
+.storage-auto .field-label { align-self: stretch; }
+.storage-error { color: var(--danger-text); font-size: var(--fs-m); }
+.storage-report ul { margin: 4px 0; padding-left: 20px; max-height: 160px; overflow: auto; }
+.storage-report summary { cursor: pointer; }
+
+.storage-btn { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: var(--radius-m); padding: 6px 14px; font: inherit; }
+.storage-btn:hover { background: var(--hover); }
+.storage-btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.storage-btn.primary:hover { filter: brightness(1.08); background: var(--accent); }
+.storage-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.backup-reminder {
+  display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2) var(--space-3);
+  background: var(--warn-bg); color: var(--warn-fg); border: 1px solid var(--warn-border); border-radius: var(--radius-l);
+  padding: var(--space-2) var(--space-3); margin: var(--space-3) 0 0; font-size: var(--fs-m);
+}
+.backup-reminder-text { flex: 1 1 320px; }
+.backup-reminder-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+.persist-notice {
+  position: fixed; left: var(--space-4); bottom: 48px; z-index: var(--z-toast); width: min(360px, calc(100vw - 32px));
+  background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-l);
+  box-shadow: var(--shadow); padding: var(--space-3) var(--space-4); font-size: var(--fs-m);
+  display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2);
+}
+.persist-notice p { margin: 0; }
+.persist-close { position: absolute; top: 4px; right: 6px; border: 0; background: none; color: var(--muted); font-size: 18px; width: 28px; height: 28px; border-radius: 50%; }
+.persist-close:hover { background: var(--hover); }
+@media (max-width: 600px) {
+  .persist-notice { left: var(--space-4); right: var(--space-4); width: auto; bottom: var(--space-4); }
+}
+/* Spreadsheets: above the sheet tabs and the status bar, not over them. */
+body:has(.app-sheet) .persist-notice { left: auto; right: var(--space-4); bottom: 96px; }
+@media print { .persist-notice { display: none !important; } }

@@ -78,8 +78,65 @@ function mapRange(range: Range, s: Structural): Range | null {
   return cols && { ...range, startColumn: cols[0], endColumn: cols[1] }
 }
 
+// ---------- Charts (float DOM drawings with a source range) ----------
+
+const DRAWING_APPLY = 'sheet.mutation.set-drawing-apply'
+const colIndex = (s: string) => [...s.toUpperCase()].reduce((n, ch) => n * 26 + ch.charCodeAt(0) - 64, 0) - 1
+const colName = (c: number): string => {
+  let s = ''
+  for (c++; c > 0; c = Math.floor((c - 1) / 26)) s = String.fromCharCode(65 + ((c - 1) % 26)) + s
+  return s
+}
+
+// Shifts an A1 range ('A1:C5') through structural changes of one sheet.
+function mapA1(ref: string, changes: Structural[]): string {
+  const m = /^([A-Z]{1,3})(\d+)(?::([A-Z]{1,3})(\d+))?$/.exec(ref)
+  if (!m) return ref
+  let range: Range | null = {
+    startColumn: colIndex(m[1]),
+    startRow: Number(m[2]) - 1,
+    endColumn: colIndex(m[3] ?? m[1]),
+    endRow: Number(m[4] ?? m[2]) - 1,
+  }
+  for (const s of changes) range = range && mapRange(range, s)
+  if (!range) return ref // the whole source was deleted: the chart shows no data
+  const a = `${colName(range.startColumn)}${range.startRow + 1}`
+  const b = `${colName(range.endColumn)}${range.endRow + 1}`
+  return a === b ? a : `${a}:${b}`
+}
+
+// A chart edit made without knowing about a concurrent row/column change of its
+// source sheet: shift the source range of the chart specs the edit writes
+// (whole specs, and plain range replacements such as RefRangeService's).
+function transformDrawing(params: Params, concurrent: Structural[]): Params {
+  let changed = false
+  const walk = (node: unknown, parentKey?: string): unknown => {
+    if (Array.isArray(node)) return node.map((n, i) => walk(n, i > 0 && node[i - 1] === 'range' ? 'range' : undefined))
+    if (!node || typeof node !== 'object') return node
+    const obj = node as Record<string, unknown>
+    if (obj.kind === 'ofimeo-chart' && typeof obj.range === 'string' && typeof obj.sheetId === 'string') {
+      const changes = concurrent.filter((c) => c.sheet === obj.sheetId)
+      const range = changes.length ? mapA1(obj.range, changes) : obj.range
+      if (range !== obj.range) changed = true
+      return { ...obj, range }
+    }
+    if (parentKey === 'range' && typeof obj.i === 'string') {
+      const changes = concurrent.filter((c) => c.sheet === params.subUnitId)
+      const i = mapA1(obj.i, changes)
+      if (i !== obj.i) changed = true
+      return { ...obj, i }
+    }
+    const out: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(obj)) out[k] = walk(v)
+    return out
+  }
+  const op = walk(params.op)
+  return changed ? { ...params, op } : params
+}
+
 // Returns transformed params, or null when the mutation no longer applies.
 export function transform(mutation: string, params: Params, concurrent: Structural[]): Params | null {
+  if (mutation === DRAWING_APPLY) return transformDrawing(params, concurrent)
   const changes = concurrent.filter((c) => c.sheet === params.subUnitId)
   if (!changes.length) return params
 

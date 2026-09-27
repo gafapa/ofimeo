@@ -2,7 +2,10 @@
 
 import type { JSONContent } from '@tiptap/core'
 import JSZip from 'jszip'
-import { DEFAULT_PAGE, PAGE_SIZES_MM, langCode, type CommentData, type ImportedDocument, type PageSettings, type PageSize } from './types'
+import { DEFAULT_PAGE, PAGE_SIZES_MM, langCode, normalizeColumns, sectionAttrs, type Columns, type CommentData, type ImportedDocument, type PageSettings, type PageSize } from './types'
+import { parseSourcesXml } from './bibliography-xml'
+import { fromCsl } from '../references/parse'
+import { CITE_LANGS, CITE_STYLES, type CiteSettings, type Source } from '../references/types'
 import { attr, bytesToDataUrl, child, children, mimeFromPath, parseXml, toHex } from '../../../core/formats'
 import { ommlToLatex } from './math'
 import { authorColor } from './review'
@@ -65,6 +68,15 @@ interface Context {
   openComments: Set<string>
   // Document language (w:lang of the default run properties).
   lang?: string
+  // Section break markers with the sectPr that ends the section before them.
+  sections: { node: JSONContent; sectPr: Element }[]
+  // Bibliography sources and Word tag → source id.
+  sources: Source[]
+  tags: Map<string, string>
+  // A field spanning paragraphs being skipped (table of contents / bibliography).
+  fieldBlock: { kind: 'toc' | 'bib'; depth: number; paragraphs: Element[]; instr: string } | null
+  // A chart that ended the previous paragraph: a caption paragraph right after it becomes its caption.
+  lastChart?: JSONContent | null
 }
 
 // Tracked change around the runs being read (w:ins / w:del).
@@ -75,7 +87,7 @@ interface Revision {
   time: number
 }
 
-type Kind = 'heading' | 'title' | 'subtitle' | 'quote' | 'code' | 'hr' | 'listContinue' | 'tableHeading' | 'separator' | null
+type Kind = 'heading' | 'title' | 'subtitle' | 'quote' | 'code' | 'hr' | 'listContinue' | 'tableHeading' | 'separator' | 'caption' | null
 
 // A converted paragraph (or table) before lists, quotes and code blocks are assembled.
 interface Item {
@@ -121,6 +133,19 @@ export async function importDocx(file: ArrayBuffer): Promise<ImportedDocument> {
     notes: new Map(),
     images: new Map(),
     openComments: new Set(),
+    sections: [],
+    sources: [],
+    tags: new Map(),
+    fieldBlock: null,
+  }
+  // Word's bibliography sources live in a customXml part.
+  for (const path of Object.keys(zip.files).filter((f) => /^customXml\/item\d+\.xml$/.test(f))) {
+    const root = xmlRoot(await read(path))
+    if (root?.localName === 'Sources') {
+      const parsed = parseSourcesXml(root)
+      ctx.sources.push(...parsed.sources)
+      parsed.tags.forEach((id, tag) => ctx.tags.set(tag.toLowerCase(), id))
+    }
   }
   parseNumbering(xmlRoot(await read('word/numbering.xml')), ctx)
   parseNotes(xmlRoot(await read('word/footnotes.xml')), 'footnote', ctx)
@@ -134,16 +159,63 @@ export async function importDocx(file: ArrayBuffer): Promise<ImportedDocument> {
   const body = child(parseXml(documentXml).documentElement, 'body')
   const content = body ? await blockContent(body, ctx, docPart) : []
 
-  // The last section's properties define the page and the default header/footer.
+  // Sections: the first sectPr gives the document page setup; each break takes the next one.
   const sectPr = child(body, 'sectPr') ?? [...(body?.getElementsByTagNameNS('*', 'sectPr') ?? [])].pop() ?? null
+  const sectPrs = [...ctx.sections.map((s) => s.sectPr), ...(sectPr ? [sectPr] : [])]
+  ctx.sections.forEach((marker, i) => {
+    const next = sectPrs[i + 1] ?? null
+    marker.node.attrs = sectionAttrs({
+      start: attr(child(next, 'type'), 'val') === 'continuous' ? 'continuous' : 'nextPage',
+      page: pageSettings(next),
+      columns: columnsOf(next),
+    })
+  })
+  const first = sectPrs[0] ?? null
+  // Header and footer: the first section that defines them.
+  const withHeader = sectPrs.find((s) => children(s, 'headerReference').length) ?? first
+  const withFooter = sectPrs.find((s) => children(s, 'footerReference').length) ?? first
   return {
     body: { type: 'doc', content: content.length ? content : [{ type: 'paragraph' }] },
-    header: await headerFooter(sectPr, 'headerReference', docPart, ctx),
-    footer: await headerFooter(sectPr, 'footerReference', docPart, ctx),
-    page: pageSettings(sectPr),
+    header: await headerFooter(withHeader, 'headerReference', docPart, ctx),
+    footer: await headerFooter(withFooter, 'footerReference', docPart, ctx),
+    page: pageSettings(first),
+    columns: columnsOf(first),
     lang: ctx.lang,
     comments: parseComments(xmlRoot(await read('word/comments.xml')), xmlRoot(await read('word/commentsExtended.xml'))),
+    sources: ctx.sources,
+    citeStyle: citeStyleOf(xmlRoot(await read('docProps/custom.xml')), xmlRoot(ctx.sources.length ? await firstSourcesXml(zip) : null)),
   }
+}
+
+async function firstSourcesXml(zip: JSZip): Promise<string | null> {
+  for (const path of Object.keys(zip.files).filter((f) => /^customXml\/item\d+\.xml$/.test(f))) {
+    const xml = await zip.file(path)!.async('text')
+    if (/<(\w+:)?Sources\b/.test(xml)) return xml
+  }
+  return null
+}
+
+// Citation style: our custom property, else Word's selected bibliography style.
+function citeStyleOf(custom: Element | null, sources: Element | null): CiteSettings | undefined {
+  for (const prop of custom ? [...custom.getElementsByTagNameNS('*', 'property')] : []) {
+    if (attr(prop, 'name') !== 'OfimeoCitationStyle') continue
+    try {
+      const v = JSON.parse(prop.textContent ?? '')
+      if (CITE_STYLES.includes(v.style) && CITE_LANGS.includes(v.lang)) return v
+    } catch {
+      // Ignored.
+    }
+  }
+  const name = (sources?.getAttribute('StyleName') ?? '').toLowerCase()
+  const style = CITE_STYLES.find((s) => name.startsWith(s))
+  return style ? { style, lang: 'en' } : undefined
+}
+
+function columnsOf(sectPr: Element | null): Columns {
+  const cols = child(sectPr, 'cols')
+  const count = Number(attr(cols, 'num')) || (cols ? children(cols, 'col').length : 0) || 1
+  const space = Number(attr(cols, 'space'))
+  return normalizeColumns({ count, gap: Number.isFinite(space) && attr(cols, 'space') !== null ? Math.round((space / TWIPS_PER_MM) * 10) / 10 : 12.5, separator: ['1', 'true', 'on'].includes(attr(cols, 'sep') ?? '') })
 }
 
 // Comments; replies and resolved state come from commentsExtended (Word 2013+).
@@ -377,9 +449,29 @@ async function blockContent(parent: Element, ctx: Context, part: Part): Promise<
 
 async function collectBlocks(parent: Element, ctx: Context, part: Part, items: Item[]) {
   for (const el of children(parent)) {
+    // Paragraphs of a table of contents or bibliography field become one node.
+    if (el.localName === 'p' && (ctx.fieldBlock || fieldBlockStart(el))) {
+      const block = (ctx.fieldBlock ??= { ...fieldBlockStart(el)!, depth: 0, paragraphs: [] })
+      block.paragraphs.push(el)
+      block.depth += fieldBalance(el)
+      if (block.depth <= 0) {
+        ctx.fieldBlock = null
+        items.push(...(await fieldBlockItems(block.kind, block.paragraphs, block.instr, ctx, part)))
+      }
+      continue
+    }
     switch (el.localName) {
       case 'p':
         items.push(...(await paragraph(el, ctx, part)))
+        // A paragraph with section properties ends a section.
+        if (child(child(el, 'pPr'), 'sectPr') && part.path === 'word/document.xml') {
+          const node: JSONContent = { type: 'sectionBreak' }
+          ctx.sections.push({ node, sectPr: child(child(el, 'pPr'), 'sectPr')! })
+          // Word keeps the section mark in an otherwise empty paragraph: drop that paragraph.
+          const last = items[items.length - 1]
+          if (last && last.node.type === 'paragraph' && !last.node.content?.length && !last.list) items.pop()
+          items.push({ node })
+        }
         break
       case 'tbl': {
         const node = await table(el, ctx, part)
@@ -392,9 +484,18 @@ async function collectBlocks(parent: Element, ctx: Context, part: Part, items: I
         items.push({ node })
         break
       }
-      case 'sdt':
-        await collectBlocks(child(el, 'sdtContent') ?? el, ctx, part, items)
+      case 'sdt': {
+        const gallery = attr(child(child(child(el, 'sdtPr'), 'docPartObj'), 'docPartGallery'), 'val') ?? ''
+        const content = child(el, 'sdtContent') ?? el
+        const paragraphs = [...content.getElementsByTagNameNS('*', 'p')]
+        if (/table of contents/i.test(gallery) && !ctx.fieldBlock) {
+          const instr = paragraphs.map(instrOf).join(' ')
+          items.push(...(await fieldBlockItems('toc', paragraphs, instr, ctx, part)))
+        } else if (/bibliograph/i.test(gallery) && !ctx.fieldBlock) {
+          items.push(...(await fieldBlockItems('bib', paragraphs, '', ctx, part)))
+        } else await collectBlocks(content, ctx, part, items)
         break
+      }
       case 'customXml':
       case 'ins':
         await collectBlocks(el, ctx, part, items)
@@ -407,6 +508,62 @@ async function collectBlocks(parent: Element, ctx: Context, part: Part, items: I
         break
     }
   }
+}
+
+// ---- Fields spanning paragraphs: table of contents and bibliography ----
+
+function instrOf(p: Element): string {
+  return [...p.getElementsByTagNameNS('*', 'instrText')].map((i) => i.textContent ?? '').join('')
+}
+
+// Field begins minus field ends in a paragraph.
+function fieldBalance(p: Element): number {
+  let n = 0
+  for (const f of p.getElementsByTagNameNS('*', 'fldChar')) {
+    const type = attr(f, 'fldCharType')
+    if (type === 'begin') n++
+    else if (type === 'end') n--
+  }
+  return n
+}
+
+function fieldBlockStart(p: Element): { kind: 'toc' | 'bib'; instr: string } | null {
+  const instr = instrOf(p)
+  if (!instr || fieldBalance(p) <= 0) return null
+  if (/^\s*TOC\b/.test(instr)) return { kind: 'toc', instr }
+  if (/^\s*(BIBLIOGRAPHY\b|ADDIN\s+(ZOTERO_BIBL|Mendeley Bibliography|CSL_BIBLIOGRAPHY))/i.test(instr)) return { kind: 'bib', instr }
+  return null
+}
+
+async function fieldBlockItems(kind: 'toc' | 'bib', paragraphs: Element[], instr: string, ctx: Context, part: Part): Promise<Item[]> {
+  if (kind === 'bib') {
+    // Headings inside the bibliography block (its title) are kept.
+    const out: Item[] = []
+    for (const p of paragraphs) {
+      const style = chain(attr(child(child(p, 'pPr'), 'pStyle'), 'val'), ctx)
+      if (styleKind(style, child(p, 'pPr')).kind === 'heading') out.push(...(await paragraph(p, ctx, part)))
+    }
+    out.push({ node: { type: 'bibliography' } })
+    return out
+  }
+  const range = /\\o\s+"?(\d)-(\d)"?/.exec(instr)
+  const maxLevel = range ? Math.min(6, Math.max(1, Number(range[2]))) : 3
+  let title = ''
+  const entries: { level: number; text: string; page?: number }[] = []
+  for (const p of paragraphs) {
+    const name = chain(attr(child(child(p, 'pPr'), 'pStyle'), 'val'), ctx)[0]?.name ?? ''
+    const text = plainText(p).replace(/\n/g, ' ')
+    const level = /^(?:toc|contents)\s*(\d)$/.exec(name)
+    if (!level) {
+      if (!entries.length && text.trim() && !title) title = text.trim()
+      continue
+    }
+    const tab = text.lastIndexOf('\t')
+    const label = (tab >= 0 ? text.slice(0, tab) : text).replace(/\t/g, ' ').trim()
+    const page = tab >= 0 ? Number(text.slice(tab + 1).trim()) : NaN
+    if (label) entries.push({ level: Number(level[1]), text: label, ...(Number.isFinite(page) && page > 0 ? { page } : {}) })
+  }
+  return [{ node: { type: 'tableOfContents', attrs: { maxLevel, title, entries } } }]
 }
 
 // Builds nested lists, blockquotes and code blocks from the flat paragraph sequence.
@@ -479,6 +636,7 @@ function styleKind(styles: StyleDef[], pPr: Element | null): { kind: Kind; level
     if (/^list continue/.test(s.name)) return { kind: 'listContinue' }
     if (/^table heading$/.test(s.name)) return { kind: 'tableHeading' }
     if (s.name === 'table separator') return { kind: 'separator' }
+    if (s.name === 'caption') return { kind: 'caption' }
   }
   const outline = attr(child(pPr, 'outlineLvl'), 'val')
   if (outline !== null && Number(outline) < 6) return { kind: 'heading', level: Number(outline) + 1 }
@@ -493,11 +651,21 @@ async function paragraph(p: Element, ctx: Context, part: Part): Promise<Item[]> 
   const { kind, level } = styleKind(styles, pPr)
   // Our exporter's spacer between adjacent tables.
   if (kind === 'separator') return []
+  const lastChart = ctx.lastChart
+  ctx.lastChart = null
 
   // Run formatting inherited from the paragraph style; headings and named styles bring their own look.
   const plainStyle = kind === null || kind === 'listContinue'
   const baseRPrs = plainStyle ? [rPrOf(ctx.docDefaults), ...styles.map((s) => s.rPr).reverse()] : []
   const segments = await runs(p, ctx, part, baseRPrs, kind === 'code')
+  // A caption right under a chart.
+  if (kind === 'caption' && lastChart && !lastChart.attrs?.caption && segments.length === 1) {
+    const text = segments[0].map((n) => n.text ?? '').join('').trim()
+    if (text && segments[0].every((n) => n.type === 'text')) {
+      lastChart.attrs = { ...lastChart.attrs, caption: text }
+      return []
+    }
+  }
   const items: Item[] = []
   if (attr(child(pPr, 'pageBreakBefore'), 'val') !== 'false' && child(pPr, 'pageBreakBefore')) items.push({ node: { type: 'pageBreak' } })
 
@@ -545,6 +713,29 @@ async function paragraph(p: Element, ctx: Context, part: Part): Promise<Item[]> 
     if (kind === 'code') {
       const text = content.map((n) => (n.type === 'hardBreak' ? '\n' : (n.text ?? ''))).join('')
       items.push({ node: { type: 'codeBlock', attrs: { language: null }, content: text ? [{ type: 'text', text }] : undefined }, code: true })
+      return
+    }
+    // Charts are blocks: the paragraph is split around them.
+    if (content.some((n) => n.type === 'chart')) {
+      let run: JSONContent[] = []
+      const flush = () => {
+        if (run.length) items.push({ node: { type: 'paragraph', ...(Object.keys(attrs).length ? { attrs: { ...attrs } } : {}), content: run } })
+        run = []
+      }
+      for (const n of content) {
+        if (n.type !== 'chart') run.push(n)
+        else {
+          flush()
+          const { marks: _marks, ...chart } = n
+          void _marks
+          items.push({ node: chart })
+          ctx.lastChart = chart
+        }
+      }
+      if (run.some((n) => n.type !== 'text' || n.text?.trim())) {
+        flush()
+        ctx.lastChart = null
+      }
       return
     }
     const node: JSONContent = { type: 'paragraph' }
@@ -608,6 +799,8 @@ interface Field {
   // PAGE / NUMPAGES fields become page number nodes and hide their cached result.
   page?: 'page' | 'total' | null
   link?: string
+  // CITATION / Zotero / Mendeley fields become citation nodes (cached result hidden).
+  cite?: JSONContent | null
 }
 
 type Segments = JSONContent[][] & { hr?: boolean }
@@ -633,7 +826,8 @@ async function runs(p: Element, ctx: Context, part: Part, baseRPrs: (Element | n
       last.text += node.text!
     } else seg.push(node)
   }
-  const hidden = () => fields.some((f) => !f.result || f.page)
+  const hidden = () => fields.some((f) => !f.result || f.page || f.cite)
+  let styledField: JSONContent | null = null
   const fieldLink = () => [...fields].reverse().find((f) => f.link)?.link
 
   const walk = async (parent: Element, link: string | undefined) => {
@@ -649,8 +843,10 @@ async function runs(p: Element, ctx: Context, part: Part, baseRPrs: (Element | n
           break
         }
         case 'fldSimple': {
-          const f = parseField(attr(el, 'instr') ?? '')
-          if (f.page) {
+          const f = parseField(attr(el, 'instr') ?? '', ctx)
+          if (f.cite) {
+            if (!hidden()) push(f.cite.type?.startsWith('merge') ? withMarks(f.cite, runMarks(child(child(el, 'r'), 'rPr'))) : f.cite)
+          } else if (f.page) {
             if (!hidden()) push(withMarks({ type: 'pageNumber', attrs: { kind: f.page } }, runMarks(child(child(el, 'r'), 'rPr'))))
           } else await walk(el, f.link ?? link)
           break
@@ -703,10 +899,21 @@ async function runs(p: Element, ctx: Context, part: Part, baseRPrs: (Element | n
           else if (type === 'separate' || type === 'end') {
             const f = fields[fields.length - 1]
             if (f && !f.result) {
-              Object.assign(f, parseField(f.instr), { result: true })
-              if (f.page && !fields.slice(0, -1).some((o) => !o.result || o.page)) push(withMarks({ type: 'pageNumber', attrs: { kind: f.page } }, m))
+              Object.assign(f, parseField(f.instr, ctx), { result: true })
+              // A merge field inside the code of an IF field becomes part of that code.
+              const outer = fields[fields.length - 2]
+              if (outer && !outer.result && f.cite?.type === 'mergeField') {
+                outer.instr += ` {MERGEFIELD:${f.cite.attrs?.name}} `
+                f.cite = null
+              }
+              const outerHidden = fields.slice(0, -1).some((o) => !o.result || o.page || o.cite)
+              if (f.page && !outerHidden) push(withMarks({ type: 'pageNumber', attrs: { kind: f.page } }, m))
+              if (f.cite && !outerHidden) push(f.cite)
+              // Merge fields take the formatting of their (hidden) result.
+              if (f.cite && !outerHidden && f.cite.type?.startsWith('merge')) styledField = f.cite
             }
             if (type === 'end') fields.pop()
+            if (type === 'end') styledField = null
           }
           break
         }
@@ -715,6 +922,7 @@ async function runs(p: Element, ctx: Context, part: Part, baseRPrs: (Element | n
           break
         default:
           if (!hidden()) await runChild(el, m)
+          else if (styledField && el.localName === 't' && m?.length && !styledField.marks) styledField.marks = m
       }
     }
   }
@@ -757,6 +965,11 @@ async function runs(p: Element, ctx: Context, part: Part, baseRPrs: (Element | n
           segments.hr = true
           break
         }
+        const chart = await chartFrame(el, ctx, part)
+        if (chart) {
+          push(chart)
+          break
+        }
         const img = await image(el, ctx, part)
         if (img) push(img)
         break
@@ -773,9 +986,23 @@ async function runs(p: Element, ctx: Context, part: Part, baseRPrs: (Element | n
   return segments
 }
 
-function parseField(instr: string): { page: 'page' | 'total' | null; link?: string } {
+function parseField(instr: string, ctx: Context): { page: 'page' | 'total' | null; link?: string; cite?: JSONContent | null } {
   const words = instr.trim().split(/\s+/)
   const name = words[0]?.toUpperCase()
+  if (name === 'CITATION') return { page: null, cite: wordCitation((instr.trim().match(/"[^"]*"|\S+/g) ?? []).slice(1).map((w) => w.replace(/^"|"$/g, '')), ctx) }
+  if (name === 'ADDIN' && /CSL_CITATION/.test(instr)) return { page: null, cite: cslCitation(instr, ctx) }
+  if (name === 'MERGEFIELD') {
+    const field = fieldArgs(instr)[1]
+    if (field) return { page: null, cite: { type: 'mergeField', attrs: { name: field } } }
+  }
+  if (name === 'IF') {
+    // IF {MERGEFIELD:name} = "value" "then" "else" (the merge field was read as part of the code).
+    const args = fieldArgs(instr).slice(1)
+    const field = /^\{MERGEFIELD:(.*)\}$/.exec(args[0] ?? '')?.[1]
+    if (field !== undefined && (args[1] === '=' || args[1] === '<>')) {
+      return { page: null, cite: { type: 'mergeIf', attrs: { field, op: args[1], value: args[2] ?? '', then: args[3] ?? '', otherwise: args[4] && !args[4].startsWith('\\') ? args[4] : '' } } }
+    }
+  }
   if (name === 'PAGE') return { page: 'page' }
   if (name === 'NUMPAGES' || name === 'SECTIONPAGES') return { page: 'total' }
   if (name === 'HYPERLINK') {
@@ -784,6 +1011,58 @@ function parseField(instr: string): { page: 'page' | 'total' | null; link?: stri
     if (m) return { page: null, link: isAnchor ? `#${m[1]}` : m[1] }
   }
   return { page: null }
+}
+
+// Words of a field code; quoted arguments lose their quotes (\" inside them is a quote).
+function fieldArgs(instr: string): string[] {
+  const out: string[] = []
+  for (const m of instr.matchAll(/"((?:[^"\\]|\\.)*)"|\{MERGEFIELD:[^}]*\}|(\S+)/g)) {
+    out.push(m[1] !== undefined ? m[1].replace(/\\(.)/g, '$1') : m[0])
+  }
+  return out
+}
+
+// CITATION Tag1 \l 1033 \m Tag2 \p 23 (Word's own citations).
+function wordCitation(args: string[], ctx: Context): JSONContent | null {
+  const ids: string[] = []
+  let locator = ''
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i]
+    if (a === '\\l' || a === '\\f' || a === '\\s' || a === '\\v') i++
+    else if (a === '\\m') ids.push(args[++i] ?? '')
+    else if (a === '\\p') locator = (args[++i] ?? '').replace(/^"|"$/g, '')
+    else if (!a.startsWith('\\') && !ids.length) ids.push(a)
+  }
+  const found = ids.map((tag) => ctx.tags.get(tag.toLowerCase())).filter((id): id is string => !!id)
+  return found.length ? { type: 'citation', attrs: { ids: found, locator } } : null
+}
+
+// Zotero / Mendeley: ADDIN ZOTERO_ITEM CSL_CITATION {json with the sources}.
+function cslCitation(instr: string, ctx: Context): JSONContent | null {
+  const start = instr.indexOf('{')
+  if (start < 0) return null
+  try {
+    const json = JSON.parse(instr.slice(start, instr.lastIndexOf('}') + 1))
+    const ids: string[] = []
+    let locator = ''
+    for (const item of json.citationItems ?? []) {
+      const key = String(item.uris?.[0] ?? item.uri?.[0] ?? item.id ?? '')
+      let id = key ? ctx.tags.get(`csl:${key}`) : undefined
+      if (!id) {
+        const source = fromCsl(item.itemData ?? {})
+        if (!source) continue
+        source.id += ctx.sources.length
+        ctx.sources.push(source)
+        id = source.id
+        if (key) ctx.tags.set(`csl:${key}`, id)
+      }
+      ids.push(id)
+      if (item.locator) locator = String(item.locator)
+    }
+    return ids.length ? { type: 'citation', attrs: { ids, locator } } : null
+  } catch {
+    return null
+  }
 }
 
 function withMarks(node: JSONContent, marks: JSONContent['marks']): JSONContent {
@@ -925,6 +1204,22 @@ async function image(el: Element, ctx: Context, part: Part): Promise<JSONContent
   if (width) attrs.width = width
   if (height) attrs.height = height
   return { type: 'image', attrs }
+}
+
+// A native chart (c:chart in the drawing) → chart node with the drawing's size.
+async function chartFrame(el: Element, ctx: Context, part: Part): Promise<JSONContent | null> {
+  const ref = [...el.getElementsByTagNameNS('*', 'chart')].find((c) => c.namespaceURI?.endsWith('/drawingml/2006/chart'))
+  const id = attr(ref, 'id')
+  const target = id ? part.rels.get(id) : undefined
+  const xml = target ? await ctx.zip.file(target)?.async('string') : undefined
+  if (!xml) return null
+  const { readChartPart } = await import('./docx-charts')
+  const chart = readChartPart(xml)
+  if (!chart) return null
+  const extent = el.getElementsByTagNameNS('*', 'extent')[0]
+  const width = Math.round(Number(attr(extent, 'cx')) / EMU_PER_PX) || 480
+  const height = Math.round(Number(attr(extent, 'cy')) / EMU_PER_PX) || 300
+  return { type: 'chart', attrs: { chart: JSON.stringify(chart), width, height, caption: '' } }
 }
 
 async function loadImagePart(target: string | undefined, ctx: Context): Promise<{ src: string; width: number; height: number } | null> {

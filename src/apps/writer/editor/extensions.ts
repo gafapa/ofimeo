@@ -12,8 +12,13 @@ import Superscript from '@tiptap/extension-superscript'
 import { TableKit } from '@tiptap/extension-table'
 import { TaskList, TaskItem } from '@tiptap/extension-list'
 import { CharacterCount, Placeholder } from '@tiptap/extensions'
-import { CellBackground, Footnote, PageBreak, PageBreakShortcut, PageNumber, ParagraphFormat } from './nodes'
+import { CellBackground, Footnote, PageBreak, PageBreakShortcut, PageNumber, ParagraphFormat, SectionBreak } from './nodes'
 import { Equation } from './equation'
+import { GraphImage } from './mathgraph'
+import { ChartNode } from './chart'
+import { MergeField, MergeIf } from './merge'
+import { TableOfContents, type TocOptions } from './toc'
+import { Bibliography, Citation } from '../references/nodes'
 import { Suggesting } from './suggestions'
 import { CommentRange } from './comment-range'
 import { ParagraphLanguage } from '../spell/lang'
@@ -44,21 +49,28 @@ export function fontStack(name: string): string {
     : /times|georgia|garamond|cambria|serif|book|palatino/i.test(name) && !/sans/i.test(name)
       ? 'serif'
       : 'sans-serif'
-  const metricCompatible: Record<string, string> = {
-    calibri: 'Carlito',
-    cambria: 'Caladea',
-    arial: 'Liberation Sans',
-    'times new roman': 'Liberation Serif',
-    'courier new': 'Liberation Mono',
+  // Installed metric-compatible fonts first, then the ones shipped with the app (fonts.ts).
+  const metricCompatible: Record<string, string[]> = {
+    calibri: ['Carlito'],
+    cambria: ['Caladea'],
+    arial: ['Liberation Sans', 'Arimo'],
+    helvetica: ['Liberation Sans', 'Arimo'],
+    'times new roman': ['Liberation Serif', 'Tinos'],
+    'courier new': ['Liberation Mono', 'Cousine'],
+    'liberation sans': ['Arimo'],
+    'liberation serif': ['Tinos'],
+    'liberation mono': ['Cousine'],
   }
-  const alt = metricCompatible[name.toLowerCase()]
-  return [`"${name}"`, alt && `"${alt}"`, generic].filter(Boolean).join(', ')
+  const alts = metricCompatible[name.toLowerCase()] ?? []
+  return [`"${name}"`, ...alts.map((a) => `"${a}"`), generic].join(', ')
 }
 
 interface Options {
   // Collaboration replaces the local undo history.
   history?: boolean
   placeholder?: string
+  // Page numbers and default title for tables of contents (body editor only).
+  toc?: Partial<TocOptions>
 }
 
 function common(options: Options): AnyExtension[] {
@@ -86,15 +98,23 @@ function common(options: Options): AnyExtension[] {
 export function bodyExtensions(options: Options = {}): AnyExtension[] {
   return [
     ...common(options),
-    Image.configure({ inline: true, allowBase64: true, resize: { enabled: true, alwaysPreserveAspectRatio: true, minWidth: 24, minHeight: 24 } }),
+    // Images, including math graphs (editable pictures).
+    GraphImage.configure({ inline: true, allowBase64: true, resize: { enabled: true, alwaysPreserveAspectRatio: true, minWidth: 24, minHeight: 24 } }),
     TableKit.configure({ table: { resizable: true, cellMinWidth: 40 } }),
     CellBackground,
     TaskList,
     TaskItem.configure({ nested: true }),
     PageBreak,
     PageBreakShortcut,
+    SectionBreak,
+    options.toc ? TableOfContents.configure(options.toc) : TableOfContents,
+    Citation,
+    Bibliography,
     Footnote,
     Equation,
+    ChartNode,
+    MergeField,
+    MergeIf,
     Suggesting,
     CommentRange,
     CharacterCount,

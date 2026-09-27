@@ -6,7 +6,7 @@ const DELIMITERS = [',', ';', '\t']
 const DAY_MS = 86_400_000
 const EPOCH_1899 = Date.UTC(1899, 11, 30)
 
-export function importCsv(text: string, delimiter?: string): Partial<IWorkbookData> {
+export function importCsv(text: string, delimiter?: string, sheetName = 'Sheet1'): Partial<IWorkbookData> {
   const src = text.replace(/^﻿/, '')
   const delim = delimiter ?? detectDelimiter(src)
   const rows = parseCsv(src, delim)
@@ -41,7 +41,7 @@ export function importCsv(text: string, delimiter?: string): Partial<IWorkbookDa
     sheets: {
       'sheet-1': {
         id: 'sheet-1',
-        name: 'Sheet1',
+        name: sheetName,
         rowCount: Math.max(1000, rows.length + 100),
         columnCount: Math.max(26, maxCol + 1 + 10),
         cellData,
@@ -148,8 +148,18 @@ function parseValue(raw: string, delim: string): { data: ICellData; pattern?: st
   return { data: { v: raw.replace(/\r\n?/g, '\n'), t: /^[+-]?[\d.,]+$/.test(v) ? 4 : 1 } }
 }
 
+export interface CsvOptions {
+  // Field separator (',' by default; ';' where the decimal separator is a comma).
+  delimiter?: string
+  // Plain numbers with a decimal comma (for ';' files read by European Excel).
+  decimalComma?: boolean
+  // The values as the sheet shows them (number formats applied), when given.
+  display?: (row: number, col: number) => string
+}
+
 // Exports one sheet (the first one by default). Formulas export their computed values.
-export function exportCsv(data: IWorkbookData, sheetId?: string): string {
+export function exportCsv(data: IWorkbookData, sheetId?: string, options: CsvOptions = {}): string {
+  const delimiter = options.delimiter ?? ','
   const sheet = data.sheets[sheetId ?? ''] ?? data.sheets[data.sheetOrder[0]]
   const cellData = sheet?.cellData ?? {}
   let maxRow = -1
@@ -161,11 +171,19 @@ export function exportCsv(data: IWorkbookData, sheetId?: string): string {
       maxCol = Math.max(maxCol, +c)
     }
   }
+  const text = (r: number, c: number) => {
+    const cell = cellData[r]?.[c]
+    const plain = cellText(cell, data)
+    if (plain === '') return ''
+    if (options.display) return options.display(r, c)
+    const numeric = !!cell && (typeof cell.v === 'number' || cell.t === 2) && /^-?[\d.]+(e[+-]?\d+)?$/i.test(plain)
+    return options.decimalComma && numeric ? plain.replace('.', ',') : plain
+  }
   const lines: string[] = []
   for (let r = 0; r <= maxRow; r++) {
     const fields: string[] = []
-    for (let c = 0; c <= maxCol; c++) fields.push(quote(cellText(cellData[r]?.[c], data)))
-    lines.push(fields.join(','))
+    for (let c = 0; c <= maxCol; c++) fields.push(quote(text(r, c), delimiter))
+    lines.push(fields.join(delimiter))
   }
   return lines.length ? lines.join('\r\n') + '\r\n' : ''
 }
@@ -209,6 +227,6 @@ function formatDate(serial: number, pattern: string): string {
   return iso.slice(0, 10)
 }
 
-function quote(field: string): string {
-  return /[",\r\n]|^\s|\s$/.test(field) ? `"${field.replace(/"/g, '""')}"` : field
+function quote(field: string, delimiter = ','): string {
+  return /["\r\n]|^\s|\s$/.test(field) || field.includes(delimiter) ? `"${field.replace(/"/g, '""')}"` : field
 }

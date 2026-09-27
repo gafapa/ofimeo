@@ -1,0 +1,56 @@
+# Ofimeo for a school: web app + Ofimeo Relay (Nostr relay, STUN/TURN, HTTPS)
+# in one container. Step by step: docs/deploy-school.md.
+#
+#   1. Optional: your school configuration in deploy/config/ofimeo.config.json
+#      (start from ofimeo.config.example.json, or use Help > For administrators...
+#      in Ofimeo), the logo in deploy/config/school/.
+#   2. docker compose up -d
+#   3. Open https://<this server>:8443/ofimeo/ (status page, certificate, link for students).
+services:
+  ofimeo:
+    build: .
+    image: ofimeo:latest
+    restart: unless-stopped
+    # Host networking (Linux): TURN needs this machine's real address and a
+    # wide UDP port range; no port mapping is needed. On Docker Desktop
+    # (Windows/macOS), remove it and use the "ports" list below instead.
+    network_mode: host
+    # ports:
+    #   - "443:8443"            # HTTPS: app, status page, Nostr (wss), TURN over TLS
+    #   - "80:8080"             # certificate page, redirect to https, Let's Encrypt
+    #   - "3478:3478/udp"       # STUN/TURN
+    #   - "3478:3478/tcp"
+    #   - "50000-50100:50000-50100/udp"   # relayed traffic (OFIMEO_RELAY_PORT_MIN/MAX)
+    environment:
+      # Name shown on the status page and in the app.
+      OFIMEO_NAME: "Ofimeo - My school"
+      # Address devices use to reach this server: its LAN IP (required without
+      # host networking) or its DNS name.
+      # OFIMEO_HOST: "192.168.1.10"
+      # Public domain name: automatic Let's Encrypt certificate (needs ports 80
+      # and 443 reachable from the Internet; see the guide).
+      # OFIMEO_DOMAIN: "ofimeo.school.example"
+      # OFIMEO_ACME_EMAIL: "it@school.example"
+      # Certificate from the school (files in deploy/config/tls):
+      # OFIMEO_CERT: "/config/tls/fullchain.pem"
+      # OFIMEO_KEY: "/config/tls/privkey.pem"
+      # Ports inside the container (with host networking, also on the server).
+      OFIMEO_HTTPS_PORT: "8443"
+      OFIMEO_HTTP_PORT: "8080"
+      OFIMEO_TURN_PORT: "3478"
+      OFIMEO_RELAY_PORT_MIN: "50000"
+      OFIMEO_RELAY_PORT_MAX: "50100"
+      # Accept devices from outside the local network (e.g. students at home).
+      OFIMEO_PUBLIC: "false"
+      # Store-and-forward: encrypted document mailboxes on this server.
+      # OFIMEO_STORE: "true"
+      TZ: "Europe/Madrid"
+    volumes:
+      # Relay data: settings, certificates, TURN secret, mailboxes. Back it up.
+      - ofimeo-data:/data
+      # School configuration (ofimeo.config.json, school/logo.svg, tls/…), read-only.
+      - ./deploy/config:/config:ro
+    # The image's HEALTHCHECK runs "ofimeo-relay healthcheck" (HTTPS status page).
+
+volumes:
+  ofimeo-data:

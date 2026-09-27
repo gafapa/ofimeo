@@ -29,6 +29,8 @@ export interface MenuItem {
   run?: () => void
   active?: () => boolean
   enabled?: () => boolean
+  // Evaluated when the menu opens; hidden items (and separators left dangling) are skipped.
+  visible?: () => boolean
   submenu?: MenuEntry[]
 }
 export type MenuEntry = MenuItem | '-'
@@ -39,7 +41,7 @@ export interface Menu {
 }
 
 // UI zoom from the accessibility preferences: fixed positions are given in unzoomed pixels.
-const uiZoom = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--a11y-ui-zoom')) || 1
+export const uiZoom = (): number => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--a11y-ui-zoom')) || 1
 
 const ownRows = (list: HTMLElement) =>
   [...list.children].filter((n): n is HTMLButtonElement => n instanceof HTMLButtonElement && !n.disabled)
@@ -203,6 +205,23 @@ export function shortcutLabel(shortcut: string): string {
   return shortcut.replace(/\b(Ctrl|Shift|Enter|Del|Arrow|Wheel)\b/g, (k) => names[k])
 }
 
+function submenuEnabled(items: MenuEntry[]): boolean {
+  const entries = visibleEntries(items).filter((e): e is Exclude<MenuEntry, '-'> => e !== '-')
+  return !entries.length || entries.some((e) => (e.enabled ? e.enabled() : e.submenu ? submenuEnabled(e.submenu) : true))
+}
+
+// Drops hidden items, then leading, trailing and repeated separators.
+function visibleEntries(items: MenuEntry[]): MenuEntry[] {
+  const out: MenuEntry[] = []
+  for (const item of items) {
+    if (item === '-') {
+      if (out.length && out[out.length - 1] !== '-') out.push(item)
+    } else if (!item.visible || item.visible()) out.push(item)
+  }
+  if (out[out.length - 1] === '-') out.pop()
+  return out
+}
+
 function renderItems(items: MenuEntry[], close: () => void, beforeRun = () => {}, parentRow?: HTMLElement): HTMLElement {
   const list = el('div', { class: 'menu-list', role: 'menu' })
   let submenu: HTMLElement | null = null
@@ -216,15 +235,20 @@ function renderItems(items: MenuEntry[], close: () => void, beforeRun = () => {}
     submenu.style.top = `${(rect.top - 4) / z}px`
     row.setAttribute('aria-expanded', 'true')
     list.append(submenu)
+    // No room on the right: open on the left side of the parent instead of
+    // sliding over it (menus near the right edge of the window).
+    const width = submenu.getBoundingClientRect().width
+    if (rect.right + width > window.innerWidth - 4 && rect.left - width >= 4) submenu.style.left = `${(rect.left - width + 2) / z}px`
     keepInViewport(submenu, z)
     if (focus) focusRow(submenu, 0)
   }
-  for (const item of items) {
+  for (const item of visibleEntries(items)) {
     if (item === '-') {
       list.append(el('div', { class: 'menu-sep', role: 'separator' }))
       continue
     }
-    const enabled = item.enabled ? item.enabled() : true
+    // A submenu whose items are all disabled is disabled itself.
+    const enabled = item.enabled ? item.enabled() : item.submenu ? submenuEnabled(item.submenu) : true
     const checked = item.active?.()
     const row = el(
       'button',
@@ -398,21 +422,24 @@ export function tableGrid(onPick: (rows: number, cols: number) => void, size = 1
 export interface DialogButton {
   label: string
   primary?: boolean
+  // Destructive action (red); combine with primary for the default button.
+  danger?: boolean
   value: string
 }
 
 let dialogCount = 0
 
 // Shows a modal dialog; resolves with the pressed button value ('' when dismissed).
-export function showDialog(title: string, body: HTMLElement, buttons: DialogButton[], wide = false): Promise<string> {
+// help: a help center article id (src/help/articles/types.ts) for a "?" button next to the title.
+export function showDialog(title: string, body: HTMLElement, buttons: DialogButton[], wide = false, help?: string): Promise<string> {
   return new Promise((resolve) => {
     const dialog = el('dialog', { class: wide ? 'dlg wide' : 'dlg' })
     const form = el('form', { method: 'dialog' })
     const actions = el('div', { class: 'dlg-actions' })
-    for (const b of buttons) actions.append(el('button', { value: b.value, textContent: b.label, class: b.primary ? 'primary' : '' }))
+    for (const b of buttons) actions.append(el('button', { value: b.value, textContent: b.label, class: [b.primary ? 'primary' : '', b.danger ? 'danger' : ''].join(' ').trim() }))
     const heading = el('h2', { textContent: title, id: `dlg-title-${++dialogCount}` })
     dialog.setAttribute('aria-labelledby', heading.id)
-    form.append(heading, body, actions)
+    form.append(help ? el('div', { class: 'dlg-head' }, heading, helpButton(help)) : heading, body, actions)
     dialog.append(form)
     document.body.append(dialog)
     dialog.addEventListener('close', () => {
@@ -422,6 +449,14 @@ export function showDialog(title: string, body: HTMLElement, buttons: DialogButt
     dialog.showModal()
     body.querySelector<HTMLElement>('input, textarea, select')?.focus()
   })
+}
+
+// "?" button of a dialog: opens the help center at an article (loaded on demand).
+function helpButton(article: string): HTMLButtonElement {
+  const button = el('button', { type: 'button', class: 'dlg-help', textContent: '?', title: t('Help') })
+  button.setAttribute('aria-label', t('Help about this'))
+  button.addEventListener('click', () => void import('../help/center').then((m) => m.openHelp(article)))
+  return button
 }
 
 export async function promptText(title: string, label: string, value = '', multiline = false): Promise<string | null> {
@@ -444,8 +479,23 @@ export async function promptText(title: string, label: string, value = '', multi
   return result === 'ok' ? input.value : null
 }
 
+// Themed replacement for window.confirm(): resolves true when confirmed.
+//   if (!(await confirmDialog(title, question, { confirmLabel: deleteLabel, danger: true }))) return
+export async function confirmDialog(
+  title: string,
+  text = '',
+  { confirmLabel = t('OK'), cancelLabel = t('Cancel'), danger = false }: { confirmLabel?: string; cancelLabel?: string; danger?: boolean } = {},
+): Promise<boolean> {
+  const body = el('div', { class: 'confirm-body' }, text ? el('p', { textContent: text }) : null)
+  const result = await showDialog(title, body, [
+    { label: cancelLabel, value: 'cancel' },
+    { label: confirmLabel, value: 'ok', primary: true, danger },
+  ])
+  return result === 'ok'
+}
+
 let toastTimer = 0
-export function toast(message: string): void {
+export function toast(message: string, duration = 3000): void {
   let node = document.getElementById('toast')
   if (!node) {
     node = el('div', { id: 'toast', class: 'toast' })
@@ -454,5 +504,5 @@ export function toast(message: string): void {
   node.textContent = message
   node.hidden = false
   clearTimeout(toastTimer)
-  toastTimer = window.setTimeout(() => (node!.hidden = true), 3000)
+  toastTimer = window.setTimeout(() => (node!.hidden = true), duration)
 }

@@ -3,6 +3,7 @@
 import type { JSONContent } from '@tiptap/core'
 import {
   AlignmentType,
+  Bookmark,
   BorderStyle,
   CommentRangeEnd,
   CommentRangeStart,
@@ -24,6 +25,7 @@ import {
   PageNumber,
   PageOrientation,
   Paragraph,
+  SectionType,
   ShadingType,
   Tab,
   Table,
@@ -37,11 +39,19 @@ import {
   type IRunOptions,
   type ParagraphChild,
 } from 'docx'
-import { DEFAULT_FONT, DEFAULT_FONT_SIZE_PT, HEADING_SIZES_PT, PAGE_SIZES_MM, SUBTITLE_SIZE_PT, TITLE_SIZE_PT, langTag, type CommentData, type DocumentData } from './types'
+import { DEFAULT_FONT, DEFAULT_FONT_SIZE_PT, HEADING_SIZES_PT, PAGE_SIZES_MM, SUBTITLE_SIZE_PT, TITLE_SIZE_PT, documentSections, langTag, type CommentData, type DocumentData, type Section } from './types'
+import { escapeXml } from '../../../core/formats'
+import { tocBookmarks, tocHeadingsJSON } from '../editor/toc'
+import { citedIdsJSON, idsOf } from '../references/nodes'
+import { citationText, formatBibliography, yearSuffixes } from '../references/format'
+import { DEFAULT_CITE, type CiteSettings, type Run, type Source } from '../references/types'
+import { sourcesXml, sourceTags, WORD_LCID } from './bibliography-xml'
 import { loadImage, toHex, toPt, type LoadedImage } from '../../../core/formats'
 import { latexToMathML } from '../../../ui/equation'
 import { mathmlToOmml } from './math'
 import { changeOf, commentMarkers } from './review'
+import { chartPng, readEmbedded, type EmbeddedChart } from '../../charts/embedded'
+import { addDocxCharts, CHART_MARK } from './docx-charts'
 
 // Custom style ids (the importer recognises them by name) and layout constants.
 const TWIPS_PER_INDENT = 720 // 1.27 cm per indent level
@@ -92,6 +102,16 @@ interface Context {
   revisions: number
   // Language of the paragraph being written (w:lang of its runs), when it has its own.
   lang?: string
+  // Bookmarks on headings listed by a table of contents.
+  bookmarks: Map<JSONContent, string>
+  body: JSONContent
+  // Citations: sources, style, Word tags and year letters.
+  sources: Map<string, Source>
+  cite: CiteSettings
+  tags: Map<string, string>
+  suffixes: Map<string, string>
+  // Charts written as pictures, turned into native charts afterwards (docx-charts.ts).
+  charts: EmbeddedChart[]
 }
 
 // Where a block sits: inside a quote, a table header cell, or as extra content of a list item.
@@ -103,24 +123,43 @@ interface Scope {
 }
 
 export async function exportDocx(data: DocumentData): Promise<Blob> {
-  const { page } = data
-  const [pw, ph] = PAGE_SIZES_MM[page.size] ?? PAGE_SIZES_MM.A4
-  const landscape = page.orientation === 'landscape'
-  const m = page.margins
+  const sections = documentSections(data.body, data.page, data.columns)
+  const sources = new Map((data.sources ?? []).map((s) => [s.id, s]))
+  const cite = data.citeStyle ?? DEFAULT_CITE
+  const cited = citedIdsJSON(data.body).map((id) => sources.get(id)).filter((s): s is Source => !!s)
   const ctx: Context = {
     footnotes: {},
     numbering: [listDefinition('bullet', 'bullet', 1), listDefinition('task-checked', 'checked', 1), listDefinition('task-unchecked', 'unchecked', 1)],
     lists: 0,
-    contentWidth: Math.round(((landscape ? ph : pw) - m.left - m.right) * MM_TO_TWIPS),
+    contentWidth: contentWidth(sections[0]),
     commentStarts: new Map(),
     commentEnds: new Map(),
     revisions: 0,
+    bookmarks: tocBookmarks(data.body),
+    body: data.body,
+    sources,
+    cite,
+    tags: sourceTags(data.sources ?? []),
+    suffixes: yearSuffixes(cited, cite),
+    charts: [],
   }
   const comments = prepareComments(data, ctx)
 
-  const body = await blocks(data.body.content ?? [], ctx, {})
-  // Word expects the body to end with a paragraph, not a table.
-  if (!(body[body.length - 1] instanceof Paragraph)) body.push(new Paragraph({}))
+  // One Word section per document section (section breaks split the body).
+  const groups: JSONContent[][] = [[]]
+  for (const node of data.body.content ?? []) {
+    if (node.type === 'sectionBreak') groups.push([])
+    else groups[groups.length - 1].push(node)
+  }
+  const bodies: Block[][] = []
+  for (const [i, group] of groups.entries()) {
+    ctx.contentWidth = contentWidth(sections[i])
+    const out = await blocks(group, ctx, {})
+    // Word expects each section to end with a paragraph, not a table.
+    if (!(out[out.length - 1] instanceof Paragraph)) out.push(new Paragraph({}))
+    bodies.push(out)
+  }
+  ctx.contentWidth = contentWidth(sections[0])
   const header = data.header && hasContent(data.header) ? new Header({ children: await cellBlocks(data.header.content ?? [], ctx, {}) }) : null
   const footer = data.footer && hasContent(data.footer) ? new Footer({ children: await cellBlocks(data.footer.content ?? [], ctx, {}) }) : null
 
@@ -130,7 +169,7 @@ export async function exportDocx(data: DocumentData): Promise<Blob> {
   })
   const doc = new Document({
     title: data.title,
-    creator: 'Words Online',
+    creator: 'Ofimeo',
     styles: {
       default: {
         document: { run: { font: DEFAULT_FONT, size: DEFAULT_FONT_SIZE_PT * 2, language: data.lang ? { value: data.lang } : undefined }, paragraph: { spacing: { after: 120 } } },
@@ -181,40 +220,153 @@ export async function exportDocx(data: DocumentData): Promise<Blob> {
         },
         { id: STYLE.listContinue, name: 'List Continue', basedOn: 'Normal', paragraph: { indent: { left: TWIPS_PER_INDENT } } },
         { id: STYLE.tableHeading, name: 'Table Heading', basedOn: 'Normal', run: { bold: true } },
+        { id: 'TOCHeading', name: 'TOC Heading', basedOn: 'Normal', next: 'Normal', run: { bold: true, size: 32 }, paragraph: { spacing: { before: 240, after: 120 } } },
+        ...[1, 2, 3, 4, 5, 6].map((level) => ({
+          id: `TOC${level}`,
+          name: `toc ${level}`,
+          basedOn: 'Normal',
+          next: 'Normal',
+          run: level === 1 ? { bold: true } : undefined,
+          paragraph: { indent: { left: (level - 1) * 284 }, spacing: { after: 60 } },
+        })),
+        { id: 'Bibliography', name: 'Bibliography', basedOn: 'Normal', paragraph: { indent: { left: 720, hanging: 720 }, spacing: { after: 120, line: 360, lineRule: LineRuleType.AUTO } } },
+        { id: 'Caption', name: 'caption', basedOn: 'Normal', next: 'Normal', quickFormat: true, run: { italics: true, size: 18, color: '44546A' }, paragraph: { alignment: AlignmentType.CENTER, spacing: { after: 200 } } },
         { id: STYLE.tableSeparator, name: 'Table Separator', basedOn: 'Normal', run: { size: 2 }, paragraph: { spacing: { before: 0, after: 0, line: 20, lineRule: LineRuleType.EXACT } } },
       ],
       characterStyles: [{ id: STYLE.inlineCode, name: 'Source Text', basedOn: 'DefaultParagraphFont', run: { font: CODE_FONT } }],
     },
+    customProperties: [{ name: 'OfimeoCitationStyle', value: JSON.stringify(cite) }],
     numbering: { config: ctx.numbering },
     footnotes: ctx.footnotes,
     comments: comments.length ? { children: comments } : undefined,
-    sections: [
-      {
-        properties: {
-          page: {
-            size: {
-              width: Math.round(pw * MM_TO_TWIPS),
-              height: Math.round(ph * MM_TO_TWIPS),
-              orientation: landscape ? PageOrientation.LANDSCAPE : PageOrientation.PORTRAIT,
-            },
-            margin: {
-              top: Math.round(m.top * MM_TO_TWIPS),
-              right: Math.round(m.right * MM_TO_TWIPS),
-              bottom: Math.round(m.bottom * MM_TO_TWIPS),
-              left: Math.round(m.left * MM_TO_TWIPS),
-              header: 709,
-              footer: 709,
-            },
-          },
-        },
-        headers: header ? { default: header } : undefined,
-        footers: footer ? { default: footer } : undefined,
-        children: body,
-      },
-    ],
+    sections: bodies.map((children, i) => ({
+      properties: sectionProperties(sections[i]),
+      headers: i === 0 && header ? { default: header } : undefined,
+      footers: i === 0 && footer ? { default: footer } : undefined,
+      children,
+    })),
   })
-  return Packer.toBlob(doc)
+  let blob = await Packer.toBlob(doc)
+  if (ctx.charts.length) blob = await addDocxCharts(blob, ctx.charts)
+  if (!data.sources?.length) return blob
+  return addBibliographyPart(blob, sourcesXml(data.sources, cite))
 }
+
+function contentWidth(section: Section): number {
+  const [pw, ph] = PAGE_SIZES_MM[section.page.size] ?? PAGE_SIZES_MM.A4
+  const m = section.page.margins
+  const width = section.page.orientation === 'landscape' ? ph : pw
+  const total = (width - m.left - m.right) * MM_TO_TWIPS
+  const n = section.columns.count
+  return Math.round(n > 1 ? (total - (n - 1) * section.columns.gap * MM_TO_TWIPS) / n : total)
+}
+
+function sectionProperties(section: Section) {
+  const [pw, ph] = PAGE_SIZES_MM[section.page.size] ?? PAGE_SIZES_MM.A4
+  const landscape = section.page.orientation === 'landscape'
+  const m = section.page.margins
+  const { columns } = section
+  return {
+    type: section.start === 'continuous' ? SectionType.CONTINUOUS : SectionType.NEXT_PAGE,
+    page: {
+      size: { width: Math.round(pw * MM_TO_TWIPS), height: Math.round(ph * MM_TO_TWIPS), orientation: landscape ? PageOrientation.LANDSCAPE : PageOrientation.PORTRAIT },
+      margin: {
+        top: Math.round(m.top * MM_TO_TWIPS),
+        right: Math.round(m.right * MM_TO_TWIPS),
+        bottom: Math.round(m.bottom * MM_TO_TWIPS),
+        left: Math.round(m.left * MM_TO_TWIPS),
+        header: 709,
+        footer: 709,
+      },
+    },
+    column: columns.count > 1 ? { count: columns.count, space: Math.round(columns.gap * MM_TO_TWIPS), separate: columns.separator, equalWidth: true } : undefined,
+  }
+}
+
+// Adds the Word bibliography part (customXml with b:Sources) to a finished package.
+async function addBibliographyPart(blob: Blob, sources: string): Promise<Blob> {
+  const JSZip = (await import('jszip')).default
+  const zip = await JSZip.loadAsync(await blob.arrayBuffer())
+  const guid = `{${crypto.randomUUID().toUpperCase()}}`
+  zip.file('customXml/item1.xml', sources)
+  zip.file(
+    'customXml/itemProps1.xml',
+    `<?xml version="1.0" encoding="UTF-8" standalone="no"?><ds:datastoreItem ds:itemID="${guid}" xmlns:ds="http://schemas.openxmlformats.org/officeDocument/2006/customXml"><ds:schemaRefs><ds:schemaRef ds:uri="http://schemas.openxmlformats.org/officeDocument/2006/bibliography"/></ds:schemaRefs></ds:datastoreItem>`,
+  )
+  zip.file(
+    'customXml/_rels/item1.xml.rels',
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXmlProps" Target="itemProps1.xml"/></Relationships>`,
+  )
+  const relsPath = 'word/_rels/document.xml.rels'
+  const rels = (await zip.file(relsPath)?.async('text')) ?? ''
+  zip.file(relsPath, rels.replace('</Relationships>', `<Relationship Id="rIdBib1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../customXml/item1.xml"/></Relationships>`))
+  let types = (await zip.file('[Content_Types].xml')?.async('text')) ?? ''
+  if (!/Extension="xml"/.test(types)) types = types.replace('</Types>', '<Default Extension="xml" ContentType="application/xml"/></Types>')
+  types = types.replace('</Types>', '<Override PartName="/customXml/itemProps1.xml" ContentType="application/vnd.openxmlformats-officedocument.customXmlProperties+xml"/></Types>')
+  zip.file('[Content_Types].xml', types)
+  return zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' })
+}
+
+// ---------- Fields: table of contents, citations, bibliography (raw WordprocessingML) ----------
+
+const W_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+
+function rawXml(xml: string): ImportedXmlComponent {
+  const root = new DOMParser().parseFromString(`<root xmlns:w="${W_NS}">${xml}</root>`, 'application/xml')
+  return xmlComponent(root.documentElement.firstElementChild!)
+}
+
+const wText = (text: string, italic = false, bold = false) =>
+  `<w:r>${italic || bold ? `<w:rPr>${bold ? '<w:b/>' : ''}${italic ? '<w:i/>' : ''}</w:rPr>` : ''}<w:t xml:space="preserve">${escapeXml(text)}</w:t></w:r>`
+const fldChar = (type: 'begin' | 'separate' | 'end') => `<w:r><w:fldChar w:fldCharType="${type}"/></w:r>`
+const instr = (text: string) => `<w:r><w:instrText xml:space="preserve">${escapeXml(text)}</w:instrText></w:r>`
+const runsXml = (runs: Run[]) => runs.map((r) => wText(r.text, !!r.italic)).join('')
+
+function tocXml(node: JSONContent, ctx: Context): string {
+  const maxLevel = Number(node.attrs?.maxLevel) || 3
+  const entries = (node.attrs?.entries ?? []) as { level: number; text: string; page?: number }[]
+  const headings = tocHeadingsJSON(ctx.body, maxLevel)
+  const tabs = `<w:tabs><w:tab w:val="right" w:leader="dot" w:pos="${ctx.contentWidth}"/></w:tabs>`
+  const begin = fldChar('begin') + instr(` TOC \\o "1-${maxLevel}" \\h \\z \\u `) + fldChar('separate')
+  const title = node.attrs?.title ? `<w:p><w:pPr><w:pStyle w:val="TOCHeading"/></w:pPr>${wText(String(node.attrs.title))}</w:p>` : ''
+  let rows = entries
+    .map((e, i) => {
+      const anchor = headings[i] ? ctx.bookmarks.get(headings[i]) : undefined
+      const page = e.page ? String(e.page) : ''
+      const pageXml = anchor ? fldChar('begin') + instr(` PAGEREF ${anchor} \\h `) + fldChar('separate') + wText(page) + fldChar('end') : wText(page)
+      let inner = wText(e.text) + '<w:r><w:tab/></w:r>' + pageXml
+      if (anchor) inner = `<w:hyperlink w:anchor="${anchor}" w:history="1">${inner}</w:hyperlink>`
+      const level = Math.min(9, Math.max(1, e.level))
+      return `<w:p><w:pPr><w:pStyle w:val="TOC${level}"/>${tabs}</w:pPr>${i === 0 ? begin : ''}${inner}${i === entries.length - 1 ? fldChar('end') : ''}</w:p>`
+    })
+    .join('')
+  if (!entries.length) rows = `<w:p>${begin}${wText('—')}${fldChar('end')}</w:p>`
+  return `<w:sdt><w:sdtPr><w:docPartObj><w:docPartGallery w:val="Table of Contents"/><w:docPartUnique/></w:docPartObj></w:sdtPr><w:sdtContent>${title}${rows}</w:sdtContent></w:sdt>`
+}
+
+function citationXml(node: JSONContent, ctx: Context): string {
+  const ids = idsOf(node.attrs?.ids).filter((id) => ctx.sources.has(id))
+  const locator = String(node.attrs?.locator ?? '').trim()
+  const text = citationText({ ids, locator }, ctx.sources, ctx.cite, ctx.suffixes)
+  if (!ids.length) return wText(text)
+  const tags = ids.map((id) => ctx.tags.get(id) ?? id)
+  const code = ` CITATION ${tags[0]} \\l ${WORD_LCID[ctx.cite.lang]} ${tags
+    .slice(1)
+    .map((tag) => `\\m ${tag} `)
+    .join('')}${locator ? `\\p ${locator.replace(/\s+/g, '')} ` : ''}`
+  return `<w:sdt><w:sdtPr><w:citation/></w:sdtPr><w:sdtContent>${fldChar('begin')}${instr(code)}${fldChar('separate')}${wText(text)}${fldChar('end')}</w:sdtContent></w:sdt>`
+}
+
+function bibliographyXml(ctx: Context): string {
+  const cited = citedIdsJSON(ctx.body).map((id) => ctx.sources.get(id)).filter((s): s is Source => !!s)
+  const entries = formatBibliography(cited, ctx.cite)
+  const begin = fldChar('begin') + instr(` BIBLIOGRAPHY \\l ${WORD_LCID[ctx.cite.lang]} `) + fldChar('separate')
+  const rows = entries.length
+    ? entries.map((e, i) => `<w:p><w:pPr><w:pStyle w:val="Bibliography"/></w:pPr>${i === 0 ? begin : ''}${runsXml(e.runs)}${i === entries.length - 1 ? fldChar('end') : ''}</w:p>`).join('')
+    : `<w:p><w:pPr><w:pStyle w:val="Bibliography"/></w:pPr>${begin}${fldChar('end')}</w:p>`
+  return `<w:sdt><w:sdtPr><w:docPartObj><w:docPartGallery w:val="Bibliographies"/><w:docPartUnique/></w:docPartObj></w:sdtPr><w:sdtContent>${rows}</w:sdtContent></w:sdt>`
+}
+
 
 // Numbers the comments (replies share their parent's range, as Word does)
 // and places their markers.
@@ -314,6 +466,14 @@ async function block(node: JSONContent, ctx: Context, scope: Scope): Promise<Blo
       return [new Paragraph({ children: [new PageBreak()] })]
     case 'table':
       return [await table(node, ctx)]
+    case 'tableOfContents':
+      return [rawXml(tocXml(node, ctx)) as unknown as Paragraph]
+    case 'bibliography':
+      return [rawXml(bibliographyXml(ctx)) as unknown as Paragraph]
+    case 'sectionBreak':
+      return []
+    case 'chart':
+      return chartBlocks(node, ctx)
     default:
       // Unknown blocks: keep their inline content if any.
       return node.content ? blocks(node.content, ctx, scope) : []
@@ -360,8 +520,10 @@ async function paragraph(node: JSONContent, ctx: Context, scope: Scope, numberin
   const lineHeight = parseFloat(a.lineHeight)
   const outerLang = ctx.lang
   ctx.lang = langTag(a.lang)
-  const children = await inlines(node.content ?? [], ctx)
+  let children = await inlines(node.content ?? [], ctx)
   ctx.lang = outerLang
+  const bookmark = ctx.bookmarks.get(node)
+  if (bookmark) children = [new Bookmark({ id: bookmark, children })]
   return new Paragraph({
     heading,
     style,
@@ -399,7 +561,7 @@ async function inlines(nodes: JSONContent[], ctx: Context): Promise<ParagraphChi
     const ends = ctx.commentEnds.get(node) ?? []
     const children: ParagraphChild[] = [
       ...starts.map((id) => new CommentRangeStart(id)),
-      ...(run ? [run] : []),
+      ...(Array.isArray(run) ? run : run ? [run] : []),
       ...ends.flatMap((id) => [new CommentRangeEnd(id), new TextRun({ children: [new CommentReference(id)] })]),
     ]
     if (!children.length) continue
@@ -416,7 +578,7 @@ async function inlines(nodes: JSONContent[], ctx: Context): Promise<ParagraphChi
   return out
 }
 
-async function inline(node: JSONContent, ctx: Context): Promise<ParagraphChild | null> {
+async function inline(node: JSONContent, ctx: Context): Promise<ParagraphChild | ParagraphChild[] | null> {
   const opts = { ...runOptions(node.marks ?? []), ...(ctx.lang ? { language: { value: ctx.lang } } : {}) }
   switch (node.type) {
     case 'text': {
@@ -440,9 +602,79 @@ async function inline(node: JSONContent, ctx: Context): Promise<ParagraphChild |
     }
     case 'image':
       return image(node, ctx)
+    case 'citation':
+      return rawXml(citationXml(node, ctx)) as unknown as ParagraphChild
+    case 'mergeField':
+    case 'mergeIf':
+      return mergeFieldRuns(node, opts)
     default:
       return null
   }
+}
+
+// ---------- Mail merge fields (MERGEFIELD, IF) ----------
+
+const fieldArg = (s: unknown) => `"${String(s ?? '').replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
+const raw = (xml: string) => rawXml(xml) as unknown as ParagraphChild
+
+// The field code with its result run formatted like the text around it.
+function mergeFieldRuns(node: JSONContent, opts: IRunOptions): ParagraphChild[] {
+  const a = node.attrs ?? {}
+  const result = (text: string) => new TextRun({ ...opts, text })
+  if (node.type === 'mergeField') {
+    const name = String(a.name ?? '')
+    return [raw(fldChar('begin')), raw(instr(` MERGEFIELD ${fieldArg(name)} \\* MERGEFORMAT `)), raw(fldChar('separate')), result(`«${name}»`), raw(fldChar('end'))]
+  }
+  const field = String(a.field ?? '')
+  return [
+    raw(fldChar('begin')),
+    raw(instr(' IF ')),
+    raw(fldChar('begin')),
+    raw(instr(` MERGEFIELD ${fieldArg(field)} `)),
+    raw(fldChar('separate')),
+    result(`«${field}»`),
+    raw(fldChar('end')),
+    raw(instr(` ${a.op === '<>' ? '<>' : '='} ${fieldArg(a.value)} ${fieldArg(a.then)} ${fieldArg(a.otherwise)} \\* MERGEFORMAT `)),
+    raw(fldChar('separate')),
+    result(String(a.then ?? '')),
+    raw(fldChar('end')),
+  ]
+}
+
+// ---------- Charts ----------
+
+// A centered picture of the chart (replaced by a native chart in the package) and its caption.
+async function chartBlocks(node: JSONContent, ctx: Context): Promise<Block[]> {
+  const a = node.attrs ?? {}
+  const chart = readEmbedded(a.chart)
+  if (!chart) return []
+  const maxWidth = ctx.contentWidth / TWIPS_PER_PX
+  let width = Number(a.width) || 480
+  let height = Number(a.height) || 300
+  if (width > maxWidth) {
+    height = (height * maxWidth) / width
+    width = maxWidth
+  }
+  const img = await loadImage(await chartPng(chart, Number(a.width) || 480, Number(a.height) || 300))
+  if (!img) return []
+  ctx.charts.push(chart)
+  const caption = String(a.caption ?? '')
+  const out: Block[] = [
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      keepNext: !!caption,
+      children: [
+        new ImageRun({
+          type: img.type,
+          data: img.data,
+          transformation: { width: Math.round(width), height: Math.round(height) },
+          altText: { name: `${CHART_MARK}${ctx.charts.length}`, description: chart.spec.title || caption || 'Chart', title: caption || chart.spec.title || 'Chart' },
+        }),
+      ],
+    }),
+  ]
+  if (caption) out.push(new Paragraph({ style: 'Caption', children: [new TextRun(caption)] }))
+  return out
 }
 
 function runOptions(marks: JSONContent['marks'] & object): IRunOptions {

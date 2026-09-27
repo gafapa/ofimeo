@@ -1,14 +1,20 @@
-// App chrome shared by every document type: title, access badge, presence
-// avatars, connection status, share dialog (permission links), hand in and
-// user name.
+// App chrome shared by every document type: title, access badge, save state,
+// presence avatars, connection status, share dialog (permission links), hand
+// in and user name.
 
 import QRCode from 'qrcode'
+import { CloudCheck, CloudUpload } from 'lucide'
+import { appInfo } from '../apps/registry'
 import { buildHandIn, downloadBlob, printDocument } from '../core/handin'
 import { t } from '../core/i18n'
 import { updateAuthor, type Access, type Session } from '../core/session'
 import * as store from '../core/store'
 import { setupAutoVersions } from '../core/versions'
-import { el, promptText, showDialog, toast } from './widgets'
+import { setupChat } from './chat'
+import { handInToShare, setupNextcloud } from './nextcloud'
+import { hasMoodleAccount } from '../core/moodle-store'
+import { setupStoreForwardStatus } from './store-forward'
+import { el, icon, promptText, showDialog, toast } from './widgets'
 import './edu.css'
 
 export function accessLabel(access: Access | undefined): string {
@@ -26,7 +32,7 @@ export function setupChrome(session: Session, untitled: string): void {
   const syncTitle = () => {
     const title = String(meta.get('title') ?? '')
     if (document.activeElement !== titleInput) titleInput.value = title
-    document.title = `${title || untitled} · Words Online`
+    document.title = `${title || untitled} · ${appInfo(session.type).product}`
   }
   titleInput.addEventListener('input', () => session.canEdit && meta.set('title', titleInput.value))
   titleInput.addEventListener('keydown', (e) => e.key === 'Enter' && titleInput.blur())
@@ -96,11 +102,45 @@ export function setupChrome(session: Session, untitled: string): void {
   window.addEventListener('online', renderStatus)
   window.addEventListener('offline', renderStatus)
   renderStatus()
+  // Clicking the status opens the connection test (loaded on demand).
+  status.setAttribute('role', 'button')
+  status.tabIndex = 0
+  status.style.cursor = 'pointer'
+  const openTest = () => void import('./connection').then((m) => m.openConnectionTest(session))
+  status.addEventListener('click', openTest)
+  status.addEventListener('keydown', (e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), openTest()))
 
   document.getElementById('btn-share')!.addEventListener('click', () => openShareDialog(session))
   document.getElementById('btn-handin')?.addEventListener('click', () => void handIn(session, untitled))
 
+  setupSaveState(session)
   setupAutoVersions(session)
+  setupNextcloud(session)
+  setupStoreForwardStatus(session)
+  setupChat(session)
+}
+
+// Save state ("Saving…" / "Saved in this browser") for every app: an icon, always
+// shown (phones show only the icon), and a label. The shared status bar
+// (statusbar.ts) moves the indicator into the status bar.
+export function setupSaveState(session: Session): void {
+  const indicator = document.querySelector<HTMLElement>('.save-indicator')
+  const label = document.getElementById('save-state')
+  if (!indicator || !label) return
+  let timer = 0
+  const render = (saving: boolean) => {
+    const text = saving ? t('Saving…') : t('Saved in this browser')
+    label.textContent = text
+    indicator.classList.toggle('saving', saving)
+    indicator.title = text
+    indicator.querySelector('svg')?.replaceWith(icon(saving ? CloudUpload : CloudCheck, 16))
+  }
+  session.doc.on('update', () => {
+    if (!indicator.classList.contains('saving')) render(true)
+    clearTimeout(timer)
+    timer = window.setTimeout(() => render(false), 600)
+  })
+  render(false)
 }
 
 type LinkChoice = Access | 'copy'
@@ -111,7 +151,7 @@ export async function openShareDialog(session: Session): Promise<void> {
   const choices: { value: LinkChoice; label: string; desc: string }[] = []
   if (session.isProtected) {
     if (session.canEdit) choices.push({ value: 'edit', label: t('Can edit'), desc: t('Anyone with this link can edit the document with you in real time.') })
-    if (session.canComment) choices.push({ value: 'comment', label: t('Can comment'), desc: t('Anyone with this link can read the document and add comments, but not change it.') })
+    if (session.canComment && appInfo(session.type).comments !== false) choices.push({ value: 'comment', label: t('Can comment'), desc: t('Anyone with this link can read the document and add comments, but not change it.') })
     choices.push({ value: 'view', label: t('Can view'), desc: t('Anyone with this link can read the document (and follow changes live), but not change it.') })
   } else {
     choices.push({ value: 'edit', label: t('Can edit'), desc: t('Anyone who opens this link can edit the document with you in real time.') })
@@ -151,7 +191,7 @@ export async function openShareDialog(session: Session): Promise<void> {
       : t('This document was created before permission links existed, so every link can edit. To share it as view only, make a copy (File → Make a copy) and share the copy.'),
   })
   const body = el('div', {}, tabs, desc, el('div', { class: 'code-row' }, input, copyBtn), canvas, notes)
-  const shown = showDialog(t('Share'), body, [{ label: t('Done'), value: 'ok', primary: true }])
+  const shown = showDialog(t('Share'), body, [{ label: t('Done'), value: 'ok', primary: true }], false, 'sharing')
   select(choices[0])
   await shown
 }
@@ -160,6 +200,16 @@ export async function openShareDialog(session: Session): Promise<void> {
 // offers printing (Save as PDF).
 export async function handIn(session: Session, untitled: string): Promise<void> {
   const { user } = session
+  // Connected to Moodle (src/ui/moodle.ts): hand in there, or download as usual.
+  if (hasMoodleAccount()) {
+    const where = await showDialog(t('Hand in'), el('p', { textContent: t('Hand in your work to an assignment in Moodle, or download it to hand it in another way.') }), [
+      { label: t('Cancel'), value: 'cancel' },
+      { label: t('Download'), value: 'zip' },
+      { label: t('Hand in to Moodle…'), value: 'moodle', primary: true },
+    ], false, 'moodle')
+    if (where === 'moodle') return void (await import('./moodle')).handInToMoodle(session, untitled)
+    if (where !== 'zip') return
+  }
   if (isGuestName(user.name)) {
     const name = await promptText(t('Hand in'), t('Your full name (it goes in the file name)'), '')
     if (name === null) return
@@ -173,9 +223,10 @@ export async function handIn(session: Session, untitled: string): Promise<void> 
   }
   const title = String(session.doc.getMap('meta').get('title') || untitled)
   let fileName = ''
+  let zip: Awaited<ReturnType<typeof buildHandIn>>
   try {
     toast(t('Preparing your files…'))
-    const zip = await buildHandIn(session, title, user.name)
+    zip = await buildHandIn(session, title, user.name)
     downloadBlob(zip.blob, zip.name)
     fileName = zip.name
   } catch (err) {
@@ -187,12 +238,17 @@ export async function handIn(session: Session, untitled: string): Promise<void> 
     {},
     el('p', { textContent: t('Your work was downloaded as “{name}”.', { name: fileName }) }),
     el('p', { class: 'hint', textContent: t('Upload or send this file to your teacher. If a PDF is also needed, use “Print / Save as PDF” and choose “Save as PDF” as the printer.') }),
+    el('p', { class: 'hint', textContent: t('If your teacher gave you a Nextcloud upload link, you can also send the file there directly.') }),
   )
   const choice = await showDialog(t('Hand in'), body, [
+    { label: t('Upload to a Nextcloud share link…'), value: 'nextcloud' },
+    { label: t('Hand in to Moodle…'), value: 'moodle' },
     { label: t('Print / Save as PDF'), value: 'print' },
     { label: t('Done'), value: 'ok', primary: true },
-  ])
+  ], false, 'handin')
   if (choice === 'print') setTimeout(() => printDocument(session), 100)
+  if (choice === 'nextcloud') await handInToShare(session, zip)
+  if (choice === 'moodle') await (await import('./moodle')).handInToMoodle(session, untitled)
 }
 
 // Automatic names ("Guest 123", in any language) are replaced by a real one when handing in.

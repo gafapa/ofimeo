@@ -1,6 +1,7 @@
 // Hash-based routing, so the suite works on any static host:
 //   #app=<type>&doc=<id>&key=<secret>[&edit=…|&comment=…&verify=…|&verify=…&cverify=…][&copy=1]
 //                                        open a document (see keys.ts for the permission keys)
+//   #new=<type>                          a new document of that app (manifest shortcuts, main.ts)
 //   (empty)                              home screen
 // `copy=1` makes a private copy of the document instead of joining it.
 // The fragment is never sent to any server, which keeps the keys private.
@@ -34,7 +35,45 @@ export function docPath(type: DocType, id: string, key: string, keys: LinkKeys =
 
 // A new protected document (full edit), or a legacy one where WebCrypto is unavailable.
 export function newDocPath(type: DocType): string {
-  return docPath(type, newDocId(), newDocKey(), newLinkKeys())
+  const id = newDocId()
+  rememberNew(id)
+  return docPath(type, id, newDocKey(), newLinkKeys())
+}
+
+// Ids handed out by newDocPath, so an app can tell a document created here
+// (which it may initialize, e.g. with localized names) from a shared one that
+// has not arrived yet. Kept a day, in localStorage (File ▸ New opens a new tab).
+const NEW_DOCS_KEY = 'words-online:new-docs'
+const NEW_DOCS_MS = 24 * 3600 * 1000
+
+function readNew(): Record<string, number> {
+  try {
+    const all = JSON.parse(localStorage.getItem(NEW_DOCS_KEY) || '{}') as Record<string, number>
+    return Object.fromEntries(Object.entries(all).filter(([, time]) => Date.now() - time < NEW_DOCS_MS))
+  } catch {
+    return {}
+  }
+}
+
+function rememberNew(id: string): void {
+  try {
+    localStorage.setItem(NEW_DOCS_KEY, JSON.stringify({ ...readNew(), [id]: Date.now() }))
+  } catch {
+    // Storage unavailable: new documents keep the default initial content.
+  }
+}
+
+// True (once) when this browser created the document id with newDocPath.
+export function takeNewDoc(id: string): boolean {
+  const all = readNew()
+  if (!all[id]) return false
+  delete all[id]
+  try {
+    localStorage.setItem(NEW_DOCS_KEY, JSON.stringify(all))
+  } catch {
+    // Ignored: the entry expires anyway.
+  }
+  return true
 }
 
 export function homePath(): string {

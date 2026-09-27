@@ -7,7 +7,7 @@ import { el } from '../../ui/widgets'
 
 export class NotesEditor {
   readonly element: HTMLElement
-  private readonly area: HTMLTextAreaElement
+  readonly area: HTMLTextAreaElement
   private text: Y.Text | null = null
   private readonly onRemote = (_e: Y.YTextEvent, tr: Y.Transaction) => {
     if (tr.origin !== this) this.pull()
@@ -25,6 +25,16 @@ export class NotesEditor {
     this.text = text
     text.observe(this.onRemote)
     this.area.value = text.toString()
+  }
+
+  // Selects text of the notes (spelling dialog, which keeps the focus and
+  // outlines it) and brings it into view.
+  select(from: number, to: number): void {
+    this.element.hidden = false
+    this.area.setSelectionRange(from, to)
+    const lines = this.area.value.slice(0, from).split('\n').length - 1
+    const lineHeight = parseFloat(getComputedStyle(this.area).lineHeight) || 18
+    this.area.scrollTop = Math.max(0, lines * lineHeight - this.area.clientHeight / 2)
   }
 
   // Local edit → the smallest replacement in the shared text.

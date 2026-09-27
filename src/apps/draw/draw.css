@@ -1,4 +1,47 @@
-/* Drawing: Excalidraw fills the main area. */
+/* Drawing: Excalidraw fills the main area, themed from our tokens (tokens.css). */
 
 .draw-host { flex: 1; min-height: 0; position: relative; }
-.draw-host .excalidraw { --color-primary: #e8710a; }
+
+/* Excalidraw's variables from our tokens; `.excalidraw.excalidraw` beats its `.excalidraw.theme--dark` rules. */
+.draw-host .excalidraw.excalidraw {
+  --ui-font: var(--font-ui);
+  --color-primary: var(--accent);
+  --color-primary-darker: color-mix(in srgb, var(--accent) 85%, var(--text));
+  --color-primary-darkest: color-mix(in srgb, var(--accent) 70%, var(--text));
+  --color-primary-hover: color-mix(in srgb, var(--accent) 85%, var(--text));
+  --color-primary-light: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  --color-primary-light-darker: color-mix(in srgb, var(--accent) 26%, var(--surface));
+  --color-surface-primary-container: var(--active);
+  --color-on-primary-container: var(--active-fg);
+  --color-brand-hover: var(--accent);
+  --color-brand-active: var(--accent);
+  --focus-highlight-color: var(--focus);
+  --island-bg-color: var(--surface);
+  --popup-bg-color: var(--surface);
+  --sidebar-bg-color: var(--surface);
+  --input-bg-color: var(--surface);
+  --text-primary-color: var(--text);
+  --popup-text-color: var(--text);
+  --color-on-surface: var(--text);
+  --icon-fill-color: var(--text);
+  --keybinding-color: var(--muted);
+  --button-hover-bg: var(--hover);
+  --color-surface-low: var(--surface-alt);
+  --color-surface-high: var(--hover);
+  --color-surface-mid: var(--surface-alt);
+  --color-surface-lowest: var(--surface);
+  --sidebar-border-color: var(--border);
+  --dialog-border-color: var(--border);
+  --default-border-color: var(--border);
+  --shadow-island: var(--shadow-s);
+  --border-radius-md: var(--radius-m);
+  --border-radius-lg: var(--radius-l);
+}
+
+/* Replaced by our menus and status bar: main menu, zoom buttons, help button. */
+.draw-host .excalidraw :is(.main-menu-trigger, [data-testid='main-menu-trigger'], .zoom-actions, .help-icon) { display: none !important; }
+
+/* High contrast: islands and popovers get a visible edge. */
+html[data-a11y-theme^='contrast'] .draw-host .excalidraw :is(.Island, .dropdown-menu-container, .Modal__content, .sidebar) { border: 1px solid var(--border); }
+
+.draw-selection { white-space: nowrap; }

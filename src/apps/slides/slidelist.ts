@@ -20,6 +20,8 @@ export interface SlideListActions {
 export class SlideList {
   readonly element = el('div', { class: 'slide-list', tabIndex: 0, role: 'listbox' })
   private readonly thumbs = new Map<string, string>()
+  // Open comments per slide.
+  private comments = new Map<string, number>()
   private items: SlideListItem[] = []
   private current = ''
   private dragging: string | null = null
@@ -60,11 +62,18 @@ export class SlideList {
         dot.style.background = user.color
         people.append(dot)
       }
+      const frame = el('div', { class: 'slide-thumb-frame' }, img, people)
+      const count = this.comments.get(item.id)
+      if (count) {
+        const badge = el('span', { class: 'slide-thumb-comments', textContent: String(count) })
+        badge.title = t('{n} comments', { n: count })
+        frame.append(badge)
+      }
       const row = el(
         'div',
         { class: 'slide-thumb', role: 'option', dataset: { id: item.id } },
         el('span', { class: 'slide-thumb-num', textContent: String(index + 1) }),
-        el('div', { class: 'slide-thumb-frame' }, img, people),
+        frame,
       )
       row.setAttribute('aria-selected', String(item.id === current))
       row.setAttribute('aria-label', t('Slide {n}', { n: index + 1 }))
@@ -89,6 +98,11 @@ export class SlideList {
     this.thumbs.set(id, url)
     const img = this.element.querySelector<HTMLImageElement>(`.slide-thumb[data-id="${CSS.escape(id)}"] img`)
     if (img) img.src = url
+  }
+
+  // Open comment counts per slide (shown on the thumbnails at the next update).
+  setComments(counts: Map<string, number>): void {
+    this.comments = counts
   }
 
   setAspect(width: number, height: number): void {

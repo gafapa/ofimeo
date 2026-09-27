@@ -1,13 +1,20 @@
 // PowerPoint (.pptx) import: slides with text boxes and placeholders
 // (formatted paragraphs, bullets), basic shapes, pictures, straight connectors,
-// tables, backgrounds and speaker notes. Placeholders take their position and
-// default text size from the slide layout and master, and theme colors resolve
-// through the presentation theme. Charts, SmartArt and animations are skipped.
+// tables, charts, SmartArt, backgrounds and speaker notes. Placeholders take
+// their position and default text size from the slide layout and master, and
+// theme colors resolve through the presentation theme. Charts become pictures
+// drawn from their data (kept with the object); SmartArt uses the drawing
+// PowerPoint stores with it, or a box with its text. Transitions and the
+// preset animations of the main sequence (pptx-anim.ts writes the same ones)
+// become the app's transitions and animations.
 
 import JSZip from 'jszip'
 import { t } from '../../../core/i18n'
 import { newCellId, type CellRecord } from '../../diagram/model'
-import { SLIDE_SIZES, type Ratio, type SlideData } from '../model'
+import { SLIDE_SIZES, THEMES, type Ratio, type SlideData } from '../model'
+import { animationsFromStarts, defaultDuration, type AnimEffect, type AnimKind, type Animation, type Direction, type Trigger } from '../animations'
+import { parseChart, renderChartSvg, svgDataUri } from './chart'
+import { graphFromPictureName } from '../mathgraph'
 
 const EMU_PER_PX = 9525
 
@@ -84,7 +91,7 @@ function relOfType(part: Part, type: string): string | null {
 
 // ---------- Entry ----------
 
-export async function parsePptx(buffer: ArrayBuffer): Promise<{ ratio: Ratio; slides: SlideData[] }> {
+export async function parsePptx(buffer: ArrayBuffer): Promise<{ ratio: Ratio; themeId?: string; slides: SlideData[] }> {
   const zip = await JSZip.loadAsync(buffer)
   const pres = await readPart(zip, 'ppt/presentation.xml')
   if (!pres) throw new Error(t('Not a PowerPoint presentation'))
@@ -126,7 +133,10 @@ export async function parsePptx(buffer: ArrayBuffer): Promise<{ ratio: Ratio; sl
     const ctx: Ctx = { zip, scale, colors, majorFont, minorFont, slide, layout, master, cells: [{ id: '0' }, { id: '1', parent: '0' }], previous: undefined }
     const background = await backgroundOf(ctx, target.width, target.height)
     const tree = find(slide.doc, 'spTree')
-    if (tree) await walkTree(ctx, tree, null)
+    // Shape id → the cells made from it (animations target shape ids).
+    const spids = new Map<number, string[]>()
+    if (tree) await walkTree(ctx, tree, null, spids)
+    const transition = readTransition(slide.doc)
     const notesPath = relOfType(slide, 'notesSlides/')
     const notes = notesPath ? await readPart(zip, notesPath) : null
     const pageId = crypto.randomUUID()
@@ -136,42 +146,120 @@ export async function parsePptx(buffer: ArrayBuffer): Promise<{ ratio: Ratio; sl
       cells: ctx.cells,
       notes: notes ? notesText(notes) : '',
       background,
+      animations: readAnimations(slide.doc, spids),
+      ...transition,
     })
   }
   if (!slides.length) throw new Error(t('The presentation has no slides'))
-  return { ratio, slides }
+  // Presentations exported by this app name their theme ("Ofimeo: ocean"); other
+  // themes have no equivalent, so no theme of the picker is shown as active.
+  const themeName = attr(theme?.doc.documentElement, 'name') ?? ''
+  const own = /^Ofimeo: (\w+)$/.exec(themeName)?.[1]
+  return { ratio, themeId: THEMES.some((th) => th.id === own) ? own : 'imported', slides }
+}
+
+// ---------- Transitions and animations ----------
+
+// The slide transition: fade, push and wipe are kept, other effects become the
+// closest one (covers and pulls push, splits and shapes wipe, the rest fade).
+function readTransition(doc: Document): { transition?: string; transitionDuration?: number } {
+  // PowerPoint 2010+ writes <mc:AlternateContent> with a p14 choice (its exact
+  // duration) and a plain fallback: the first transition element is the richest.
+  const node = find(doc, 'transition')
+  if (!node) return {}
+  const effect = [...node.children].find((c) => c.localName !== 'sndAc' && c.localName !== 'extLst')?.localName
+  if (!effect) return {}
+  const transition = effect === 'fade' || effect === 'dissolve' || effect === 'cut' ? 'fade' : ['push', 'cover', 'pull', 'pan'].includes(effect) ? 'push' : ['wipe', 'split', 'strips', 'blinds', 'checker', 'circle', 'diamond', 'plus', 'wedge', 'wheel', 'zoom', 'randomBar'].includes(effect) ? 'wipe' : 'fade'
+  const spd = attr(node, 'spd')
+  const dur = Number(node.getAttribute('p14:dur') ?? attr(node, 'dur'))
+  return { transition, transitionDuration: dur > 0 ? dur : spd === 'slow' ? 1000 : spd === 'med' ? 750 : 500 }
+}
+
+const PRESET_EFFECTS: Record<string, AnimEffect> = { 1: 'appear', 10: 'fade', 2: 'fly', 53: 'zoom', 23: 'zoom', 21: 'wipe', 22: 'wipe', 3: 'wipe', 8: 'spin', 32: 'teeter', 6: 'pulse', 26: 'pulse', 34: 'pulse' }
+const SUBTYPE_DIRECTION: Record<string, Direction> = { 8: 'left', 2: 'right', 1: 'top', 4: 'bottom' }
+
+// The main sequence of <p:timing>: each child of mainSeq is a click step; inside
+// it, time groups (delayed from the start of the step) hold the preset effects.
+function readAnimations(doc: Document, spids: Map<number, string[]>): Animation[] {
+  const main = findAll(doc, 'cTn').find((c) => attr(c, 'nodeType') === 'mainSeq')
+  if (!main) return []
+  const delayOf = (cTn: Element | null) => num(attr(kid(kid(cTn, 'stCondLst'), 'cond'), 'delay'))
+  const found: (Omit<Animation, 'id' | 'pos' | 'delay'> & { start: number })[] = []
+  for (const step of kids(kid(main, 'childTnLst'), 'par')) {
+    // Only the first effect of a step waits for the click; the others go with it.
+    let first = true
+    for (const group of kids(kid(kid(step, 'cTn'), 'childTnLst'), 'par')) {
+      const groupCTn = kid(group, 'cTn')
+      for (const effect of kids(kid(groupCTn, 'childTnLst'), 'par')) {
+        const cTn = kid(effect, 'cTn')
+        const cls = attr(cTn, 'presetClass')
+        const kind: AnimKind | null = cls === 'entr' ? 'entrance' : cls === 'exit' ? 'exit' : cls === 'emph' ? 'emphasis' : null
+        const spid = Number(attr(find(cTn, 'spTgt'), 'spid'))
+        const cells = spids.get(spid)
+        if (!kind || !cTn || !cells?.length) continue
+        const preset = attr(cTn, 'presetID') ?? ''
+        let effectName = PRESET_EFFECTS[preset] ?? (kind === 'emphasis' ? 'pulse' : 'fade')
+        if (kind === 'emphasis' ? !['pulse', 'spin', 'teeter'].includes(effectName) : ['pulse', 'spin', 'teeter'].includes(effectName)) effectName = kind === 'emphasis' ? 'pulse' : 'fade'
+        // Length: the longest behavior (the one-millisecond visibility sets aside).
+        let duration = 0
+        let repeat = 1
+        for (const behavior of findAll(cTn, 'cTn')) {
+          const d = num(attr(behavior, 'dur'))
+          if (d > 1 && d > duration) {
+            duration = d
+            repeat = (attr(behavior, 'autoRev') === '1' ? 2 : 1) * (effectName === 'teeter' ? 2 : 1)
+          }
+        }
+        duration = effectName === 'appear' ? 0 : duration ? duration * repeat : defaultDuration(effectName)
+        const node = attr(cTn, 'nodeType')
+        const trigger: Trigger = node === 'afterEffect' ? 'after' : node === 'withEffect' || !first ? 'with' : 'click'
+        first = false
+        const start = delayOf(groupCTn) + delayOf(cTn)
+        const direction = SUBTYPE_DIRECTION[attr(cTn, 'presetSubtype') ?? ''] ?? 'left'
+        cells.forEach((cell, i) => found.push({ cell, kind, effect: effectName, trigger: i ? 'with' : trigger, duration, direction, start }))
+      }
+    }
+  }
+  return animationsFromStarts(found)
 }
 
 // ---------- Shapes ----------
 
 type GroupTransform = ((x: Xfrm) => Xfrm) | null
 
-async function walkTree(ctx: Ctx, tree: Element, transform: GroupTransform): Promise<void> {
+async function walkTree(ctx: Ctx, tree: Element, transform: GroupTransform, spids?: Map<number, string[]>): Promise<void> {
   for (const node of [...tree.children]) {
-    const name = node.localName
-    if (name === 'sp') await shape(ctx, node, transform)
-    else if (name === 'pic') await picture(ctx, node, transform)
-    else if (name === 'cxnSp') connector(ctx, node, transform)
-    else if (name === 'graphicFrame') graphicFrame(ctx, node, transform)
-    else if (name === 'grpSp') {
-      const xfrm = kid(kid(node, 'grpSpPr'), 'xfrm')
-      const outer = readXfrm(xfrm)
-      const chOff = kid(xfrm, 'chOff')
-      const chExt = kid(xfrm, 'chExt')
-      let inner: GroupTransform = transform
-      if (outer && chOff && chExt) {
-        const sx = num(attr(chExt, 'cx'), 1) ? outer.w / num(attr(chExt, 'cx'), 1) : 1
-        const sy = num(attr(chExt, 'cy'), 1) ? outer.h / num(attr(chExt, 'cy'), 1) : 1
-        const ox = num(attr(chOff, 'x'))
-        const oy = num(attr(chOff, 'y'))
-        const map = (x: Xfrm): Xfrm => ({ ...x, x: outer.x + (x.x - ox) * sx, y: outer.y + (x.y - oy) * sy, w: x.w * sx, h: x.h * sy })
-        inner = transform ? (x) => transform(map(x)) : map
-      }
-      await walkTree(ctx, node, inner)
-    } else if (name === 'AlternateContent') {
-      const fallback = kid(node, 'Fallback') ?? kid(node, 'Choice')
-      if (fallback) await walkTree(ctx, fallback, transform)
+    const before = ctx.cells.length
+    await walkNode(ctx, node, transform)
+    const id = Number(attr(find(node, 'cNvPr'), 'id'))
+    if (spids && Number.isFinite(id)) spids.set(id, ctx.cells.slice(before).filter((c) => c.parent === '1').map((c) => c.id))
+  }
+}
+
+async function walkNode(ctx: Ctx, node: Element, transform: GroupTransform): Promise<void> {
+  const name = node.localName
+  if (name === 'sp') await shape(ctx, node, transform)
+  else if (name === 'pic') await picture(ctx, node, transform)
+  else if (name === 'cxnSp') connector(ctx, node, transform)
+  else if (name === 'graphicFrame') await graphicFrame(ctx, node, transform)
+  else if (name === 'grpSp') {
+    const xfrm = kid(kid(node, 'grpSpPr'), 'xfrm')
+    const outer = readXfrm(xfrm)
+    const chOff = kid(xfrm, 'chOff')
+    const chExt = kid(xfrm, 'chExt')
+    let inner: GroupTransform = transform
+    if (outer && chOff && chExt) {
+      const sx = num(attr(chExt, 'cx'), 1) ? outer.w / num(attr(chExt, 'cx'), 1) : 1
+      const sy = num(attr(chExt, 'cy'), 1) ? outer.h / num(attr(chExt, 'cy'), 1) : 1
+      const ox = num(attr(chOff, 'x'))
+      const oy = num(attr(chOff, 'y'))
+      const map = (x: Xfrm): Xfrm => ({ ...x, x: outer.x + (x.x - ox) * sx, y: outer.y + (x.y - oy) * sy, w: x.w * sx, h: x.h * sy })
+      inner = transform ? (x) => transform(map(x)) : map
     }
+    await walkTree(ctx, node, inner)
+  } else if (name === 'AlternateContent') {
+    const fallback = kid(node, 'Fallback') ?? kid(node, 'Choice')
+    if (fallback) await walkTree(ctx, fallback, transform)
   }
 }
 
@@ -304,15 +392,21 @@ async function picture(ctx: Ctx, node: Element, transform: GroupTransform): Prom
   if (!x || !path) return
   const image = await imageData(ctx, path)
   if (!image) return
-  const style = `shape=image;verticalLabelPosition=bottom;verticalAlign=top;imageAspect=0;image=${image};` + (x.rot ? `rotation=${round(x.rot)};` : '') + (x.flipH ? 'flipH=1;' : '')
-  push(ctx, { vertex: 1, style, geometry: geometry(ctx, x) })
+  // Math graphs exported by Ofimeo keep their construction in the picture name.
+  const mathGraph = graphFromPictureName(attr(find(node, 'cNvPr'), 'name'))
+  const style = `shape=image;verticalLabelPosition=bottom;verticalAlign=top;imageAspect=0;image=${image};` + (x.rot ? `rotation=${round(x.rot)};` : '') + (x.flipH ? 'flipH=1;' : '') + (mathGraph ? 'slideGraph=1;aspect=fixed;' : '')
+  push(ctx, { vertex: 1, style, geometry: geometry(ctx, x), ...(mathGraph ? { data: mathGraph } : {}) })
 }
 
-function graphicFrame(ctx: Ctx, node: Element, transform: GroupTransform): void {
-  const tbl = find(node, 'tbl')
+async function graphicFrame(ctx: Ctx, node: Element, transform: GroupTransform): Promise<void> {
   const xfrm = readXfrm(kid(node, 'xfrm'))
-  if (!tbl || !xfrm) return
+  if (!xfrm) return
   const x = transform ? transform(xfrm) : xfrm
+  const uri = attr(find(node, 'graphicData'), 'uri') ?? ''
+  if (uri.endsWith('/chart')) return chartFrame(ctx, node, x)
+  if (uri.endsWith('/diagram')) return smartArt(ctx, node, x)
+  const tbl = find(node, 'tbl')
+  if (!tbl) return
   const s = ctx.scale / EMU_PER_PX
   const cols = kids(kid(tbl, 'tblGrid'), 'gridCol').map((c) => num(attr(c, 'w')) * s)
   const rows = kids(tbl, 'tr')
@@ -342,6 +436,65 @@ function graphicFrame(ctx: Ctx, node: Element, transform: GroupTransform): void 
     })
     y += h
   }
+}
+
+// ---------- Charts and SmartArt ----------
+
+const REL_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
+
+// A chart as a picture of it, drawn from the cached data in the chart part.
+async function chartFrame(ctx: Ctx, node: Element, x: Xfrm): Promise<void> {
+  const ref = find(node, 'chart')
+  const rid = ref?.getAttributeNS(REL_NS, 'id') ?? attr(ref, 'r:id')
+  const path = rid ? ctx.slide.rels.get(rid) : undefined
+  const part = path ? await readPart(ctx.zip, path) : null
+  const chart = part ? parseChart(part.doc, (fill) => (fill ? colorOf(ctx, fill) : null)) : null
+  if (!chart) return
+  const s = ctx.scale / EMU_PER_PX
+  const svg = renderChartSvg(chart, x.w * s, x.h * s, cssFont(ctx.minorFont))
+  push(ctx, {
+    vertex: 1,
+    style: `shape=image;imageAspect=0;slideChart=1;image=${svgDataUri(svg)};`,
+    geometry: geometry(ctx, x),
+    data: JSON.stringify({ chart }),
+  })
+}
+
+// SmartArt: the shapes of its drawing part (positions relative to the frame), else a box with its text.
+async function smartArt(ctx: Ctx, node: Element, x: Xfrm): Promise<void> {
+  const ids = find(node, 'relIds')
+  const dm = ids?.getAttributeNS(REL_NS, 'dm') ?? attr(ids, 'r:dm')
+  const dataPath = dm ? ctx.slide.rels.get(dm) : undefined
+  const data = dataPath ? await readPart(ctx.zip, dataPath) : null
+  const drawingRel = attr(find(data?.doc, 'dataModelExt'), 'relId')
+  const drawingPath = (drawingRel ? ctx.slide.rels.get(drawingRel) : undefined) ?? relOfType(ctx.slide, 'diagrams/drawing')
+  const drawing = drawingPath ? await readPart(ctx.zip, drawingPath) : null
+  const tree = find(drawing?.doc, 'spTree')
+  const shapes = tree ? [...tree.children].filter((c) => c.localName === 'sp' || c.localName === 'grpSp') : []
+  if (tree && shapes.length) {
+    const offset = (inner: Xfrm): Xfrm => ({ ...inner, x: inner.x + x.x, y: inner.y + x.y })
+    // The drawing's pictures and theme colors resolve against its own part.
+    const slide = ctx.slide
+    ctx.slide = { ...drawing!, rels: new Map([...slide.rels, ...drawing!.rels]) }
+    try {
+      await walkTree(ctx, tree, offset)
+    } finally {
+      ctx.slide = slide
+    }
+    return
+  }
+  // No drawing: the text of the diagram's points, as a list in a dashed box.
+  const texts = findAll(data?.doc, 'pt')
+    .filter((pt) => !['parTrans', 'sibTrans', 'pres', 'doc'].includes(attr(pt, 'type') ?? 'node'))
+    .map((pt) => findAll(pt, 't').filter((e) => e.namespaceURI?.endsWith('/drawingml/2006/main')).map((e) => e.textContent ?? '').join(''))
+    .filter((text) => text.trim())
+  const html = texts.length ? `<ul>${texts.map((t) => `<li>${escapeHtml(t)}</li>`).join('')}</ul>` : escapeHtml(t('SmartArt'))
+  push(ctx, {
+    vertex: 1,
+    value: html,
+    style: `rounded=1;arcSize=4;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#9aa0a6;align=left;verticalAlign=top;spacing=12;fontSize=${round(18 / 0.75 * ctx.scale)};fontColor=${ctx.colors.tx1 ?? '#000000'};fontFamily=${cssFont(ctx.minorFont)};`,
+    geometry: geometry(ctx, x),
+  })
 }
 
 // ---------- Colors ----------

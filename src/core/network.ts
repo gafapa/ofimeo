@@ -22,6 +22,13 @@
 //   the log bounded.
 // - Awareness (presence, cursors) is not signed: it never changes documents.
 // Legacy documents (no keys) use the plain y-protocols sync, as before.
+//
+// A school relay (connectivity.ts) adds its Nostr relay and its STUN/TURN
+// servers; without one, Trystero's defaults are used.
+//
+// Store-and-forward (store-forward/) keeps encrypted copies of the channels in
+// mailboxes, for people who are never online at the same time. It uses
+// Channel.sealForStore (signers) and Channel.receiveStored (everyone).
 
 import * as Y from 'yjs'
 import * as syncProtocol from 'y-protocols/sync'
@@ -29,10 +36,10 @@ import * as awarenessProtocol from 'y-protocols/awareness'
 import * as encoding from 'lib0/encoding'
 import * as decoding from 'lib0/decoding'
 import { joinRoom, type MessageAction, type Room } from '@trystero-p2p/nostr'
+import { APP_ID, nostrRelays, rtcConfig } from './connectivity'
 import { kvGet, kvSet } from './idb'
 import { sign, toBase64Url, verify } from './keys'
 
-const APP_ID = 'words-online'
 const MSG_SYNC = 0
 const MSG_AWARENESS = 1
 const MSG_SIGNED = 2
@@ -52,6 +59,10 @@ class RemotePeer {
 // True for Yjs transactions applied from the network.
 export const isRemoteOrigin = (origin: unknown) => origin instanceof RemotePeer
 
+// Origin of changes pulled from a store-and-forward mailbox (store-forward/).
+// Like a peer that is never in the room: what it brings is relayed to everyone.
+export const STORE_ORIGIN: unknown = new RemotePeer('store')
+
 export interface ChannelSecurity {
   // Verifies envelopes; its presence switches the channel to signed sync.
   verifier: CryptoKey
@@ -66,11 +77,14 @@ export interface ChannelSecurity {
 export interface RoomOptions {
   roomId: string
   password: string
-  // Optional custom Nostr relays (defaults to Trystero's public list).
+  // Optional custom Nostr relays (default: the school relay and/or Trystero's public list).
   relays?: string[]
   // Signed sync for the document channel (omit for legacy documents).
   security?: ChannelSecurity
 }
+
+// Rooms open in this page (for the connection test).
+export const openRooms = new Set<RoomProvider>()
 
 export class RoomProvider {
   private readonly room: Room
@@ -84,14 +98,18 @@ export class RoomProvider {
     readonly awareness: awarenessProtocol.Awareness,
     options: RoomOptions,
   ) {
+    const relays = nostrRelays(options.relays)
+    const rtc = rtcConfig()
     this.room = joinRoom(
       {
         appId: APP_ID,
         password: options.password,
-        ...(options.relays?.length ? { relayConfig: { urls: options.relays, redundancy: options.relays.length } } : {}),
+        ...(relays?.length ? { relayConfig: { urls: relays, redundancy: relays.length } } : {}),
+        ...(rtc ? { rtcConfig: rtc } : {}),
       },
       options.roomId,
     )
+    openRooms.add(this)
     this.main = this.addChannel('yjs', doc, options.security, awareness)
 
     this.room.onPeerJoin = (peerId) => {
@@ -120,6 +138,12 @@ export class RoomProvider {
     return channel
   }
 
+  // Raw message action for app protocols that are not a Yjs document (e.g. form
+  // responses, forms/transport.ts). `name` is the Trystero action name (at most 12 bytes).
+  makeAction(name: string): MessageAction<Uint8Array> {
+    return this.room.makeAction<Uint8Array>(name)
+  }
+
   // Resolves when signed logs are loaded (call before relying on relaying).
   whenReady(): Promise<void> {
     return Promise.all(this.channels.map((c) => c.ready)).then(() => undefined)
@@ -129,11 +153,17 @@ export class RoomProvider {
     return this.peers.size
   }
 
+  // WebRTC connections to the peers in this room, by peer id.
+  connections(): Record<string, RTCPeerConnection> {
+    return this.room.getPeers()
+  }
+
   onPeersChange(listener: (count: number) => void): void {
     this.listeners.push(listener)
   }
 
   async destroy(): Promise<void> {
+    openRooms.delete(this)
     this.channels.forEach((c) => c.destroy())
     await this.room.leave()
   }
@@ -250,6 +280,35 @@ export class Channel {
     } else if (this.log) {
       for (const entry of this.log.entries) this.send(entry, peerId)
     }
+  }
+
+  // A signed envelope for the store: a diff, or the full state (checkpoint).
+  async sealForStore(update: Uint8Array, checkpoint = false): Promise<Uint8Array> {
+    if (!this.security?.signer) throw new Error('This browser cannot sign changes')
+    const sealed = this.signing.then(() => this.seal(checkpoint ? KIND_CHECKPOINT : KIND_UPDATE, update))
+    this.signing = sealed.catch(() => undefined)
+    return sealed
+  }
+
+  // Applies a signed envelope pulled from a store (and relays it to the peers
+  // here). Returns its update when the signature is valid, else null.
+  async receiveStored(data: Uint8Array): Promise<Uint8Array | null> {
+    if (!this.security) return null
+    const envelope = parseEnvelope(data)
+    if (!envelope) return null
+    await this.ready
+    if (!(await verify(this.security.verifier, envelope.signature, this.signedBytes(envelope.kind, envelope.update)))) {
+      console.warn('Rejected a stored change with an invalid signature')
+      return null
+    }
+    const id = toBase64Url(envelope.signature)
+    if (!this.seen.has(id)) {
+      this.seen.add(id)
+      Y.applyUpdate(this.doc, envelope.update, STORE_ORIGIN)
+      this.log?.add(data, envelope)
+      this.broadcast(data, null)
+    }
+    return envelope.update
   }
 
   private async receiveSigned(peer: RemotePeer, data: Uint8Array): Promise<void> {

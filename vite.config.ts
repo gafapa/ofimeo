@@ -27,9 +27,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: false,
       manifest: {
-        name: 'Words Online',
-        short_name: 'Words Online',
-        description: 'Collaborative office suite that runs in your browser: documents, spreadsheets, drawings and diagrams.',
+        name: 'Ofimeo',
+        short_name: 'Ofimeo',
+        description: 'Ofimeo: collaborative office suite that runs in your browser: documents, spreadsheets, drawings, diagrams, presentations, forms and PDFs.',
         start_url: './',
         scope: './',
         display: 'standalone',
@@ -41,24 +41,44 @@ export default defineConfig({
           { src: 'icons/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
           { src: 'icons/icon.svg', sizes: 'any', type: 'image/svg+xml' },
         ],
+        // Installed app: right-click or long-press the icon to start a document.
+        shortcuts: [
+          ['New document', 'writer'],
+          ['New spreadsheet', 'sheet'],
+          ['New drawing', 'draw'],
+          ['New diagram', 'diagram'],
+          ['New presentation', 'slides'],
+          ['New form', 'forms'],
+          ['Annotate a PDF', 'pdf'],
+        ].map(([name, type]) => ({ name, url: `./#new=${type}` })),
         file_handlers: [
           {
             action: './',
+            // Formats the apps open (registry.ts accept), without generic ones (.txt, .html, .xml, .zip).
             accept: {
               'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
               'application/vnd.oasis.opendocument.text': ['.odt'],
+              'application/msword': ['.doc'],
+              'application/rtf': ['.rtf'],
+              'text/markdown': ['.md', '.markdown'],
               'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
               'application/vnd.oasis.opendocument.spreadsheet': ['.ods'],
+              'application/vnd.ms-excel': ['.xls'],
               'text/csv': ['.csv'],
+              'text/tab-separated-values': ['.tsv'],
               'application/vnd.jgraph.mxfile': ['.drawio'],
-              'application/json': ['.excalidraw'],
+              'application/vnd.ms-visio.drawing': ['.vsdx'],
+              'application/json': ['.excalidraw', '.oform'],
               'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
+              'application/vnd.oasis.opendocument.presentation': ['.odp'],
+              'application/vnd.ms-powerpoint': ['.ppt'],
+              'application/pdf': ['.pdf'],
             },
           },
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,woff2,svg,png,ico,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,woff,woff2,svg,png,ico,webmanifest}'],
         globIgnores: ['excalidraw/fonts/Xiaolai/**', 'diagram-libs/**'],
         additionalManifestEntries: libsRevision ? [{ url: 'diagram-libs/catalog.json', revision: libsRevision }] : [],
         // The spreadsheet engine is a single large chunk.
@@ -69,6 +89,13 @@ export default defineConfig({
         clientsClaim: true,
         skipWaiting: true,
         runtimeCaching: [
+          {
+            // School configuration (src/core/school-config.ts) and its files (logo): replaced
+            // on the server after the build, so not precached; the last copy is used offline.
+            urlPattern: ({ url, sameOrigin }) => sameOrigin && (url.pathname.endsWith('/ofimeo.config.json') || url.pathname.includes('/school/')),
+            handler: 'NetworkFirst',
+            options: { cacheName: 'school-config', networkTimeoutSeconds: 3, cacheableResponse: { statuses: [200] } },
+          },
           {
             urlPattern: ({ url }) => url.pathname.includes('/excalidraw/fonts/'),
             handler: 'CacheFirst',

@@ -4,6 +4,11 @@ import JSZip from 'jszip'
 import type { IBorderData, IBorderStyleData, ICellData, IRange, IStyleData, IWorkbookData, IWorksheetData } from '@univerjs/presets'
 import { attr, child, children, parseXml, toHex } from '../../../core/formats'
 import { t } from '../../../core/i18n'
+import { CHART_COMPONENT, DRAWING_TYPE_DOM, DRAWING_TYPE_IMAGE } from '../charts/model'
+import { DrawingCollector } from './drawings'
+import { odsFrames, pxToAnchor, readOdsCharts, type OdsFrame } from './ods-charts'
+import { cellDocument, emptyFeatures, featureResources, filteredRows, GLOBAL_SCOPE, type SheetNote } from './features'
+import { readOdsConditionalFormats, readOdsFilters, readOdsNames, readOdsNote, readOdsValidations } from './ods-features'
 
 // Limits against huge repeats (LibreOffice pads sheets to 1M rows × 16K columns).
 const MAX_ROWS = 100_000
@@ -48,7 +53,49 @@ export async function importOds(buf: ArrayBuffer): Promise<Partial<IWorkbookData
   }
   const content = await read('content.xml')
   if (!content) throw new Error(t('Not an OpenDocument spreadsheet (content.xml missing)'))
-  return convertOds(content, await read('styles.xml'), await read('settings.xml'))
+  const data = convertOds(content, await read('styles.xml'), await read('settings.xml'))
+  try {
+    await importDrawings(zip, content, data)
+  } catch (err) {
+    console.warn('Could not read the charts and images', err)
+  }
+  return data
+}
+
+// Charts and images (draw:frame) become Univer drawings at the same place.
+async function importDrawings(zip: JSZip, content: Document, data: Partial<IWorkbookData>): Promise<void> {
+  const sheets = data.sheets ?? {}
+  const idOf = new Map(Object.entries(sheets).map(([id, s]) => [s.name ?? '', id]))
+  const drawings = new DrawingCollector(sheets as IWorkbookData['sheets'])
+  const place = (f: OdsFrame, sheetId: string, fields: Record<string, unknown>) => {
+    const s = sheets[sheetId]
+    const colWidth = (c: number) => s?.columnData?.[c]?.w ?? s?.defaultColumnWidth ?? DEFAULT_COL_PX
+    const rowHeight = (r: number) => s?.rowData?.[r]?.h ?? s?.defaultRowHeight ?? DEFAULT_ROW_PX
+    // Frames anchored to a cell are positioned from that cell's corner.
+    let x = f.x
+    let y = f.y
+    for (let c = 0; c < f.col; c++) x += colWidth(c)
+    for (let r = 0; r < f.row; r++) y += rowHeight(r)
+    const w = f.width || 100
+    const h = f.height || 100
+    drawings.add(sheetId, pxToAnchor(x, y, colWidth, rowHeight), pxToAnchor(x + w, y + h, colWidth, rowHeight), fields)
+  }
+  for (const c of await readOdsCharts(zip, content)) {
+    const host = idOf.get(c.table)
+    const source = idOf.get(c.sourceSheet)
+    if (host && source) place(c, host, { drawingType: DRAWING_TYPE_DOM, componentKey: CHART_COMPONENT, allowTransform: true, data: { ...c.spec, sheetId: source } })
+  }
+  for (const f of odsFrames(content)) {
+    const host = idOf.get(f.table)
+    const href = attr(child(f.frame, 'image'), 'href')
+    const file = href && zip.file(href.replace(/^\.\//, ''))
+    // Chart frames also hold a replacement picture of the chart.
+    if (!host || !href || !file || child(f.frame, 'object')) continue
+    const ext = href.split('.').pop()!.toLowerCase()
+    const mime = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : ext === 'gif' ? 'image/gif' : ext === 'svg' ? 'image/svg+xml' : 'image/png'
+    place(f, host, { drawingType: DRAWING_TYPE_IMAGE, imageSourceType: 'URL', source: `data:${mime};base64,${await file.async('base64')}` })
+  }
+  if (!drawings.empty) data.resources = [...(data.resources ?? []), drawings.resource()]
 }
 
 // Also used for flat .fods documents, where all three parts are the same document.
@@ -60,17 +107,57 @@ export function convertOds(content: Document, stylesDoc: Document | null, settin
 
   const sheetOrder: string[] = []
   const sheets: IWorkbookData['sheets'] = {}
+  const features = emptyFeatures()
+  const filters = readOdsFilters(spreadsheet)
+  const styleOf = (name: string | null) => styles.styleProps(name)
   children(spreadsheet, 'table').forEach((table, i) => {
     const id = `sheet-${i + 1}`
     sheetOrder.push(id)
-    sheets[id] = readTable(table, id, styles, view)
+    const extra: TableExtras = { notes: [], filtered: [], validated: new Map() }
+    const sheet = (sheets[id] = readTable(table, id, styles, view, extra))
+    if (extra.notes.length) features.notes[id] = extra.notes
+    const rules = extra.validated.size ? readOdsValidations(spreadsheet, extra.validated, odfFormulaToExcel) : []
+    if (rules.length) features.validations[id] = rules
+    const cf = readOdsConditionalFormats(table, styleOf, odfFormulaToExcel)
+    if (cf.length) features.cf[id] = cf
+    features.names.push(...readOdsNames(child(table, 'named-expressions'), id, odfFormulaToExcel, features.names.length))
+    const filter = filters.get(sheet.name ?? '')
+    if (filter) {
+      // Rows the filter hides belong to the filter, not to the sheet.
+      const hidden = filter.filterColumns?.length ? extra.filtered.filter((r) => r > filter.ref.startRow && r <= filter.ref.endRow) : []
+      for (const r of hidden) if (sheet.rowData?.[r]) delete sheet.rowData[r].hd
+      const cellText = (r: number, c: number) => String(sheet.cellData?.[r]?.[c]?.v ?? '')
+      features.filters[id] = { ...filter, cachedFilteredOut: hidden.length ? hidden : filteredRows(filter, cellText) }
+    }
   })
+  features.names.push(...readOdsNames(child(spreadsheet, 'named-expressions'), GLOBAL_SCOPE, odfFormulaToExcel, features.names.length))
+  // Links to cells ("#Sheet1.A1") point at Univer sheet ids.
+  const ids = new Map(Object.entries(sheets).map(([id, s]) => [s.name ?? '', id]))
+  for (const sheet of Object.values(sheets)) {
+    for (const row of Object.values(sheet.cellData ?? {})) {
+      for (const cell of Object.values(row ?? {}) as (ICellData | undefined)[]) {
+        const range = cell?.p?.body?.customRanges?.[0]
+        const m = range && /^#\$?'?((?:[^'.]|'')+)'?\.\$?([A-Z]+)\$?(\d+)/i.exec(String(range.properties?.url ?? ''))
+        if (m && ids.has(m[1].replace(/''/g, "'"))) range!.properties = { ...range!.properties, url: `#gid=${ids.get(m[1].replace(/''/g, "'"))}&range=${m[2].toUpperCase()}${m[3]}` }
+      }
+    }
+  }
   if (!sheetOrder.length) {
     sheetOrder.push('sheet-1')
     sheets['sheet-1'] = { id: 'sheet-1', name: 'Sheet1', rowCount: 1000, columnCount: 26, cellData: {} }
   }
-  return { name: '', locale: 'enUS' as IWorkbookData['locale'], styles: styles.registry, sheetOrder, sheets, resources: [] }
+  return { name: '', locale: 'enUS' as IWorkbookData['locale'], styles: styles.registry, sheetOrder, sheets, resources: featureResources(features) }
 }
+
+interface TableExtras {
+  notes: SheetNote[]
+  // Rows hidden by a filter (visibility="filter").
+  filtered: number[]
+  // Cells of each content validation (by name).
+  validated: Map<string, { row: number; col: number }[]>
+}
+
+const MAX_VALIDATED = 200_000
 
 // ---------------------------------------------------------------------------
 // Tables
@@ -91,7 +178,7 @@ interface ParsedCell {
   cs: number
 }
 
-function readTable(table: Element, id: string, styles: StyleResolver, view: ViewSettings): Partial<IWorksheetData> {
+function readTable(table: Element, id: string, styles: StyleResolver, view: ViewSettings, extra: TableExtras): Partial<IWorksheetData> {
   const name = attr(table, 'name') || id
   const cellData: Record<number, Record<number, ICellData>> = {}
   const mergeData: IRange[] = []
@@ -133,6 +220,7 @@ function readTable(table: Element, id: string, styles: StyleResolver, view: View
     const hasContent = cells.some((el) => el.localName === 'table-cell' && isContentCell(el))
     const h = styles.rowHeight(attr(row, 'style-name'))
     const hd = attr(row, 'visibility') === 'collapse' || attr(row, 'visibility') === 'filter'
+    if (attr(row, 'visibility') === 'filter') for (let k = 0; k < Math.min(repeat, 10_000); k++) extra.filtered.push(r + k)
     let rowStyle = styles.cellStyleId(attr(row, 'default-cell-style-name'))
     // Padding rows (style-only, repeated to the end of the sheet) don't create cells.
     const padding = !hasContent && repeat >= FILLER_RUN
@@ -144,6 +232,14 @@ function readTable(table: Element, id: string, styles: StyleResolver, view: View
       if (col >= MAX_COLS) break
       const n = Math.min(int(attr(el, 'number-columns-repeated'), 1), MAX_COLS - col)
       if (el.localName === 'table-cell') {
+        const note = readOdsNote(el)
+        if (note) extra.notes.push({ ...note, row: r, col })
+        const validation = attr(el, 'content-validation-name')
+        if (validation) {
+          const list = extra.validated.get(validation) ?? []
+          for (let k = 0; k < repeat && list.length < MAX_VALIDATED; k++) for (let j = 0; j < n && list.length < MAX_VALIDATED; j++) list.push({ row: r + k, col: col + j })
+          extra.validated.set(validation, list)
+        }
         const styleName = attr(el, 'style-name')
         const read = readCell(el)
         const cs = int(attr(el, 'number-columns-spanned'), 1)
@@ -307,6 +403,10 @@ function readCell(el: Element): { cell: ICellData; fallback?: string } | null {
     }
   }
   if (formula) cell.f = odfFormulaToExcel(formula)
+  // A text cell that is a link (<text:a xlink:href>).
+  const link = !formula && typeof cell.v === 'string' ? el.getElementsByTagNameNS('*', 'a')[0] : undefined
+  const href = link && [...link.attributes].find((a) => a.localName === 'href')?.value
+  if (href && typeof cell.v === 'string') cell.p = cellDocument(cell.v, undefined, href, `link-${href.length}-${cell.v.length}`)
   return { cell, fallback }
 }
 
@@ -516,6 +616,7 @@ class StyleResolver {
   private cellCache = new Map<string, string | undefined>()
   private resolved = new Map<string, { style: IStyleData; pattern?: string }>()
   private cellStyles = new Map<string, StyleEntry>()
+  private displayNames = new Map<string, string>()
   private otherStyles = new Map<string, Element>()
   private dataStyles = new Map<string, Element>()
   private fonts = new Map<string, string>()
@@ -539,7 +640,12 @@ class StyleResolver {
             if (el.namespaceURI?.includes(':datastyle:')) this.dataStyles.set(name, el)
             else if (el.localName === 'style') {
               const family = attr(el, 'family')
-              if (family === 'table-cell') this.cellStyles.set(name, { el, parent: attr(el, 'parent-style-name') })
+              if (family === 'table-cell') {
+                this.cellStyles.set(name, { el, parent: attr(el, 'parent-style-name') })
+                // Conditions refer to styles by their display name.
+                const display = attr(el, 'display-name')
+                if (display && display !== name) this.displayNames.set(display, name)
+              }
               else this.otherStyles.set(`${family}:${name}`, el)
             }
           }
@@ -573,6 +679,21 @@ class StyleResolver {
     }
     this.cellCache.set(cacheKey, id)
     return id
+  }
+
+  // Properties of a named style (conditional formatting), without inherited defaults.
+  styleProps(name: string | null): IStyleData {
+    if (!name) return {}
+    const own = this.cellStyles.has(name) ? name : this.displayNames.get(name)
+    if (!own) return {}
+    // Only the style's own properties: its parents are the cell's usual style.
+    const style: IStyleData = cellStyleProps(this.cellStyles.get(own)!.el, this.fonts)
+    if (!style.bl) delete style.bl
+    if (!style.it) delete style.it
+    if (!style.ul?.s) delete style.ul
+    if (!style.st?.s) delete style.st
+    const keep: (keyof IStyleData)[] = ['bg', 'cl', 'bl', 'it', 'ul', 'st']
+    return Object.fromEntries(Object.entries(style).filter(([k]) => keep.includes(k as keyof IStyleData))) as IStyleData
   }
 
   private resolve(name: string, depth: number): { style: IStyleData; pattern?: string } {

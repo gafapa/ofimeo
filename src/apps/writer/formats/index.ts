@@ -3,21 +3,31 @@
 
 import { generateJSON, type JSONContent } from '@tiptap/core'
 import { allExtensions } from '../editor/extensions'
-import { DEFAULT_PAGE, type DocumentData } from './types'
+import { DEFAULT_PAGE, type DocumentData, type ImportedDocument } from './types'
 import { t } from '../../../core/i18n'
 
-export type ExportFormat = 'docx' | 'odt' | 'html' | 'txt'
+export type ExportFormat = 'docx' | 'odt' | 'html' | 'txt' | 'md'
 
-export const OPEN_ACCEPT = '.docx,.odt,.html,.htm,.txt,.md'
+export const OPEN_ACCEPT = '.docx,.odt,.doc,.rtf,.html,.htm,.txt,.md,.markdown'
 
-export type Imported = Omit<DocumentData, 'title'>
+export type Imported = ImportedDocument
 
 export async function importFile(file: File): Promise<Imported> {
   const ext = file.name.split('.').pop()?.toLowerCase()
   if (ext === 'docx') return (await import('./docx-import')).importDocx(await file.arrayBuffer())
   if (ext === 'odt') return (await import('./odt-import')).importOdt(await file.arrayBuffer())
-  if (ext === 'doc') throw new Error(t('Legacy .doc files are not supported; save them as .docx first'))
+  if (ext === 'doc') {
+    const buffer = await file.arrayBuffer()
+    const head = new Uint8Array(buffer.slice(0, 8))
+    // Some ".doc" files are really RTF, HTML or DOCX.
+    if (head[0] === 0x50 && head[1] === 0x4b) return (await import('./docx-import')).importDocx(buffer)
+    if (String.fromCharCode(...head.subarray(0, 5)) === '{\\rtf') return (await import('./rtf-import')).importRtf(await rtfText(file))
+    if (head[0] !== 0xd0) throw new Error(t('This .doc file is not a Word 97-2003 document; save it as .docx first'))
+    return (await import('./doc-import')).importDoc(buffer)
+  }
+  if (ext === 'rtf') return (await import('./rtf-import')).importRtf(await rtfText(file))
   const text = await file.text()
+  if (ext === 'md' || ext === 'markdown') return { body: await (await import('./markdown')).importMarkdown(text), header: null, footer: null, page: DEFAULT_PAGE }
   const body: JSONContent =
     ext === 'html' || ext === 'htm'
       ? generateJSON(text, allExtensions())
@@ -43,7 +53,17 @@ export async function exportFile(format: ExportFormat, data: DocumentData, html:
     }
     case 'txt':
       return new Blob([text], { type: 'text/plain' })
+    case 'md':
+      return new Blob([(await import('./markdown')).exportMarkdown(data.body)], { type: 'text/markdown' })
   }
+}
+
+// RTF is 7-bit text with escapes; bytes above 127 (old files) are read as Windows-1252.
+async function rtfText(file: File): Promise<string> {
+  const bytes = new Uint8Array(await file.arrayBuffer())
+  let out = ''
+  for (let i = 0; i < bytes.length; i += 8192) out += String.fromCharCode(...bytes.subarray(i, i + 8192))
+  return out
 }
 
 function escapeHtml(s: string): string {

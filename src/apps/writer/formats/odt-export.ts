@@ -10,12 +10,21 @@ import {
   TITLE_SIZE_PT,
   pageDimensionsMm,
   langTag,
+  documentSections,
+  samePageSize,
   type DocumentData,
   type PageSettings,
+  type Section,
 } from './types'
+import { tocBookmarks, tocHeadingsJSON } from '../editor/toc'
+import { citedIdsJSON, idsOf } from '../references/nodes'
+import { citationParts, citationText, formatBibliography, yearSuffixes } from '../references/format'
+import { DEFAULT_CITE, type CiteSettings, type Run, type Source, type SourceType } from '../references/types'
 import { escapeXml, loadImage, toHex, toPt } from '../../../core/formats'
 import { latexToMathML } from '../../../ui/equation'
 import { changeOf, commentMarkers, type CommentMarkers } from './review'
+import { chartPng, readEmbedded } from '../../charts/embedded'
+import { mergeText } from '../editor/merge'
 import type { CommentData } from './types'
 
 const NS = [
@@ -54,6 +63,14 @@ interface Shared {
   changes: string[]
   // Formula objects: folder name → MathML.
   formulas: Map<string, string>
+  body: JSONContent
+  bookmarks: Map<JSONContent, string>
+  indexes: number
+  sources: Map<string, Source>
+  cite: CiteSettings
+  suffixes: Map<string, string>
+  // Source id → bibliography mark identifier.
+  markIds: Map<string, string>
 }
 
 interface Ctx {
@@ -62,10 +79,15 @@ interface Ctx {
   inList?: boolean
   // Tables can't live inside ODF list items; they are moved right after the outermost list.
   hoisted?: string[]
+  // Master page for the first paragraph of a section that starts a new page.
+  master?: { name: string; used: boolean }
 }
 
 export async function exportOdt(data: DocumentData): Promise<Blob> {
   const { width } = pageDimensionsMm(data.page)
+  const sources = new Map((data.sources ?? []).map((src) => [src.id, src]))
+  const cite = data.citeStyle ?? DEFAULT_CITE
+  const cited = citedIdsJSON(data.body).map((id) => sources.get(id)).filter((src): src is Source => !!src)
   const shared: Shared = {
     pictures: new Map(),
     fonts: new Set([DEFAULT_FONT, MONO_FONT]),
@@ -76,10 +98,46 @@ export async function exportOdt(data: DocumentData): Promise<Blob> {
     comments: commentMarkers(data),
     changes: [],
     formulas: new Map(),
+    body: data.body,
+    bookmarks: tocBookmarks(data.body),
+    indexes: 0,
+    sources,
+    cite,
+    suffixes: yearSuffixes(cited, cite),
+    markIds: new Map(),
   }
   // Body styles go to content.xml; header/footer styles to styles.xml (prefixed to keep names apart).
   const bodyStyles = new AutoStyles('')
-  const body = await new Writer(bodyStyles, shared).blocks(data.body.content ?? [], { parent: 'Standard' })
+  // Sections: a new page layout starts with a master page on the section's first
+  // paragraph; text columns wrap the section in a text:section.
+  const sections = documentSections(data.body, data.page, data.columns)
+  const groups: JSONContent[][] = [[]]
+  for (const node of data.body.content ?? []) {
+    if (node.type === 'sectionBreak') groups.push([])
+    else groups[groups.length - 1].push(node)
+  }
+  const masters: { name: string; page: PageSettings }[] = [{ name: 'Standard', page: data.page }]
+  const bodyWriter = new Writer(bodyStyles, shared)
+  let body = ''
+  let currentPage = data.page
+  for (const [i, group] of groups.entries()) {
+    const section = sections[i]
+    let master: Ctx['master']
+    if (i > 0 && (section.start === 'nextPage' || !samePageSize(section.page, currentPage))) {
+      let m = masters.find((x) => JSON.stringify(x.page) === JSON.stringify(section.page))
+      if (!m) masters.push((m = { name: `MP${masters.length + 1}`, page: section.page }))
+      master = { name: m.name, used: false }
+      currentPage = section.page
+    }
+    let xml = ''
+    const first = group[0]
+    if (master && (!first || (first.type !== 'paragraph' && first.type !== 'heading'))) {
+      xml += `<text:p text:style-name="${bodyStyles.paragraph('Standard', [], '', master.name)}"/>`
+      master.used = true
+    }
+    xml += await bodyWriter.blocks(group, { parent: 'Standard', master })
+    body += section.columns.count > 1 ? `<text:section text:style-name="${bodyStyles.add('section', 'Sect', null, columnsXml(section))}" text:name="Section${i + 1}">${xml}</text:section>` : xml
+  }
   const masterStyles = new AutoStyles('M')
   const master = new Writer(masterStyles, shared)
   const header = hasContent(data.header) ? await master.blocks(data.header!.content ?? [], { parent: 'Header' }) : null
@@ -95,8 +153,8 @@ export async function exportOdt(data: DocumentData): Promise<Blob> {
       `<office:automatic-styles>${bodyStyles.xml()}</office:automatic-styles>` +
       `<office:body><office:text>${trackedChanges(shared.changes)}${body || '<text:p text:style-name="Standard"/>'}</office:text></office:body></office:document-content>`,
   )
-  zip.file('styles.xml', stylesXml(data.page, masterStyles, shared.fonts, header, footer).replace(DEFAULT_LANGUAGE, languageProps(data.lang) || DEFAULT_LANGUAGE))
-  zip.file('meta.xml', metaXml(data.title))
+  zip.file('styles.xml', stylesXml(masters, masterStyles, shared.fonts, header, footer, shared.contentWidthCm).replace(DEFAULT_LANGUAGE, languageProps(data.lang) || DEFAULT_LANGUAGE))
+  zip.file('meta.xml', metaXml(data.title, data.sources?.length ? { OfimeoSources: JSON.stringify(data.sources), OfimeoCitationStyle: JSON.stringify(cite), OfimeoMarks: JSON.stringify(Object.fromEntries([...shared.markIds].map(([id, label]) => [label, id]))) } : {}))
   shared.pictures.forEach((pic, name) => zip.file(`Pictures/${name}`, pic.data))
   shared.formulas.forEach((mathml, name) => zip.file(`${name}/content.xml`, `<?xml version="1.0" encoding="UTF-8"?>${mathml}`))
   zip.file('META-INF/manifest.xml', manifestXml(shared.pictures, shared.formulas))
@@ -116,8 +174,8 @@ class AutoStyles {
 
   constructor(private prefix: string) {}
 
-  add(family: string, letter: string, parent: string | null, inner: string): string {
-    const key = `${family}|${parent}|${inner}`
+  add(family: string, letter: string, parent: string | null, inner: string, attrs = ''): string {
+    const key = `${family}|${parent}|${inner}|${attrs}`
     let name = this.names.get(key)
     if (!name) {
       const n = (this.counters.get(letter) ?? 0) + 1
@@ -125,14 +183,15 @@ class AutoStyles {
       name = `${this.prefix}${letter}${n}`
       this.names.set(key, name)
       const parentAttr = parent ? ` style:parent-style-name="${parent}"` : ''
-      this.styles.push(`<style:style style:name="${name}" style:family="${family}"${parentAttr}>${inner}</style:style>`)
+      this.styles.push(`<style:style style:name="${name}" style:family="${family}"${parentAttr}${attrs}>${inner}</style:style>`)
     }
     return name
   }
 
-  paragraph(parent: string, props: string[], text = ''): string {
-    if (!props.length && !text) return parent
-    return this.add('paragraph', 'P', parent, (props.length ? `<style:paragraph-properties ${props.join(' ')}/>` : '') + (text ? `<style:text-properties ${text}/>` : ''))
+  paragraph(parent: string, props: string[], text = '', master?: string): string {
+    if (!props.length && !text && !master) return parent
+    const attrs = master ? ` style:master-page-name="${master}"` : ''
+    return this.add('paragraph', 'P', parent, (props.length ? `<style:paragraph-properties ${props.join(' ')}/>` : '') + (text ? `<style:text-properties ${text}/>` : ''), attrs)
   }
 
   list(kind: ListKind): string {
@@ -197,9 +256,14 @@ class Writer {
         }
         const lineHeight = parseFloat(a.lineHeight)
         if (lineHeight > 0) props.push(`fo:line-height="${Math.round(lineHeight * 100)}%"`)
-        if (breakBefore) props.push('fo:break-before="page"')
-        const style = this.styles.paragraph(parent, props, languageProps(langTag(a.lang)))
-        const content = (prefix ? escapeText(prefix) : '') + (await this.inline(node.content ?? []))
+        let master: string | undefined
+        if (ctx.master && !ctx.master.used) {
+          master = ctx.master.name
+          ctx.master.used = true
+        } else if (breakBefore) props.push('fo:break-before="page"')
+        const style = this.styles.paragraph(parent, props, languageProps(langTag(a.lang)), master)
+        const bookmark = this.shared.bookmarks.get(node)
+        const content = (bookmark ? `<text:bookmark text:name="${bookmark}"/>` : '') + (prefix ? escapeText(prefix) : '') + (await this.inline(node.content ?? []))
         return heading
           ? `<text:h text:style-name="${style}" text:outline-level="${level}">${content}</text:h>`
           : `<text:p text:style-name="${style}">${content}</text:p>`
@@ -233,6 +297,23 @@ class Writer {
       }
       case 'horizontalRule':
         return '<text:p text:style-name="Horizontal_20_Line"/>'
+      case 'tableOfContents':
+        return this.toc(node)
+      case 'bibliography':
+        return this.bibliography()
+      case 'sectionBreak':
+        return ''
+      case 'chart': {
+        // A picture of the chart, centered, and its caption.
+        const chart = readEmbedded(a.chart)
+        if (!chart) return ''
+        const w = Number(a.width) || 480
+        const h = Number(a.height) || 300
+        const frame = await this.image({ src: await chartPng(chart, w, h), width: w, height: h, alt: chart.spec.title || a.caption || 'Chart', title: a.caption || chart.spec.title || '' })
+        const center = this.styles.paragraph(ctx.parent, ['fo:text-align="center"', ...(breakBefore ? ['fo:break-before="page"'] : [])])
+        const caption = a.caption ? `<text:p text:style-name="${this.styles.paragraph(ctx.parent, ['fo:text-align="center"'])}">${escapeText(String(a.caption))}</text:p>` : ''
+        return `<text:p text:style-name="${center}">${frame}</text:p>${caption}`
+      }
       case 'table': {
         const table = await this.table(node, ctx)
         if (!ctx.hoisted) return table
@@ -383,11 +464,92 @@ class Writer {
           `<text:note-body>${paragraphs}</text:note-body></text:note>`
         )
       }
+      case 'citation':
+        return this.citation(a)
+      case 'mergeField':
+        return `<text:database-display text:table-name="" text:table-type="table" text:column-name="${escapeXml(String(a.name ?? ''))}">«${escapeText(String(a.name ?? ''))}»</text:database-display>`
+      case 'mergeIf':
+        return escapeText(mergeText({ type: 'mergeIf', attrs: a }, null))
       case 'pageNumber':
         return a.kind === 'total' ? '<text:page-count>1</text:page-count>' : '<text:page-number text:select-page="current">1</text:page-number>'
       default:
         return node.content ? this.inline(node.content) : ''
     }
+  }
+
+  // Table of contents index with its cached entries, linked to bookmarks on the headings.
+  private toc(node: JSONContent): string {
+    const maxLevel = Number(node.attrs?.maxLevel) || 3
+    const title = String(node.attrs?.title ?? '')
+    const entries = (node.attrs?.entries ?? []) as { level: number; text: string; page?: number }[]
+    const headings = tocHeadingsJSON(this.shared.body, maxLevel)
+    const name = `Table of Contents${++this.shared.indexes}`
+    const templates = Array.from(
+      { length: 10 },
+      (_, i) =>
+        `<text:table-of-content-entry-template text:outline-level="${i + 1}" text:style-name="Contents_20_${Math.min(i + 1, 6)}">` +
+        `<text:index-entry-link-start text:style-name="Index_20_Link"/><text:index-entry-chapter/><text:index-entry-text/>` +
+        `<text:index-entry-tab-stop style:type="right" style:leader-char="."/><text:index-entry-page-number/><text:index-entry-link-end/></text:table-of-content-entry-template>`,
+    ).join('')
+    const rows = entries
+      .map((e, i) => {
+        const anchor = headings[i] ? this.shared.bookmarks.get(headings[i]) : undefined
+        const inner = `${escapeText(e.text)}<text:tab/>${e.page ?? ''}`
+        const linked = anchor ? `<text:a xlink:type="simple" xlink:href="#${anchor}" text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link">${inner}</text:a>` : inner
+        return `<text:p text:style-name="Contents_20_${Math.min(6, Math.max(1, e.level))}">${linked}</text:p>`
+      })
+      .join('')
+    return (
+      `<text:table-of-content text:style-name="${this.styles.add('section', 'Sect', null, '<style:section-properties style:editable="false"/>')}" text:protected="true" text:name="${name}">` +
+      `<text:table-of-content-source text:outline-level="${maxLevel}"><text:index-title-template text:style-name="Contents_20_Heading">${escapeXml(title)}</text:index-title-template>${templates}</text:table-of-content-source>` +
+      `<text:index-body>${title ? `<text:index-title text:name="${name}_Head"><text:p text:style-name="Contents_20_Heading">${escapeText(title)}</text:p></text:index-title>` : ''}${rows || '<text:p text:style-name="Contents_20_1"/>'}</text:index-body></text:table-of-content>`
+    )
+  }
+
+  // Bibliography index with the formatted reference list as its content.
+  private bibliography(): string {
+    const cited = citedIdsJSON(this.shared.body).map((id) => this.shared.sources.get(id)).filter((src): src is Source => !!src)
+    const rows = formatBibliography(cited, this.shared.cite)
+      .map((e) => `<text:p text:style-name="Bibliography_20_1">${this.runs(e.runs)}</text:p>`)
+      .join('')
+    const name = `Bibliography${++this.shared.indexes}`
+    return (
+      `<text:bibliography text:style-name="${this.styles.add('section', 'Sect', null, '<style:section-properties style:editable="false"/>')}" text:protected="true" text:name="${name}">` +
+      `<text:bibliography-source><text:index-title-template text:style-name="Bibliography_20_Heading"/></text:bibliography-source>` +
+      `<text:index-body>${rows || '<text:p text:style-name="Bibliography_20_1"/>'}</text:index-body></text:bibliography>`
+    )
+  }
+
+  private runs(runs: Run[]): string {
+    return runs
+      .map((r) => (r.italic ? `<text:span text:style-name="${this.styles.add('text', 'T', null, '<style:text-properties fo:font-style="italic"/>')}">${escapeText(r.text)}</text:span>` : escapeText(r.text)))
+      .join('')
+  }
+
+  // A citation: the formatted text in the first bibliography mark; each source has a mark with its data.
+  private citation(a: Record<string, any>): string {
+    const ids = idsOf(a.ids).filter((id) => this.shared.sources.has(id))
+    const locator = String(a.locator ?? '').trim()
+    const text = citationText({ ids, locator }, this.shared.sources, this.shared.cite, this.shared.suffixes)
+    if (!ids.length) return escapeText(text)
+    return ids
+      .map((id, i) => {
+        const attrs = bibliographyAttrs(this.shared.sources.get(id)!, this.markId(id)) + (i === 0 && locator ? ` text:custom5="${escapeXml(locator)}"` : '')
+        return `<text:bibliography-mark${attrs}>${i === 0 ? escapeText(text) : ''}</text:bibliography-mark>`
+      })
+      .join('')
+  }
+
+  // LibreOffice shows a mark as "(identifier)": the identifier is the source's author-year label.
+  private markId(id: string): string {
+    let label = this.shared.markIds.get(id)
+    if (label) return label
+    const base = citationParts({ ids: [id] }, this.shared.sources, this.shared.cite, this.shared.suffixes).items[0]
+    label = base
+    const used = new Set(this.shared.markIds.values())
+    for (let n = 2; used.has(label); n++) label = `${base} (${n})`
+    this.shared.markIds.set(id, label)
+    return label
   }
 
   // A LibreOffice Math object holding the equation as MathML (with its LaTeX as annotation).
@@ -490,6 +652,42 @@ class Writer {
       `<draw:image xlink:href="${escapeXml(href)}" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>${title}${desc}</draw:frame>`
     )
   }
+}
+
+function columnsXml(section: Section): string {
+  const { count, gap, separator } = section.columns
+  const sep = separator ? '<style:column-sep style:width="0.02cm" style:color="#000000" style:height="100%" style:vertical-align="top"/>' : ''
+  return `<style:section-properties text:dont-balance-text-columns="false" style:editable="false"><style:columns fo:column-count="${count}" fo:column-gap="${(gap / 10).toFixed(3)}cm">${sep}</style:columns></style:section-properties>`
+}
+
+const ODF_BIB_TYPES: Record<SourceType, string> = { book: 'book', chapter: 'incollection', article: 'article', web: 'www', report: 'techreport', thesis: 'phdthesis', other: 'misc' }
+
+// Attributes of a text:bibliography-mark (LibreOffice's bibliography fields).
+function bibliographyAttrs(src: Source, identifier: string): string {
+  const names = (people: Source['authors'] | undefined) => (people ?? []).map((p) => (p.given && !p.org ? `${p.family}, ${p.given}` : p.family)).join('; ')
+  const fields: [string, string | undefined][] = [
+    ['identifier', identifier],
+    ['bibliography-type', ODF_BIB_TYPES[src.type]],
+    ['author', names(src.authors)],
+    ['editor', names(src.editors)],
+    ['title', src.title],
+    [src.type === 'article' ? 'journal' : src.type === 'web' ? 'howpublished' : 'booktitle', src.container],
+    ['year', src.date?.slice(0, 4)],
+    ['month', src.date?.slice(5, 7) || undefined],
+    [src.type === 'thesis' ? 'school' : src.type === 'report' ? 'institution' : 'publisher', src.publisher],
+    ['address', src.place],
+    ['edition', src.edition],
+    ['volume', src.volume],
+    ['number', src.issue ?? src.number],
+    ['pages', src.pages],
+    ['url', src.url],
+    ['custom4', src.doi],
+    ['custom3', src.accessed],
+  ]
+  return fields
+    .filter(([, v]) => v)
+    .map(([k, v]) => ` text:${k}="${escapeXml(v!)}"`)
+    .join('')
 }
 
 function isoDate(ms: number): string {
@@ -640,13 +838,14 @@ const COMMON_STYLES =
   `<style:style style:name="Footnote_20_Symbol" style:display-name="Footnote Symbol" style:family="text"/>` +
   `<style:style style:name="Footnote_20_anchor" style:display-name="Footnote anchor" style:family="text"><style:text-properties style:text-position="super 58%"/></style:style>` +
   `<text:notes-configuration text:note-class="footnote" text:citation-style-name="Footnote_20_Symbol" text:citation-body-style-name="Footnote_20_anchor" ` +
-  `style:num-format="1" text:start-value="0" text:footnotes-position="page" text:start-numbering-at="document"/>`
+  `style:num-format="1" text:start-value="0" text:footnotes-position="page" text:start-numbering-at="document"/>` +
+  `<text:bibliography-configuration text:prefix="(" text:suffix=")" text:numbered-entries="false" text:sort-by-position="false" text:sort-algorithm="alphanumeric"/>`
 
 function mm(value: number): string {
   return `${(value / 10).toFixed(3)}cm`
 }
 
-function stylesXml(page: PageSettings, auto: AutoStyles, fonts: Set<string>, header: string | null, footer: string | null): string {
+function pageLayoutXml(name: string, page: PageSettings, header: string | null, footer: string | null): string {
   const { width, height } = pageDimensionsMm(page)
   const m = page.margins
   // ODF page margins reach the header/footer; the body margin is that plus the header height and gap.
@@ -654,8 +853,8 @@ function stylesXml(page: PageSettings, auto: AutoStyles, fonts: Set<string>, hea
   const bottom = footer !== null ? Math.min(HEADER_DISTANCE_MM, m.bottom / 2) : m.bottom
   const headerGap = Math.min(HEADER_GAP_MM, (m.top - top) / 2)
   const footerGap = Math.min(HEADER_GAP_MM, (m.bottom - bottom) / 2)
-  const layout =
-    `<style:page-layout style:name="pm1"><style:page-layout-properties fo:page-width="${mm(width)}" fo:page-height="${mm(height)}" ` +
+  return (
+    `<style:page-layout style:name="${name}"><style:page-layout-properties fo:page-width="${mm(width)}" fo:page-height="${mm(height)}" ` +
     `style:print-orientation="${page.orientation}" fo:margin-top="${mm(top)}" fo:margin-bottom="${mm(bottom)}" ` +
     `fo:margin-left="${mm(m.left)}" fo:margin-right="${mm(m.right)}" style:writing-mode="lr-tb"/>` +
     (header !== null
@@ -667,26 +866,62 @@ function stylesXml(page: PageSettings, auto: AutoStyles, fonts: Set<string>, hea
         `fo:margin-left="0cm" fo:margin-right="0cm" style:dynamic-spacing="false"/></style:footer-style>`
       : '<style:footer-style/>') +
     `</style:page-layout>`
-  const master =
-    `<style:master-page style:name="Standard" style:page-layout-name="pm1">` +
-    (header !== null ? `<style:header>${header}</style:header>` : '') +
-    (footer !== null ? `<style:footer>${footer}</style:footer>` : '') +
-    `</style:master-page>`
-  return (
-    `<?xml version="1.0" encoding="UTF-8"?>` +
-    `<office:document-styles ${NS} office:version="1.3">${fontDecls(fonts)}` +
-    `<office:styles>${COMMON_STYLES}</office:styles>` +
-    `<office:automatic-styles>${layout}${auto.xml()}</office:automatic-styles>` +
-    `<office:master-styles>${master}</office:master-styles></office:document-styles>`
   )
 }
 
-function metaXml(title: string): string {
+// Table of contents and bibliography paragraph styles (tab stop at the right margin).
+function indexStyles(widthCm: number): string {
+  const contents = [1, 2, 3, 4, 5, 6]
+    .map((level) => {
+      const indent = (level - 1) * 0.5
+      return (
+        `<style:style style:name="Contents_20_${level}" style:display-name="Contents ${level}" style:family="paragraph" style:parent-style-name="Standard" style:class="index">` +
+        `<style:paragraph-properties fo:margin-left="${indent}cm" fo:margin-bottom="0.1cm"><style:tab-stops><style:tab-stop style:position="${(widthCm - indent).toFixed(3)}cm" style:type="right" style:leader-style="dotted" style:leader-text="."/></style:tab-stops></style:paragraph-properties>` +
+        (level === 1 ? `<style:text-properties${BOLD}/>` : '') +
+        `</style:style>`
+      )
+    })
+    .join('')
+  return (
+    `<style:style style:name="Contents_20_Heading" style:display-name="Contents Heading" style:family="paragraph" style:parent-style-name="Standard" style:class="index">` +
+    `<style:paragraph-properties fo:margin-top="0.2cm" fo:margin-bottom="0.2cm"/>${textProps(16, BOLD)}</style:style>` +
+    contents +
+    `<style:style style:name="Index_20_Link" style:display-name="Index Link" style:family="text"/>` +
+    `<style:style style:name="Bibliography_20_Heading" style:display-name="Bibliography Heading" style:family="paragraph" style:parent-style-name="Standard" style:class="index">${textProps(16, BOLD)}</style:style>` +
+    `<style:style style:name="Bibliography_20_1" style:display-name="Bibliography 1" style:family="paragraph" style:parent-style-name="Standard" style:class="index">` +
+    `<style:paragraph-properties fo:margin-left="1.27cm" fo:text-indent="-1.27cm" fo:margin-bottom="0.2cm" fo:line-height="150%"/></style:style>`
+  )
+}
+
+function stylesXml(masters: { name: string; page: PageSettings }[], auto: AutoStyles, fonts: Set<string>, header: string | null, footer: string | null, widthCm: number): string {
+  const layouts = masters.map((m, i) => pageLayoutXml(`pm${i + 1}`, m.page, header, footer)).join('')
+  const masterXml = masters
+    .map(
+      (m, i) =>
+        `<style:master-page style:name="${m.name}" style:page-layout-name="pm${i + 1}">` +
+        (header !== null ? `<style:header>${header}</style:header>` : '') +
+        (footer !== null ? `<style:footer>${footer}</style:footer>` : '') +
+        `</style:master-page>`,
+    )
+    .join('')
+  return (
+    `<?xml version="1.0" encoding="UTF-8"?>` +
+    `<office:document-styles ${NS} office:version="1.3">${fontDecls(fonts)}` +
+    `<office:styles>${COMMON_STYLES}${indexStyles(widthCm)}</office:styles>` +
+    `<office:automatic-styles>${layouts}${auto.xml()}</office:automatic-styles>` +
+    `<office:master-styles>${masterXml}</office:master-styles></office:document-styles>`
+  )
+}
+
+function metaXml(title: string, user: Record<string, string>): string {
+  const extra = Object.entries(user)
+    .map(([name, value]) => `<meta:user-defined meta:name="${name}">${escapeXml(value)}</meta:user-defined>`)
+    .join('')
   return (
     `<?xml version="1.0" encoding="UTF-8"?>` +
     `<office:document-meta ${NS} office:version="1.3"><office:meta>` +
-    `<meta:generator>Words Online</meta:generator><dc:title>${escapeXml(title)}</dc:title>` +
-    `<meta:creation-date>${new Date().toISOString().slice(0, 19)}</meta:creation-date>` +
+    `<meta:generator>Ofimeo</meta:generator><dc:title>${escapeXml(title)}</dc:title>` +
+    `<meta:creation-date>${new Date().toISOString().slice(0, 19)}</meta:creation-date>${extra}` +
     `</office:meta></office:document-meta>`
   )
 }

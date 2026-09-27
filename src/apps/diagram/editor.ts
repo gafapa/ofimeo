@@ -1,7 +1,9 @@
 // The diagram editor without its app frame: graph, sync, undo, zoom, clipboard,
-// commands, shape and format panels, keyboard, context menu and presence.
-// The diagram app (app.ts) and the presentations app (apps/slides) build their
-// menus, toolbars and page navigation around it.
+// commands, find, shape and format panels, keyboard, context menu and presence.
+// The diagram app (app.ts) and the presentations app (apps/slides) put it in the
+// shared app frame (src/ui/frame.ts): editMenu(), arrangeMenu(), zoomMenu() and
+// panelMenu() fill their menus, zoomTarget drives the status-bar zoom control,
+// shortcutSections() the shortcuts dialog and find() the Edit ▸ Find… panel.
 
 import {
   Cell,
@@ -16,22 +18,23 @@ import {
   type GraphLayout,
   type UndoableEdit,
 } from '@maxgraph/core'
-import { Maximize, Minus, Plus, type IconNode } from 'lucide'
+import { ChevronDown, ChevronUp, X } from 'lucide'
 import type { Session } from '../../core/session'
 import { t, tn } from '../../core/i18n'
-import { colorPalette, el, icon, openPopover, promptText, shortcutLabel, showContextMenu, showDialog, toast, type MenuEntry } from '../../ui/widgets'
+import { mod, type ShortcutSection } from '../../ui/shortcuts'
+import { el, icon, promptText, showContextMenu, toast, uiZoom, type MenuEntry } from '../../ui/widgets'
+import type { ZoomTarget } from '../../ui/zoom'
 import { FormatPanel } from './format'
 import { buildCells, cellsToRecords, createGraph, isTyping, setStyleKey, styleFromString, styleToString, type EditorGraph } from './graph'
 import { chooseLibraries, loadEnabledLibraries, prepareItems, watchGraph } from './libraries'
-import type { CellRecord, PageRecord } from './model'
+import { pageDisplayName, type CellRecord, type PageRecord } from './model'
 import { PALETTE } from './palette'
 import { DiagramPresence } from './presence'
 import { registerShapes } from './shapes'
 import { ShapeSidebar } from './sidebar'
 import { DiagramSync } from './sync'
 
-export const isMac = /Mac|iPhone|iPad/.test(navigator.platform)
-export const mod = (k: string) => (isMac ? `⌘${k}` : shortcutLabel(`Ctrl+${k}`))
+export { isMac, mod } from '../../ui/shortcuts'
 const ZOOMS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4]
 const MIN_ZOOM = 0.1
 const MAX_ZOOM = 8
@@ -64,9 +67,10 @@ export interface EditorOptions {
   textSize?: [number, number]
   // Format panel content when nothing is selected.
   formatEmpty?: () => HTMLElement
+  // More rows for the diagram options of the format panel.
+  diagramOptions?: () => HTMLElement[]
   // Files other than images dropped on the canvas.
   openFile?: (file: File) => void
-  print?: () => void
   // Keys handled by the app first; return true when handled (it calls preventDefault as needed).
   onKey?: (e: KeyboardEvent) => boolean
   // Extra context menu entries (with the current selection).
@@ -120,7 +124,7 @@ export function createDiagramEditor(session: Session, options: EditorOptions) {
   // ---------- View: zoom, pan, grid ----------
 
   const gridKey = options.gridKey ?? 'diagram-grid'
-  const zoomLabel = el('button', { type: 'button', class: 'zoom-value', title: t('Actual size') })
+  const zoomListeners: (() => void)[] = []
   const selectionLabel = el('span', { class: 'hide-narrow' })
   let gridVisible = (localStorage.getItem(gridKey) ?? (options.gridDefault === false ? '0' : '1')) !== '0'
   const updateGrid = () => {
@@ -130,7 +134,7 @@ export function createDiagramEditor(session: Session, options: EditorOptions) {
     canvas.style.setProperty('--grid', `${size}px`)
     canvas.style.setProperty('--grid-major', `${size * 4}px`)
     canvas.style.backgroundPosition = `${view.translate.x * s}px ${view.translate.y * s}px`
-    zoomLabel.textContent = `${Math.round(s * 100)}%`
+    zoomListeners.forEach((fn) => fn())
   }
   const setGridVisible = (on: boolean) => {
     gridVisible = on
@@ -171,6 +175,8 @@ export function createDiagramEditor(session: Session, options: EditorOptions) {
     fitArea({ x: b.x / s - t.x, y: b.y / s - t.y, width: b.width / s, height: b.height / s })
   }
   const actualSize = () => zoomAt(1)
+  // The status-bar zoom control and View ▸ Zoom of the app frame; Ctrl++ / Ctrl+- / Ctrl+0 come from the frame keys.
+  const zoomTarget: ZoomTarget = { get: () => view.scale, set: (z) => zoomAt(z), fit, min: MIN_ZOOM, max: MAX_ZOOM, presets: ZOOMS, keys: true }
 
   canvas.addEventListener(
     'wheel',
@@ -312,6 +318,15 @@ export function createDiagramEditor(session: Session, options: EditorOptions) {
   }
   const setFill = (color: string | null) => setStyleKey(graph, vertices(), 'fillColor', color ?? 'none')
   const setStroke = (color: string | null) => setStyleKey(graph, selection(), 'strokeColor', color ?? 'none')
+  // Bold 1, italic 2, underline 4, strikethrough 8 (draw.io's fontStyle bits).
+  const fontStyleOf = (cell: Cell | undefined) => (cell ? Number((graph.getCellStyle(cell) as Record<string, unknown>).fontStyle ?? 0) : 0)
+  const hasFontStyle = (bit: number) => (fontStyleOf(selection()[0]) & bit) !== 0
+  const toggleFontStyle = (bit: number) => {
+    const cells = selection()
+    if (readOnly || !cells.length) return
+    const current = fontStyleOf(cells[0])
+    setStyleKey(graph, cells, 'fontStyle', current & bit ? current & ~bit || null : current | bit)
+  }
 
   // Tree layouts start from the selected shape, else from the root they find.
   const layout = (make: () => GraphLayout) => {
@@ -477,9 +492,10 @@ export function createDiagramEditor(session: Session, options: EditorOptions) {
     editStyle: () => void editStyle(),
     isGridVisible: () => gridVisible,
     setGridVisible,
-    pageName: () => sync.pageList().find((p) => p.id === sync.page)?.name ?? '',
+    pageName: () => pageDisplayName(sync.pageList().find((p) => p.id === sync.page)?.name ?? ''),
     renamePage: (name) => sync.renamePage(sync.page, name),
     emptySection: options.formatEmpty,
+    diagramOptions: options.diagramOptions,
   })
   const narrow = window.matchMedia('(max-width: 800px)').matches
   sidebar.element.hidden = narrow || readOnly
@@ -487,6 +503,9 @@ export function createDiagramEditor(session: Session, options: EditorOptions) {
   const togglePanel = (panel: HTMLElement) => {
     if (readOnly) return
     panel.hidden = !panel.hidden
+    // On phones the Shapes and Format panels would cover the whole canvas: one at a time.
+    const other = panel === sidebar.element ? format.element : panel === format.element ? sidebar.element : null
+    if (other && !panel.hidden && window.matchMedia('(max-width: 600px)').matches) other.hidden = true
     updateToolbar()
   }
 
@@ -508,6 +527,8 @@ export function createDiagramEditor(session: Session, options: EditorOptions) {
     { label: t('Select shapes'), run: selectVertices, enabled: editable() },
     { label: t('Select connectors'), run: selectEdges, enabled: editable() },
     { label: t('Select none'), shortcut: 'Esc', run: () => graph.clearSelection() },
+    '-',
+    { label: t('Find…'), shortcut: mod('F'), run: find },
     '-',
     { label: t('Edit label'), shortcut: 'F2', run: editLabel, enabled: editable(one) },
     { label: t('Edit style…'), run: () => void editStyle(), enabled: editable(hasSelection) },
@@ -572,48 +593,116 @@ export function createDiagramEditor(session: Session, options: EditorOptions) {
     { label: t('Flip vertically'), run: () => flip('flipV'), enabled: editable(many(1)) },
   ]
 
-  // ---------- Toolbar helpers ----------
+  // ---------- Toolbar ----------
 
-  const toolbarUpdaters: (() => void)[] = []
-  const tbButton = (node: IconNode, label: string, run: () => void, enabled?: () => boolean, active?: () => boolean) => {
-    const b = el('button', { type: 'button', class: 'tb-btn', title: label }, icon(node))
+  // The app's toolbar (frame.toolbar.refresh) re-evaluates its buttons on selection, model and panel changes.
+  const toolbarListeners: (() => void)[] = []
+  const updateToolbar = () => toolbarListeners.forEach((fn) => fn())
+
+  // ---------- Find ----------
+
+  // Label search over every page, the current one first: selects each match and scrolls it into view.
+  const labelText = (record: CellRecord) => {
+    const value = record.value ?? ''
+    // DOMParser documents are inert (no scripts, no image loads).
+    const text = /(^|;)html=1/.test(record.style ?? '') ? (new DOMParser().parseFromString(value, 'text/html').body.textContent ?? '') : value
+    return text.replace(/\s+/g, ' ').trim()
+  }
+  const findInput = el('input', { type: 'search', class: 'diagram-find-input', placeholder: t('Find in labels'), spellcheck: false })
+  findInput.setAttribute('aria-label', t('Find in labels'))
+  const findCount = el('span', { class: 'diagram-find-count', role: 'status' })
+  const findButton = (node: typeof X, label: string, run: () => void) => {
+    const b = el('button', { type: 'button', class: 'diagram-find-btn', title: label }, icon(node, 16))
     b.setAttribute('aria-label', label)
-    b.addEventListener('mousedown', (e) => e.preventDefault())
     b.addEventListener('click', run)
-    if (enabled || active) {
-      toolbarUpdaters.push(() => {
-        if (enabled) b.disabled = !enabled()
-        if (active) b.classList.toggle('active', active())
-      })
+    return b
+  }
+  const findPanel = el('div', { class: 'diagram-find', role: 'search', hidden: true })
+  findPanel.append(
+    findInput,
+    findCount,
+    findButton(ChevronUp, t('Previous match'), () => findStep(-1)),
+    findButton(ChevronDown, t('Next match'), () => findStep(1)),
+    findButton(X, t('Close'), () => closeFind()),
+  )
+  document.body.append(findPanel)
+  let matches: { page: string; id: string }[] = []
+  let matchIndex = -1
+  const searchLabels = () => {
+    const query = findInput.value.trim().toLocaleLowerCase()
+    const pages = sync.pageList().map((p) => p.id)
+    const current = Math.max(0, pages.indexOf(sync.page))
+    matches = []
+    if (query) {
+      for (const page of [...pages.slice(current), ...pages.slice(0, current)]) {
+        for (const record of sync.pageRecords(page)) if (record.parent && record.value && labelText(record).toLocaleLowerCase().includes(query)) matches.push({ page, id: record.id })
+      }
     }
-    return b
+    matchIndex = -1
   }
-  const zoomSelect = el('select', { class: 'tb-select tb-zoom', title: t('Zoom') })
-  zoomSelect.setAttribute('aria-label', t('Zoom'))
-  const syncZoomSelect = () => {
-    const pct = Math.round(view.scale * 100)
-    zoomSelect.replaceChildren(
-      ...ZOOMS.map((z) => el('option', { value: String(z), textContent: `${z * 100}%` })),
-      el('option', { value: 'fit', textContent: t('Fit') }),
-    )
-    if (!ZOOMS.some((z) => Math.round(z * 100) === pct)) zoomSelect.prepend(el('option', { value: String(view.scale), textContent: `${pct}%` }))
-    zoomSelect.value = String(ZOOMS.find((z) => Math.round(z * 100) === pct) ?? view.scale)
+  const showMatch = () => {
+    const match = matches[matchIndex]
+    findCount.textContent = !findInput.value.trim() ? '' : matches.length ? t('{n} of {total}', { n: matchIndex + 1, total: matches.length }) : t('No results')
+    if (!match) return
+    if (match.page !== sync.page) sync.showPage(match.page)
+    const cell = model.getCell(match.id)
+    if (!cell) return
+    graph.setSelectionCell(cell)
+    const state = view.getState(cell)
+    if (!state) return
+    // Centers the match when it is not fully visible.
+    const rect = canvas.getBoundingClientRect()
+    const z = uiZoom()
+    const width = rect.width / z
+    const height = rect.height / z
+    if (state.x < 0 || state.y < 0 || state.x + state.width > width || state.y + state.height > height) {
+      const s = view.scale
+      view.setTranslate(view.translate.x + (width / 2 - state.getCenterX()) / s, view.translate.y + (height / 2 - state.getCenterY()) / s)
+    }
   }
-  for (const event of [InternalEvent.SCALE, InternalEvent.SCALE_AND_TRANSLATE]) view.addListener(event, syncZoomSelect)
-  zoomSelect.addEventListener('change', () => {
-    if (zoomSelect.value === 'fit') fit()
-    else zoomAt(Number(zoomSelect.value))
+  const findStep = (dir: 1 | -1) => {
+    if (!matches.length) searchLabels()
+    if (!matches.length) return showMatch()
+    matchIndex = (matchIndex + dir + matches.length) % matches.length
+    showMatch()
+  }
+  const placeFind = () => {
+    const rect = canvas.getBoundingClientRect()
+    const z = uiZoom()
+    findPanel.style.top = `${rect.top / z + 8}px`
+    findPanel.style.right = `${Math.max(8, (window.innerWidth - rect.right) / z + 8)}px`
+  }
+  const closeFind = () => {
+    findPanel.hidden = true
+    window.removeEventListener('resize', placeFind)
     canvas.focus()
+  }
+  const find = () => {
+    if (graph.isEditing()) graph.stopEditing(false)
+    placeFind()
+    if (findPanel.hidden) window.addEventListener('resize', placeFind)
+    findPanel.hidden = false
+    findInput.focus()
+    findInput.select()
+  }
+  findInput.addEventListener('input', () => {
+    searchLabels()
+    findStep(1)
   })
-  const colorTool = (node: IconNode, label: string, apply: (c: string | null) => void, reset: string, enabled: () => boolean = hasSelection) => {
-    const b = tbButton(node, label, () => openPopover(b, colorPalette(apply, reset)), editable(enabled))
-    return b
-  }
-  const zoomTools = () => [tbButton(Minus, t('Zoom out'), () => zoomStep(-1)), zoomSelect, tbButton(Plus, t('Zoom in'), () => zoomStep(1)), tbButton(Maximize, t('Fit'), fit)]
-  const updateToolbar = () => {
-    toolbarUpdaters.forEach((u) => u())
-    syncZoomSelect()
-  }
+  findInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      findStep(e.shiftKey ? -1 : 1)
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      e.stopPropagation()
+      closeFind()
+    }
+  })
+  // Edits and page changes make the list stale: it is rebuilt on the next step.
+  model.addListener(InternalEvent.CHANGE, () => {
+    if (!findPanel.hidden && !sync.applying) matches = []
+  })
 
   // ---------- Keyboard ----------
 
@@ -623,18 +712,42 @@ export function createDiagramEditor(session: Session, options: EditorOptions) {
     const active = document.activeElement as HTMLElement | null
     if (active && !canvas.contains(active) && isTyping(active)) active.blur()
   })
+  // Selection changes made with the keyboard are read out by screen readers.
+  const announcer = el('div', { class: 'sr-only', role: 'status' })
+  announcer.setAttribute('aria-live', 'polite')
+  document.body.append(announcer)
+  // Tab / Shift+Tab on the focused canvas walks through the shapes and
+  // connectors of the page (arrows then move, Enter edits, Esc clears). Past the
+  // last (or before the first) one the selection clears and focus leaves the canvas.
+  const tabSelect = (back: boolean): boolean => {
+    const cells = graph.getChildCells(graph.getDefaultParent(), true, true).filter((c) => graph.isCellSelectable(c) && c.isVisible())
+    if (!cells.length) return false
+    const current = graph.getSelectionCell()
+    const index = current ? cells.indexOf(current) : -1
+    const next = index < 0 ? (back ? -1 : 0) : index + (back ? -1 : 1)
+    if (next < 0 || next >= cells.length) {
+      graph.clearSelection()
+      return false
+    }
+    const cell = cells[next]
+    graph.setSelectionCell(cell)
+    graph.scrollCellToVisible(cell)
+    const label = labelText({ value: graph.convertValueToString(cell) ?? '', style: styleToString(cell.getStyle()) } as CellRecord)
+    announcer.textContent = t('{label} ({n} of {total})', { label: label || (cell.isEdge() ? t('Connector') : t('Shape')), n: next + 1, total: cells.length })
+    return true
+  }
   document.addEventListener('keydown', (e) => {
     if (isTyping(e.target) || graph.isEditing() || document.querySelector('dialog[open]')) return
+    if (e.key === 'Tab' && !readOnly && !e.ctrlKey && !e.metaKey && !e.altKey && e.target instanceof Node && canvas.contains(e.target)) {
+      if (tabSelect(e.shiftKey)) e.preventDefault()
+      return
+    }
     if (options.onKey?.(e)) return
     const modKey = e.ctrlKey || e.metaKey
     const key = e.key.toLowerCase()
     let handled = true
-    if (modKey && (key === '+' || key === '=')) zoomStep(1)
-    else if (modKey && key === '-') zoomStep(-1)
-    else if (modKey && key === '0') actualSize()
-    else if (modKey && key === 'h' && e.shiftKey) fit()
-    else if (modKey && key === 'p') options.print?.()
-    else if (modKey && key === 's') toast(t('Changes are saved automatically in this browser'))
+    // Ctrl+O/S/P/F, Ctrl+/ and the zoom keys come from the app frame (src/ui/shortcuts.ts).
+    if (modKey && key === 'h' && e.shiftKey) fit()
     else if (key === 'escape') graph.clearSelection()
     else if (readOnly) handled = false
     else if (modKey && key === 'z' && !e.shiftKey) undo()
@@ -697,6 +810,18 @@ export function createDiagramEditor(session: Session, options: EditorOptions) {
     const extraItems = options.contextItems?.(hasSelection()) ?? []
     showContextMenu(e.clientX, e.clientY, extraItems.length ? [...items, '-', ...extraItems] : items)
   })
+
+  // Insert ▸ Text: a text box in the middle of the view, ready to type.
+  const insertText = () => {
+    if (readOnly) return
+    const [w, h] = options.textStyle ? textSize : [60, 30]
+    const cell = new Cell(t('Text'), new Geometry(0, 0, w, h), styleFromString(options.textStyle ?? TEXT_STYLE))
+    cell.setVertex(true)
+    insertAtCenter([cell])
+    // The inserted cell is a copy; it is the selection now.
+    const inserted = graph.getSelectionCell()
+    if (inserted) graph.startEditingAtCell(inserted)
+  }
 
   // Double click on an empty spot adds a text box there.
   graph.addListener(InternalEvent.DOUBLE_CLICK, (_sender: unknown, evt: EventObject) => {
@@ -763,7 +888,7 @@ export function createDiagramEditor(session: Session, options: EditorOptions) {
     undoManager,
     sidebar,
     format,
-    zoomLabel,
+    zoomTarget,
     selectionLabel,
     presence: () => presence,
     start,
@@ -792,44 +917,51 @@ export function createDiagramEditor(session: Session, options: EditorOptions) {
     vertices,
     setFill,
     setStroke,
+    hasFontStyle,
+    toggleFontStyle,
+    insertText,
+    editLabel,
+    editStyle: () => void editStyle(),
+    moreShapes: () => void moreShapes(),
     togglePanel,
     editMenu,
     panelMenu,
     zoomMenu,
     arrangeMenu,
-    tbButton,
-    colorTool,
-    zoomTools,
+    find,
     updateToolbar,
+    onToolbar: (fn: () => void) => toolbarListeners.push(fn),
+    onZoom: (fn: () => void) => zoomListeners.push(fn),
     updateStatus,
     onStatus: (fn: () => void) => statusListeners.push(fn),
     editable,
   }
 }
 
-export function showShortcuts(extra: [string, string][] = []): void {
-  const rows: [string, string][] = [
-    [t('Undo / redo'), `${mod('Z')} / ${mod('Y')}`],
-    [t('Cut / copy / paste'), `${mod('X')} / ${mod('C')} / ${mod('V')}`],
-    [t('Duplicate'), mod('D')],
-    [t('Delete'), t('Del')],
-    [t('Select all'), mod('A')],
-    [t('Edit label'), t('F2 / Enter / double click')],
-    [t('Add text'), t('Double click on the canvas')],
-    [t('Move'), t('Arrow keys (Shift: grid step)')],
-    [t('Group / ungroup'), `${mod('G')} / ${mod('Shift+U')}`],
-    [t('To front / to back'), `${mod('Shift+F')} / ${mod('Shift+B')}`],
-    [t('Rotate 90°'), mod('R')],
-    [t('Zoom'), `${mod('+')} / ${mod('-')} / ${mod('Wheel')}`],
-    [t('Fit'), mod('Shift+H')],
-    [t('Pan'), t('Wheel, Space + drag or middle button')],
-    [t('Connect'), t('Drag from the blue points of a shape')],
-    [t('Straight lines while dragging'), 'Shift'],
-    ...extra,
+// The editor's section of the shortcuts dialog (the frame adds the common keys:
+// undo, clipboard, select all, find, zoom, file and help). Keys use "Ctrl+".
+export function shortcutSections(title: string, extra: [string, string][] = []): ShortcutSection[] {
+  return [
+    {
+      title,
+      rows: [
+        [t('Duplicate'), 'Ctrl+D'],
+        [t('Delete'), 'Del'],
+        [t('Edit label'), t('F2 / Enter / double click')],
+        [t('Add text'), t('Double click on the canvas')],
+        [t('Move'), t('Arrow keys (Shift: grid step)')],
+        [t('Group / ungroup'), 'Ctrl+G / Ctrl+Shift+U'],
+        [t('To front / to back'), 'Ctrl+Shift+F / Ctrl+Shift+B'],
+        [t('Rotate 90°'), 'Ctrl+R'],
+        [t('Zoom'), 'Ctrl+Wheel'],
+        [t('Fit'), 'Ctrl+Shift+H'],
+        [t('Pan'), t('Wheel, Space + drag or middle button')],
+        [t('Connect'), t('Drag from the blue points of a shape')],
+        [t('Straight lines while dragging'), 'Shift'],
+        ...extra,
+      ],
+    },
   ]
-  const table = el('table', { class: 'shortcuts' })
-  for (const [action, keys] of rows) table.append(el('tr', {}, el('td', { textContent: action }), el('td', {}, el('kbd', { textContent: shortcutLabel(keys) }))))
-  void showDialog(t('Keyboard shortcuts'), table, [{ label: t('Close'), value: 'ok', primary: true }], true)
 }
 
 export function escapeHtml(s: string): string {

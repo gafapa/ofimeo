@@ -29,7 +29,7 @@ export async function buildHandIn(session: Session, title: string, author: strin
     `${t('Files')}:`,
     ...names.map((n) => `  ${n}`),
     '',
-    t('Made with Words Online.'),
+    t('Made with Ofimeo.'),
     '',
   ].join('\r\n')
   zip.file('README.txt', readme)

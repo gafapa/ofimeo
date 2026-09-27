@@ -4,6 +4,7 @@ import { StencilShape, StencilShapeRegistry } from '@maxgraph/core'
 import type { AbstractCanvas2D, Rectangle, Shape } from '@maxgraph/core'
 import basicXml from './stencils/basic.xml?raw'
 import flowchartXml from './stencils/flowchart.xml?raw'
+import { deflateRawSync, inflateRawSync } from '../formats/deflate'
 
 export const STENCIL_SETS = [basicXml, flowchartXml]
 
@@ -57,4 +58,49 @@ export function registerStencilSet(xml: string): string[] {
 
 export function registerStencils() {
   for (const xml of STENCIL_SETS) registerStencilSet(xml)
+  inlineStencils()
+}
+
+// draw.io's inline stencils: shape=stencil(<base64 of the raw-deflated,
+// URI-encoded <shape> XML>), used by imported Visio shapes among others.
+// Decoded on first use, like draw.io's mxStencilRegistry.getStencil.
+function inlineStencils() {
+  const get = StencilShapeRegistry.get.bind(StencilShapeRegistry)
+  const bad = new Set<string>()
+  StencilShapeRegistry.get = (name: string) => {
+    const found = get(name)
+    if (found || typeof name !== 'string' || !name.startsWith('stencil(') || bad.has(name)) return found
+    try {
+      const xml = decodeStencil(name.slice(8, -1))
+      const node = new DOMParser().parseFromString(xml, 'text/xml').documentElement
+      if (node.nodeName !== 'shape') throw new Error(node.nodeName)
+      const stencil = new DrawioStencil(node)
+      StencilShapeRegistry.add(name, stencil)
+      return stencil
+    } catch (e) {
+      bad.add(name)
+      console.warn('Invalid inline stencil', e)
+      return null
+    }
+  }
+}
+
+function decodeStencil(text: string): string {
+  if (text.trimStart().startsWith('<')) return text
+  const binary = atob(text.replace(/\s+/g, ''))
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0))
+  const inflated = new TextDecoder().decode(inflateRawSync(bytes))
+  try {
+    return decodeURIComponent(inflated)
+  } catch {
+    return inflated
+  }
+}
+
+// The style value of an inline stencil for a <shape> element's XML.
+export function encodeStencil(xml: string): string {
+  const bytes = deflateRawSync(new TextEncoder().encode(encodeURIComponent(xml)))
+  let binary = ''
+  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+  return `stencil(${btoa(binary)})`
 }

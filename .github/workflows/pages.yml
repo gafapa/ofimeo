@@ -27,7 +27,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # LEGAL_STRICT: refuse to publish legal pages with empty owner data (legal.config.json).
       - run: npm run build
+        env:
+          LEGAL_STRICT: '1'
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

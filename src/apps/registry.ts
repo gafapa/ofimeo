@@ -1,8 +1,9 @@
-// Apps of the suite. Each app is loaded with a dynamic import() only when opened.
+// Apps of the Ofimeo suite. Each app is loaded with a dynamic import() only when opened.
 
 import type { Session, SubmitFile } from '../core/session'
 import type { DocType } from '../core/store'
 import { t } from '../core/i18n'
+import { appHidden } from '../core/school-config'
 
 export interface AppModule {
   mount(session: Session): void | Promise<void>
@@ -19,6 +20,8 @@ export interface AppModule {
 export interface AppInfo {
   type: DocType
   name: string // e.g. "Document"
+  // Name of the app within the suite, e.g. "Ofimeo Docs" ("Ofimeo Documentos" in Spanish).
+  product: string
   plural: string // e.g. "Documents"
   newLabel: string
   untitled: string
@@ -27,6 +30,8 @@ export interface AppInfo {
   // File extensions the app opens; declared here so the home screen can offer
   // them without loading the app.
   accept?: string
+  // False for apps without comments: sharing offers no "Can comment" link.
+  comments?: boolean
   load?: () => Promise<AppModule>
 }
 
@@ -34,59 +39,113 @@ export const APPS: AppInfo[] = [
   {
     type: 'writer',
     name: t('Document'),
+    product: t('Ofimeo Docs'),
     plural: t('Documents'),
     newLabel: t('New document'),
     untitled: t('Untitled document'),
     letter: 'W',
     color: '#1a73e8',
-    accept: '.docx,.odt,.html,.htm,.txt,.md',
+    accept: '.docx,.odt,.doc,.rtf,.html,.htm,.txt,.md,.markdown',
     load: () => import('./writer'),
   },
   {
     type: 'sheet',
     name: t('Spreadsheet'),
+    product: t('Ofimeo Sheets'),
     plural: t('Spreadsheets'),
     newLabel: t('New spreadsheet'),
     untitled: t('Untitled spreadsheet'),
     letter: 'S',
     color: '#188038',
-    accept: '.xlsx,.ods,.csv,.tsv',
+    accept: '.xlsx,.ods,.csv,.tsv,.xls',
+    comments: false,
     load: () => import('./sheet'),
   },
   {
     type: 'draw',
     name: t('Drawing'),
+    product: t('Ofimeo Drawing'),
     plural: t('Drawings'),
     newLabel: t('New drawing'),
     untitled: t('Untitled drawing'),
     letter: 'D',
     color: '#e8710a',
     accept: '.excalidraw',
+    comments: false,
     load: () => import('./draw'),
   },
   {
     type: 'diagram',
     name: t('Diagram'),
+    product: t('Ofimeo Diagrams'),
     plural: t('Diagrams'),
     newLabel: t('New diagram'),
     untitled: t('Untitled diagram'),
     letter: 'G',
     color: '#9334e6',
-    accept: '.drawio,.xml',
+    accept: '.drawio,.xml,.vsdx,.vssx',
+    comments: false,
     load: () => import('./diagram'),
   },
   {
     type: 'slides',
     name: t('Presentation'),
+    product: t('Ofimeo Slides'),
     plural: t('Presentations'),
     newLabel: t('New presentation'),
     untitled: t('Untitled presentation'),
     letter: 'P',
     color: '#d24726',
-    accept: '.pptx',
+    accept: '.pptx,.ppt,.odp',
     load: () => import('./slides'),
   },
+  {
+    type: 'forms',
+    name: t('Form'),
+    product: t('Ofimeo Forms'),
+    plural: t('Forms'),
+    newLabel: t('New form'),
+    untitled: t('Untitled form'),
+    letter: 'F',
+    color: '#00897b',
+    accept: '.oform',
+    comments: false,
+    load: () => import('./forms'),
+  },
+  {
+    type: 'pdf',
+    name: t('PDF'),
+    product: t('Ofimeo PDF'),
+    plural: t('PDFs'),
+    newLabel: t('Correct a PDF'),
+    untitled: t('Untitled PDF'),
+    letter: 'A',
+    color: '#b3261e',
+    // Hand-in ZIPs open the PDF inside them.
+    accept: '.pdf,.zip',
+    load: () => import('./pdf'),
+  },
+  {
+    type: 'notebook',
+    name: t('Notebook'),
+    product: t('Ofimeo Notebook'),
+    plural: t('Notebooks'),
+    newLabel: t('New notebook'),
+    untitled: t('Untitled notebook'),
+    letter: 'N',
+    color: '#ad1457',
+    // Opened from File ▸ Open… in the notebook (ZIP of Markdown, .md): these
+    // extensions belong to the PDF app (hand-in ZIPs) and the writer (.md).
+    load: () => import('./notebook'),
+  },
 ]
+
+// Apps a school configuration hides (features.hiddenApps) are not offered for
+// new documents; documents of that kind still open.
+export const offeredApps = (): AppInfo[] => APPS.filter((a) => !appHidden(a.type))
+
+// Name of the suite (a brand: never translated).
+export const SUITE = 'Ofimeo'
 
 export function appInfo(type: DocType): AppInfo {
   return APPS.find((a) => a.type === type) ?? APPS[0]

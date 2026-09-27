@@ -1,0 +1,67 @@
+# Builds Ofimeo Relay for every platform and publishes a GitHub Release when a
+# tag like relay-v1.0.0 is pushed:  git tag relay-v1.0.0 && git push origin relay-v1.0.0
+name: Relay release
+
+on:
+  push:
+    tags: ['relay-v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: relay/go.mod
+          cache-dependency-path: relay/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # The pinned draw.io release the shape libraries are generated from.
+      - uses: actions/cache@v4
+        with:
+          path: node_modules/.cache/draw-*.war
+          key: drawio-war-${{ hashFiles('scripts/drawio.json') }}
+      # The web app, embedded in the "full" binaries and attached as a zip.
+      - name: Build the web app
+        run: npm run build
+      - name: Test the relay
+        working-directory: relay
+        run: go vet ./... && go test ./...
+      - name: Build the binaries
+        working-directory: relay
+        run: |
+          VERSION="${GITHUB_REF_NAME#relay-v}"
+          [ "$GITHUB_REF_TYPE" = tag ] || VERSION="0.0.0-${GITHUB_SHA::7}"
+          VERSION="$VERSION" FULL=1 ./build.sh
+          cp webapp.zip dist/ofimeo-app.zip
+          cd dist && sha256sum * > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ofimeo-relay
+          path: relay/dist/
+          retention-days: 14
+      - name: Publish the release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat > notes.md <<'NOTES'
+          Ofimeo Relay lets Ofimeo documents sync on school networks that block public relays or isolate devices.
+          Download the file for your system, run it (or install it as a service) and follow the guide:
+          https://github.com/${{ github.repository }}/blob/main/docs/relay.md
+
+          - `ofimeo-relay-<os>-<arch>`: the relay (Windows, macOS Intel/Apple Silicon, Linux, Raspberry Pi: linux-arm64 or linux-armv7).
+          - `ofimeo-relay-full-<os>-<arch>`: the same, with the Ofimeo web app inside (`--serve-app embedded`), for networks without Internet.
+          - `ofimeo-app.zip`: the web app, for `--serve-app ofimeo-app.zip` with the small binaries.
+          - `SHA256SUMS.txt`: checksums.
+          NOTES
+          gh release create "$GITHUB_REF_NAME" relay/dist/* --title "Ofimeo Relay ${GITHUB_REF_NAME#relay-v}" --notes-file notes.md

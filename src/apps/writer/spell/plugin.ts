@@ -12,10 +12,11 @@ import { Plugin, PluginKey, type Transaction } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import type { Node as PMNode } from '@tiptap/pm/model'
 import type * as Y from 'yjs'
-import { SpellClient, type CheckResult } from './client'
-import { isLang, LANG_TAG, loadSettings, personalWords, saveSettings, savePersonalWords, UI_LANG, type SpellSettings } from './settings'
-import { OBJECT, type Issue, type Lang, type Paragraph } from './types'
-import type { WorkerEvent } from './worker'
+import { SpellClient, type CheckResult } from '../../../core/spell/client'
+import { loadSettings, personalWords, saveSettings, savePersonalWords, UI_VARIANT, type SpellSettings } from '../../../core/spell/settings'
+import { dictOf, normalizeTag, variantOf } from '../../../core/spell/variants'
+import { OBJECT, type Issue, type Lang, type Paragraph } from '../../../core/spell/types'
+import type { WorkerEvent } from '../../../core/spell/worker'
 
 export const spellKey = new PluginKey<DecorationSet>('spell')
 
@@ -30,6 +31,8 @@ interface Meta {
 export interface IssueSpec {
   issue: Issue
   lang: Lang
+  // Dictionary id of the paragraph's variant (for suggestions).
+  dict: string
   // The underlined text when it was checked.
   text: string
   // Paragraph start (position of the block's content) is not kept: positions
@@ -73,7 +76,8 @@ export class SpellController {
   private listeners = new Set<() => void>()
   harperReady = false
   languageToolOk: boolean | null = null
-  loading = new Set<Lang>()
+  // Dictionary ids being downloaded.
+  loading = new Set<string>()
 
   constructor(
     private meta: Y.Map<unknown>,
@@ -92,13 +96,18 @@ export class SpellController {
     return this.settings.spelling || this.settings.grammar
   }
 
-  docLang(): Lang {
-    const value = this.meta.get('lang')
-    return isLang(value) ? value : UI_LANG
+  // Document language as a variant tag ("es-MX"). Older documents store a
+  // bare code ("es"): the browser's region of that language is used.
+  docLang(): string {
+    return normalizeTag(this.meta.get('lang')) ?? UI_VARIANT
   }
 
-  setDocLang(lang: Lang): void {
-    if (this.editable()) this.meta.set('lang', lang)
+  docBase(): Lang {
+    return variantOf(this.docLang())!.lang
+  }
+
+  setDocLang(tag: string): void {
+    if (this.editable()) this.meta.set('lang', tag)
   }
 
   update(patch: Partial<SpellSettings>): void {
@@ -226,8 +235,13 @@ export class SpellController {
   // ---------- Checking ----------
 
   private blocks(doc: PMNode, all: boolean): Block[] {
-    const lang = this.docLang()
+    const docTag = this.docLang()
     const sig = this.signature()
+    // A paragraph with a bare code of the document's language follows its variant.
+    const variant = (attr: unknown) => {
+      const v = variantOf(attr) ?? variantOf(docTag)!
+      return typeof attr === 'string' && !attr.includes('-') && v.lang === variantOf(docTag)!.lang ? docTag : v.tag
+    }
     const out: Block[] = []
     let prev = ''
     const walk = (node: PMNode, pos: number, context: Context) => {
@@ -239,8 +253,9 @@ export class SpellController {
           prev = tail?.isText ? tail.text!.trimEnd().slice(-1) : ''
           if (child.type.spec.code) return
           if (!all && this.applied.has(child)) return
-          const paragraph: Paragraph = { text: blockText(child), lang: isLang(child.attrs.lang) ? child.attrs.lang : lang, context: child.type.name === 'heading' ? 'heading' : context, prev: last }
-          out.push({ node: child, pos: at, paragraph, key: `${paragraph.lang}|${sig}|${paragraph.context}|${last}|${paragraph.text}` })
+          const tag = variant(child.attrs.lang)
+          const paragraph: Paragraph = { text: blockText(child), lang: variantOf(tag)!.lang, variant: tag, context: child.type.name === 'heading' ? 'heading' : context, prev: last }
+          out.push({ node: child, pos: at, paragraph, key: `${tag}|${sig}|${paragraph.context}|${last}|${paragraph.text}` })
         } else if (!child.isLeaf) {
           const name = child.type.name
           const next: Context = name === 'listItem' || name === 'taskItem' ? 'list' : name === 'tableCell' || name === 'tableHeader' ? 'table' : context
@@ -352,14 +367,14 @@ export class SpellController {
           this.held = { from, to, node: block.node }
           continue
         }
-        const spec: IssueSpec = { issue, lang: block.paragraph.lang, text }
+        const spec: IssueSpec = { issue, lang: block.paragraph.lang, dict: dictOf(block.paragraph), text }
         decos.push(
           Decoration.inline(from, to, { class: CLASSES[issue.kind], 'aria-invalid': issue.kind === 'spelling' ? 'spelling' : 'grammar' }, spec),
         )
       }
       blocks.push({ from: pos, to: pos + block.node.nodeSize, decos })
       if (!result.pending) this.applied.add(block.node)
-      else this.loading.add(block.paragraph.lang)
+      else this.loading.add(dictOf(block.paragraph))
     }
     if (blocks.length) this.dispatch({ blocks })
     this.notify()
@@ -367,15 +382,15 @@ export class SpellController {
 
   private onWorkerEvent(e: WorkerEvent) {
     if (e.type === 'ready') {
-      this.loading.delete(e.lang)
+      this.loading.delete(e.dict)
       // Paragraphs checked without their dictionary are checked again.
       this.schedule(0)
     } else if (e.type === 'dictionary-error') {
-      this.loading.delete(e.lang)
+      this.loading.delete(e.dict)
     } else if (e.type === 'harper') {
       this.harperReady = e.ready
       if (e.ready) {
-        for (const key of [...this.cache.keys()]) if (key.startsWith('en|')) this.cache.delete(key)
+        for (const key of [...this.cache.keys()]) if (key.startsWith('en-')) this.cache.delete(key)
         this.recheck()
       }
     } else if (e.type === 'languagetool') {
@@ -413,7 +428,7 @@ export class SpellController {
 
   suggestions(found: FoundIssue): Promise<string[]> {
     if (found.issue.rule !== 'spelling') return Promise.resolve(found.issue.replacements)
-    return this.client.suggest(found.text, found.lang)
+    return this.client.suggest(found.text, found.dict)
   }
 
   // Replaces the issue's text (or its wider span) with a suggestion.
@@ -497,7 +512,7 @@ export function spellExtension(controller: SpellController) {
           props: {
             decorations: (state) => (controller.enabled ? spellKey.getState(state) : null),
             // Our checker replaces the browser's while it is on.
-            attributes: () => ({ spellcheck: controller.settings.spelling ? 'false' : 'true', lang: LANG_TAG[controller.docLang()] }),
+            attributes: () => ({ spellcheck: controller.settings.spelling ? 'false' : 'true', lang: controller.docLang() }),
           },
           view: () => ({
             update: (view, prev) => {

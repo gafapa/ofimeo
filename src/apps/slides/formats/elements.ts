@@ -8,6 +8,9 @@ import { renderSvg, svgToPng } from '../../diagram/export'
 import type { PresentationData, SlideData } from '../model'
 import { parseBackground } from '../model'
 import type { SlideRenderer } from '../render'
+import { graphPictureMeta } from '../mathgraph'
+import type { DataCell } from '../../diagram/graph'
+import type { ChartData } from './chart'
 
 export interface Run {
   text: string
@@ -57,6 +60,26 @@ export interface ImageElement extends Box {
   kind: 'image'
   // data: URL (PNG, JPEG, GIF or SVG).
   data: string
+  // Math graphs: picture name ("ofimeo-graph:{…}", restored on import) and alternative text.
+  name?: string
+  alt?: string
+  // Charts: their data, for formats with native charts (the picture is the fallback).
+  chart?: NativeChart
+}
+
+export interface NativeChart {
+  type: 'column' | 'bar' | 'line' | 'area' | 'pie' | 'doughnut' | 'scatter'
+  title: string
+  legend: 'bottom' | 'top' | 'right' | 'none'
+  categories: string[]
+  // Scatter: x of every point.
+  x?: number[]
+  series: { name: string; values: (number | null)[] }[]
+  colors: string[]
+  stacked?: boolean
+  percent?: boolean
+  xTitle?: string
+  yTitle?: string
 }
 
 export interface LineElement {
@@ -86,7 +109,8 @@ export interface TableElement extends Box {
   border: string
 }
 
-export type SlideElement = TextElement | ImageElement | LineElement | TableElement
+// `cell`: the top-level cell of the slide the element comes from (animations).
+export type SlideElement = (TextElement | ImageElement | LineElement | TableElement) & { cell?: string }
 
 export interface SlideContent {
   slide: SlideData
@@ -110,7 +134,11 @@ export async function slideContents(data: PresentationData, renderer: SlideRende
     // Laid out (and themed) by the offscreen graph.
     renderer.render({ cells: slide.cells, background }, data.width, data.height)
     const elements: SlideElement[] = []
-    for (const cell of renderer.topCells()) await collect(renderer.graph, cell, elements)
+    for (const cell of renderer.topCells()) {
+      const start = elements.length
+      await collect(renderer.graph, cell, elements)
+      for (let i = start; i < elements.length; i++) elements[i].cell = cell.getId() ?? undefined
+    }
     out.push({ slide, background, elements })
   }
   return out
@@ -139,7 +167,9 @@ async function collect(graph: Graph, cell: Cell, out: SlideElement[]): Promise<v
   if (shape === 'image' && typeof style.image === 'string') {
     const box = boxOf(state, style)
     const src = String(style.image)
-    out.push({ kind: 'image', ...box, data: src.startsWith('data:') ? src : await pictureOf(graph, [cell], box) })
+    const chart = flag(own.slideChart) ? await nativeChart((cell as DataCell).woData) : undefined
+    const mathGraph = flag(own.slideGraph) ? graphPictureMeta((cell as DataCell).woData) : undefined
+    out.push({ kind: 'image', ...box, data: src.startsWith('data:') ? src : await pictureOf(graph, [cell], box), ...(chart ? { chart } : {}), ...mathGraph })
     const label = labelText(cell)
     if (label) out.push(textElement(cell, state, style, { ...box, y: box.y + box.h + 2, h: 30, rotation: 0 }, 'rect', true))
   } else if (native) {
@@ -153,6 +183,36 @@ async function collect(graph: Graph, cell: Cell, out: SlideElement[]): Promise<v
   }
   // Children of shapes that are not groups (e.g. containers).
   for (let i = 0; i < cell.getChildCount(); i++) await collect(graph, cell.getChildAt(i), out)
+}
+
+// The chart of a chart cell: an Ofimeo chart (charts.ts) or one imported from PowerPoint.
+async function nativeChart(woData: string | undefined): Promise<NativeChart | undefined> {
+  let data: { ofimeoChart?: unknown; chart?: ChartData } = {}
+  try {
+    data = JSON.parse(woData ?? '{}')
+  } catch {
+    return undefined
+  }
+  if (data.ofimeoChart) {
+    const { readEmbedded, plainSeries } = await import('../../charts/embedded')
+    const { PALETTES } = await import('../../sheet/charts/model')
+    const c = readEmbedded(data.ofimeoChart)
+    if (!c) return undefined
+    const d = plainSeries(c)
+    return { type: c.spec.type, title: c.spec.title, legend: c.spec.legend, categories: d.categories, x: d.x?.map((v) => v ?? 0), series: d.series, colors: PALETTES[c.spec.palette] ?? PALETTES.ofimeo, xTitle: c.spec.xTitle, yTitle: c.spec.yTitle }
+  }
+  const c = data.chart
+  if (!c?.series) return undefined
+  return {
+    type: c.type,
+    title: c.title,
+    legend: c.legend ? 'bottom' : 'none',
+    categories: c.categories,
+    series: c.series.map((s) => ({ name: s.name, values: s.values })),
+    colors: c.type === 'pie' || c.type === 'doughnut' ? (c.series[0]?.pointColors?.filter((x): x is string => !!x) ?? []) : c.series.map((s) => s.color).filter((x): x is string => !!x),
+    stacked: c.stacked,
+    percent: c.percent,
+  }
 }
 
 function boxOf(state: CellState, style: Style): Box {

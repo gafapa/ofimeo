@@ -1,6 +1,8 @@
 // Vite plugin: serves the Hunspell dictionaries of the spell checker as
-// separate static files (dictionaries/<lang>-<hash>.aff.txt / .dic.txt, plus
+// separate static files (dictionaries/<id>-<hash>.aff.txt / .dic.txt, plus
 // the license of each), and exposes their paths as `virtual:spell-dictionaries`.
+// One per regional variant (src/core/spell/variants.ts); each is only
+// downloaded when a text in that variant is checked.
 // Morphological fields and comments are dropped (the Galician dictionary goes
 // from 9.5 MB to 2.4 MB, 0.7 MB compressed); words and affix rules are unchanged. The `.txt`
 // suffix lets static hosts compress them.
@@ -10,13 +12,14 @@ import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 
-const LANGS = ['es', 'gl', 'en', 'fr', 'de']
+// Ids of the `dictionary-<id>` packages (all MIT/BSD, GPL/LGPL/MPL or similar, see their license files).
+export const DICTIONARIES = ['es', 'es-mx', 'es-ar', 'es-co', 'es-cl', 'es-us', 'gl', 'en', 'en-gb', 'en-au', 'en-ca', 'fr', 'de']
 const VIRTUAL = 'virtual:spell-dictionaries'
 const require = createRequire(import.meta.url)
 
-function packageDir(lang) {
+function packageDir(id) {
   // The packages only export their index.js; the data files sit next to it.
-  return dirname(require.resolve(`dictionary-${lang}`))
+  return dirname(require.resolve(`dictionary-${id}`))
 }
 
 // Keeps "word/flags" of each .dic line (morphology starts at a tab, at " xx:" or at " [").
@@ -49,18 +52,18 @@ export function spellDictionaries() {
   const list = () => {
     if (files) return files
     const found = {}
-    for (const lang of LANGS) {
-      const dir = packageDir(lang)
+    for (const id of DICTIONARIES) {
+      const dir = packageDir(id)
       const aff = readFileSync(join(dir, 'index.aff'))
       const dic = readFileSync(join(dir, 'index.dic'))
       const hash = createHash('sha256').update(aff).update(dic).digest('hex').slice(0, 10)
-      const base = `dictionaries/${lang}-${hash}`
-      found[lang] = base
+      const base = `dictionaries/${id}-${hash}`
+      found[id] = base
       let aCache = null
       let dCache = null
       entries.set(`${base}.aff.txt`, () => (aCache ??= compactAff(aff.toString('utf8'))))
       entries.set(`${base}.dic.txt`, () => (dCache ??= compactDic(dic.toString('utf8'))))
-      entries.set(`dictionaries/${lang}-LICENSE.txt`, () => readFileSync(join(dir, 'license'), 'utf8'))
+      entries.set(`dictionaries/${id}-LICENSE.txt`, () => readFileSync(join(dir, 'license'), 'utf8'))
     }
     return (files = found)
   }

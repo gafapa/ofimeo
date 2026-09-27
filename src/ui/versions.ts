@@ -1,5 +1,5 @@
-// Shared document actions for every app's File menu: "Make a copy",
-// "Save version…" and "Version history…".
+// Shared document actions for every app's File menu: Nextcloud (open, save,
+// account), "Make a copy", "Save version…" and "Version history…".
 //
 //   createMenuBar(…, [{ label: 'File', items: [..., '-', ...documentMenuItems(session)] }])
 
@@ -7,12 +7,17 @@ import { copyDocument, copyTitle, createCopyFromState } from '../core/copy'
 import { locale, t } from '../core/i18n'
 import type { Session } from '../core/session'
 import { listVersions, restoreVersion, saveVersion, versionsArray, type Version } from '../core/versions'
-import { el, promptText, showDialog, toast, type MenuEntry } from './widgets'
+import { nextcloudMenuItems } from './nextcloud'
+import { confirmDialog, el, promptText, showDialog, toast, type MenuEntry } from './widgets'
 import './edu.css'
 
 export function documentMenuItems(session: Session): MenuEntry[] {
   return [
+    ...nextcloudMenuItems(session),
+    '-',
     { label: t('Make a copy'), run: () => void makeCopy(session) },
+    { label: t('Save as template…'), run: () => void import('../home/save-template').then((m) => m.saveAsTemplate(session)) },
+    { label: t('Storage and backup…'), run: () => void import('../home/storage').then((m) => m.openStorageDialog()) },
     { label: t('Save version…'), enabled: () => session.canEdit, run: () => void saveNamedVersion(session) },
     { label: t('Version history…'), run: () => void openVersionHistory(session) },
   ]
@@ -59,13 +64,14 @@ export async function openVersionHistory(session: Session): Promise<void> {
     open.addEventListener('click', async () => {
       toast(t('Making a copy…'))
       const title = String(session.doc.getMap('meta').get('title') ?? '')
-      location.href = await createCopyFromState(session.type, `${copyTitle(title)} (${new Date(v.time).toLocaleString(locale)})`, v.state)
+      const privateState = session.canEdit ? session.hooks.privateState?.version(v.id) : null
+      location.href = await createCopyFromState(session.type, `${copyTitle(title, session.type)} (${new Date(v.time).toLocaleString(locale)})`, v.state, privateState)
     })
     const actions = el('div', { class: 'version-actions' }, open)
     if (session.canEdit) {
       const restore = el('button', { type: 'button', textContent: t('Restore') })
       restore.addEventListener('click', async () => {
-        if (!confirm(t('Restore this version for everyone? The current state is saved as a version first.'))) return
+        if (!(await confirmDialog(t('Restore'), t('Restore this version for everyone? The current state is saved as a version first.'), { confirmLabel: t('Restore') }))) return
         try {
           await restoreVersion(session, v)
           ;(body.closest('dialog') as HTMLDialogElement | null)?.close()

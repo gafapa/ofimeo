@@ -95,11 +95,48 @@ const ENTRIES: Entry[] = [
     ['Portada, índice, desarrollo con imagen, conclusiones y fuentes.', 'Portada, índice, desenvolvemento con imaxe, conclusións e fontes.', 'Page de titre, sommaire, développement avec image, conclusions et sources.', 'Titelfolie, Gliederung, Hauptteil mit Bild, Fazit und Quellen.'],
   ],
   [
+    'class-presentation',
+    'slides',
+    ['Presentación de clase', 'Presentación de clase', 'Présentation de cours', 'Unterrichtspräsentation'],
+    ['Objetivos del día, concepto clave, ejemplo, actividad por pasos y ticket de salida.', 'Obxectivos do día, concepto clave, exemplo, actividade por pasos e ticket de saída.', 'Objectifs du jour, notion clé, exemple, activité par étapes et ticket de sortie.', 'Tagesziele, Schlüsselbegriff, Beispiel, Aufgabe in Schritten und Exit-Ticket.'],
+  ],
+  [
+    'project-report',
+    'slides',
+    ['Informe de proyecto', 'Informe de proxecto', 'Compte rendu de projet', 'Projektbericht'],
+    ['Equipo y roles, objetivo, proceso, tabla de resultados y próximos pasos.', 'Equipo e roles, obxectivo, proceso, táboa de resultados e próximos pasos.', 'Équipe et rôles, objectif, démarche, tableau de résultats et prochaines étapes.', 'Team und Rollen, Ziel, Vorgehen, Ergebnistabelle und nächste Schritte.'],
+  ],
+  [
+    'lesson-plan',
+    'slides',
+    ['Plan de la sesión', 'Plan da sesión', 'Plan de séance', 'Stundenentwurf'],
+    ['Para el docente: objetivos, fases con tiempos, materiales, diversidad y evaluación.', 'Para o docente: obxectivos, fases con tempos, materiais, diversidade e avaliación.', 'Pour l’enseignant : objectifs, phases minutées, matériel, différenciation et évaluation.', 'Für die Lehrkraft: Ziele, Phasen mit Zeiten, Material, Differenzierung und Bewertung.'],
+  ],
+  [
     'brainstorm',
     'draw',
     ['Lluvia de ideas', 'Chuvia de ideas', 'Remue-méninges', 'Brainstorming'],
     ['Pizarra con tema central y notas de colores para generar ideas.', 'Lousa con tema central e notas de cores para xerar ideas.', 'Tableau avec thème central et notes de couleur pour générer des idées.', 'Tafel mit zentralem Thema und farbigen Notizen zum Sammeln von Ideen.'],
   ],
+  [
+    'mind-map',
+    'draw',
+    ['Mapa mental', 'Mapa mental', 'Carte mentale', 'Mindmap'],
+    ['Idea central con cuatro ramas y detalles para estudiar o planificar.', 'Idea central con catro pólas e detalles para estudar ou planificar.', 'Idée centrale avec quatre branches et des détails pour réviser ou planifier.', 'Zentrale Idee mit vier Zweigen und Details zum Lernen oder Planen.'],
+  ],
+  [
+    'storyboard',
+    'draw',
+    ['Guion gráfico', 'Guión gráfico', 'Storyboard', 'Storyboard'],
+    ['Seis viñetas con acción y diálogo para planificar un vídeo, un cómic o una historia.', 'Seis viñetas con acción e diálogo para planificar un vídeo, un cómic ou unha historia.', 'Six cases avec action et dialogue pour préparer une vidéo, une BD ou un récit.', 'Sechs Felder mit Handlung und Dialog, um ein Video, einen Comic oder eine Geschichte zu planen.'],
+  ],
+  ['form-self-assessment', 'forms', ['Autoevaluación', 'Autoavaliación', 'Autoévaluation', 'Selbsteinschätzung'], ['Cuadrícula de frecuencia, escala de aprendizaje y preguntas de reflexión.', 'Cuadrícula de frecuencia, escala de aprendizaxe e preguntas de reflexión.', 'Grille de fréquence, échelle d’apprentissage et questions de réflexion.', 'Häufigkeitsraster, Lernskala und Reflexionsfragen.']],
+  ['form-review-quiz', 'forms', ['Cuestionario de repaso', 'Cuestionario de repaso', 'Quiz de révision', 'Wiederholungsquiz'], ['Autocorregible: respuestas correctas, puntos, retroalimentación y nota automática.', 'Autocorrixible: respostas correctas, puntos, retroalimentación e nota automática.', 'Autocorrigé : bonnes réponses, points, commentaires et note automatique.', 'Selbstkorrigierend: richtige Antworten, Punkte, Rückmeldung und automatische Note.']],
+  ['form-family-survey', 'forms', ['Encuesta a las familias', 'Enquisa ás familias', 'Enquête auprès des familles', 'Elternumfrage'], ['Satisfacción, canales de comunicación, actividades y sugerencias.', 'Satisfacción, canles de comunicación, actividades e suxestións.', 'Satisfaction, moyens de communication, activités et suggestions.', 'Zufriedenheit, Kommunikationswege, Aktivitäten und Anregungen.']],
+  ['form-peer-rubric', 'forms', ['Rúbrica de coevaluación', 'Rúbrica de coavaliación', 'Grille d’évaluation par les pairs', 'Peer-Bewertungsraster'], ['El alumnado evalúa a un compañero con criterios y niveles de logro.', 'O alumnado avalía a un compañeiro con criterios e niveis de logro.', 'Les élèves évaluent un camarade selon des critères et des niveaux.', 'Schüler bewerten eine Mitschülerin oder einen Mitschüler nach Kriterien und Stufen.']],
+  ['nb-class-notes', 'notebook', ['Apuntes de clase', 'Apuntamentos de clase', 'Notes de cours', 'Unterrichtsnotizen'], ['Unidades con objetivos, notas de cada clase, tareas y repaso con etiquetas.', 'Unidades con obxectivos, notas de cada clase, tarefas e repaso con etiquetas.', 'Chapitres avec objectifs, notes de chaque cours, devoirs et révisions avec balises.', 'Einheiten mit Lernzielen, Notizen je Stunde, Hausaufgaben und Wiederholung mit Tags.']],
+  ['nb-lab-notebook', 'notebook', ['Cuaderno de laboratorio', 'Caderno de laboratorio', 'Cahier de laboratoire', 'Laborbuch'], ['Normas de seguridad y prácticas con objetivo, hipótesis, datos y conclusiones.', 'Normas de seguridade e prácticas con obxectivo, hipótese, datos e conclusións.', 'Règles de sécurité et TP avec objectif, hypothèse, données et conclusions.', 'Sicherheitsregeln und Versuche mit Ziel, Hypothese, Messwerten und Ergebnis.']],
+  ['nb-reading-journal', 'notebook', ['Diario de lectura', 'Diario de lectura', 'Journal de lecture', 'Lesetagebuch'], ['Ficha del libro, resumen por capítulos, personajes, citas y vocabulario.', 'Ficha do libro, resumo por capítulos, personaxes, citas e vocabulario.', 'Fiche du livre, résumé par chapitres, personnages, citations et vocabulaire.', 'Steckbrief, Zusammenfassung je Kapitel, Figuren, Zitate und Wortschatz.']],
 ]
 
 async function create(id: string, app: DocType, lang: Lang, name: string): Promise<string> {
@@ -114,6 +151,10 @@ async function create(id: string, app: DocType, lang: Lang, name: string): Promi
       return (await import('./draw')).createDrawTemplate(id, lang, name)
     case 'slides':
       return (await import('./slides')).createSlidesTemplate(id, lang, name)
+    case 'forms':
+      return (await import('./forms')).createFormTemplate(id, lang, name)
+    case 'notebook':
+      return (await import('./notebook')).createNotebookTemplate(id, lang, name)
     default:
       throw new Error(`No templates for ${app}`)
   }

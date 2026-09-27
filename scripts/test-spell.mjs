@@ -1,4 +1,4 @@
-// Runs the spelling/grammar rule tests (src/apps/writer/spell/rules/tests.ts)
+// Runs the spelling/grammar rule tests (src/core/spell/rules/tests.ts)
 // in Node: bundles them with Rolldown (Vite's bundler) into a temporary file.
 
 import { build } from 'rolldown'
@@ -11,7 +11,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dir = mkdtempSync(join(tmpdir(), 'spell-tests-'))
 const file = join(dir, 'tests.mjs')
 try {
-  await build({ input: join(root, 'src/apps/writer/spell/rules/tests.ts'), platform: 'node', output: { file, format: 'esm' }, logLevel: 'silent' })
+  await build({ input: join(root, 'src/core/spell/rules/tests.ts'), platform: 'node', output: { file, format: 'esm' }, logLevel: 'silent' })
   const { runTests, CASES } = await import(pathToFileURL(file).href)
   const failures = runTests()
   for (const f of failures) console.log(`FAIL ${f}`)

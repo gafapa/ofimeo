@@ -1,22 +1,31 @@
 // Home screen: create documents of every type, open files and list the
 // documents stored in this browser.
 
-import { ALL_ACCEPT, APPS, appForFile, appInfo, type AppInfo } from '../apps/registry'
-import { docPath, newDocPath } from '../core/router'
+import { ALL_ACCEPT, appForFile, appInfo, offeredApps, SUITE, type AppInfo } from '../apps/registry'
+import { newDocPath } from '../core/router'
 import { isOfflineCapable, whenOfflineReady } from '../core/offline'
-import { languageSelect, locale, t } from '../core/i18n'
+import { languageSelect, t, tn } from '../core/i18n'
 import * as store from '../core/store'
+import { legalFooter } from '../legal/links'
 import { accessibilityButton } from '../ui/accessibility'
-import { el, showContextMenu, toast } from '../ui/widgets'
+import { brandMark } from '../ui/brand'
+import { schoolBadge } from '../ui/school'
+import { schoolConfig } from '../core/school-config'
+import { nameButton } from '../ui/shell'
+import { helpMenuItems } from '../ui/menus'
+import { openAccountDialog, openFromNextcloud } from '../ui/nextcloud'
+import { registerShortcuts, showShortcuts } from '../ui/shortcuts'
+import { el, icon, showContextMenu, toast, uiZoom } from '../ui/widgets'
+import { CircleHelp, Cloud, GraduationCap, HardDrive } from 'lucide'
+import { hasMoodleAccount } from '../core/moodle-store'
+import { onboardingOff, welcomeSeen } from '../help/prefs'
+import { documentsSection } from './docs'
+import { backupReminder, openStorageDialog, setChangeListener } from './storage'
 import './home.css'
 
-type Filter = store.DocType | 'all'
-
 export function mountHome(root: HTMLElement): void {
-  document.title = 'Words Online'
+  document.title = SUITE
   const user = store.loadUser()
-  let filter: Filter = 'all'
-  let query = ''
 
   const nameInput = el('input', { class: 'user-name', value: user.name, title: t('Your name, as others see it') })
   nameInput.setAttribute('aria-label', t('Your name'))
@@ -45,10 +54,40 @@ export function mountHome(root: HTMLElement): void {
   fileInput.accept = ALL_ACCEPT
   openButton.addEventListener('click', () => fileInput.click())
 
+  // Google Drive / Microsoft 365 share links (src/ui/import-link.ts, loaded on demand).
+  const linkOpen = el('button', { type: 'button', class: 'home-open', textContent: t('Import from link…'), title: t('Import a file shared from Google Drive, OneDrive or SharePoint') })
+  linkOpen.addEventListener('click', () => void import('../ui/import-link').then((m) => m.openImportFromLink()))
+
+  // Nextcloud: open files from it, account settings (needs a connection).
+  const cloudOpen = el('button', { type: 'button', class: 'home-open', textContent: t('Open from Nextcloud…') })
+  cloudOpen.addEventListener('click', () => void openFromNextcloud())
+  const cloudButton = el('button', { type: 'button', class: 'home-cloud', title: t('Nextcloud account') }, icon(Cloud, 18), el('span', { class: 'btn-label', textContent: 'Nextcloud' }))
+  cloudButton.setAttribute('aria-label', t('Nextcloud account'))
+  cloudButton.addEventListener('click', () => void openAccountDialog())
+  const renderOnline = () => {
+    cloudOpen.disabled = !navigator.onLine
+    cloudOpen.title = navigator.onLine ? t('Open a file from your Nextcloud') : t('You are offline. Nextcloud can be used again when you are connected.')
+  }
+  window.addEventListener('online', renderOnline)
+  window.addEventListener('offline', renderOnline)
+  renderOnline()
+
+  // Moodle: account (header) and the "Moodle tasks" panel (src/ui/moodle.ts, loaded on demand).
+  const moodleButton = el('button', { type: 'button', class: 'home-cloud md-home-button', title: 'Moodle' }, icon(GraduationCap, 18), el('span', { class: 'btn-label', textContent: 'Moodle' }))
+  moodleButton.setAttribute('aria-label', 'Moodle')
+  moodleButton.addEventListener('click', () => void import('../ui/moodle').then((m) => m.openMoodleDialog()))
+  const moodleSlot = el('div', { class: 'moodle-slot' })
+  const loadMoodlePanel = () => {
+    if (moodleSlot.childElementCount) return
+    void import('../ui/moodle').then((m) => moodleSlot.childElementCount || moodleSlot.append(m.moodleTasksSection()))
+  }
+  if (hasMoodleAccount() || schoolConfig().moodle?.url) loadMoodlePanel()
+  moodleButton.addEventListener('click', loadMoodlePanel)
+
   const newCards = el(
     'div',
     { class: 'new-cards' },
-    ...APPS.map((app) => {
+    ...offeredApps().map((app) => {
       const card = el(
         'a',
         { class: `new-card${app.load ? '' : ' disabled'}`, href: app.load ? newDocPath(app.type) : '#', title: app.load ? app.newLabel : t('Coming soon') },
@@ -61,93 +100,14 @@ export function mountHome(root: HTMLElement): void {
     }),
   )
 
-  const search = el('input', { class: 'home-search', type: 'search', placeholder: t('Search documents') })
-  search.setAttribute('aria-label', t('Search documents'))
-  search.addEventListener('input', () => {
-    query = search.value.trim().toLowerCase()
-    renderList()
+  const docs = documentsSection()
+  setChangeListener(() => {
+    docs.refresh()
+    renderReminder()
   })
-
-  const filters = el('div', { class: 'home-filters', role: 'tablist' })
-  const filterOptions: [Filter, string][] = [['all', t('All')], ...APPS.map((a) => [a.type, a.plural] as [Filter, string])]
-  const renderFilters = () =>
-    filters.replaceChildren(
-      ...filterOptions.map(([value, label]) => {
-        const b = el('button', { type: 'button', class: `chip${filter === value ? ' active' : ''}`, textContent: label })
-        b.setAttribute('role', 'tab')
-        b.setAttribute('aria-selected', String(filter === value))
-        b.addEventListener('click', () => {
-          filter = value
-          renderFilters()
-          renderList()
-        })
-        return b
-      }),
-    )
-
-  const list = el('div', { class: 'doc-table', role: 'list' })
-  const renderList = () => {
-    const docs = store
-      .listDocs()
-      .filter((d) => filter === 'all' || d.type === filter)
-      .filter((d) => !query || (d.title || appInfo(d.type).untitled).toLowerCase().includes(query))
-    if (!docs.length) {
-      list.replaceChildren(
-        el('p', {
-          class: 'empty',
-          textContent: query || filter !== 'all' ? t('No matching documents.') : t('No documents yet. Create one above or open a file.'),
-        }),
-      )
-      return
-    }
-    list.replaceChildren(
-      ...docs.map((d) => {
-        const app = appInfo(d.type)
-        const href = docPath(d.type, d.id, d.key)
-        const more = el('button', { type: 'button', class: 'row-more', title: t('More actions'), textContent: '⋮' })
-        more.setAttribute('aria-label', t('More actions'))
-        const row = el(
-          'a',
-          { class: 'doc-row', href, role: 'listitem' },
-          appIcon(app, 'small'),
-          el(
-            'span',
-            { class: 'doc-name', textContent: d.title || app.untitled },
-            d.access === 'view' || d.access === 'comment'
-              ? el('span', { class: 'access-tag', textContent: d.access === 'view' ? t('View only') : t('Can comment') })
-              : null,
-          ),
-          el('span', { class: 'doc-type', textContent: app.name }),
-          el('span', { class: 'doc-date', textContent: formatDate(d.updated), title: new Date(d.updated).toLocaleString(locale) }),
-          more,
-        )
-        const actions = () => [
-          { label: t('Open'), run: () => (location.href = href) },
-          { label: t('Open in new tab'), run: () => window.open(href, '_blank') },
-          '-' as const,
-          {
-            label: t('Remove from this browser'),
-            run: async () => {
-              if (!confirm(t('Remove “{title}” from this browser? Collaborators keep their copies.', { title: d.title || app.untitled }))) return
-              await store.deleteDoc(d.id)
-              renderList()
-            },
-          },
-        ]
-        more.addEventListener('click', (e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          const rect = more.getBoundingClientRect()
-          showContextMenu(rect.left - 180, rect.bottom, actions())
-        })
-        row.addEventListener('contextmenu', (e) => {
-          e.preventDefault()
-          showContextMenu(e.clientX, e.clientY, actions())
-        })
-        return row
-      }),
-    )
-  }
+  const reminderSlot = el('div', { class: 'home-inner reminder-slot' })
+  const renderReminder = () => reminderSlot.replaceChildren(...[backupReminder()].filter((x): x is HTMLElement => !!x))
+  renderReminder()
 
   root.replaceChildren(
     el(
@@ -156,29 +116,35 @@ export function mountHome(root: HTMLElement): void {
       el(
         'header',
         { class: 'home-bar' },
-        el('span', { class: 'home-logo', textContent: 'W' }),
-        el('h1', { textContent: 'Words Online' }),
+        el('span', { class: 'home-logo' }, brandMark(36)),
+        el('h1', { textContent: SUITE }),
+        schoolBadge(),
         el('span', { class: 'spacer' }),
         offlineControl(),
+        cloudButton,
+        moodleButton,
+        storageButton(),
         languageSelect('home-language'),
+        helpButton(),
         accessibilityButton(true),
         nameInput,
+        nameButton(nameInput),
       ),
       el(
         'section',
         { class: 'home-new' },
-        el('div', { class: 'home-inner' }, el('div', { class: 'home-section-title' }, el('h2', { textContent: t('Start something new') }), openButton, fileInput), newCards),
+        el('div', { class: 'home-inner' }, el('div', { class: 'home-section-title' }, el('h2', { textContent: t('Start something new') }), el('span', { class: 'home-open-buttons' }, openButton, linkOpen, cloudOpen), fileInput), newCards),
       ),
+      moodleSlot,
+      reminderSlot,
       templatesSection(),
       el(
         'section',
         { class: 'home-recent' },
+        docs.element,
         el(
           'div',
           { class: 'home-inner' },
-          el('div', { class: 'home-section-title' }, el('h2', { textContent: t('Recent documents') }), search),
-          filters,
-          list,
           el('p', {
             class: 'hint',
             textContent:
@@ -186,13 +152,57 @@ export function mountHome(root: HTMLElement): void {
           }),
         ),
       ),
+      legalFooter(),
     ),
   )
-  renderFilters()
-  renderList()
   handleLaunchedFiles()
+  void housekeeping(docs.refresh)
+  // First visit in this browser: the welcome tour (src/help, loaded only then).
+  if (!welcomeSeen() && !onboardingOff()) void import('../help/tour').then((m) => m.maybeShowWelcome())
+  // The same keys as in the apps: Ctrl+O opens a file, Ctrl+/ and F1 the shortcuts.
+  registerShortcuts({ open: () => fileInput.click(), save: null, help: () => void showShortcuts() })
   // Titles and new documents from other tabs.
-  window.addEventListener('storage', renderList)
+  window.addEventListener('storage', (e) => {
+    if (e.key === null || e.key.startsWith('words-online:')) docs.refresh()
+  })
+}
+
+// Opens the "Storage and backup" dialog.
+function storageButton(): HTMLButtonElement {
+  const button = el('button', { type: 'button', class: 'home-help home-storage', title: t('Storage and backup') }, icon(HardDrive, 19))
+  button.setAttribute('aria-label', t('Storage and backup'))
+  button.addEventListener('click', () => void openStorageDialog())
+  return button
+}
+
+// On load: empty the trash of documents deleted more than 30 days ago and run
+// the automatic Nextcloud backup when it is due.
+async function housekeeping(refresh: () => void): Promise<void> {
+  const purged = await store.purgeExpiredTrash().catch(() => 0)
+  if (purged) {
+    toast(tn(purged, '{n} document was deleted from the trash after 30 days', '{n} documents were deleted from the trash after 30 days'))
+    refresh()
+  }
+  const { runAutoBackup } = await import('../core/backup')
+  try {
+    const path = await runAutoBackup()
+    if (path) toast(t('Automatic backup saved to Nextcloud: {path}', { path }))
+  } catch (err) {
+    toast(t('The automatic backup to Nextcloud failed: {message}', { message: (err as Error).message }))
+  }
+}
+
+// Help menu of the home screen: the apps' Help items (help center, welcome tour, shortcuts, accessibility, connection test, about).
+function helpButton(): HTMLButtonElement {
+  const button = el('button', { type: 'button', class: 'home-help', title: t('Help') }, icon(CircleHelp, 20))
+  button.setAttribute('aria-label', t('Help'))
+  button.setAttribute('aria-haspopup', 'menu')
+  button.addEventListener('click', () => {
+    const rect = button.getBoundingClientRect()
+    const z = uiZoom()
+    showContextMenu(rect.right - 240 * z, rect.bottom + 4, helpMenuItems(undefined, { shortcuts: () => void showShortcuts() }))
+  })
+  return button
 }
 
 // Template gallery, loaded as a separate chunk (src/templates).
@@ -208,14 +218,6 @@ function appIcon(app: AppInfo, size: 'small' | 'large'): HTMLElement {
   const icon = el('span', { class: `app-icon ${size}`, textContent: app.letter })
   icon.style.background = app.color
   return icon
-}
-
-function formatDate(time: number): string {
-  const date = new Date(time)
-  const now = new Date()
-  if (date.toDateString() === now.toDateString()) return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
-  const sameYear = date.getFullYear() === now.getFullYear()
-  return date.toLocaleDateString(locale, { day: 'numeric', month: 'short', ...(sameYear ? {} : { year: 'numeric' }) })
 }
 
 // Offline status: the whole suite is precached by the service worker.

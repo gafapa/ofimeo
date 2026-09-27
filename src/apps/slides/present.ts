@@ -7,10 +7,13 @@ import type { Awareness } from 'y-protocols/awareness'
 import { ChevronLeft, ChevronRight, Maximize, MonitorSpeaker, MousePointer2, X } from 'lucide'
 import { t } from '../../core/i18n'
 import { el, icon, toast } from '../../ui/widgets'
+import { SlideStage, type PlayableSlide } from './player'
 
 export interface PresentHost {
   slides(): { id: string }[]
   render(id: string): SVGSVGElement
+  // The slide as layers with its animations and transition.
+  playable(id: string): PlayableSlide
   notes(id: string): string
   size(): { width: number; height: number }
   awareness: Awareness
@@ -26,6 +29,8 @@ export interface PresentState {
   // Laser position in slide coordinates.
   laser?: [number, number] | null
   blank?: boolean
+  // Animation steps played on the slide.
+  step?: number
 }
 
 interface PeerState {
@@ -49,6 +54,10 @@ export class Presentation {
   private laserDot!: HTMLElement
   private counter!: HTMLElement
   private index = 0
+  // Animation steps already played on the current slide.
+  private step = 0
+  private slideStage!: SlideStage
+  private presenterStage: SlideStage | null = null
   private laserOn = false
   private blank = false
   private following: number | null = null
@@ -82,8 +91,10 @@ export class Presentation {
     this.open()
     this.index = Math.max(0, Math.min(fromIndex, this.host.slides().length - 1))
     this.startedAt = Date.now()
+    this.step = 0
     if (presenterView) this.openPresenterView()
     this.show()
+    if (this.slideStage.current?.timeline.auto) this.playStep()
   }
 
   // Shows what another person is presenting, until they stop or Esc is pressed.
@@ -105,7 +116,9 @@ export class Presentation {
     const { width, height } = this.host.size()
     this.stage.style.setProperty('--slide-aspect', `${width} / ${height}`)
     this.stage.style.setProperty('--slide-ratio', String(width / height))
-    this.stage.append(el('div', { class: 'present-slide' }), this.laserDot)
+    const holder = el('div', { class: 'present-slide' })
+    this.stage.append(holder, this.laserDot)
+    this.slideStage = new SlideStage(holder)
     const hudButton = (node: Parameters<typeof icon>[0], label: string, run: () => void) => {
       const b = el('button', { type: 'button', class: 'present-btn', title: label }, icon(node, 20))
       b.setAttribute('aria-label', label)
@@ -118,9 +131,9 @@ export class Presentation {
     const hud = el(
       'div',
       { class: 'present-hud' },
-      hudButton(ChevronLeft, t('Previous slide'), () => this.go(this.index - 1)),
+      hudButton(ChevronLeft, t('Previous slide'), () => this.prev()),
       this.counter,
-      hudButton(ChevronRight, t('Next slide'), () => this.go(this.index + 1)),
+      hudButton(ChevronRight, t('Next slide'), () => this.next()),
       hudButton(MousePointer2, t('Laser pointer (L)'), () => this.toggleLaser()),
       hudButton(MonitorSpeaker, t('Presenter view'), () => this.openPresenterView()),
       hudButton(Maximize, t('Full screen'), () => this.toggleFullscreen()),
@@ -135,11 +148,12 @@ export class Presentation {
 
     this.stage.addEventListener('click', (e) => {
       if (this.following !== null || this.laserOn) return
-      this.go(this.index + (e.shiftKey ? -1 : 1))
+      if (e.shiftKey) this.prev()
+      else this.next()
     })
     this.root.addEventListener('contextmenu', (e) => {
       e.preventDefault()
-      if (this.following === null) this.go(this.index - 1)
+      if (this.following === null) this.prev()
     })
     this.root.addEventListener('mousemove', (e) => {
       this.root!.classList.add('show-hud')
@@ -152,7 +166,10 @@ export class Presentation {
     this.stage.addEventListener('touchstart', (e) => (touchX = e.touches[0].clientX), { passive: true })
     this.stage.addEventListener('touchend', (e) => {
       const dx = e.changedTouches[0].clientX - touchX
-      if (Math.abs(dx) > 50 && this.following === null) this.go(this.index + (dx < 0 ? 1 : -1))
+      if (Math.abs(dx) > 50 && this.following === null) {
+        if (dx < 0) this.next()
+        else this.prev()
+      }
     })
     window.addEventListener('keydown', this.onKey, true)
     document.addEventListener('fullscreenchange', this.onFullscreen)
@@ -183,6 +200,8 @@ export class Presentation {
     document.removeEventListener('fullscreenchange', this.onFullscreen)
     this.host.awareness.off('change', this.onAwareness)
     clearInterval(this.timer)
+    this.slideStage?.clear()
+    this.presenterStage = null
     this.root?.remove()
     this.root = null
     if (this.following === null) this.host.awareness.setLocalStateField('present', null)
@@ -194,40 +213,68 @@ export class Presentation {
   // Re-renders the current slide (after a change by someone else).
   refresh(): void {
     if (!this.root) return
-    if (this.following !== null) this.followUpdate()
+    if (this.following !== null) this.followUpdate(true)
     else this.show(false)
   }
 
-  private go(index: number): void {
-    const count = this.host.slides().length
-    if (index < 0 || index >= count) return
-    this.index = index
-    this.blank = false
-    this.show()
+  // Next animation step, else the next slide.
+  private next(): void {
+    const steps = this.slideStage.current?.timeline.steps.length ?? 0
+    if (this.step < steps) {
+      this.playStep()
+      return
+    }
+    this.go(this.index + 1)
   }
 
-  private show(animate = true): void {
+  // Back one animation step (shown without animating), else the previous slide at its end.
+  private prev(): void {
+    const tl = this.slideStage.current?.timeline
+    const first = tl?.auto ? 1 : 0
+    if (tl && this.step > first) {
+      this.step--
+      this.show(false)
+      return
+    }
+    this.go(this.index - 1, true)
+  }
+
+  private playStep(): void {
+    const i = this.step++
+    void this.slideStage.play(i)
+    void this.presenterStage?.play(i)
+    this.publish()
+  }
+
+  private go(index: number, atEnd = false): void {
+    const count = this.host.slides().length
+    if (index < 0 || index >= count) return
+    const back = atEnd && index !== this.index
+    this.index = index
+    this.blank = false
+    // Going back shows the previous slide with all its steps played.
+    this.step = back ? Number.MAX_SAFE_INTEGER : 0
+    this.show(true)
+    if (!back && this.slideStage.current?.timeline.auto) this.playStep()
+  }
+
+  private show(transition = true): void {
     const slides = this.host.slides()
     const id = slides[this.index]?.id
     if (!id || !this.root) return
-    this.drawSlide(id, animate)
+    this.drawSlide(id, transition)
     this.counter.textContent = `${this.index + 1} / ${slides.length}`
     this.publish()
     this.updatePresenterView()
   }
 
-  private drawSlide(id: string, animate: boolean): void {
-    const holder = this.stage.querySelector('.present-slide')!
-    const svg = this.host.render(id)
-    svg.setAttribute('width', '100%')
-    svg.setAttribute('height', '100%')
-    holder.replaceChildren(svg)
+  private drawSlide(id: string, transition: boolean): void {
+    const holder = this.stage.querySelector<HTMLElement>('.present-slide')!
+    const changed = holder.getAttribute('data-id') !== id
+    const slide = this.host.playable(id)
+    this.step = Math.min(this.step, slide.timeline.steps.length)
+    this.slideStage.show(slide, this.step, transition && changed)
     holder.classList.toggle('blank', this.blank)
-    if (animate && holder.getAttribute('data-id') !== id) {
-      holder.classList.remove('enter')
-      void (holder as HTMLElement).offsetWidth
-      holder.classList.add('enter')
-    }
     holder.setAttribute('data-id', id)
   }
 
@@ -235,7 +282,7 @@ export class Presentation {
     if (this.following !== null) return
     const id = this.host.slides()[this.index]?.id
     if (!id) return
-    const state: PresentState = { slide: id, index: this.index, laser: this.laserOn ? (laser ?? null) : null, blank: this.blank }
+    const state: PresentState = { slide: id, index: this.index, laser: this.laserOn ? (laser ?? null) : null, blank: this.blank, step: this.step }
     this.host.awareness.setLocalStateField('present', state)
   }
 
@@ -272,7 +319,7 @@ export class Presentation {
     this.laserDot.style.top = `${(p[1] / height) * 100}%`
   }
 
-  private followUpdate(): void {
+  private followUpdate(redraw = false): void {
     if (this.following === null || !this.root) return
     const presenter = presenters(this.host.awareness, this.host.clientId).find((p) => p.clientId === this.following)
     if (!presenter) {
@@ -286,10 +333,26 @@ export class Presentation {
     if (index < 0) return
     const holder = this.stage.querySelector('.present-slide')!
     this.blank = !!state.blank
+    const step = state.step ?? 0
     if (index !== this.index || holder.getAttribute('data-id') !== state.slide) {
       this.index = index
+      this.step = step
       this.drawSlide(state.slide, true)
-    } else holder.classList.toggle('blank', this.blank)
+      // The presenter entered the slide and its first step plays by itself.
+      if (step === 1 && this.slideStage.current?.timeline.auto) {
+        this.step = 0
+        this.drawSlide(state.slide, false)
+        this.step = 1
+        void this.slideStage.play(0)
+      }
+    } else if (step === this.step + 1 && !redraw) {
+      this.step = step
+      void this.slideStage.play(step - 1)
+    } else if (step !== this.step || redraw) {
+      this.step = step
+      this.drawSlide(state.slide, false)
+    }
+    holder.classList.toggle('blank', this.blank)
     this.counter.textContent = `${index + 1} / ${slides.length}`
     this.placeLaser(state.laser)
     this.root.querySelector('.present-follow-note')!.textContent = t('Following {name} · Esc to stop', { name: presenter.name })
@@ -302,8 +365,8 @@ export class Presentation {
     let handled = true
     if (k === 'Escape') this.stop()
     else if (following) handled = !['F5', 'Tab'].includes(k) // followers only leave with Esc
-    else if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter', 'n', 'N'].includes(k)) this.go(this.index + 1)
-    else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace', 'p', 'P'].includes(k)) this.go(this.index - 1)
+    else if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter', 'n', 'N'].includes(k)) this.next()
+    else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace', 'p', 'P'].includes(k)) this.prev()
     else if (k === 'Home') this.go(0)
     else if (k === 'End') this.go(this.host.slides().length - 1)
     else if (k === 'l' || k === 'L') this.toggleLaser()
@@ -348,8 +411,8 @@ export class Presentation {
     const count = d.createElement('span')
     count.className = 'count'
     bar.append(
-      button(t('◀ Previous'), () => this.go(this.index - 1)),
-      button(t('Next ▶'), () => this.go(this.index + 1)),
+      button(t('◀ Previous'), () => this.prev()),
+      button(t('Next ▶'), () => this.next()),
       count,
       time,
       button(t('Reset timer'), () => (this.startedAt = Date.now())),
@@ -357,6 +420,7 @@ export class Presentation {
     )
     const current = d.createElement('div')
     current.className = 'current'
+    this.presenterStage = new SlideStage(current)
     const next = d.createElement('div')
     next.className = 'next'
     const notes = d.createElement('div')
@@ -401,7 +465,13 @@ export class Presentation {
       svg.setAttribute('height', '100%')
       box.replaceChildren(d.importNode(svg, true))
     }
-    place('.current', slides[this.index]?.id)
+    const id = slides[this.index]?.id
+    const current = d.querySelector<HTMLElement>('.current')
+    if (current && id && this.presenterStage) {
+      // Same state as the audience sees; steps play here too.
+      const shown = this.slideStage.current
+      this.presenterStage.show(shown?.id === id ? shown : this.host.playable(id), this.step, false)
+    }
     place('.next', slides[this.index + 1]?.id)
     const notes = d.querySelector('.notes')
     if (notes) notes.textContent = slides[this.index] ? this.host.notes(slides[this.index].id) || t('No notes') : ''

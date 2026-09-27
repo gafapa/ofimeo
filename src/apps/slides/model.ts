@@ -6,6 +6,7 @@
 import * as Y from 'yjs'
 import { t } from '../../core/i18n'
 import { emptyPage, newCellId, type CellRecord, type PageRecord } from '../diagram/model'
+import { animationsMap, type Animation } from './animations'
 
 export type Ratio = '16:9' | '4:3'
 export const SLIDE_SIZES: Record<Ratio, { width: number; height: number }> = {
@@ -35,8 +36,10 @@ export const THEMES: Theme[] = [
   { id: 'fresh', name: t('Fresh'), background: ['#f0fdf4', '#dcfce7'], titleFont: 'Verdana, Helvetica, Arial, sans-serif', bodyFont: 'Verdana, Helvetica, Arial, sans-serif', titleColor: '#166534', bodyColor: '#1f2937', accent: '#16a34a' },
 ]
 
+// Unknown ids (e.g. "imported": a file with its own theme) look like the first
+// theme but keep their id, so the theme picker shows none of them as chosen.
 export function themeById(id: unknown): Theme {
-  return THEMES.find((th) => th.id === id) ?? THEMES[0]
+  return THEMES.find((th) => th.id === id) ?? (typeof id === 'string' && id ? { ...THEMES[0], id } : THEMES[0])
 }
 
 export type LayoutId = 'title' | 'titleContent' | 'twoColumns' | 'section' | 'titleOnly' | 'blank'
@@ -158,8 +161,9 @@ const notesKey = (pageId: string) => `slides-notes:${pageId}`
 export interface SlideMeta {
   layout?: LayoutId
   background?: string
-  // Transition when presenting (fade or none).
+  // Transition when presenting: none, fade, push or wipe (animations.ts), and its length in ms.
   transition?: string
+  transitionDuration?: string
 }
 
 export function slideMetaMap(doc: Y.Doc): Y.Map<Y.Map<string>> {
@@ -207,6 +211,9 @@ export interface SlideData {
   notes: string
   background?: string
   layout?: LayoutId
+  animations?: Animation[]
+  transition?: string
+  transitionDuration?: number
 }
 
 export interface PresentationData {
@@ -226,7 +233,19 @@ export function writePresentation(doc: Y.Doc, data: { ratio: Ratio; themeId?: st
     setPages(doc, data.slides.map((s) => ({ id: s.id, name: s.name, cells: s.cells })))
     for (const s of data.slides) {
       if (s.notes) notesText(doc, s.id).insert(0, s.notes)
-      if (s.background || s.layout) writeSlideMeta(doc, s.id, { background: s.background ?? null, layout: s.layout ?? null })
+      if (s.background || s.layout || s.transition) {
+        writeSlideMeta(doc, s.id, {
+          background: s.background ?? null,
+          layout: s.layout ?? null,
+          transition: s.transition && s.transition !== 'none' ? s.transition : null,
+          transitionDuration: s.transition && s.transitionDuration ? String(s.transitionDuration) : null,
+        })
+      }
+      for (const { id, ...a } of s.animations ?? []) {
+        const m = new Y.Map<string | number>()
+        animationsMap(doc, s.id).set(id, m)
+        for (const [k, v] of Object.entries(a)) m.set(k, v)
+      }
     }
   })
 }

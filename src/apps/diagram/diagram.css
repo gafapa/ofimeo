@@ -3,7 +3,7 @@
 .diagram-body { flex: 1; min-height: 0; display: flex; background: var(--surface); }
 
 .diagram-canvas {
-  position: relative; flex: 1; min-width: 0; overflow: hidden; outline: none; background-color: #fff;
+  position: relative; flex: 1; min-width: 0; overflow: hidden; outline: none; background-color: var(--paper);
   --grid: 10px; --grid-major: 40px;
 }
 .diagram-canvas.grid {
@@ -45,7 +45,7 @@
 .sidebar-item svg { max-width: 38px; max-height: 38px; overflow: visible; }
 .sidebar-empty { color: var(--muted); padding: 12px; }
 .sidebar-thumb-host { position: absolute; left: -10000px; top: 0; width: 200px; height: 200px; overflow: hidden; visibility: hidden; }
-.sidebar-drag-preview { border: 1px dashed #29b6f2; background: rgb(41 182 242 / 0.08); }
+.sidebar-drag-preview { border: 1px dashed var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
 .sidebar-grid.loading { min-height: 44px; opacity: 0.5; }
 .sidebar-more {
   flex: none; margin: 8px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 16px; background: var(--bg); color: var(--text);
@@ -83,10 +83,11 @@
   padding: 3px 6px; font-size: 12px; min-width: 110px;
 }
 .fmt-swatch { width: 16px; height: 16px; border: 1px solid rgb(0 0 0 / 0.25); border-radius: 3px; flex: none; }
-.fmt-swatch.none { background: linear-gradient(to top right, transparent 45%, #d00 45%, #d00 55%, transparent 55%) !important; }
+.fmt-swatch.none { background: linear-gradient(to top right, transparent 45%, var(--danger) 45%, var(--danger) 55%, transparent 55%) !important; }
 .fmt-toggles { display: flex; gap: 2px; flex-wrap: wrap; }
 .fmt-toggle {
-  min-width: 28px; height: 26px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); font-weight: 600;
+  min-width: 28px; height: 26px; border: 1px solid var(--border); border-radius: var(--radius-s); background: var(--surface); color: var(--text);
+  display: inline-grid; place-items: center; padding: 0 4px;
 }
 .fmt-toggle.active { background: var(--active); border-color: var(--active); }
 .fmt-buttons { display: flex; gap: 4px; }
@@ -101,13 +102,34 @@
 .page-tabs { display: flex; align-items: center; gap: 2px; min-width: 0; overflow-x: auto; }
 .page-tab {
   display: flex; align-items: center; gap: 4px; border: 1px solid transparent; border-radius: 4px; background: none;
-  padding: 2px 10px; color: var(--muted); white-space: nowrap; font-size: 12px;
+  padding: 2px 10px; color: var(--muted); white-space: nowrap; font-size: var(--fs-s);
 }
 .page-tab:hover { background: var(--hover); }
-.page-tab.active { background: var(--active); color: #041e49; font-weight: 500; }
+.page-tab.active { background: var(--active); color: var(--active-fg); font-weight: 500; }
 .page-peer { width: 8px; height: 8px; border-radius: 50%; }
 .page-add { border: 0; background: none; border-radius: 4px; display: grid; place-items: center; width: 24px; height: 22px; color: var(--muted); }
 .page-add:hover { background: var(--hover); }
+
+/* Status bar: the page tabs take the free space and scroll */
+.sb-left:has(.page-tabs) { flex: 1; }
+.sb-left .page-tabs { max-width: 100%; scrollbar-width: none; }
+
+/* Find in labels (Edit ▸ Find…, Ctrl+F): floats over the top right corner of the canvas */
+.diagram-find {
+  position: fixed; z-index: var(--z-panel); display: flex; align-items: center; gap: var(--space-1); padding: 6px;
+  background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow);
+  max-width: calc(100vw - 16px);
+}
+.diagram-find[hidden] { display: none; }
+.diagram-find-input {
+  width: 200px; min-width: 0; flex: 1; padding: 5px 8px; border: 1px solid var(--border); border-radius: var(--radius-s);
+  background: var(--surface); color: var(--text); font-size: var(--fs-m);
+}
+.diagram-find-count { color: var(--muted); font-size: var(--fs-s); min-width: 48px; text-align: right; white-space: nowrap; }
+.diagram-find-btn {
+  border: 0; background: none; color: var(--muted); border-radius: var(--radius-s); width: 28px; height: 28px; display: grid; place-items: center; padding: 0; flex: none;
+}
+.diagram-find-btn:hover { background: var(--hover); color: var(--text); }
 
 /* Printing: only the diagram */
 .diagram-print { display: none; }
@@ -121,4 +143,25 @@
   .diagram-sidebar, .diagram-format { position: absolute; top: 0; bottom: 0; z-index: 5; box-shadow: var(--shadow); }
   .diagram-body { position: relative; }
   .diagram-format { right: 0; }
+}
+
+/* Page view: the printable pages on a gray desk, with page breaks and the grid on them */
+.diagram-canvas.page-view { background-color: var(--canvas); background-image: none; }
+.diagram-page {
+  position: absolute; pointer-events: none; box-shadow: var(--shadow-s);
+  --page-w: 850px; --page-h: 1100px;
+  background-image:
+    linear-gradient(to right, rgb(0 0 0 / 0.25) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(0 0 0 / 0.25) 1px, transparent 1px);
+  background-size: var(--page-w) var(--page-h), var(--page-w) var(--page-h);
+}
+.diagram-canvas.page-view.grid .diagram-page {
+  background-image:
+    linear-gradient(to right, rgb(0 0 0 / 0.25) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(0 0 0 / 0.25) 1px, transparent 1px),
+    linear-gradient(to right, rgb(0 0 0 / 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(0 0 0 / 0.08) 1px, transparent 1px),
+    linear-gradient(to right, rgb(0 0 0 / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(0 0 0 / 0.035) 1px, transparent 1px);
+  background-size: var(--page-w) var(--page-h), var(--page-w) var(--page-h), var(--grid-major) var(--grid-major), var(--grid-major) var(--grid-major), var(--grid) var(--grid), var(--grid) var(--grid);
 }

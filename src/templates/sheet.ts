@@ -3,6 +3,8 @@
 
 import type { ICellData, IRange, IStyleData, IWorkbookData, IWorksheetData } from '@univerjs/presets'
 import { pick, type Lang } from './types'
+import { CHART_COMPONENT, CHART_KIND, DRAWING_TYPE_DOM, type ChartSpec } from '../apps/sheet/charts/model'
+import { DrawingCollector } from '../apps/sheet/formats/drawings'
 
 const CF_RESOURCE = 'SHEET_CONDITIONAL_FORMATTING_PLUGIN'
 const DV_RESOURCE = 'SHEET_DATA_VALIDATION_PLUGIN'
@@ -137,7 +139,24 @@ class SheetBuilder {
 
 const range = (r1: number, c1: number, r2: number, c2: number): IRange => ({ startRow: r1, startColumn: c1, endRow: r2, endColumn: c2 })
 
-function workbook(sheets: SheetBuilder[]): Partial<IWorkbookData> {
+interface TemplateChart {
+  sheet: SheetBuilder
+  at: { row: number; col: number }
+  size: { width: number; height: number }
+  spec: Omit<ChartSpec, 'kind' | 'sheetId'>
+}
+
+function workbook(sheets: SheetBuilder[], charts: TemplateChart[] = []): Partial<IWorkbookData> {
+  const built = Object.fromEntries(sheets.map((s) => [s.id, s.build()]))
+  const drawings = new DrawingCollector(built as IWorkbookData['sheets'])
+  for (const c of charts) {
+    drawings.add(c.sheet.id, { column: c.at.col, columnOffset: 0, row: c.at.row, rowOffset: 0 }, c.size, {
+      drawingType: DRAWING_TYPE_DOM,
+      componentKey: CHART_COMPONENT,
+      allowTransform: true,
+      data: { kind: CHART_KIND, sheetId: c.sheet.id, ...c.spec },
+    })
+  }
   const cf: Record<string, unknown> = {}
   const dv: Record<string, unknown> = {}
   for (const s of sheets) {
@@ -148,8 +167,9 @@ function workbook(sheets: SheetBuilder[]): Partial<IWorkbookData> {
     name: '',
     styles: {},
     sheetOrder: sheets.map((s) => s.id),
-    sheets: Object.fromEntries(sheets.map((s) => [s.id, s.build()])),
+    sheets: built,
     resources: [
+      ...(drawings.empty ? [] : [drawings.resource()]),
       ...(Object.keys(cf).length ? [{ name: CF_RESOURCE, data: JSON.stringify(cf) }] : []),
       ...(Object.keys(dv).length ? [{ name: DV_RESOURCE, data: JSON.stringify(dv) }] : []),
     ],
@@ -277,6 +297,31 @@ function gradebook(lang: Lang): Partial<IWorkbookData> {
     for (let c = 2; c <= 14; c++) g.set(r, c, f(`${col(c)}${first + 1}:${col(c)}${last + 1}`), s)
   })
 
+  // Grade distribution of the final grades (qualitative levels) and its chart.
+  const dist = last + 7
+  g.row(dist, 1, [L('Distribución de calificaciones', 'Distribución de cualificacións', 'Répartition des appréciations', 'Notenverteilung'), L('Alumnos', 'Alumnado', 'Élèves', 'Schüler/innen')], S.head).height(dist, 40)
+  GRADE_NAMES[lang].forEach(([name, abbr], k) => {
+    g.set(dist + 1 + k, 1, `${name} (${abbr})`, S.side)
+    g.set(dist + 1 + k, 2, `=COUNTIF($P$${first + 1}:$P$${last + 1},"${name}")`, S.center)
+  })
+  const chart: TemplateChart = {
+    sheet: g,
+    at: { row: dist, col: 4 },
+    size: { width: 520, height: 280 },
+    spec: {
+      type: 'column',
+      range: `B${dist + 1}:C${dist + 6}`,
+      seriesIn: 'columns',
+      headerRow: true,
+      headerCol: true,
+      title: L('Distribución de la nota final', 'Distribución da nota final', 'Répartition de la note finale', 'Verteilung der Endnoten'),
+      legend: 'none',
+      xTitle: '',
+      yTitle: L('Alumnos', 'Alumnado', 'Élèves', 'Schüler/innen'),
+      palette: 'ofimeo',
+    },
+  }
+
   const grades = range(first, 2, last, 14)
   g.highlight(grades, failRule('C6'), FAIL)
   g.highlight(grades, passRule('C6'), PASS)
@@ -286,7 +331,7 @@ function gradebook(lang: Lang): Partial<IWorkbookData> {
   g.width(0, 40).width(1, 200).width(2, lang === 'de' ? 112 : 88, 13).width(14, 80).width(15, 110).height(4, 48)
   g.freezeAt(first, 2)
 
-  return workbook([g, w])
+  return workbook([g, w], [chart])
 }
 
 function timetable(lang: Lang): Partial<IWorkbookData> {

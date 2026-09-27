@@ -3,7 +3,7 @@
 // File layout and compression follow draw.io (Apache-2.0, JGraph Ltd):
 // <mxfile><diagram id name>(<mxGraphModel>… | base64(deflateRaw(encodeURIComponent(xml))))</diagram></mxfile>
 
-import { emptyPage, newCellId, type CellRecord, type GeometryRecord, type PageRecord } from '../model'
+import { emptyPage, newCellId, type CellRecord, type GeometryRecord, type PageAttrs, type PageRecord } from '../model'
 import { deflateRawSync } from './deflate'
 import { t } from '../../../core/i18n'
 
@@ -36,7 +36,7 @@ export async function parseDrawio(text: string): Promise<PageRecord[]> {
     let pageId = id || `page-${index}`
     for (let n = 2; usedIds.has(pageId); n++) pageId = `${id || `page-${index}`}-${n}`
     usedIds.add(pageId)
-    pages.push({ id: pageId, name: name ?? `Page-${index}`, cells: model ? parseModel(model) : emptyPage().cells })
+    pages.push({ id: pageId, name: name ?? `Page-${index}`, ...(model ? modelAttrs(model) : {}), cells: model ? parseModel(model) : emptyPage().cells })
   }
   switch (root.localName) {
     case 'mxfile':
@@ -90,6 +90,18 @@ export async function decompressDiagram(text: string): Promise<string> {
   } catch {
     return inflated
   }
+}
+
+// Page settings of an <mxGraphModel>: background color and page size.
+function modelAttrs(model: Element): PageAttrs {
+  const attrs: PageAttrs = {}
+  const bg = model.getAttribute('background')
+  if (bg && bg !== 'none') attrs.background = bg
+  for (const k of ['pageWidth', 'pageHeight'] as const) {
+    const v = Number(model.getAttribute(k))
+    if (v > 0) attrs[k] = v
+  }
+  return attrs
 }
 
 interface RawCell {
@@ -220,9 +232,9 @@ export function serializeDrawio(pages: PageRecord[], options: SerializeOptions =
   for (const page of pages) {
     const open = `  <diagram id="${escapeAttr(page.id)}" name="${escapeAttr(page.name)}">`
     if (compressed) {
-      out.push(`${open}${compressDiagram(modelXml(page.cells, '', ''))}</diagram>`)
+      out.push(`${open}${compressDiagram(modelXml(page.cells, '', '', page))}</diagram>`)
     } else {
-      out.push(open, modelXml(page.cells, '    ', '\n'), '  </diagram>')
+      out.push(open, modelXml(page.cells, '    ', '\n', page), '  </diagram>')
     }
   }
   out.push('</mxfile>')
@@ -242,9 +254,10 @@ export function serializeModel(cells: CellRecord[]): string {
   return modelXml(cells, '', '\n')
 }
 
-function modelXml(cells: CellRecord[], indent: string, nl: string): string {
+function modelXml(cells: CellRecord[], indent: string, nl: string, attrs: PageAttrs = {}): string {
   const step = nl ? '  ' : ''
-  const lines = [`${indent}<mxGraphModel>`, `${indent}${step}<root>`]
+  const modelAttrs = attrString([['background', attrs.background], ['pageWidth', attrs.pageWidth], ['pageHeight', attrs.pageHeight]])
+  const lines = [`${indent}<mxGraphModel${modelAttrs}>`, `${indent}${step}<root>`]
   for (const cell of orderCells(cells)) lines.push(cellXml(cell, indent + step + step, step, nl))
   lines.push(`${indent}${step}</root>`, `${indent}</mxGraphModel>`)
   return lines.join(nl)

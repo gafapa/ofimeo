@@ -1,4 +1,5 @@
-// Univer setup: open-source presets only (Apache-2.0).
+// Univer setup: open-source presets only (Apache-2.0), pinned to an exact
+// version in package.json (command ids used by our menus live in commands.ts).
 
 import { createUniver, LocaleType, mergeLocales, type IWorkbookData } from '@univerjs/presets'
 import { language } from '../../core/i18n'
@@ -36,7 +37,10 @@ import '@univerjs/preset-sheets-table/lib/index.css'
 // Fixed ids: every replica must address the same workbook and sheets.
 export const WORKBOOK_ID = 'workbook'
 
-export function emptyWorkbook(): Partial<IWorkbookData> {
+// Documents without a stored base start from this workbook on every replica,
+// so its first sheet keeps the language-independent name "Sheet1"; documents
+// created in this browser store a base with a localized name (app.ts).
+export function emptyWorkbook(firstSheet = 'Sheet1'): Partial<IWorkbookData> {
   return {
     id: WORKBOOK_ID,
     name: '',
@@ -44,7 +48,7 @@ export function emptyWorkbook(): Partial<IWorkbookData> {
     styles: {},
     sheetOrder: ['sheet-1'],
     sheets: {
-      'sheet-1': { id: 'sheet-1', name: 'Sheet1', rowCount: 1000, columnCount: 26, cellData: {} },
+      'sheet-1': { id: 'sheet-1', name: firstSheet, rowCount: 1000, columnCount: 26, cellData: {} },
     },
     resources: [],
   }
@@ -99,14 +103,40 @@ async function uiLocale() {
   return { type: univerLocaleType[lang], data: mergeLocales(...parts.map((m) => m.default)) }
 }
 
-export async function createSpreadsheet(container: HTMLElement) {
+// Univer's own sheet and range protection: every peer is the same Univer user,
+// so "Only I can edit" would protect nothing; Data ▸ Warn before editing… is
+// the suite's honest replacement (warnings.ts).
+const HIDDEN_MENUS = [
+  'sheet.contextMenu.permission',
+  'sheet.command.add-range-protection-from-toolbar',
+  'sheet.command.add-range-protection-from-context-menu',
+  'sheet.command.view-sheet-permission-from-context-menu',
+  'sheet.command.add-range-protection-from-sheet-bar',
+  'sheet.command.view-sheet-permission-from-sheet-bar',
+  'sheet.command.delete-range-protection-from-context-menu',
+  'sheet.command.set-range-protection-from-context-menu',
+  'sheet.command.delete-worksheet-protection-from-sheet-bar',
+  'sheet.command.change-sheet-protection-from-sheet-bar',
+]
+
+// `readOnly`: view and comment links get no tool bar and no context menu.
+export async function createSpreadsheet(container: HTMLElement, { readOnly = false } = {}) {
   const english = mergeLocales(coreEnUS, filterEnUS, sortEnUS, cfEnUS, dvEnUS, findEnUS, linkEnUS, noteEnUS, drawingEnUS, tableEnUS)
   const ui = await uiLocale()
   return createUniver({
     locale: ui ? ui.type : LocaleType.EN_US,
     locales: ui ? { [ui.type]: ui.data, [LocaleType.EN_US]: english } : { [LocaleType.EN_US]: english },
     presets: [
-      UniverSheetsCorePreset({ container }),
+      UniverSheetsCorePreset({
+        container,
+        // One tool row without Univer's ribbon tabs: our menu bar has File…Help.
+        ribbonType: 'simple',
+        // Only the sheet tabs: selection statistics and zoom are in our status bar.
+        footer: { sheetBar: true, statisticBar: false, menus: false, zoomSlider: false },
+        toolbar: !readOnly,
+        contextMenu: !readOnly,
+        menu: Object.fromEntries(HIDDEN_MENUS.map((id) => [id, { hidden: true }])),
+      }),
       UniverSheetsFilterPreset(),
       UniverSheetsSortPreset(),
       UniverSheetsConditionalFormattingPreset(),

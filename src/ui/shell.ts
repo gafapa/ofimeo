@@ -4,9 +4,10 @@
 import type { AppInfo } from '../apps/registry'
 import { t } from '../core/i18n'
 import { homePath } from '../core/router'
+import { loadUser } from '../core/store'
 import { accessibilityButton } from './accessibility'
-import { el, icon } from './widgets'
-import { Inbox, Share2 } from 'lucide'
+import { el, icon, promptText } from './widgets'
+import { Cloud, Inbox, Share2, UserRoundPen } from 'lucide'
 
 export interface Shell {
   menubar: HTMLElement
@@ -17,15 +18,15 @@ export interface Shell {
 
 export function renderShell(app: AppInfo, root: HTMLElement): Shell {
   root.innerHTML = `
-    <div class="app app-${app.type}">
+    <div class="app app-${app.type}" style="--app-color:${app.color}">
       <header class="appbar">
         <div class="appbar-main">
-          <a class="app-logo" href="${homePath()}" title="${t('All documents')}" style="background:${app.color}">${app.letter}</a>
+          <a class="app-logo" href="${homePath()}">${app.letter}</a>
           <div class="title-block">
             <div class="title-row">
               <input id="doc-title" class="doc-title" aria-label="${t('Title')}" spellcheck="false" />
               <span id="access-badge" class="access-badge" hidden></span>
-              <span id="save-state" class="save-state"></span>
+              <span class="save-indicator"><span id="save-state" class="save-state"></span></span>
             </div>
             <nav id="menubar" class="menubar" aria-label="${t('Menu')}"></nav>
           </div>
@@ -43,6 +44,14 @@ export function renderShell(app: AppInfo, root: HTMLElement): Shell {
       <footer id="statusbar" class="statusbar"></footer>
     </div>`
   root.querySelector('.appbar-actions')!.prepend(accessibilityButton())
+  const nameInput = root.querySelector<HTMLInputElement>('#user-name')!
+  nameInput.after(nameButton(nameInput))
+  // The logo leads to the home screen; its tooltip names the app of the suite.
+  const logo = root.querySelector<HTMLAnchorElement>('.app-logo')!
+  logo.title = `${app.product} · ${t('All documents')}`
+  logo.setAttribute('aria-label', logo.title)
+  // Save state: an icon (the only part shown on phones) and a label (#save-state).
+  root.querySelector('.save-indicator')!.prepend(icon(Cloud, 16))
   // Icon and label; on phones only the icon is shown (the label stays for screen readers).
   root.querySelector('#btn-handin')!.append(icon(Inbox, 18), el('span', { class: 'btn-label', textContent: t('Hand in') }))
   root.querySelector('#btn-share')!.append(icon(Share2, 18), el('span', { class: 'btn-label', textContent: t('Share') }))
@@ -52,4 +61,29 @@ export function renderShell(app: AppInfo, root: HTMLElement): Shell {
     main: root.querySelector('#app-main')!,
     statusbar: root.querySelector('#statusbar')!,
   }
+}
+
+// On narrow screens (≤760 px) the "Your name" field is hidden; this button
+// takes its place and edits the same field in a small dialog. The field's
+// own change handler saves the name and tells collaborators.
+export function nameButton(input: HTMLInputElement): HTMLButtonElement {
+  const button = el('button', { type: 'button', class: 'user-name-btn' }, icon(UserRoundPen, 18))
+  const refresh = () => {
+    const name = input.value || loadUser().name
+    button.title = `${t('Your name')}: ${name}`
+    button.setAttribute('aria-label', button.title)
+    button.style.borderColor = loadUser().color
+  }
+  input.addEventListener('change', refresh)
+  button.addEventListener('focus', refresh)
+  button.addEventListener('pointerenter', refresh)
+  button.addEventListener('click', async () => {
+    const name = await promptText(t('Your name'), t('Your name, as others see it'), input.value || loadUser().name)
+    if (name === null || !name.trim()) return button.focus()
+    input.value = name.trim()
+    input.dispatchEvent(new Event('change'))
+    button.focus()
+  })
+  queueMicrotask(refresh)
+  return button
 }

@@ -2,7 +2,8 @@
 // diagram options when nothing is selected.
 
 import type { Cell } from '@maxgraph/core'
-import { colorPalette, el, openPopover } from '../../ui/widgets'
+import { AlignCenter, AlignLeft, AlignRight, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd, AlignVerticalJustifyStart, Bold, Italic, Strikethrough, Underline, type IconNode } from 'lucide'
+import { colorPalette, el, icon, openPopover } from '../../ui/widgets'
 import { setStyleKey, type EditorGraph } from './graph'
 import { SKETCH_DEFAULTS, SKETCH_FILL_STYLES, SKETCH_FONT_FAMILY, SKETCH_FONT_SOURCE } from './shapes/sketch'
 import { t } from '../../core/i18n'
@@ -21,6 +22,8 @@ export interface FormatActions {
   renamePage(name: string): void
   // Replaces the diagram options shown when nothing is selected (e.g. slide options).
   emptySection?: () => HTMLElement
+  // More rows for the diagram options (page background, page view…).
+  diagramOptions?: () => HTMLElement[]
 }
 
 const FONTS = ['Helvetica', 'Arial', 'Verdana', 'Tahoma', 'Trebuchet MS', 'Georgia', 'Times New Roman', 'Garamond', 'Courier New', 'Comic Sans MS', 'Lucida Console']
@@ -137,6 +140,7 @@ export class FormatPanel {
     return section(t('Diagram'),
       row(t('Page name'), name),
       checkbox(t('Grid'), this.actions.isGridVisible(), (on) => this.actions.setGridVisible(on)),
+      ...(this.actions.diagramOptions?.() ?? []),
       el('p', { class: 'fmt-hint', textContent: t('Drag shapes from the left panel, or click one to insert it. Hover a shape and drag from its blue points to connect it.') }),
     )
   }
@@ -222,22 +226,22 @@ export class FormatPanel {
     const styleButtons = el(
       'div',
       { class: 'fmt-toggles' },
-      toggle('B', t('Bold'), (fontStyle & 1) !== 0, () => toggleBit(1)),
-      toggle('I', t('Italic'), (fontStyle & 2) !== 0, () => toggleBit(2)),
-      toggle('U', t('Underline'), (fontStyle & 4) !== 0, () => toggleBit(4)),
-      toggle('S', t('Strikethrough'), (fontStyle & 8) !== 0, () => toggleBit(8)),
+      toggle(Bold, t('Bold'), (fontStyle & 1) !== 0, () => toggleBit(1)),
+      toggle(Italic, t('Italic'), (fontStyle & 2) !== 0, () => toggleBit(2)),
+      toggle(Underline, t('Underline'), (fontStyle & 4) !== 0, () => toggleBit(4)),
+      toggle(Strikethrough, t('Strikethrough'), (fontStyle & 8) !== 0, () => toggleBit(8)),
     )
     const align = str(s.align) || 'center'
     const valign = str(s.verticalAlign) || 'middle'
     const alignButtons = el(
       'div',
       { class: 'fmt-toggles' },
-      toggle('⯇', t('Align left'), align === 'left', () => this.set('align', 'left')),
-      toggle('≡', t('Center'), align === 'center', () => this.set('align', 'center')),
-      toggle('⯈', t('Align right'), align === 'right', () => this.set('align', 'right')),
-      toggle('⯅', t('Top'), valign === 'top', () => this.set('verticalAlign', 'top')),
-      toggle('◆', t('Middle'), valign === 'middle', () => this.set('verticalAlign', 'middle')),
-      toggle('⯆', t('Bottom'), valign === 'bottom', () => this.set('verticalAlign', 'bottom')),
+      toggle(AlignLeft, t('Align left'), align === 'left', () => this.set('align', 'left')),
+      toggle(AlignCenter, t('Center'), align === 'center', () => this.set('align', 'center')),
+      toggle(AlignRight, t('Align right'), align === 'right', () => this.set('align', 'right')),
+      toggle(AlignVerticalJustifyStart, t('Top'), valign === 'top', () => this.set('verticalAlign', 'top')),
+      toggle(AlignVerticalJustifyCenter, t('Middle'), valign === 'middle', () => this.set('verticalAlign', 'middle')),
+      toggle(AlignVerticalJustifyEnd, t('Bottom'), valign === 'bottom', () => this.set('verticalAlign', 'bottom')),
     )
     return section(t('Text'),
       // A font change drops draw.io's web font URL, which belongs to the previous family.
@@ -372,10 +376,11 @@ function checkbox(label: string, checked: boolean, apply: (on: boolean) => void)
   return el('label', { class: 'fmt-check' }, input, label)
 }
 
-function toggle(text: string, title: string, active: boolean, run: () => void): HTMLButtonElement {
-  const b = el('button', { type: 'button', class: 'fmt-toggle', textContent: text, title })
+function toggle(node: IconNode, title: string, active: boolean, run: () => void): HTMLButtonElement {
+  const b = el('button', { type: 'button', class: 'fmt-toggle', title }, icon(node, 16))
   b.setAttribute('aria-label', title)
   b.classList.toggle('active', active)
+  b.setAttribute('aria-pressed', String(active))
   b.addEventListener('click', run)
   return b
 }

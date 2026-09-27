@@ -1,0 +1,36 @@
+/* Connection test dialog (connection.ts). */
+.conn-test { display: flex; flex-direction: column; gap: 12px; max-height: min(70vh, 720px); overflow: auto; padding-right: 4px; }
+.conn-verdict { border: 1px solid var(--info-border); background: var(--info-bg); color: var(--info-fg); border-radius: var(--radius-l); padding: 10px 14px; }
+.conn-verdict strong { font-size: var(--fs-l); }
+.conn-verdict p { margin: 4px 0 0; }
+.conn-verdict a { color: inherit; font-weight: 600; }
+.conn-verdict.direct { border-color: var(--ok); background: var(--success-bg); color: var(--success-fg); }
+.conn-verdict.school, .conn-verdict.partial { border-color: var(--warn-border); background: var(--warn-bg); color: var(--warn-fg); }
+.conn-verdict.blocked { border-color: var(--danger); background: var(--surface-alt); color: var(--danger-text); }
+.conn-section h3, .conn-relay h3 { margin: 4px 0; font-size: var(--fs-base); font-weight: 600; }
+.conn-section .hint { margin: 0 0 4px; }
+.conn-rows { list-style: none; margin: 0; padding: 0; }
+.conn-row { display: grid; grid-template-columns: 14px minmax(120px, 1fr) minmax(0, 1.4fr); gap: 8px; align-items: baseline; padding: 3px 0; border-bottom: 1px solid var(--divider); font-size: var(--fs-m); }
+.conn-row:last-child { border-bottom: 0; }
+.conn-label { overflow-wrap: anywhere; }
+.conn-detail { color: var(--muted); }
+.conn-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); align-self: center; }
+.conn-row.ok .conn-dot { background: var(--ok); }
+.conn-row.warn .conn-dot { background: var(--warn); }
+.conn-row.fail .conn-dot { background: var(--danger); }
+.conn-row.fail .conn-detail { color: var(--danger-text); }
+.conn-row.pending .conn-dot { animation: conn-pulse 1s ease-in-out infinite alternate; }
+@keyframes conn-pulse { from { opacity: 0.3; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .conn-row.pending .conn-dot { animation: none; } }
+.conn-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.conn-actions button, .conn-relay button { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: var(--radius-m); padding: 6px 12px; }
+.conn-relay { border-top: 1px solid var(--divider); padding-top: 8px; }
+.conn-relay p { margin: 4px 0; overflow-wrap: anywhere; }
+.conn-relay code { font-family: var(--font-mono); }
+.conn-check { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+.conn-bad { color: var(--danger-text); }
+.conn-report { font-size: var(--fs-s); }
+@media (max-width: 520px) {
+  .conn-row { grid-template-columns: 14px 1fr; }
+  .conn-detail { grid-column: 2; }
+}

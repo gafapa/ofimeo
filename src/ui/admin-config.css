@@ -1,0 +1,15 @@
+/* Help ▸ For administrators… (admin-config.ts). */
+.admin-config { display: flex; flex-direction: column; gap: 12px; max-height: 70vh; overflow: auto; padding-right: 4px; }
+.admin-config > p { margin: 0; }
+.admin-section { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 10px 12px 12px; border: 1px solid var(--border); border-radius: 8px; }
+.admin-section legend { padding: 0 6px; font-weight: 600; color: var(--text); }
+.admin-section .hint { margin: 0; }
+.admin-apps { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.admin-templates { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 12px; max-height: 180px; overflow: auto; padding: 6px; border: 1px solid var(--border); border-radius: 6px; }
+.admin-templates[hidden] { display: none; }
+.admin-preview-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.admin-preview-head h3 { margin: 0; font-size: var(--fs-base); }
+.admin-preview { margin: 0; padding: 8px; max-height: 240px; overflow: auto; background: var(--surface-alt); border: 1px solid var(--border); border-radius: 6px; font-size: var(--fs-s); white-space: pre-wrap; }
+@media (max-width: 700px) {
+  .admin-config .form.grid2 { grid-template-columns: 1fr; }
+}

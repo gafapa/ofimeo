@@ -2787,6 +2787,8 @@ const gl: Record<string, string> = {
 
 
 
+  'Show': 'Mostrar',
+  'Hide': 'Ocultar',
 }
 
 export default gl

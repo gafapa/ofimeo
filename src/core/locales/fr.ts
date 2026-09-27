@@ -2787,6 +2787,8 @@ const fr: Record<string, string> = {
   'And {count} more series.': 'Et {count} autres séries.',
   'Category': 'Catégorie',
   'Source cells: {range}': 'Cellules source : {range}',
+  'Show': 'Afficher',
+  'Hide': 'Masquer',
 }
 
 export default fr

@@ -2787,6 +2787,8 @@ const de: Record<string, string> = {
 
 
 
+  'Show': 'Anzeigen',
+  'Hide': 'Ausblenden',
 }
 
 export default de

@@ -51,7 +51,9 @@ Docker deployment. CI: type check, spelling rule tests, i18n key check, build,
 7. **Notebook**: ink anchored to text; OneNote import.
 8. **Store-and-forward**: clean up local sync state when a document is
    deleted; guidance for schools exposing the relay publicly.
-9. **Performance**: sheet bundle size, cold-start time on low-end
+9. **Nextcloud**: several accounts per browser (the list is stored, but only
+   the first is used).
+10. **Performance**: sheet bundle size, cold-start time on low-end
    Chromebooks.
 
 ## Ideas (not scheduled)

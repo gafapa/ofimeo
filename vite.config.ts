@@ -50,6 +50,7 @@ export default defineConfig({
           ['New presentation', 'slides'],
           ['New form', 'forms'],
           ['Annotate a PDF', 'pdf'],
+          ['New notebook', 'notebook'],
         ].map(([name, type]) => ({ name, url: `./#new=${type}` })),
         file_handlers: [
           {

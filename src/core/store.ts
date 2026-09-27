@@ -132,9 +132,12 @@ export function setRemoteLink(id: string, remote: RemoteLink | undefined): void 
 
 // Deletes a document from this browser for good (its IndexedDB data too).
 export async function deleteDoc(id: string): Promise<void> {
+  const entry = listDocs().find((d) => d.id === id)
   write(DOCS_KEY, listDocs().filter((d) => d.id !== id))
   await clearDocument(dbName(id))
   await clearDocument(commentsDbName(id))
+  // Editor-only data (e.g. a form's answer key and responses).
+  if (entry) await clearDocument(privateDbName(entry.type, id))
   await kvDelete(signedLogKey(id, 'yjs'))
   await kvDelete(signedLogKey(id, 'cmt'))
   await import('./library-search').then((m) => m.forgetText(id)).catch(() => undefined)

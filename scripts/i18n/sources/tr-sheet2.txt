@@ -1,0 +1,182 @@
+Edit chart… ||| Editar gráfico… ||| Editar gráfico…
+Delete chart ||| Eliminar gráfico ||| Eliminar gráfico
+Language of function help and number formats ||| Idioma de la ayuda de funciones y de los formatos numéricos ||| Idioma da axuda de funcións e dos formatos numéricos
+Sheets ||| Hojas ||| Follas
+Charts ||| Gráficos ||| Gráficos
+Sum: {sum} · Average: {average} · Count: {count} ||| Suma: {sum} · Promedio: {average} · Recuento: {count} ||| Suma: {sum} · Media: {average} · Reconto: {count}
+Count: {count} ||| Recuento: {count} ||| Reconto: {count}
+Paste special ||| Pegado especial ||| Pegado especial
+Values only ||| Solo valores ||| Só valores
+Formatting only ||| Solo formato ||| Só formato
+Contents ||| Contenido ||| Contido
+Contents and formatting ||| Contenido y formato ||| Contido e formato
+Selected rows ||| Filas seleccionadas ||| Filas seleccionadas
+Selected columns ||| Columnas seleccionadas ||| Columnas seleccionadas
+Freeze ||| Inmovilizar ||| Inmobilizar
+First row ||| Primera fila ||| Primeira fila
+First column ||| Primera columna ||| Primeira columna
+Up to the current cell ||| Hasta la celda actual ||| Ata a cela actual
+Unfreeze ||| Movilizar ||| Mobilizar
+Gridlines ||| Líneas de cuadrícula ||| Liñas de grade
+Toolbar ||| Barra de herramientas ||| Barra de ferramentas
+Row above ||| Fila encima ||| Fila enriba
+Row below ||| Fila debajo ||| Fila debaixo
+Column left ||| Columna a la izquierda ||| Columna á esquerda
+Column right ||| Columna a la derecha ||| Columna á dereita
+Cells ||| Celdas ||| Celas
+Shift cells down ||| Desplazar celdas hacia abajo ||| Desprazar celas cara abaixo
+Shift cells right ||| Desplazar celdas a la derecha ||| Desprazar celas á dereita
+Sheet ||| Hoja ||| Folla
+Chart… ||| Gráfico… ||| Gráfico…
+Image in cell… ||| Imagen en celda… ||| Imaxe na cela…
+Function ||| Función ||| Función
+Average ||| Promedio ||| Media
+Count ||| Recuento ||| Reconto
+Minimum ||| Mínimo ||| Mínimo
+Number format… ||| Formato de número… ||| Formato de número…
+Percent ||| Porcentaje ||| Porcentaxe
+Currency ||| Moneda ||| Moeda
+Increase decimals ||| Aumentar decimales ||| Aumentar decimais
+Decrease decimals ||| Disminuir decimales ||| Diminuír decimais
+Wrap text ||| Ajustar texto ||| Axustar texto
+Merge all ||| Combinar todo ||| Combinar todo
+Merge horizontally ||| Combinar horizontalmente ||| Combinar horizontalmente
+Merge vertically ||| Combinar verticalmente ||| Combinar verticalmente
+Unmerge ||| Separar celdas ||| Separar celas
+Conditional formatting ||| Formato condicional ||| Formato condicional
+New rule… ||| Nueva regla… ||| Nova regra…
+Manage rules… ||| Administrar reglas… ||| Xestionar regras…
+Clear rules from selection ||| Borrar reglas de la selección ||| Borrar regras da selección
+Fit column width ||| Ajustar ancho de columna ||| Axustar largura da columna
+Paint format ||| Copiar formato ||| Copiar formato
+Sort A → Z ||| Ordenar A → Z ||| Ordenar A → Z
+Sort Z → A ||| Ordenar Z → A ||| Ordenar Z → A
+Custom sort… ||| Orden personalizado… ||| Orde personalizada…
+Filter ||| Filtro ||| Filtro
+Clear filter ||| Borrar filtro ||| Borrar filtro
+Reapply filter ||| Volver a aplicar filtro ||| Volver aplicar o filtro
+Data validation ||| Validación de datos ||| Validación de datos
+Split text to columns… ||| Dividir texto en columnas… ||| Dividir texto en columnas…
+Named ranges… ||| Rangos con nombre… ||| Intervalos con nome…
+Protect range… ||| Proteger rango… ||| Protexer intervalo…
+Pivot table… ||| Tabla dinámica… ||| Táboa dinámica…
+Refresh pivot tables ||| Actualizar tablas dinámicas ||| Actualizar táboas dinámicas
+Descriptive statistics… ||| Estadística descriptiva… ||| Estatística descritiva…
+Recalculate formulas ||| Recalcular fórmulas ||| Recalcular fórmulas
+Statistics functions ||| Funciones estadísticas ||| Funcións estatísticas
+Charts and pivot tables ||| Gráficos y tablas dinámicas ||| Gráficos e táboas dinámicas
+Paste values only ||| Pegar solo valores ||| Pegar só valores
+Edit chart ||| Editar gráfico ||| Editar gráfico
+Double click ||| Doble clic ||| Dobre clic
+Standard deviation (sample / population) ||| Desviación típica (muestra / población) ||| Desviación típica (mostra / poboación)
+Variance (sample / population) ||| Varianza (muestra / población) ||| Varianza (mostra / poboación)
+Quartile ||| Cuartil ||| Cuartil
+Percentile ||| Percentil ||| Percentil
+Correlation coefficient ||| Coeficiente de correlación ||| Coeficiente de correlación
+Regression line ||| Recta de regresión ||| Recta de regresión
+Linear prediction ||| Predicción lineal ||| Predición lineal
+Normal distribution ||| Distribución normal ||| Distribución normal
+Binomial distribution ||| Distribución binomial ||| Distribución binomial
+Count with conditions ||| Contar con condiciones ||| Contar con condicións
+Frequency table ||| Tabla de frecuencias ||| Táboa de frecuencias
+Rank ||| Posición ||| Posición
+Combinations, permutations ||| Combinaciones, permutaciones ||| Combinacións, permutacións
+Random integer ||| Entero aleatorio ||| Enteiro aleatorio
+Spanish name ||| Nombre en español ||| Nome en castelán
+Use ||| Uso ||| Uso
+Formulas accept the English names and, in Spanish and Galician, the Spanish names too. Files are saved with the English names, which Excel and LibreOffice translate. ||| Las fórmulas aceptan los nombres en inglés y también los nombres en español. Los archivos se guardan con los nombres en inglés, que Excel y LibreOffice traducen. ||| As fórmulas aceptan os nomes en inglés e tamén os nomes en castelán. Os ficheiros gárdanse cos nomes en inglés, que Excel e LibreOffice traducen.
+Data ▸ Descriptive statistics… writes a summary table (n, mean, median, mode, standard deviation, variance, minimum, quartiles, maximum) with live formulas. Scatter charts can show a linear trendline with its equation and R². ||| Datos ▸ Estadística descriptiva… escribe una tabla resumen (n, media, mediana, moda, desviación típica, varianza, mínimo, cuartiles, máximo) con fórmulas que se actualizan. Los gráficos de dispersión pueden mostrar una línea de tendencia lineal con su ecuación y R². ||| Datos ▸ Estatística descritiva… escribe unha táboa resumo (n, media, mediana, moda, desviación típica, varianza, mínimo, cuartís, máximo) con fórmulas que se actualizan. Os gráficos de dispersión poden mostrar unha liña de tendencia lineal coa súa ecuación e R².
+Pivot tables are built from ordinary formulas (SUMIFS, AVERAGEIFS, COUNTIFS, MINIFS, MAXIFS): values update live and export to Excel and LibreOffice, but new row or column keys only appear after Data ▸ Refresh pivot tables. Refreshing rewrites the table, so do not type inside it. ||| Las tablas dinámicas se crean con fórmulas normales (SUMAR.SI.CONJUNTO, PROMEDIO.SI.CONJUNTO, CONTAR.SI.CONJUNTO, MIN.SI.CONJUNTO, MAX.SI.CONJUNTO): los valores se actualizan al momento y se exportan a Excel y LibreOffice, pero las filas o columnas nuevas solo aparecen tras Datos ▸ Actualizar tablas dinámicas. Actualizar reescribe la tabla, así que no escribas dentro de ella. ||| As táboas dinámicas créanse con fórmulas normais (SUMAR.SI.CONJUNTO, PROMEDIO.SI.CONJUNTO, CONTAR.SI.CONJUNTO, MIN.SI.CONJUNTO, MAX.SI.CONJUNTO): os valores actualízanse ao momento e expórtanse a Excel e LibreOffice, pero as filas ou columnas novas só aparecen tras Datos ▸ Actualizar táboas dinámicas. Actualizar reescribe a táboa, así que non escribas dentro dela.
+Insert ▸ Chart… draws a column, bar, line, area, pie, doughnut or scatter chart from a range. Charts update when the cells change, follow the range when rows or columns are inserted or deleted, print, and are saved as native charts in .xlsx and .ods files. Double click a chart (or right click it) to edit it. ||| Insertar ▸ Gráfico… dibuja un gráfico de columnas, barras, líneas, áreas, circular, de anillo o de dispersión a partir de un rango. Los gráficos se actualizan cuando cambian las celdas, siguen al rango cuando se insertan o eliminan filas o columnas, se imprimen y se guardan como gráficos nativos en archivos .xlsx y .ods. Haz doble clic en un gráfico (o clic derecho) para editarlo. ||| Inserir ▸ Gráfico… debuxa un gráfico de columnas, barras, liñas, áreas, circular, de anel ou de dispersión a partir dun intervalo. Os gráficos actualízanse cando cambian as celas, seguen o intervalo cando se inserten ou eliminen filas ou columnas, imprímense e gárdanse como gráficos nativos en ficheiros .xlsx e .ods. Fai dobre clic nun gráfico (ou clic dereito) para editalo.
+Pivot tables ||| Tablas dinámicas ||| Táboas dinámicas
+Select cells of a single column ||| Selecciona celdas de una sola columna ||| Selecciona celas dunha soa columna
+Comma ||| Coma ||| Coma
+Semicolon ||| Punto y coma ||| Punto e coma
+Space ||| Espacio ||| Espazo
+Tab ||| Tabulación ||| Tabulación
+Separator ||| Separador ||| Separador
+Split text to columns ||| Dividir texto en columnas ||| Dividir texto en columnas
+Split ||| Dividir ||| Dividir
+Count (n) ||| Recuento (n) ||| Reconto (n)
+Standard deviation (sample) ||| Desviación típica (muestra) ||| Desviación típica (mostra)
+Standard deviation (population) ||| Desviación típica (población) ||| Desviación típica (poboación)
+Variance (sample) ||| Varianza (muestra) ||| Varianza (mostra)
+Variance (population) ||| Varianza (población) ||| Varianza (poboación)
+First quartile (Q1) ||| Primer cuartil (Q1) ||| Primeiro cuartil (Q1)
+Third quartile (Q3) ||| Tercer cuartil (Q3) ||| Terceiro cuartil (Q3)
+Range ||| Recorrido ||| Percorrido
+New sheet ||| Hoja nueva ||| Folla nova
+Next to the data ||| Junto a los datos ||| Xunto aos datos
+At a cell… ||| En una celda… ||| Nunha cela…
+Data range (one variable per column) ||| Rango de datos (una variable por columna) ||| Intervalo de datos (unha variable por columna)
+First row contains labels ||| La primera fila contiene etiquetas ||| A primeira fila contén etiquetas
+Output ||| Resultado ||| Resultado
+The summary uses formulas, so it updates when the data change. ||| El resumen usa fórmulas, así que se actualiza cuando cambian los datos. ||| O resumo usa fórmulas, así que se actualiza cando cambian os datos.
+Descriptive statistics ||| Estadística descriptiva ||| Estatística descritiva
+Create ||| Crear ||| Crear
+Enter a range such as A1:C6 ||| Escribe un rango como A1:C6 ||| Escribe un intervalo como A1:C6
+The range has no data ||| El rango no tiene datos ||| O intervalo non ten datos
+Enter a cell such as H1 ||| Escribe una celda como H1 ||| Escribe unha cela como H1
+Statistic ||| Estadístico ||| Estatístico
+(none) ||| (ninguno) ||| (ningún)
+Source data (with a header row) ||| Datos de origen (con fila de encabezados) ||| Datos de orixe (con fila de cabeceiras)
+Values ||| Valores ||| Valores
+Summarize by ||| Resumir con ||| Resumir con
+Filter (optional) ||| Filtro (opcional) ||| Filtro (opcional)
+Place the table ||| Colocar la tabla ||| Colocar a táboa
+Pivot table ||| Tabla dinámica ||| Táboa dinámica
+Select a range with a header row and data ||| Selecciona un rango con fila de encabezados y datos ||| Selecciona un intervalo con fila de cabeceiras e datos
+Choose the rows and the values ||| Elige las filas y los valores ||| Escolle as filas e os valores
+The pivot table source no longer has the column {name} ||| El origen de la tabla dinámica ya no tiene la columna {name} ||| A orixe da táboa dinámica xa non ten a columna {name}
+Total ||| Total ||| Total
+(empty = all) ||| (vacío = todos) ||| (baleiro = todos)
+Pivot tables refreshed: {n} ||| Tablas dinámicas actualizadas: {n} ||| Táboas dinámicas actualizadas: {n}
+There are no pivot tables in this spreadsheet ||| No hay tablas dinámicas en esta hoja de cálculo ||| Non hai táboas dinámicas nesta folla de cálculo
+Column ||| Columnas ||| Columnas
+Area ||| Área ||| Área
+Pie ||| Circular ||| Circular
+Doughnut ||| Anillo ||| Anel
+Scatter ||| Dispersión ||| Dispersión
+Ofimeo ||| Ofimeo ||| Ofimeo
+Colorblind-safe ||| Apta para daltonismo ||| Apta para daltonismo
+Warm ||| Cálida ||| Cálida
+Cool ||| Fría ||| Fría
+Grayscale ||| Escala de grises ||| Escala de grises
+Chart type ||| Tipo de gráfico ||| Tipo de gráfico
+Linear trendline with equation and R² ||| Línea de tendencia lineal con ecuación y R² ||| Liña de tendencia lineal con ecuación e R²
+There is no sheet named {name} ||| No hay ninguna hoja llamada {name} ||| Non hai ningunha folla chamada {name}
+Data range ||| Rango de datos ||| Intervalo de datos
+Series in ||| Series en ||| Series en
+First row as headers ||| Primera fila como encabezados ||| Primeira fila como cabeceiras
+First column as labels ||| Primera columna como etiquetas ||| Primeira columna como etiquetas
+Horizontal axis title ||| Título del eje horizontal ||| Título do eixo horizontal
+Vertical axis title ||| Título del eje vertical ||| Título do eixo vertical
+Legend ||| Leyenda ||| Lenda
+Colors ||| Colores ||| Cores
+Insert chart ||| Insertar gráfico ||| Inserir gráfico
+Series {n} ||| Serie {n} ||| Serie {n}
+Chart ||| Gráfico ||| Gráfico
+Other ||| Otro ||| Outro
+Sheet{n} ||| Hoja{n} ||| Folla{n}
+Statistics ||| Estadísticas ||| Estatísticas
+Rows ||| Filas ||| Filas
+Columns ||| Columnas ||| Columnas
+Spreadsheet ||| Hoja de cálculo ||| Folla de cálculo
+Mean ||| Media ||| Media
+Median ||| Mediana ||| Mediana
+Mode ||| Moda ||| Moda
+Maximum ||| Máximo ||| Máximo
+Sum ||| Suma ||| Suma
+Standard deviation ||| Desviación típica ||| Desviación típica
+Image… ||| Imagen… ||| Imaxe…
+Link… ||| Enlace… ||| Ligazón…
+Note ||| Nota ||| Nota
+Table… ||| Tabla… ||| Táboa…
+Number ||| Número ||| Número
+Align ||| Alinear ||| Aliñar
+Merge cells ||| Combinar celdas ||| Combinar celas
+Clear formatting ||| Borrar formato ||| Borrar formato
+PDF (via Print, current sheet) ||| PDF (con Imprimir, hoja actual) ||| PDF (con Imprimir, folla actual)
+Formatting ||| Formato ||| Formato
+Delete ||| Eliminar ||| Eliminar
+Mode (most frequent value) ||| Moda (valor más frecuente) ||| Moda (valor máis frecuente)

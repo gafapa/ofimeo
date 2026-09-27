@@ -81,8 +81,11 @@ test('writer: graph of y = a·x² with a slider, edit a, export DOCX with the pi
   expect(xml).toContain('<pic:pic')
   expect(xml).toContain('ofimeo-graph:')
 
-  // Opening the file restores an editable graph.
+  // Opening the file restores an editable graph (in a new document: wait for it,
+  // or the old document's picture would match first).
+  const current = page.url()
   await page.locator('#file-input').setInputFiles({ name: 'graph.docx', mimeType: 'application/octet-stream', buffer })
+  await page.waitForURL((url) => url.toString() !== current, { timeout: 30_000 })
   await expect(page.locator('.ProseMirror img[data-graph]')).toHaveCount(1, { timeout: 30_000 })
   await page.locator('.ProseMirror img[data-graph]').dblclick()
   await expect(dialog.getByRole('textbox', { name: 'Expression 1', exact: true })).toHaveValue('y = a*x^2')

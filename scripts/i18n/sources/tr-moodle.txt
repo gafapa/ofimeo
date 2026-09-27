@@ -1,0 +1,114 @@
+Hand in your work to an assignment in Moodle, or download it to hand it in another way. ||| Entrega tu trabajo en una tarea de Moodle o descárgalo para entregarlo de otra forma. ||| Entrega o teu traballo nunha tarefa de Moodle ou descárgao para entregalo doutro xeito.
+Hand in to Moodle… ||| Entregar en Moodle… ||| Entregar en Moodle…
+Hand in to Moodle ||| Entregar en Moodle ||| Entregar en Moodle
+Moodle account… ||| Cuenta de Moodle… ||| Conta de Moodle…
+Moodle account ||| Cuenta de Moodle ||| Conta de Moodle
+Moodle ||| Moodle ||| Moodle
+Moodle address ||| Dirección de Moodle ||| Enderezo de Moodle
+Students see their Moodle assignments and hand in to them (docs/moodle.md). ||| El alumnado ve sus tareas de Moodle y entrega en ellas (docs/moodle.md). ||| O alumnado ve as súas tarefas de Moodle e entrega nelas (docs/moodle.md).
+Always through the school relay (the relay must be started with --moodle-url) ||| Siempre a través del relé del centro (el relé debe iniciarse con --moodle-url) ||| Sempre a través do relé do centro (o relé debe iniciarse con --moodle-url)
+Only this Moodle can be used ||| Solo se puede usar este Moodle ||| Só se pode usar este Moodle
+Something went wrong: {message} ||| Algo salió mal: {message} ||| Algo saíu mal: {message}
+Only your school’s Moodle can be used. ||| Solo se puede usar el Moodle de tu centro. ||| Só se pode usar o Moodle do teu centro.
+Enter the address of your Moodle, for example https://moodle.school.org ||| Escribe la dirección de tu Moodle, por ejemplo https://moodle.centro.org ||| Escribe o enderezo do teu Moodle, por exemplo https://moodle.centro.org
+You are offline. Connect to the Internet and try again. ||| No tienes conexión. Conéctate a Internet y vuelve a intentarlo. ||| Non tes conexión. Conéctate a Internet e téntao de novo.
+Could not reach Moodle from this browser. Check the address. If it is right, your Moodle does not allow access from web apps: ask your school to turn on Moodle forwarding in its Ofimeo Relay (Help → Moodle). ||| No se pudo llegar a Moodle desde este navegador. Comprueba la dirección. Si es correcta, tu Moodle no permite el acceso desde aplicaciones web: pide a tu centro que active el reenvío a Moodle en su Ofimeo Relay (Ayuda → Moodle). ||| Non se puido chegar a Moodle desde este navegador. Comproba o enderezo. Se é correcto, o teu Moodle non permite o acceso desde aplicacións web: pídelle ao teu centro que active o reenvío a Moodle no seu Ofimeo Relay (Axuda → Moodle).
+Your school relay forwards to another Moodle, so it cannot be used for this one. ||| El relé de tu centro reenvía a otro Moodle, así que no se puede usar para este. ||| O relé do teu centro reenvía a outro Moodle, así que non se pode usar para este.
+Not connected: the relay was not used. ||| No se conectó: no se usó el relé. ||| Non se conectou: non se usou o relé.
+The school relay could not reach Moodle. Try again later. ||| El relé del centro no pudo llegar a Moodle. Inténtalo más tarde. ||| O relé do centro non puido chegar a Moodle. Téntao máis tarde.
+This address does not answer like a Moodle site. Check it, or ask your school whether the Moodle app is allowed (mobile web services). ||| Esta dirección no responde como un sitio Moodle. Compruébala o pregunta en tu centro si está permitida la aplicación de Moodle (servicios web para móviles). ||| Este enderezo non responde como un sitio Moodle. Compróbao ou pregunta no teu centro se está permitida a aplicación de Moodle (servizos web para móbiles).
+Wrong username or password. ||| Usuario o contraseña incorrectos. ||| Usuario ou contrasinal incorrectos.
+This Moodle does not allow the Moodle app (mobile web services are turned off). Ask your school’s Moodle administrator (Help → Moodle). ||| Este Moodle no permite la aplicación de Moodle (los servicios web para móviles están desactivados). Pregunta a la persona que administra el Moodle de tu centro (Ayuda → Moodle). ||| Este Moodle non permite a aplicación de Moodle (os servizos web para móbiles están desactivados). Pregúntalle á persoa que administra o Moodle do teu centro (Axuda → Moodle).
+Your Moodle connection has expired. Connect again. ||| Tu conexión con Moodle ha caducado. Vuelve a conectar. ||| A túa conexión con Moodle caducou. Volve conectar.
+The file is too large for this assignment (maximum {size}). ||| El archivo es demasiado grande para esta tarea (máximo {size}). ||| O ficheiro é demasiado grande para esta tarefa (máximo {size}).
+The file is too large for this assignment. ||| El archivo es demasiado grande para esta tarea. ||| O ficheiro é demasiado grande para esta tarefa.
+This assignment does not accept this type of file. Accepted: {types}. ||| Esta tarea no admite este tipo de archivo. Admitidos: {types}. ||| Esta tarefa non admite este tipo de ficheiro. Admitidos: {types}.
+This assignment does not accept this type of file. ||| Esta tarea no admite este tipo de archivo. ||| Esta tarefa non admite este tipo de ficheiro.
+This assignment is not accepting submissions now. ||| Esta tarea no admite entregas ahora. ||| Esta tarefa non admite entregas agora.
+Tick the submission statement first. ||| Marca primero la declaración de entrega. ||| Marca primeiro a declaración de entrega.
+Moodle says: {message} ||| Moodle dice: {message} ||| Moodle di: {message}
+Your Moodle signs in through a web page (single sign-on, for example with Google, Microsoft or your school account). Ofimeo cannot use that kind of sign-in yet: use Moodle in the browser, and hand in the file you download with Hand in. ||| Tu Moodle inicia sesión a través de una página web (inicio de sesión único, por ejemplo con Google, Microsoft o la cuenta del centro). Ofimeo todavía no puede usar ese tipo de acceso: usa Moodle en el navegador y entrega el archivo que descargas con Entregar. ||| O teu Moodle inicia sesión a través dunha páxina web (inicio de sesión único, por exemplo con Google, Microsoft ou a conta do centro). Ofimeo aínda non pode usar ese tipo de acceso: usa Moodle no navegador e entrega o ficheiro que descargas con Entregar.
+Use this relay for Moodle? ||| ¿Usar este relé para Moodle? ||| Usar este relé para Moodle?
+Your Moodle cannot be reached directly from this browser. The relay {address} can pass your Moodle sign-in and work on to it. It sees them in transit: use it only if it is your school’s own relay. ||| No se puede llegar a tu Moodle directamente desde este navegador. El relé {address} puede hacerle llegar tu inicio de sesión y tu trabajo. Los ve al pasar: úsalo solo si es el relé propio de tu centro. ||| Non se pode chegar ao teu Moodle directamente desde este navegador. O relé {address} pode facerlle chegar o teu inicio de sesión e o teu traballo. Veos ao pasar: úsao só se é o relé propio do teu centro.
+Use this relay ||| Usar este relé ||| Usar este relé
+just now ||| ahora mismo ||| agora mesmo
+{n} minute ago ||| hace {n} minuto ||| hai {n} minuto
+{n} minutes ago ||| hace {n} minutos ||| hai {n} minutos
+{n} hour ago ||| hace {n} hora ||| hai {n} hora
+{n} hours ago ||| hace {n} horas ||| hai {n} horas
+Graded: {grade} ||| Calificada: {grade} ||| Cualificada: {grade}
+Graded ||| Calificada ||| Cualificada
+Handed in ||| Entregada ||| Entregada
+Draft (not handed in) ||| Borrador (sin entregar) ||| Borrador (sen entregar)
+Reopened ||| Reabierta ||| Reaberta
+Opens {date} ||| Se abre el {date} ||| Ábrese o {date}
+Closed ||| Cerrada ||| Pechada
+Overdue since {date} ||| Fuera de plazo desde el {date} ||| Fóra de prazo desde o {date}
+Due {date} ||| Entrega: {date} ||| Entrega: {date}
+No due date ||| Sin fecha de entrega ||| Sen data de entrega
+Disconnect ||| Desconectar ||| Desconectar
+Disconnect from Moodle ||| Desconectar de Moodle ||| Desconectar de Moodle
+Forget the Moodle connection in this browser? Your task list is removed from this browser too. Nothing changes in Moodle. ||| ¿Olvidar la conexión con Moodle en este navegador? También se borra de este navegador tu lista de tareas. En Moodle no cambia nada. ||| Esquecer a conexión con Moodle neste navegador? Tamén se borra deste navegador a túa lista de tarefas. En Moodle non cambia nada.
+Disconnected from Moodle ||| Desconectado de Moodle ||| Desconectado de Moodle
+Connected through your school relay. ||| Conectado a través del relé de tu centro. ||| Conectado a través do relé do teu centro.
+Connected directly to Moodle. ||| Conectado directamente a Moodle. ||| Conectado directamente a Moodle.
+Username ||| Usuario ||| Usuario
+Your password is sent only to Moodle, once, to get a key for this browser. It is not saved. ||| Tu contraseña se envía solo a Moodle, una vez, para obtener una clave para este navegador. No se guarda. ||| O teu contrasinal envíase só a Moodle, unha vez, para obter unha clave para este navegador. Non se garda.
+Enter your Moodle username and password. ||| Escribe tu usuario y tu contraseña de Moodle. ||| Escribe o teu usuario e o teu contrasinal de Moodle.
+Connected to Moodle as {name} ||| Conectado a Moodle como {name} ||| Conectado a Moodle como {name}
+If you sign in to Moodle with {providers}, that sign-in cannot be used here yet. ||| Si entras en Moodle con {providers}, ese acceso todavía no se puede usar aquí. ||| Se entras en Moodle con {providers}, ese acceso aínda non se pode usar aquí.
+Only a Moodle key and your name are kept in this browser; “Disconnect” removes them. Your Moodle work goes only to your Moodle (or through your school relay), never to the people you share documents with. ||| En este navegador solo se guardan una clave de Moodle y tu nombre; «Desconectar» los borra. Tu trabajo de Moodle va solo a tu Moodle (o a través del relé de tu centro), nunca a las personas con las que compartes documentos. ||| Neste navegador só se gardan unha clave de Moodle e o teu nome; «Desconectar» bórraos. O teu traballo de Moodle vai só ao teu Moodle (ou a través do relé do teu centro), nunca ás persoas coas que compartes documentos.
+Moodle tasks ||| Tareas de Moodle ||| Tarefas de Moodle
+Connect to Moodle ||| Conectar con Moodle ||| Conectar con Moodle
+Connect ||| Conectar ||| Conectar
+Connect to your school’s Moodle to see your assignments here and hand in your work from Ofimeo. ||| Conecta con el Moodle de tu centro para ver aquí tus tareas y entregar tu trabajo desde Ofimeo. ||| Conecta co Moodle do teu centro para ver aquí as túas tarefas e entregar o teu traballo desde Ofimeo.
+Updating… ||| Actualizando… ||| Actualizando…
+Refresh ||| Actualizar ||| Actualizar
+Last updated {when} ||| Actualizado {when} ||| Actualizado {when}
+Loading your assignments… ||| Cargando tus tareas… ||| Cargando as túas tarefas…
+No task list yet. Press Refresh. ||| Todavía no hay lista de tareas. Pulsa Actualizar. ||| Aínda non hai lista de tarefas. Preme Actualizar.
+You have no assignments in Moodle. ||| No tienes tareas en Moodle. ||| Non tes tarefas en Moodle.
+To do ||| Pendientes ||| Pendentes
+Handed in and graded ||| Entregadas y calificadas ||| Entregadas e cualificadas
+Opens ||| Apertura ||| Apertura
+Due ||| Fecha de entrega ||| Data de entrega
+Extension until ||| Prórroga hasta ||| Prórroga ata
+Last day to hand in ||| Último día para entregar ||| Último día para entregar
+Files ||| Archivos ||| Ficheiros
+Any type ||| Cualquier tipo ||| Calquera tipo
+Your files ||| Tus archivos ||| Os teus ficheiros
+Last change ||| Último cambio ||| Último cambio
+Grade ||| Calificación ||| Cualificación
+Open in Ofimeo ||| Abrir en Ofimeo ||| Abrir en Ofimeo
+Files of the assignment ||| Archivos de la tarea ||| Ficheiros da tarefa
+Feedback ||| Comentarios ||| Comentarios
+This assignment is answered as text in Moodle. ||| Esta tarea se responde como texto en Moodle. ||| Esta tarefa respóndese como texto en Moodle.
+This assignment is not handed in as a file. ||| Esta tarea no se entrega como archivo. ||| Esta tarefa non se entrega como ficheiro.
+Open in Moodle ||| Abrir en Moodle ||| Abrir en Moodle
+There is no open assignment that takes files in your Moodle right now. ||| Ahora mismo no hay en tu Moodle ninguna tarea abierta que admita archivos. ||| Agora mesmo non hai no teu Moodle ningunha tarefa aberta que admita ficheiros.
+Assignments answered as text, not open yet or past their last day are not listed. Press Refresh in Moodle tasks on the home screen if your teacher just added one. ||| No aparecen las tareas que se responden como texto, las que aún no se abrieron ni las que pasaron su último día. Pulsa Actualizar en Tareas de Moodle, en la pantalla principal, si tu profesor acaba de añadir una. ||| Non aparecen as tarefas que se responden como texto, as que aínda non se abriron nin as que pasaron o seu último día. Preme Actualizar en Tarefas de Moodle, na pantalla principal, se o teu profesor acaba de engadir unha.
+A file from this device… ||| Un archivo de este dispositivo… ||| Un ficheiro deste dispositivo…
+This app cannot export any of the accepted types ({types}). Choose a file from this device. ||| Esta aplicación no puede exportar ninguno de los tipos admitidos ({types}). Elige un archivo de este dispositivo. ||| Esta aplicación non pode exportar ningún dos tipos admitidos ({types}). Escolle un ficheiro deste dispositivo.
+For a PDF, use File → Print and choose “Save as PDF”, then pick that file with “A file from this device…”. ||| Para un PDF, usa Archivo → Imprimir y elige «Guardar como PDF»; después elige ese archivo con «Un archivo de este dispositivo…». ||| Para un PDF, usa Ficheiro → Imprimir e escolle «Gardar como PDF»; despois escolle ese ficheiro con «Un ficheiro deste dispositivo…».
+Last day to hand in: {date} ||| Último día para entregar: {date} ||| Último día para entregar: {date}
+Accepted: {types} ||| Admitidos: {types} ||| Admitidos: {types}
+Any type of file ||| Cualquier tipo de archivo ||| Calquera tipo de ficheiro
+up to {size} ||| hasta {size} ||| ata {size}
+You already handed in {files}. Handing in again replaces it. ||| Ya entregaste {files}. Si vuelves a entregar, se sustituye. ||| Xa entregaches {files}. Se volves entregar, substitúese.
+Handing in again replaces your earlier submission. ||| Si vuelves a entregar, se sustituye tu entrega anterior. ||| Se volves entregar, substitúese a túa entrega anterior.
+The file is submitted for grading: after that your teacher may need to allow changes. ||| El archivo se envía para calificar: después puede que tu profesor tenga que permitir cambios. ||| O ficheiro envíase para cualificar: despois pode que o teu profesor teña que permitir cambios.
+This submission is my own work, except where I have acknowledged the use of the works of other people. ||| Este trabajo es mío, excepto donde he indicado que uso trabajos de otras personas. ||| Este traballo é meu, agás onde indiquei que uso traballos doutras persoas.
+Assignment ||| Tarea ||| Tarefa
+Hand in as ||| Entregar como ||| Entregar como
+File ||| Archivo ||| Ficheiro
+Choose the file to hand in. ||| Elige el archivo que quieres entregar. ||| Escolle o ficheiro que queres entregar.
+Preparing your file… ||| Preparando tu archivo… ||| Preparando o teu ficheiro…
+Uploading {name}… ||| Subiendo {name}… ||| Subindo {name}…
+Saving your submission… ||| Guardando tu entrega… ||| Gardando a túa entrega…
+Submitting for grading… ||| Enviando para calificar… ||| Enviando para cualificar…
+Handed in to “{task}”. ||| Entregado en «{task}». ||| Entregado en «{task}».
+Saved in “{task}”. ||| Guardado en «{task}». ||| Gardado en «{task}».
+Your teacher can see it in Moodle now. ||| Tu profesor ya puede verlo en Moodle. ||| O teu profesor xa pode velo en Moodle.
+Moodle keeps it as your submission; you can replace it while the assignment is open. ||| Moodle lo guarda como tu entrega; puedes sustituirlo mientras la tarea esté abierta. ||| Moodle gárdao como a túa entrega; podes substituílo mentres a tarefa estea aberta.
+{n} other assignment is closed, not open yet or not handed in as a file. ||| {n} tarea más está cerrada, aún no se abrió o no se entrega como archivo. ||| {n} tarefa máis está pechada, aínda non se abriu ou non se entrega como ficheiro.
+{n} other assignments are closed, not open yet or not handed in as a file. ||| {n} tareas más están cerradas, aún no se abrieron o no se entregan como archivo. ||| {n} tarefas máis están pechadas, aínda non se abriron ou non se entregan como ficheiro.

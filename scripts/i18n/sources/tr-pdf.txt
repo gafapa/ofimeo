@@ -1,0 +1,87 @@
+Alternative text ||| Texto alternativo ||| Texto alternativo
+Alternative text… ||| Texto alternativo… ||| Texto alternativo…
+Annotations ||| Anotaciones ||| Anotacións
+Anonymous ||| Anónimo ||| Anónimo
+Back to Select ||| Volver a Seleccionar ||| Volver a Seleccionar
+Blank page after this one ||| Página en blanco después de esta ||| Páxina en branco despois desta
+Blank page before this one ||| Página en blanco antes de esta ||| Páxina en branco antes desta
+Check mark ||| Marca de correcto ||| Marca de correcto
+Check mark: correct ||| Marca de verificación: correcto ||| Marca de verificación: correcto
+Click on a page to place the stamp. Esc to stop. ||| Haz clic en una página para colocar el sello. Esc para terminar. ||| Fai clic nunha páxina para colocar o selo. Esc para rematar.
+Click on a page to place your signature. ||| Haz clic en una página para colocar tu firma. ||| Fai clic nunha páxina para colocar a túa sinatura.
+Comment by {author}: {text} ||| Comentario de {author}: {text} ||| Comentario de {author}: {text}
+Correct a PDF ||| Corregir un PDF ||| Corrixir un PDF
+Cross: incorrect ||| Aspa: incorrecto ||| Aspa: incorrecto
+Custom stamp ||| Sello personalizado ||| Selo personalizado
+Custom text… ||| Texto personalizado… ||| Texto personalizado…
+Delete annotation ||| Eliminar anotación ||| Eliminar anotación
+Delete this blank page… ||| Eliminar esta página en blanco… ||| Eliminar esta páxina en branco…
+Describe this annotation for people who cannot see it ||| Describe esta anotación para quien no pueda verla ||| Describe esta anotación para quen non poida vela
+Draw a new signature… ||| Dibujar una firma nueva… ||| Debuxar unha sinatura nova…
+Draw your signature. It is kept in this browser only and can be placed on any PDF. ||| Dibuja tu firma. Se guarda solo en este navegador y puedes colocarla en cualquier PDF. ||| Debuxa a túa sinatura. Gárdase só neste navegador e podes colocala en calquera PDF.
+Edit text ||| Editar texto ||| Editar texto
+Edit the text ||| Editar el texto ||| Editar o texto
+File size ||| Tamaño del archivo ||| Tamaño do ficheiro
+Fit width ||| Ajustar al ancho ||| Axustar á largura
+Forget my signature ||| Olvidar mi firma ||| Esquecer a miña sinatura
+Good ||| Bien ||| Ben
+Grade ||| Nota ||| Nota
+Grade stamp ||| Sello de nota ||| Selo de nota
+Grade: {grade} ||| Nota: {grade} ||| Nota: {grade}
+Grade… ||| Nota… ||| Nota…
+Highlight ||| Resaltar ||| Resaltar
+Highlight: {text} ||| Resaltado: {text} ||| Resaltado: {text}
+Large PDF ||| PDF grande ||| PDF grande
+Medium ||| Medio ||| Medio
+Move the annotation ||| Mover la anotación ||| Mover a anotación
+Move to the next annotation ||| Ir a la siguiente anotación ||| Ir á seguinte anotación
+No comments yet. Choose the sticky note tool (N) and click on a page. ||| Aún no hay comentarios. Elige la herramienta de nota adhesiva (N) y haz clic en una página. ||| Aínda non hai comentarios. Escolle a ferramenta de nota adhesiva (N) e fai clic nunha páxina.
+Ofimeo PDF ||| Ofimeo PDF ||| Ofimeo PDF
+Open a PDF (or a hand-in ZIP) or drop it here. Highlight, write, add stamps and comments, then download it or hand it back. ||| Abre un PDF (o un ZIP de entrega) o suéltalo aquí. Resalta, escribe, añade sellos y comentarios, y luego descárgalo o devuélvelo. ||| Abre un PDF (ou un ZIP de entrega) ou sóltao aquí. Resalta, escribe, engade selos e comentarios, e despois descárgao ou devólveo.
+Open a PDF first ||| Abre primero un PDF ||| Abre primeiro un PDF
+Open a PDF from the ZIP ||| Abrir un PDF del ZIP ||| Abrir un PDF do ZIP
+Open a PDF… ||| Abrir un PDF… ||| Abrir un PDF…
+Open anyway ||| Abrir de todos modos ||| Abrir igualmente
+Original file ||| Archivo original ||| Ficheiro orixinal
+PDF ||| PDF ||| PDF
+PDF to open ||| PDF que abrir ||| PDF que abrir
+PDF with annotations (editable) ||| PDF con anotaciones (editables) ||| PDF con anotacións (editables)
+PDF with annotations merged (flattened) ||| PDF con anotaciones integradas (acoplado) ||| PDF con anotacións integradas (acoplado)
+PDFs ||| PDF ||| PDF
+Page thumbnails ||| Miniaturas de página ||| Miniaturas de páxina
+Page {n} ||| Página {n} ||| Páxina {n}
+Pen ||| Bolígrafo ||| Bolígrafo
+Preparing to print… ||| Preparando la impresión… ||| Preparando a impresión…
+Previous ||| Anterior ||| Anterior
+Receiving the PDF… {percent} % ||| Recibiendo el PDF… {percent} % ||| Recibindo o PDF… {percent} %
+Revise ||| Revisar ||| Revisar
+Save signature ||| Guardar firma ||| Gardar sinatura
+Selected text ||| Texto seleccionado ||| Texto seleccionado
+Show annotations ||| Mostrar anotaciones ||| Amosar anotacións
+Show resolved ||| Mostrar resueltos ||| Amosar resoltos
+Signature ||| Firma ||| Sinatura
+Signature area: draw your signature with the mouse, a pen or your finger ||| Área de firma: dibuja tu firma con el ratón, un lápiz o el dedo ||| Área de sinatura: debuxa a túa sinatura co rato, un lapis ou o dedo
+Signature of {name} ||| Firma de {name} ||| Sinatura de {name}
+Stamp ||| Sello ||| Selo
+Stamp: {text} ||| Sello: {text} ||| Selo: {text}
+Start with a blank page ||| Empezar con una página en blanco ||| Comezar cunha páxina en branco
+Sticky note ||| Nota adhesiva ||| Nota adhesiva
+Straight lines, squares and circles ||| Líneas rectas, cuadrados y círculos ||| Liñas rectas, cadrados e círculos
+Strikeout ||| Tachar ||| Riscar
+Strikeout: {text} ||| Tachado: {text} ||| Riscado: {text}
+Text box: {text} ||| Cuadro de texto: {text} ||| Caixa de texto: {text}
+The PDF is still loading ||| El PDF aún se está cargando ||| O PDF aínda se está a cargar
+Thick ||| Grueso ||| Groso
+Thin ||| Fino ||| Fino
+This PDF cannot be shown: {message} ||| No se puede mostrar este PDF: {message} ||| Non se pode amosar este PDF: {message}
+This PDF is {size} MB. It is stored inside the document, so every collaborator downloads it and every version keeps it. Sharing may be slow. ||| Este PDF ocupa {size} MB. Se guarda dentro del documento, así que cada colaborador lo descarga y cada versión lo conserva. Compartirlo puede ser lento. ||| Este PDF ocupa {size} MB. Gárdase dentro do documento, así que cada colaborador o descarga e cada versión o conserva. Compartilo pode ser lento.
+This ZIP file has no PDF inside ||| Este archivo ZIP no contiene ningún PDF ||| Este ficheiro ZIP non contén ningún PDF
+This deletes the blank page and everything written on it. ||| Se eliminará la página en blanco y todo lo escrito en ella. ||| Eliminarase a páxina en branco e todo o escrito nela.
+Underline: {text} ||| Subrayado: {text} ||| Subliñado: {text}
+Untitled PDF ||| PDF sin título ||| PDF sen título
+Very thick ||| Muy grueso ||| Moi groso
+Waiting for the document… ||| Esperando el documento… ||| Agardando o documento…
+flattened ||| acoplado ||| acoplado
+{n} annotation ||| {n} anotación ||| {n} anotación
+{n} annotations ||| {n} anotaciones ||| {n} anotacións
+{n} of {m} ||| {n} de {m} ||| {n} de {m}

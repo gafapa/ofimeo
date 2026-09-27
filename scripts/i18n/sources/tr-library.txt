@@ -1,0 +1,178 @@
+Encryption needs a secure connection (https). ||| El cifrado necesita una conexión segura (https). ||| O cifrado necesita unha conexión segura (https).
+This file is not an Ofimeo backup. ||| Este archivo no es una copia de seguridad de Ofimeo. ||| Este ficheiro non é unha copia de seguranza de Ofimeo.
+This backup was made with a newer version of Ofimeo. ||| Esta copia de seguridad se hizo con una versión más reciente de Ofimeo. ||| Esta copia de seguranza fíxose cunha versión máis recente de Ofimeo.
+This backup is protected with a password. ||| Esta copia de seguridad está protegida con contraseña. ||| Esta copia de seguranza está protexida con contrasinal.
+Wrong password. ||| Contraseña incorrecta. ||| Contrasinal incorrecto.
+This file is not an Ofimeo template. ||| Este archivo no es una plantilla de Ofimeo. ||| Este ficheiro non é un modelo de Ofimeo.
+No Nextcloud account is linked. ||| No hay ninguna cuenta de Nextcloud vinculada. ||| Non hai ningunha conta de Nextcloud vinculada.
+Search in titles and content ||| Buscar en títulos y contenido ||| Buscar en títulos e contido
+Sort by ||| Ordenar por ||| Ordenar por
+Last modified ||| Última modificación ||| Última modificación
+Filter by app ||| Filtrar por aplicación ||| Filtrar por aplicación
+Folders and tags ||| Carpetas y etiquetas ||| Cartafoles e etiquetas
+More actions for {name} ||| Más acciones para {name} ||| Máis accións para {name}
+New subfolder… ||| Nueva subcarpeta… ||| Novo subcartafol…
+Rename… ||| Cambiar nombre… ||| Cambiar o nome…
+Move to top level ||| Mover al nivel superior ||| Mover ao nivel superior
+Delete folder… ||| Eliminar carpeta… ||| Eliminar cartafol…
+Red ||| Rojo ||| Vermello
+Orange ||| Naranja ||| Laranxa
+Yellow ||| Amarillo ||| Amarelo
+Green ||| Verde ||| Verde
+Cyan ||| Cian ||| Cian
+Blue ||| Azul ||| Azul
+Purple ||| Morado ||| Morado
+Pink ||| Rosa ||| Rosa
+Grey ||| Gris ||| Gris
+Delete tag… ||| Eliminar etiqueta… ||| Eliminar etiqueta…
+New tag ||| Nueva etiqueta ||| Nova etiqueta
+Tag “{tag}” added ||| Etiqueta «{tag}» añadida ||| Etiqueta «{tag}» engadida
+Trash ||| Papelera ||| Papeleira
+Folders ||| Carpetas ||| Cartafoles
+Tags ||| Etiquetas ||| Etiquetas
+Rename folder ||| Cambiar nombre de la carpeta ||| Cambiar o nome do cartafol
+Delete folder ||| Eliminar carpeta ||| Eliminar cartafol
+Delete the folder “{name}” and its subfolders? The documents in them are not deleted: they move to the parent folder. ||| ¿Eliminar la carpeta «{name}» y sus subcarpetas? Los documentos que contienen no se eliminan: pasan a la carpeta superior. ||| Eliminar o cartafol «{name}» e os seus subcartafoles? Os documentos que conteñen non se eliminan: pasan ao cartafol superior.
+Tag name ||| Nombre de la etiqueta ||| Nome da etiqueta
+Rename tag ||| Cambiar nombre de la etiqueta ||| Cambiar o nome da etiqueta
+Delete tag ||| Eliminar etiqueta ||| Eliminar etiqueta
+Delete the tag “{name}”? The documents keep everything else. ||| ¿Eliminar la etiqueta «{name}»? Los documentos no cambian en nada más. ||| Eliminar a etiqueta «{name}»? Os documentos non cambian en nada máis.
+Top level (no folder) ||| Nivel superior (sin carpeta) ||| Nivel superior (sen cartafol)
+New folder… ||| Nueva carpeta… ||| Novo cartafol…
+New tag… ||| Nueva etiqueta… ||| Nova etiqueta…
+Delete for good ||| Eliminar definitivamente ||| Eliminar definitivamente
+Delete for good… ||| Eliminar definitivamente… ||| Eliminar definitivamente…
+Move to folder… ||| Mover a carpeta… ||| Mover a cartafol…
+Back up… ||| Hacer copia de seguridad… ||| Facer copia de seguranza…
+Move to the trash ||| Mover a la papelera ||| Mover á papeleira
+Selected documents ||| Documentos seleccionados ||| Documentos seleccionados
+Clear selection ||| Quitar selección ||| Quitar a selección
+Move… ||| Mover… ||| Mover…
+Tag: {name} ||| Etiqueta: {name} ||| Etiqueta: {name}
+Empty trash… ||| Vaciar papelera… ||| Baleirar a papeleira…
+Empty trash ||| Vaciar papelera ||| Baleirar a papeleira
+The trash is empty. ||| La papelera está vacía. ||| A papeleira está baleira.
+This folder is empty. Drag documents here or use “Move to folder…”. ||| Esta carpeta está vacía. Arrastra documentos aquí o usa «Mover a carpeta…». ||| Este cartafol está baleiro. Arrastra documentos aquí ou usa «Mover a cartafol…».
+No documents have this tag. ||| Ningún documento tiene esta etiqueta. ||| Ningún documento ten esta etiqueta.
+Deleted ||| Eliminado ||| Eliminado
+Select “{title}” ||| Seleccionar «{title}» ||| Seleccionar «{title}»
+{n} document moved to the top level ||| {n} documento movido al nivel superior ||| {n} documento movido ao nivel superior
+{n} documents moved to the top level ||| {n} documentos movidos al nivel superior ||| {n} documentos movidos ao nivel superior
+{n} document moved to “{folder}” ||| {n} documento movido a «{folder}» ||| {n} documento movido a «{folder}»
+{n} documents moved to “{folder}” ||| {n} documentos movidos a «{folder}» ||| {n} documentos movidos a «{folder}»
+Move {n} document ||| Mover {n} documento ||| Mover {n} documento
+Move {n} documents ||| Mover {n} documentos ||| Mover {n} documentos
+{n} document moved to the trash ||| {n} documento movido a la papelera ||| {n} documento movido á papeleira
+{n} documents moved to the trash ||| {n} documentos movidos a la papelera ||| {n} documentos movidos á papeleira
+{n} document restored ||| {n} documento restaurado ||| {n} documento restaurado
+{n} documents restored ||| {n} documentos restaurados ||| {n} documentos restaurados
+Delete {n} document from this browser for good? This cannot be undone. Collaborators keep their copies. ||| ¿Eliminar definitivamente {n} documento de este navegador? No se puede deshacer. Las personas que colaboran conservan sus copias. ||| Eliminar definitivamente {n} documento deste navegador? Non se pode desfacer. As persoas que colaboran conservan as súas copias.
+Delete {n} documents from this browser for good? This cannot be undone. Collaborators keep their copies. ||| ¿Eliminar definitivamente {n} documentos de este navegador? No se puede deshacer. Las personas que colaboran conservan sus copias. ||| Eliminar definitivamente {n} documentos deste navegador? Non se pode desfacer. As persoas que colaboran conservan as súas copias.
+{n} selected ||| Seleccionados: {n} ||| Seleccionados: {n}
+Delete {n} document in the trash for good? This cannot be undone. ||| ¿Eliminar definitivamente {n} documento de la papelera? No se puede deshacer. ||| Eliminar definitivamente {n} documento da papeleira? Non se pode desfacer.
+Delete {n} documents in the trash for good? This cannot be undone. ||| ¿Eliminar definitivamente {n} documentos de la papelera? No se puede deshacer. ||| Eliminar definitivamente {n} documentos da papeleira? Non se pode desfacer.
+Documents in the trash are deleted for good after {n} day. ||| Los documentos de la papelera se eliminan definitivamente al cabo de {n} día. ||| Os documentos da papeleira elimínanse definitivamente ao cabo de {n} día.
+Documents in the trash are deleted for good after {n} days. ||| Los documentos de la papelera se eliminan definitivamente al cabo de {n} días. ||| Os documentos da papeleira elimínanse definitivamente ao cabo de {n} días.
+{n} document ||| {n} documento ||| {n} documento
+{n} documents ||| {n} documentos ||| {n} documentos
+This document cannot be downloaded from here ||| Este documento no se puede descargar desde aquí ||| Este documento non se pode descargar desde aquí
+Spreadsheets are downloaded from the app: open them and use File ▸ Download as. ||| Las hojas de cálculo se descargan desde la aplicación: ábrelas y usa Archivo ▸ Descargar como. ||| As follas de cálculo descárganse desde a aplicación: ábreas e usa Arquivo ▸ Descargar como.
+Preparing the download… ||| Preparando la descarga… ||| Preparando a descarga…
+Ofimeo documents ||| Documentos de Ofimeo ||| Documentos de Ofimeo
+Storage and backup ||| Almacenamiento y copias de seguridad ||| Almacenamento e copias de seguranza
+Automatic backup saved to Nextcloud: {path} ||| Copia de seguridad automática guardada en Nextcloud: {path} ||| Copia de seguranza automática gardada en Nextcloud: {path}
+The automatic backup to Nextcloud failed: {message} ||| Ha fallado la copia de seguridad automática en Nextcloud: {message} ||| Fallou a copia de seguranza automática en Nextcloud: {message}
+{n} document was deleted from the trash after 30 days ||| Se ha eliminado {n} documento de la papelera tras 30 días ||| Eliminouse {n} documento da papeleira tras 30 días
+{n} documents were deleted from the trash after 30 days ||| Se han eliminado {n} documentos de la papelera tras 30 días ||| Elimináronse {n} documentos da papeleira tras 30 días
+My templates ||| Mis plantillas ||| Os meus modelos
+Templates imported: {n} ||| Plantillas importadas: {n} ||| Modelos importados: {n}
+Import template… ||| Importar plantilla… ||| Importar modelo…
+From Nextcloud… ||| Desde Nextcloud… ||| Desde Nextcloud…
+Export as file ||| Exportar como archivo ||| Exportar como ficheiro
+Share to Nextcloud (Plantillas) ||| Compartir en Nextcloud (Plantillas) ||| Compartir en Nextcloud (Plantillas)
+Delete… ||| Eliminar… ||| Eliminar…
+Template name ||| Nombre de la plantilla ||| Nome do modelo
+Description (optional) ||| Descripción (opcional) ||| Descrición (opcional)
+Edit template ||| Editar plantilla ||| Editar modelo
+Delete template ||| Eliminar plantilla ||| Eliminar modelo
+Delete the template “{name}”? Documents created from it are kept. ||| ¿Eliminar la plantilla «{name}»? Los documentos creados con ella se conservan. ||| Eliminar o modelo «{name}»? Os documentos creados con el consérvanse.
+Save any document as a template with File ▸ Save as template…, or import a template file. ||| Guarda cualquier documento como plantilla con Archivo ▸ Guardar como plantilla…, o importa un archivo de plantilla. ||| Garda calquera documento como modelo con Arquivo ▸ Gardar como modelo…, ou importa un ficheiro de modelo.
+There are no templates in the Nextcloud folder {folder} ||| No hay plantillas en la carpeta {folder} de Nextcloud ||| Non hai modelos no cartafol {folder} de Nextcloud
+Templates in the Nextcloud folder {folder}: ||| Plantillas de la carpeta {folder} de Nextcloud: ||| Modelos do cartafol {folder} de Nextcloud:
+Templates from Nextcloud ||| Plantillas desde Nextcloud ||| Modelos desde Nextcloud
+Import ||| Importar ||| Importar
+The template keeps the current content only: no comments, version history or sharing links. It is saved in this browser; you can export it as a file to share it. ||| La plantilla conserva solo el contenido actual: sin comentarios, historial de versiones ni enlaces para compartir. Se guarda en este navegador; puedes exportarla como archivo para compartirla. ||| O modelo conserva só o contido actual: sen comentarios, historial de versións nin ligazóns para compartir. Gárdase neste navegador; podes exportalo como ficheiro para compartilo.
+Save as template ||| Guardar como plantilla ||| Gardar como modelo
+Template “{name}” saved. Find it on the home screen under My templates. ||| Plantilla «{name}» guardada. La encontrarás en la pantalla de inicio, en Mis plantillas. ||| Modelo «{name}» gardado. Atoparalo na pantalla de inicio, en Os meus modelos.
+Could not save the template: {message} ||| No se ha podido guardar la plantilla: {message} ||| Non se puido gardar o modelo: {message}
+Never ||| Nunca ||| Nunca
+Your documents are stored only in this browser. ||| Tus documentos se guardan solo en este navegador. ||| Os teus documentos gárdanse só neste navegador.
+Clearing the browser data (history, cookies and site data) deletes them for good. Back up regularly, or save them to Nextcloud. ||| Si borras los datos del navegador (historial, cookies y datos de sitios), se eliminan definitivamente. Haz copias de seguridad con regularidad o guárdalos en Nextcloud. ||| Se borras os datos do navegador (historial, cookies e datos de sitios), elimínanse definitivamente. Fai copias de seguranza con regularidade ou gárdaos en Nextcloud.
+Storage used ||| Almacenamiento usado ||| Almacenamento usado
+{used} used of {quota} available to this site ||| {used} usados de {quota} disponibles para este sitio ||| {used} usados de {quota} dispoñibles para este sitio
+This browser does not report how much storage is used. ||| Este navegador no indica cuánto almacenamiento se usa. ||| Este navegador non indica canto almacenamento se usa.
+Protected: the browser will not delete these documents to free up space. ||| Protegido: el navegador no eliminará estos documentos para liberar espacio. ||| Protexido: o navegador non eliminará estes documentos para liberar espazo.
+Protect storage ||| Proteger el almacenamiento ||| Protexer o almacenamento
+Storage is now protected ||| El almacenamiento está protegido ||| O almacenamento está protexido
+The browser did not allow it. Installing Ofimeo as an app or bookmarking it usually helps. ||| El navegador no lo ha permitido. Suele ayudar instalar Ofimeo como aplicación o añadirlo a marcadores. ||| O navegador non o permitiu. Adoita axudar instalar Ofimeo como aplicación ou engadilo aos marcadores.
+Not protected: the browser may delete these documents when space runs low. ||| Sin proteger: el navegador puede eliminar estos documentos si se queda sin espacio. ||| Sen protexer: o navegador pode eliminar estes documentos se queda sen espazo.
+Back up all documents… ||| Hacer copia de seguridad de todos los documentos… ||| Facer copia de seguranza de todos os documentos…
+Restore backup… ||| Restaurar copia de seguridad… ||| Restaurar copia de seguranza…
+Storage ||| Almacenamiento ||| Almacenamento
+Backup ||| Copia de seguridad ||| Copia de seguranza
+Last backup: {date} ||| Última copia de seguridad: {date} ||| Última copia de seguranza: {date}
+Remind me when there is no backup for ||| Avisarme si no hay copia de seguridad en ||| Avisarme se non hai copia de seguranza en
+Automatic backup to Nextcloud ||| Copia de seguridad automática en Nextcloud ||| Copia de seguranza automática en Nextcloud
+Link a Nextcloud account to back up your documents there automatically. ||| Vincula una cuenta de Nextcloud para guardar allí copias de seguridad de tus documentos automáticamente. ||| Vincula unha conta de Nextcloud para gardar alí copias de seguranza dos teus documentos automaticamente.
+Back up to Nextcloud now ||| Hacer copia en Nextcloud ahora ||| Facer copia en Nextcloud agora
+Backing up… ||| Haciendo copia de seguridad… ||| Facendo copia de seguranza…
+Nothing to back up ||| No hay nada que copiar ||| Non hai nada que copiar
+The backup could not be saved to Nextcloud: {message} ||| No se ha podido guardar la copia de seguridad en Nextcloud: {message} ||| Non se puido gardar a copia de seguranza en Nextcloud: {message}
+Back up to {account} every ||| Hacer copia en {account} cada ||| Facer copia en {account} cada
+Password for the automatic backups (optional) ||| Contraseña para las copias automáticas (opcional) ||| Contrasinal para as copias automáticas (opcional)
+Last automatic backup: {date} ||| Última copia automática: {date} ||| Última copia automática: {date}
+There are no documents to back up ||| No hay documentos para copiar ||| Non hai documentos para copiar
+It also contains the keys to edit them: anyone who has the file can open them. Protect it with a password if you store it somewhere others can reach. ||| También contiene las claves para editarlos: cualquiera que tenga el archivo puede abrirlos. Protégelo con una contraseña si lo guardas donde otras personas puedan acceder. ||| Tamén contén as claves para editalos: calquera que teña o ficheiro pode abrilos. Protéxeo cun contrasinal se o gardas onde outras persoas poidan acceder.
+Password (optional) ||| Contraseña (opcional) ||| Contrasinal (opcional)
+Repeat the password ||| Repite la contraseña ||| Repite o contrasinal
+Back up selected documents ||| Copia de seguridad de los documentos seleccionados ||| Copia de seguranza dos documentos seleccionados
+Back up all documents ||| Copia de seguridad de todos los documentos ||| Copia de seguranza de todos os documentos
+Back up ||| Hacer copia ||| Facer copia
+The passwords do not match. ||| Las contraseñas no coinciden. ||| Os contrasinais non coinciden.
+Backup saved ||| Copia de seguridad guardada ||| Copia de seguranza gardada
+The backup failed: {message} ||| Ha fallado la copia de seguridad: {message} ||| Fallou a copia de seguranza: {message}
+Restore backup ||| Restaurar copia de seguridad ||| Restaurar copia de seguranza
+Restoring… ||| Restaurando… ||| Restaurando…
+Password ||| Contraseña ||| Contrasinal
+Added ||| Añadidos ||| Engadidos
+Merged with changes ||| Combinados con cambios ||| Combinados con cambios
+Already up to date ||| Ya actualizados ||| Xa actualizados
+Could not be restored: ||| No se han podido restaurar: ||| Non se puideron restaurar:
+Documents that are open in another tab show the restored content after reloading that tab. ||| Los documentos abiertos en otra pestaña muestran el contenido restaurado al recargar esa pestaña. ||| Os documentos abertos noutra lapela amosan o contido restaurado ao recargar esa lapela.
+Backup restored ||| Copia de seguridad restaurada ||| Copia de seguranza restaurada
+You have never made a backup. ||| Nunca has hecho una copia de seguridad. ||| Nunca fixeches unha copia de seguranza.
+Back up now ||| Hacer copia ahora ||| Facer copia agora
+Storage and backup… ||| Almacenamiento y copias de seguridad… ||| Almacenamento e copias de seguranza…
+Dismiss ||| Descartar ||| Descartar
+Clearing the browser data deletes the documents stored here. ||| Si borras los datos del navegador, se eliminan los documentos guardados aquí. ||| Se borras os datos do navegador, elimínanse os documentos gardados aquí.
+Your documents are saved in this browser ||| Tus documentos se guardan en este navegador ||| Os teus documentos gárdanse neste navegador
+The browser will keep them even when space runs low. Clearing the browser data still deletes them: make backups from time to time. ||| El navegador los conservará aunque se quede sin espacio. Si borras los datos del navegador, se eliminan igualmente: haz copias de seguridad de vez en cuando. ||| O navegador conservaraos aínda que quede sen espazo. Se borras os datos do navegador, elimínanse igualmente: fai copias de seguranza de cando en vez.
+Ofimeo asked the browser to keep them even when space runs low. Clearing the browser data deletes them: make backups from time to time. ||| Ofimeo ha pedido al navegador que los conserve aunque se quede sin espacio. Si borras los datos del navegador, se eliminan: haz copias de seguridad de vez en cuando. ||| Ofimeo pediulle ao navegador que os conserve aínda que quede sen espazo. Se borras os datos do navegador, elimínanse: fai copias de seguranza de cando en vez.
+{n} only in this browser ||| {n} solo en este navegador ||| {n} só neste navegador
+{n} in the trash ||| {n} en la papelera ||| {n} na papeleira
+{n} day ||| {n} día ||| {n} día
+{n} days ||| {n} días ||| {n} días
+The backup file will contain {n} document with its version history and comments. ||| El archivo de copia de seguridad contendrá {n} documento con su historial de versiones y sus comentarios. ||| O ficheiro de copia de seguranza conterá {n} documento co seu historial de versións e os seus comentarios.
+The backup file will contain {n} documents with their version history and comments. ||| El archivo de copia de seguridad contendrá {n} documentos con su historial de versiones y sus comentarios. ||| O ficheiro de copia de seguranza conterá {n} documentos co seu historial de versións e os seus comentarios.
+The backup of {date} contains {n} document. Documents that are already in this browser are merged with their copy in the backup (nothing is lost); the others are added. ||| La copia de seguridad del {date} contiene {n} documento. Los documentos que ya están en este navegador se combinan con su copia de la copia de seguridad (no se pierde nada); los demás se añaden. ||| A copia de seguranza do {date} contén {n} documento. Os documentos que xa están neste navegador combínanse coa súa copia da copia de seguranza (non se perde nada); os demais engádense.
+The backup of {date} contains {n} documents. Documents that are already in this browser are merged with their copy in the backup (nothing is lost); the others are added. ||| La copia de seguridad del {date} contiene {n} documentos. Los documentos que ya están en este navegador se combinan con su copia de la copia de seguridad (no se pierde nada); los demás se añaden. ||| A copia de seguranza do {date} contén {n} documentos. Os documentos que xa están neste navegador combínanse coa súa copia da copia de seguranza (non se perde nada); os demais engádense.
+{n} added ||| Añadidos: {n} ||| Engadidos: {n}
+{n} merged with changes ||| Combinados con cambios: {n} ||| Combinados con cambios: {n}
+{n} already up to date ||| Ya actualizados: {n} ||| Xa actualizados: {n}
+{n} template added ||| {n} plantilla añadida ||| {n} modelo engadido
+{n} templates added ||| {n} plantillas añadidas ||| {n} modelos engadidos
+The last backup was {n} day ago. ||| La última copia de seguridad es de hace {n} día. ||| A última copia de seguranza é de hai {n} día.
+The last backup was {n} days ago. ||| La última copia de seguridad es de hace {n} días. ||| A última copia de seguranza é de hai {n} días.
+{n} document exists only in this browser. ||| {n} documento está solo en este navegador. ||| {n} documento está só neste navegador.
+{n} documents exist only in this browser. ||| {n} documentos están solo en este navegador. ||| {n} documentos están só neste navegador.
+Save as template… ||| Guardar como plantilla… ||| Gardar como modelo…

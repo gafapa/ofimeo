@@ -1,0 +1,36 @@
+empty ||| vide ||| leer
+Formula ||| Formule ||| Formel
+selected ||| sélectionné ||| ausgewählt
+Name box (cell reference) ||| Zone Nom (référence de cellule) ||| Namenfeld (Zellbezug)
+Formula bar ||| Barre de formule ||| Bearbeitungsleiste
+Spreadsheet grid ||| Grille du classeur ||| Tabellenraster
+Alt+Shift+T switches to the accessible table view, made for screen readers. F10 opens the menu bar. ||| Alt+Maj+T passe à la vue tableau accessible, conçue pour les lecteurs d’écran. F10 ouvre la barre de menus. ||| Alt+Umschalt+T wechselt zur barrierefreien Tabellenansicht für Screenreader. F10 öffnet die Menüleiste.
+Accessible table view ||| Vue tableau accessible ||| Barrierefreie Tabellenansicht
+Back to the grid view ||| Revenir à la grille ||| Zurück zum Raster
+Go to cell ||| Aller à la cellule ||| Gehe zu Zelle
+Switch to accessible table view ||| Passer à la vue tableau accessible ||| Zur barrierefreien Tabellenansicht wechseln
+Sheet {name} ||| Feuille {name} ||| Tabellenblatt {name}
+Row ||| Ligne ||| Zeile
+Rows {from}–{to} of {total} · Columns {first}–{last} ||| Lignes {from}–{to} sur {total} · Colonnes {first}–{last} ||| Zeilen {from}–{to} von {total} · Spalten {first}–{last}
+Arrow keys move between cells; Ctrl+Home and Ctrl+End go to the start and end of the data. Enter or F2 edits the cell (formulas start with =), Delete clears it, Ctrl+Z undoes. Ctrl+Page Up and Ctrl+Page Down change the sheet. ||| Les flèches déplacent d’une cellule à l’autre ; Ctrl+Début et Ctrl+Fin vont au début et à la fin des données. Entrée ou F2 modifie la cellule (les formules commencent par =), Suppr l’efface, Ctrl+Z annule. Ctrl+Page préc. et Ctrl+Page suiv. changent de feuille. ||| Die Pfeiltasten wechseln zwischen Zellen; Strg+Pos1 und Strg+Ende springen zum Anfang und Ende der Daten. Eingabe oder F2 bearbeitet die Zelle (Formeln beginnen mit =), Entf leert sie, Strg+Z macht rückgängig. Strg+Bild auf und Strg+Bild ab wechseln das Tabellenblatt.
+Arrow keys move between cells; Ctrl+Home and Ctrl+End go to the start and end of the data. Ctrl+Page Up and Ctrl+Page Down change the sheet. This spreadsheet is view only. ||| Les flèches déplacent d’une cellule à l’autre ; Ctrl+Début et Ctrl+Fin vont au début et à la fin des données. Ctrl+Page préc. et Ctrl+Page suiv. changent de feuille. Ce classeur est en lecture seule. ||| Die Pfeiltasten wechseln zwischen Zellen; Strg+Pos1 und Strg+Ende springen zum Anfang und Ende der Daten. Strg+Bild auf und Strg+Bild ab wechseln das Tabellenblatt. Diese Tabelle ist schreibgeschützt.
+Chart data as table ||| Données du graphique sous forme de tableau ||| Diagrammdaten als Tabelle
+Edit cell {cell} ||| Modifier la cellule {cell} ||| Zelle {cell} bearbeiten
+Saved ||| Enregistré ||| Gespeichert
+Cleared ||| Effacée ||| Geleert
+Type a cell reference such as B12 ||| Saisissez une référence de cellule comme B12 ||| Geben Sie einen Zellbezug wie B12 ein
+Grid view ||| Vue grille ||| Rasteransicht
+Column chart ||| Histogramme ||| Säulendiagramm
+Bar chart ||| Graphique à barres ||| Balkendiagramm
+Line chart ||| Graphique en courbes ||| Liniendiagramm
+Area chart ||| Graphique en aires ||| Flächendiagramm
+Pie chart ||| Graphique en secteurs ||| Kreisdiagramm
+Doughnut chart ||| Graphique en anneau ||| Ringdiagramm
+Scatter chart ||| Nuage de points ||| Punktdiagramm
+{count} series, {points} points. ||| {count} séries, {points} points. ||| {count} Datenreihen, {points} Punkte.
+no values ||| aucune valeur ||| keine Werte
+{name}: from {first} to {last}; minimum {min} ({minAt}), maximum {max} ({maxAt}). ||| {name} : de {first} à {last} ; minimum {min} ({minAt}), maximum {max} ({maxAt}). ||| {name}: von {first} bis {last}; Minimum {min} ({minAt}), Maximum {max} ({maxAt}).
+And {count} more series. ||| Et {count} autres séries. ||| Und {count} weitere Datenreihen.
+Category ||| Catégorie ||| Kategorie
+Source cells: {range} ||| Cellules source : {range} ||| Quellzellen: {range}
+Chart data ||| Données du graphique ||| Diagrammdaten

@@ -1,0 +1,57 @@
+(deleted object) ||| (objeto eliminado) ||| (obxecto eliminado)
+Add animation… ||| Añadir animación… ||| Engadir animación…
+After previous ||| Después de la anterior ||| Despois da anterior
+All slides ||| Todas las diapositivas ||| Todas as diapositivas
+Animations ||| Animaciones ||| Animacións
+Animations… ||| Animaciones… ||| Animacións…
+Appear ||| Aparecer ||| Aparecer
+Comment on the slide instead ||| Comentar la diapositiva en su lugar ||| Comentar a diapositiva no seu lugar
+Comments ||| Comentarios ||| Comentarios
+Delay (s) ||| Retraso (s) ||| Atraso (s)
+Direction ||| Dirección ||| Dirección
+Disappear ||| Desaparecer ||| Desaparecer
+Duration (s) ||| Duración (s) ||| Duración (s)
+Effect ||| Efecto ||| Efecto
+Emphasis ||| Énfasis ||| Énfase
+Entrance ||| Entrada ||| Entrada
+Exit ||| Salida ||| Saída
+Fade in ||| Aparecer gradualmente ||| Aparecer gradualmente
+Fade out ||| Desvanecer ||| Esvaecer
+Fade ||| Desvanecer ||| Esvaecer
+Fly in ||| Desplazar hacia dentro ||| Desprazar cara a dentro
+Fly out ||| Desplazar hacia fuera ||| Desprazar cara a fóra
+From the bottom ||| Desde abajo ||| Desde abaixo
+From the left ||| Desde la izquierda ||| Desde a esquerda
+From the right ||| Desde la derecha ||| Desde a dereita
+From the top ||| Desde arriba ||| Desde arriba
+Move down ||| Bajar ||| Baixar
+Move up ||| Subir ||| Subir
+New comment ||| Nuevo comentario ||| Novo comentario
+No comments yet. ||| Todavía no hay comentarios. ||| Aínda non hai comentarios.
+Not a Visio file ||| No es un archivo de Visio ||| Non é un ficheiro de Visio
+Object animations ||| Animaciones de objetos ||| Animacións de obxectos
+On click ||| Al hacer clic ||| Ao premer
+On this slide (click an object to comment on it) ||| En esta diapositiva (haz clic en un objeto para comentarlo) ||| Nesta diapositiva (preme nun obxecto para comentalo)
+On this slide (select an object to comment on it) ||| En esta diapositiva (selecciona un objeto para comentarlo) ||| Nesta diapositiva (selecciona un obxecto para comentalo)
+On: {object} ||| Sobre: {object} ||| Sobre: {object}
+Picture ||| Imagen ||| Imaxe
+Preview ||| Vista previa ||| Vista previa
+Pulse ||| Pulso ||| Pulso
+Push ||| Empujar ||| Empurrar
+Resolved ||| Resueltos ||| Resoltos
+Select an object on the slide, then add an animation. ||| Selecciona un objeto de la diapositiva y añade una animación. ||| Selecciona un obxecto da diapositiva e engade unha animación.
+Shape ||| Forma ||| Forma
+Show comments of ||| Mostrar comentarios de ||| Amosar comentarios de
+Slide transition ||| Transición de diapositiva ||| Transición de diapositiva
+SmartArt ||| SmartArt ||| SmartArt
+Spin ||| Girar ||| Xirar
+Stencil ||| Galería de símbolos ||| Galería de símbolos
+Teeter ||| Balancear ||| Abanear
+The Visio file has no pages ||| El archivo de Visio no tiene páginas ||| O ficheiro de Visio non ten páxinas
+This slide has no animations. ||| Esta diapositiva no tiene animaciones. ||| Esta diapositiva non ten animacións.
+This slide ||| Esta diapositiva ||| Esta diapositiva
+Transition ||| Transición ||| Transición
+Wipe out ||| Barrido de salida ||| Varrido de saída
+Wipe ||| Barrido ||| Varrido
+With previous ||| Con la anterior ||| Coa anterior
+{n} comments ||| {n} comentarios ||| {n} comentarios

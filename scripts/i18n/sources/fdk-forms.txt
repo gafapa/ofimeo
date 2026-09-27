@@ -1,0 +1,187 @@
+This form cannot be opened here ||| Ce formulaire ne peut pas être ouvert ici ||| Dieses Formular kann hier nicht geöffnet werden
+Forms need a secure (https) connection and a recent browser, because responses are encrypted. ||| Les formulaires nécessitent une connexion sécurisée (https) et un navigateur récent, car les réponses sont chiffrées. ||| Formulare brauchen eine sichere (https) Verbindung und einen aktuellen Browser, da die Antworten verschlüsselt werden.
+Questions ||| Questions ||| Fragen
+Responses ({n}) ||| Réponses ({n}) ||| Antworten ({n})
+Responses ||| Réponses ||| Antworten
+Settings ||| Paramètres ||| Einstellungen
+Preview: this is what respondents see. Nothing is sent. ||| Aperçu : voici ce que voient les répondants. Rien n’est envoyé. ||| Vorschau: So sehen es die Antwortenden. Es wird nichts gesendet.
+Ofimeo form (.oform) ||| Formulaire Ofimeo (.oform) ||| Ofimeo-Formular (.oform)
+Responses (.csv) ||| Réponses (.csv) ||| Antworten (.csv)
+Responses (.xlsx) ||| Réponses (.xlsx) ||| Antworten (.xlsx)
+Import response files… ||| Importer des fichiers de réponses… ||| Antwortdateien importieren…
+Owner code ||| Code du propriétaire ||| Besitzercode
+Question ||| Question ||| Frage
+Section ||| Section ||| Abschnitt
+Send… ||| Envoyer… ||| Senden…
+Quiz mode ||| Mode quiz ||| Quizmodus
+Who can see the responses? ||| Qui peut voir les réponses ? ||| Wer kann die Antworten sehen?
+Owner code of this form: {code} ||| Code du propriétaire de ce formulaire : {code} ||| Besitzercode dieses Formulars: {code}
+Add question ||| Ajouter une question ||| Frage hinzufügen
+Add section ||| Ajouter une section ||| Abschnitt hinzufügen
+Add image ||| Ajouter une image ||| Bild hinzufügen
+Add equation ||| Ajouter une équation ||| Formel hinzufügen
+Quiz ||| Quiz ||| Quiz
+Send ||| Envoyer ||| Senden
+Owner code {code} ||| Code du propriétaire {code} ||| Besitzercode {code}
+Right after an editor receives the response (automatic grading only) ||| Dès qu’un éditeur reçoit la réponse (correction automatique uniquement) ||| Sobald eine bearbeitende Person die Antwort erhält (nur automatische Bewertung)
+Later, when I release them ||| Plus tard, quand je les publie ||| Später, wenn ich sie freigebe
+Accepting responses ||| Réponses acceptées ||| Antworten werden angenommen
+Ask for the class or group ||| Demander la classe ou le groupe ||| Nach Klasse oder Gruppe fragen
+Only one response per browser ||| Une seule réponse par navigateur ||| Nur eine Antwort pro Browser
+A convenience, not a guarantee: another browser or device can answer again. ||| Une aide, pas une garantie : on peut répondre à nouveau depuis un autre navigateur ou appareil. ||| Eine Hilfe, keine Garantie: Von einem anderen Browser oder Gerät kann erneut geantwortet werden.
+Shuffle question order (within each section) ||| Mélanger l’ordre des questions (dans chaque section) ||| Reihenfolge der Fragen mischen (innerhalb jedes Abschnitts)
+Message after the response is received ||| Message lorsque la réponse est reçue ||| Nachricht nach Eingang der Antwort
+Make this a quiz ||| Transformer en quiz ||| Als Quiz verwenden
+Set correct answers and points; answers are graded automatically, open answers by hand. ||| Indiquez les bonnes réponses et les points ; la correction est automatique, les réponses ouvertes se corrigent à la main. ||| Richtige Antworten und Punkte festlegen; es wird automatisch bewertet, offene Antworten von Hand.
+Release grades ||| Publier les notes ||| Noten freigeben
+Show the correct answers in released grades ||| Afficher les bonnes réponses avec la note publiée ||| Richtige Antworten mit der freigegebenen Note zeigen
+Nextcloud collection (optional) ||| Collecte dans Nextcloud (facultatif) ||| Sammlung in Nextcloud (optional)
+Paste the link of a Nextcloud “File drop” share: every response is also uploaded there as an encrypted .oresp file (only this form’s editors can open it). Import them in Responses → Import response files. Respondents can see this link, so use an upload-only share. ||| Collez le lien d’un partage Nextcloud « Dépôt de fichiers » : chaque réponse y est aussi envoyée sous forme de fichier .oresp chiffré (seuls les éditeurs de ce formulaire peuvent l’ouvrir). Importez-les dans Réponses → Importer des fichiers de réponses. Les répondants voient ce lien : utilisez un partage en dépôt seul. ||| Fügen Sie den Link einer Nextcloud-Freigabe „Dateiablage“ ein: Jede Antwort wird dort zusätzlich als verschlüsselte .oresp-Datei hochgeladen (nur die Bearbeitenden dieses Formulars können sie öffnen). Importieren Sie sie unter Antworten → Antwortdateien importieren. Antwortende sehen diesen Link, verwenden Sie daher eine reine Upload-Freigabe.
+File drop link ||| Lien de dépôt de fichiers ||| Link zur Dateiablage
+Share password (if any) ||| Mot de passe du partage (le cas échéant) ||| Passwort der Freigabe (falls vorhanden)
+Privacy and security ||| Confidentialité et sécurité ||| Datenschutz und Sicherheit
+Respondents see this owner code on the form. Only edit links can change the form: it is signed, so nobody else can alter it or impersonate you. ||| Les répondants voient ce code du propriétaire sur le formulaire. Seuls les liens de modification peuvent le changer : il est signé, personne d’autre ne peut donc le modifier ni usurper votre identité. ||| Antwortende sehen diesen Besitzercode auf dem Formular. Nur Bearbeitungslinks können es ändern: Es ist signiert, niemand sonst kann es verändern oder sich als Sie ausgeben.
+Anyone with this link can answer the form. They cannot see the other responses or change the form. ||| Toute personne disposant de ce lien peut répondre au formulaire. Elle ne peut ni voir les autres réponses ni modifier le formulaire. ||| Alle mit diesem Link können das Formular beantworten. Sie können weder andere Antworten sehen noch das Formular ändern.
+Responses reach you while this form is open in your browser (or another editor’s). Students who answer while nobody is online keep retrying while their tab is open, and can download their response as a file for you to import. ||| Les réponses vous parviennent tant que ce formulaire est ouvert dans votre navigateur (ou celui d’un autre éditeur). Les élèves qui répondent alors que personne n’est en ligne réessaient tant que leur onglet est ouvert et peuvent télécharger leur réponse sous forme de fichier que vous importerez. ||| Antworten kommen bei Ihnen an, solange dieses Formular in Ihrem Browser (oder dem einer anderen bearbeitenden Person) geöffnet ist. Wer antwortet, während niemand online ist, versucht es weiter, solange der Tab offen ist, und kann die Antwort als Datei herunterladen, die Sie importieren.
+This form is not accepting responses (see Settings). ||| Ce formulaire n’accepte pas de réponses (voir Paramètres). ||| Dieses Formular nimmt keine Antworten an (siehe Einstellungen).
+Send form ||| Envoyer le formulaire ||| Formular senden
+Download link as file ||| Télécharger le lien comme fichier ||| Link als Datei herunterladen
+Untitled form ||| Formulaire sans titre ||| Unbenanntes Formular
+Add a question with the toolbar (“Question”). ||| Ajoutez une question avec la barre d’outils (« Question »). ||| Fügen Sie über die Symbolleiste eine Frage hinzu („Frage“).
+Form title ||| Titre du formulaire ||| Titel des Formulars
+Form description ||| Description du formulaire ||| Beschreibung des Formulars
+Quiz: mark the correct answers and the points of each question. Answer keys are only kept by the editors. ||| Quiz : indiquez les bonnes réponses et les points de chaque question. Seuls les éditeurs conservent le corrigé. ||| Quiz: Markieren Sie die richtigen Antworten und die Punkte jeder Frage. Die Lösungen haben nur die Bearbeitenden.
+Remove image ||| Supprimer l’image ||| Bild entfernen
+Remove equation ||| Supprimer l’équation ||| Formel entfernen
+Section title ||| Titre de la section ||| Titel des Abschnitts
+Question type ||| Type de question ||| Fragetyp
+Points ||| Points ||| Punkte
+Required ||| Obligatoire ||| Pflichtfrage
+Shuffle options ||| Mélanger les options ||| Optionen mischen
+Row {n} ||| Ligne {n} ||| Zeile {n}
+Option {n} ||| Option {n} ||| Option {n}
+Correct ||| Correcte ||| Richtig
+Mark correct ||| Marquer comme correcte ||| Als richtig markieren
+Feedback when this option is chosen (optional) ||| Commentaire si cette option est choisie (facultatif) ||| Rückmeldung, wenn diese Option gewählt wird (optional)
+Add row ||| Ajouter une ligne ||| Zeile hinzufügen
+Add column ||| Ajouter une colonne ||| Spalte hinzufügen
+Add option ||| Ajouter une option ||| Option hinzufügen
+Column {n} ||| Colonne {n} ||| Spalte {n}
+From ||| De ||| Von
+To ||| À ||| Bis
+to ||| à ||| bis
+Label for {n} (optional) ||| Libellé pour {n} (facultatif) ||| Beschriftung für {n} (optional)
+Short answer text ||| Texte de réponse courte ||| Text der Kurzantwort
+Long answer text ||| Texte de réponse longue ||| Text der langen Antwort
+Day, month, year ||| Jour, mois, année ||| Tag, Monat, Jahr
+Time ||| Heure ||| Uhrzeit
+Number ||| Nombre ||| Zahl
+Answer key ||| Corrigé ||| Lösung
+Accepted answers, one per line (not case-sensitive) ||| Réponses acceptées, une par ligne (sans distinction de casse) ||| Akzeptierte Antworten, eine pro Zeile (ohne Groß-/Kleinschreibung)
+Open answer: graded by hand in Responses → Grading. ||| Réponse ouverte : corrigée à la main dans Réponses → Correction. ||| Offene Antwort: wird unter Antworten → Bewertung von Hand bewertet.
+Correct value ||| Valeur correcte ||| Richtiger Wert
+Tolerance (±) ||| Tolérance (±) ||| Toleranz (±)
+Correct answer (optional) ||| Bonne réponse (facultatif) ||| Richtige Antwort (optional)
+Mark the correct option(s) above. ||| Indiquez ci-dessus la ou les bonnes options. ||| Markieren Sie oben die richtige(n) Option(en).
+Feedback for a correct answer (optional) ||| Commentaire pour une bonne réponse (facultatif) ||| Rückmeldung für eine richtige Antwort (optional)
+Feedback for an incorrect answer (optional) ||| Commentaire pour une mauvaise réponse (facultatif) ||| Rückmeldung für eine falsche Antwort (optional)
+Delete this item? ||| Supprimer cet élément ? ||| Dieses Element löschen?
+Add a question first ||| Ajoutez d’abord une question ||| Fügen Sie zuerst eine Frage hinzu
+This image cannot be used ||| Cette image ne peut pas être utilisée ||| Dieses Bild kann nicht verwendet werden
+Submitted ||| Envoyée ||| Gesendet
+Class or group ||| Classe ou groupe ||| Klasse oder Gruppe
+Score ||| Score ||| Punktzahl
+Maximum ||| Maximum ||| Maximum
+Untitled question ||| Question sans titre ||| Unbenannte Frage
+Short answer ||| Réponse courte ||| Kurzantwort
+Paragraph ||| Paragraphe ||| Absatz
+Multiple choice ||| Choix multiple ||| Multiple Choice
+Checkboxes ||| Cases à cocher ||| Kontrollkästchen
+Dropdown ||| Liste déroulante ||| Dropdown
+Linear scale ||| Échelle linéaire ||| Lineare Skala
+Multiple choice grid ||| Grille à choix multiples ||| Multiple-Choice-Raster
+This file is not an Ofimeo form. ||| Ce fichier n’est pas un formulaire Ofimeo. ||| Diese Datei ist kein Ofimeo-Formular.
+Answer to “{question}” ||| Réponse à « {question} » ||| Antwort auf „{question}“
+Your answer ||| Votre réponse ||| Ihre Antwort
+Your answer (you can write several lines) ||| Votre réponse (vous pouvez écrire plusieurs lignes) ||| Ihre Antwort (mehrere Zeilen möglich)
+Choose ||| Choisir ||| Auswählen
+Untitled section ||| Section sans titre ||| Unbenannter Abschnitt
+Only the editors of this form can read your answers: they are encrypted in your browser before they leave it. Other respondents cannot see them. ||| Seuls les éditeurs de ce formulaire peuvent lire vos réponses : elles sont chiffrées dans votre navigateur avant d’en sortir. Les autres répondants ne peuvent pas les voir. ||| Nur die Bearbeitenden dieses Formulars können Ihre Antworten lesen: Sie werden in Ihrem Browser verschlüsselt, bevor sie ihn verlassen. Andere Antwortende können sie nicht sehen.
+Verified form ||| Formulaire vérifié ||| Verifiziertes Formular
+This form is signed by its owner. Nobody else can change it. Ask your teacher to confirm the code if in doubt. ||| Ce formulaire est signé par son propriétaire. Personne d’autre ne peut le modifier. En cas de doute, demandez à votre professeur de confirmer le code. ||| Dieses Formular ist von seinem Besitzer signiert. Niemand sonst kann es ändern. Bitten Sie im Zweifel Ihre Lehrkraft, den Code zu bestätigen.
+Waiting for the form… ||| En attente du formulaire… ||| Warten auf das Formular…
+The form arrives from someone who has it open (for example, the teacher). Keep this page open. ||| Le formulaire arrive de quelqu’un qui l’a ouvert (par exemple le professeur). Gardez cette page ouverte. ||| Das Formular kommt von jemandem, der es geöffnet hat (zum Beispiel der Lehrkraft). Lassen Sie diese Seite geöffnet.
+This form is no longer accepting responses. ||| Ce formulaire n’accepte plus de réponses. ||| Dieses Formular nimmt keine Antworten mehr an.
+This form cannot receive responses yet: an editor must open it once. ||| Ce formulaire ne peut pas encore recevoir de réponses : un éditeur doit l’ouvrir une fois. ||| Dieses Formular kann noch keine Antworten empfangen: Eine bearbeitende Person muss es einmal öffnen.
+Back ||| Retour ||| Zurück
+Submit (disabled in preview) ||| Envoyer (désactivé dans l’aperçu) ||| Senden (in der Vorschau deaktiviert)
+Submit ||| Envoyer ||| Senden
+Page {n} of {m} ||| Page {n} sur {m} ||| Seite {n} von {m}
+Quiz · {points} points ||| Quiz · {points} points ||| Quiz · {points} Punkte
+* Required ||| * Obligatoire ||| * Pflichtfeld
+Please answer the required questions ||| Veuillez répondre aux questions obligatoires ||| Bitte beantworten Sie die Pflichtfragen
+Could not encrypt your response: {message} ||| Impossible de chiffrer votre réponse : {message} ||| Ihre Antwort konnte nicht verschlüsselt werden: {message}
+Form ||| Formulaire ||| Formular
+Your response of {date} ||| Votre réponse du {date} ||| Ihre Antwort vom {date}
+Received by the teacher ({date}) ||| Reçue par le professeur ({date}) ||| Von der Lehrkraft empfangen ({date})
+You are offline. Your response is saved in this browser and will be sent when you are back online. ||| Vous êtes hors ligne. Votre réponse est enregistrée dans ce navigateur et sera envoyée dès votre retour en ligne. ||| Sie sind offline. Ihre Antwort ist in diesem Browser gespeichert und wird gesendet, sobald Sie wieder online sind.
+Sending… waiting for a teacher to be online. Keep this tab open, or download your response file and hand it in. ||| Envoi… en attente d’un professeur en ligne. Gardez cet onglet ouvert, ou téléchargez le fichier de votre réponse et remettez-le. ||| Wird gesendet… warte darauf, dass eine Lehrkraft online ist. Lassen Sie diesen Tab offen oder laden Sie Ihre Antwortdatei herunter und geben Sie sie ab.
+Also uploaded to the teacher’s Nextcloud folder as “{name}”. ||| Également envoyée dans le dossier Nextcloud du professeur sous le nom « {name} ». ||| Auch als „{name}“ in den Nextcloud-Ordner der Lehrkraft hochgeladen.
+Download my response ||| Télécharger ma réponse ||| Meine Antwort herunterladen
+Submit another response ||| Envoyer une autre réponse ||| Weitere Antwort senden
+Score: {score} / {max} ||| Score : {score} / {max} ||| Punktzahl: {score} / {max}
+Correct answer ||| Bonne réponse ||| Richtige Antwort
+Teacher’s comment ||| Commentaire du professeur ||| Kommentar der Lehrkraft
+Connected ||| Connecté ||| Verbunden
+Waiting for connection ||| En attente de connexion ||| Warten auf Verbindung
+Ofimeo Forms ||| Ofimeo Formulaires ||| Ofimeo Formulare
+Who can see the responses: only the editors of this form (people with its edit link). Respondents encrypt their answers in their browser to a key only editors have; other respondents, viewers and the relays that connect browsers cannot read them. Responses are stored in the browsers of the editors who were online (or who synced later with another editor). ||| Qui peut voir les réponses : uniquement les éditeurs de ce formulaire (les personnes ayant son lien de modification). Les répondants chiffrent leurs réponses dans leur navigateur avec une clé que seuls les éditeurs possèdent ; les autres répondants, les lecteurs et les relais qui connectent les navigateurs ne peuvent pas les lire. Les réponses sont stockées dans les navigateurs des éditeurs qui étaient en ligne (ou qui se sont synchronisés ensuite avec un autre éditeur). ||| Wer die Antworten sehen kann: nur die Bearbeitenden dieses Formulars (Personen mit seinem Bearbeitungslink). Antwortende verschlüsseln ihre Antworten im Browser mit einem Schlüssel, den nur Bearbeitende haben; andere Antwortende, Lesende und die Relays, die Browser verbinden, können sie nicht lesen. Die Antworten werden in den Browsern der Bearbeitenden gespeichert, die online waren (oder sich später mit einer anderen bearbeitenden Person synchronisiert haben).
+{added} responses imported, {failed} files could not be read ||| {added} réponses importées, {failed} fichiers illisibles ||| {added} Antworten importiert, {failed} Dateien konnten nicht gelesen werden
+{n} responses ||| {n} réponses ||| {n} Antworten
+Open in Ofimeo Sheets ||| Ouvrir dans Ofimeo Classeurs ||| In Ofimeo Tabellen öffnen
+Download CSV ||| Télécharger en CSV ||| CSV herunterladen
+Download XLSX ||| Télécharger en XLSX ||| XLSX herunterladen
+Summary ||| Résumé ||| Übersicht
+Individual ||| Individuel ||| Einzeln
+Grading ||| Correction ||| Bewertung
+No responses yet. Send the form with the “Send” button; responses arrive here when you (or another editor) are online. ||| Aucune réponse pour l’instant. Envoyez le formulaire avec le bouton « Envoyer » ; les réponses arrivent ici quand vous (ou un autre éditeur) êtes en ligne. ||| Noch keine Antworten. Senden Sie das Formular mit „Senden“; Antworten kommen hier an, wenn Sie (oder eine andere bearbeitende Person) online sind.
+{n} answers ||| {n} réponses ||| {n} Antworten
+Mean {mean} · median {median} ||| Moyenne {mean} · médiane {median} ||| Mittelwert {mean} · Median {median}
+Mean {mean} · median {median} · min {min} · max {max} ||| Moyenne {mean} · médiane {median} · min {min} · max {max} ||| Mittelwert {mean} · Median {median} · Min. {min} · Max. {max}
+…and {n} more ||| …et {n} de plus ||| …und {n} weitere
+Response ||| Réponse ||| Antwort
+to grade ||| à corriger ||| zu bewerten
+released ||| publiée ||| freigegeben
+Previous response ||| Réponse précédente ||| Vorherige Antwort
+Next response ||| Réponse suivante ||| Nächste Antwort
+Delete response ||| Supprimer la réponse ||| Antwort löschen
+Delete this response? ||| Supprimer cette réponse ? ||| Diese Antwort löschen?
+Submitted {date} · received {received} ({via}) ||| Envoyée le {date} · reçue le {received} ({via}) ||| Gesendet {date} · empfangen {received} ({via})
+file ||| fichier ||| Datei
+direct ||| directe ||| direkt
+{n} questions need manual grading ||| {n} questions à corriger à la main ||| {n} Fragen müssen von Hand bewertet werden
+Release again (updated grade) ||| Publier à nouveau (note mise à jour) ||| Erneut freigeben (aktualisierte Note)
+Release grade to this respondent ||| Publier la note à ce répondant ||| Note für diese Person freigeben
+Grade released ||| Note publiée ||| Note freigegeben
+Release all grades ||| Publier toutes les notes ||| Alle Noten freigeben
+Released {date} ||| Publiée le {date} ||| Freigegeben {date}
+(no answer) ||| (pas de réponse) ||| (keine Antwort)
+Comment for the respondent (optional) ||| Commentaire pour le répondant (facultatif) ||| Kommentar für die antwortende Person (optional)
+no automatic grade ||| pas de correction automatique ||| keine automatische Bewertung
+automatic: {points} ||| automatique : {points} ||| automatisch: {points}
+Release all grades? ||| Publier toutes les notes ? ||| Alle Noten freigeben?
+{n} responses still have questions to grade by hand; they are released with what is graded so far. ||| {n} réponses ont encore des questions à corriger à la main ; elles sont publiées avec ce qui est déjà corrigé. ||| {n} Antworten haben noch von Hand zu bewertende Fragen; sie werden mit dem bisher Bewerteten freigegeben.
+Release ||| Publier ||| Freigeben
+{n} grades released ||| {n} notes publiées ||| {n} Noten freigegeben
+Scores ||| Scores ||| Punktzahlen
+Mean ||| Moyenne ||| Mittelwert
+Median ||| Médiane ||| Median
+Lowest ||| Minimum ||| Niedrigste
+Highest ||| Maximum ||| Höchste
+Standard deviation ||| Écart type ||| Standardabweichung
+Score distribution ||| Répartition des scores ||| Verteilung der Punktzahlen
+Correct answers per question ||| Bonnes réponses par question ||| Richtige Antworten pro Frage
+Not a response file ||| Ce n’est pas un fichier de réponse ||| Keine Antwortdatei
+This response belongs to another form ||| Cette réponse appartient à un autre formulaire ||| Diese Antwort gehört zu einem anderen Formular
+Forms ||| Formulaires ||| Formulare
+New form ||| Nouveau formulaire ||| Neues Formular

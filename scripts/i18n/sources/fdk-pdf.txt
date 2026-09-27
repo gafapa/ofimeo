@@ -1,0 +1,87 @@
+Alternative text ||| Texte alternatif ||| Alternativtext
+Alternative text… ||| Texte alternatif… ||| Alternativtext…
+Annotations ||| Annotations ||| Anmerkungen
+Anonymous ||| Anonyme ||| Anonym
+Back to Select ||| Revenir à Sélection ||| Zurück zu Auswählen
+Blank page after this one ||| Page vierge après celle-ci ||| Leere Seite nach dieser
+Blank page before this one ||| Page vierge avant celle-ci ||| Leere Seite vor dieser
+Check mark ||| Coche ||| Häkchen
+Check mark: correct ||| Coche : correct ||| Häkchen: richtig
+Click on a page to place the stamp. Esc to stop. ||| Cliquez sur une page pour placer le tampon. Échap pour arrêter. ||| Klicken Sie auf eine Seite, um den Stempel zu setzen. Esc zum Beenden.
+Click on a page to place your signature. ||| Cliquez sur une page pour placer votre signature. ||| Klicken Sie auf eine Seite, um Ihre Unterschrift zu setzen.
+Comment by {author}: {text} ||| Commentaire de {author} : {text} ||| Kommentar von {author}: {text}
+Correct a PDF ||| Corriger un PDF ||| PDF korrigieren
+Cross: incorrect ||| Croix : incorrect ||| Kreuz: falsch
+Custom stamp ||| Tampon personnalisé ||| Eigener Stempel
+Custom text… ||| Texte personnalisé… ||| Eigener Text…
+Delete annotation ||| Supprimer l’annotation ||| Anmerkung löschen
+Delete this blank page… ||| Supprimer cette page vierge… ||| Diese leere Seite löschen…
+Describe this annotation for people who cannot see it ||| Décrivez cette annotation pour les personnes qui ne peuvent pas la voir ||| Beschreiben Sie diese Anmerkung für Menschen, die sie nicht sehen können
+Draw a new signature… ||| Dessiner une nouvelle signature… ||| Neue Unterschrift zeichnen…
+Draw your signature. It is kept in this browser only and can be placed on any PDF. ||| Dessinez votre signature. Elle est conservée uniquement dans ce navigateur et peut être placée sur n’importe quel PDF. ||| Zeichnen Sie Ihre Unterschrift. Sie wird nur in diesem Browser gespeichert und kann auf jedes PDF gesetzt werden.
+Edit text ||| Modifier le texte ||| Text bearbeiten
+Edit the text ||| Modifier le texte ||| Den Text bearbeiten
+File size ||| Taille du fichier ||| Dateigröße
+Fit width ||| Ajuster à la largeur ||| An Breite anpassen
+Forget my signature ||| Oublier ma signature ||| Meine Unterschrift vergessen
+Good ||| Bien ||| Gut
+Grade ||| Note ||| Note
+Grade stamp ||| Tampon de note ||| Notenstempel
+Grade: {grade} ||| Note : {grade} ||| Note: {grade}
+Grade… ||| Note… ||| Note…
+Highlight ||| Surligner ||| Hervorheben
+Highlight: {text} ||| Surlignage : {text} ||| Hervorhebung: {text}
+Large PDF ||| PDF volumineux ||| Großes PDF
+Medium ||| Moyen ||| Mittel
+Move the annotation ||| Déplacer l’annotation ||| Anmerkung verschieben
+Move to the next annotation ||| Aller à l’annotation suivante ||| Zur nächsten Anmerkung
+No comments yet. Choose the sticky note tool (N) and click on a page. ||| Aucun commentaire pour l’instant. Choisissez l’outil note (N) et cliquez sur une page. ||| Noch keine Kommentare. Wählen Sie das Notizwerkzeug (N) und klicken Sie auf eine Seite.
+Ofimeo PDF ||| Ofimeo PDF ||| Ofimeo PDF
+Open a PDF (or a hand-in ZIP) or drop it here. Highlight, write, add stamps and comments, then download it or hand it back. ||| Ouvrez un PDF (ou un ZIP de rendu) ou déposez-le ici. Surlignez, écrivez, ajoutez des tampons et des commentaires, puis téléchargez-le ou rendez-le. ||| Öffnen Sie ein PDF (oder ein Abgabe-ZIP) oder legen Sie es hier ab. Markieren, schreiben, Stempel und Kommentare hinzufügen, dann herunterladen oder zurückgeben.
+Open a PDF first ||| Ouvrez d’abord un PDF ||| Öffnen Sie zuerst ein PDF
+Open a PDF from the ZIP ||| Ouvrir un PDF du ZIP ||| PDF aus dem ZIP öffnen
+Open a PDF… ||| Ouvrir un PDF… ||| PDF öffnen…
+Open anyway ||| Ouvrir quand même ||| Trotzdem öffnen
+Original file ||| Fichier d’origine ||| Originaldatei
+PDF ||| PDF ||| PDF
+PDF to open ||| PDF à ouvrir ||| Zu öffnendes PDF
+PDF with annotations (editable) ||| PDF avec annotations (modifiables) ||| PDF mit Anmerkungen (bearbeitbar)
+PDF with annotations merged (flattened) ||| PDF avec annotations intégrées (aplati) ||| PDF mit eingebetteten Anmerkungen (reduziert)
+PDFs ||| PDF ||| PDFs
+Page thumbnails ||| Miniatures des pages ||| Seitenminiaturen
+Page {n} ||| Page {n} ||| Seite {n}
+Pen ||| Stylo ||| Stift
+Preparing to print… ||| Préparation de l’impression… ||| Druck wird vorbereitet…
+Previous ||| Précédent ||| Zurück
+Receiving the PDF… {percent} % ||| Réception du PDF… {percent} % ||| PDF wird empfangen… {percent} %
+Revise ||| À revoir ||| Überarbeiten
+Save signature ||| Enregistrer la signature ||| Unterschrift speichern
+Selected text ||| Texte sélectionné ||| Ausgewählter Text
+Show annotations ||| Afficher les annotations ||| Anmerkungen anzeigen
+Show resolved ||| Afficher les résolus ||| Erledigte anzeigen
+Signature ||| Signature ||| Unterschrift
+Signature area: draw your signature with the mouse, a pen or your finger ||| Zone de signature : dessinez votre signature avec la souris, un stylet ou le doigt ||| Unterschriftsfeld: Zeichnen Sie Ihre Unterschrift mit der Maus, einem Stift oder dem Finger
+Signature of {name} ||| Signature de {name} ||| Unterschrift von {name}
+Stamp ||| Tampon ||| Stempel
+Stamp: {text} ||| Tampon : {text} ||| Stempel: {text}
+Start with a blank page ||| Commencer par une page vierge ||| Mit einer leeren Seite beginnen
+Sticky note ||| Note ||| Notiz
+Straight lines, squares and circles ||| Lignes droites, carrés et cercles ||| Gerade Linien, Quadrate und Kreise
+Strikeout ||| Barrer ||| Durchstreichen
+Strikeout: {text} ||| Barré : {text} ||| Durchgestrichen: {text}
+Text box: {text} ||| Zone de texte : {text} ||| Textfeld: {text}
+The PDF is still loading ||| Le PDF est encore en cours de chargement ||| Das PDF wird noch geladen
+Thick ||| Épais ||| Dick
+Thin ||| Fin ||| Dünn
+This PDF cannot be shown: {message} ||| Impossible d’afficher ce PDF : {message} ||| Dieses PDF kann nicht angezeigt werden: {message}
+This PDF is {size} MB. It is stored inside the document, so every collaborator downloads it and every version keeps it. Sharing may be slow. ||| Ce PDF fait {size} Mo. Il est stocké dans le document : chaque collaborateur le télécharge et chaque version le conserve. Le partage peut être lent. ||| Dieses PDF ist {size} MB groß. Es wird im Dokument gespeichert, daher lädt jede Person es herunter und jede Version behält es. Das Teilen kann langsam sein.
+This ZIP file has no PDF inside ||| Ce fichier ZIP ne contient aucun PDF ||| Diese ZIP-Datei enthält kein PDF
+This deletes the blank page and everything written on it. ||| Cela supprime la page vierge et tout ce qui y est écrit. ||| Dadurch werden die leere Seite und alles darauf Geschriebene gelöscht.
+Underline: {text} ||| Soulignement : {text} ||| Unterstreichung: {text}
+Untitled PDF ||| PDF sans titre ||| Unbenanntes PDF
+Very thick ||| Très épais ||| Sehr dick
+Waiting for the document… ||| En attente du document… ||| Warten auf das Dokument…
+flattened ||| aplati ||| reduziert
+{n} annotation ||| {n} annotation ||| {n} Anmerkung
+{n} annotations ||| {n} annotations ||| {n} Anmerkungen
+{n} of {m} ||| {n} sur {m} ||| {n} von {m}

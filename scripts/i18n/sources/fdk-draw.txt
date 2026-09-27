@@ -1,0 +1,35 @@
+The drawing is empty ||| Le dessin est vide ||| Die Zeichnung ist leer
+{n} element selected ||| {n} élément sélectionné ||| {n} Element ausgewählt
+{n} elements selected ||| {n} éléments sélectionnés ||| {n} Elemente ausgewählt
+{n} element ||| {n} élément ||| {n} Element
+{n} elements ||| {n} éléments ||| {n} Elemente
+White ||| Blanc ||| Weiß
+Light gray ||| Gris clair ||| Hellgrau
+Light blue ||| Bleu clair ||| Hellblau
+Light yellow ||| Jaune clair ||| Hellgelb
+Light rose ||| Rose clair ||| Hellrosa
+Export image… ||| Exporter l’image… ||| Bild exportieren…
+Elements ||| Éléments ||| Elemente
+Images ||| Images ||| Bilder
+Clear canvas ||| Effacer le canevas ||| Zeichenfläche leeren
+This deletes every element of the drawing for everyone. You can undo it. ||| Tous les éléments du dessin seront supprimés pour tout le monde. Vous pouvez annuler. ||| Alle Elemente der Zeichnung werden für alle gelöscht. Sie können das rückgängig machen.
+Clear ||| Effacer ||| Leeren
+Clear canvas… ||| Effacer le canevas… ||| Zeichenfläche leeren…
+Custom color… ||| Couleur personnalisée… ||| Eigene Farbe…
+Zoom to fit ||| Ajuster au contenu ||| An Inhalt anpassen
+Zoom to selection ||| Ajuster à la sélection ||| An Auswahl anpassen
+Snap to objects ||| Aimanter aux objets ||| An Objekten ausrichten
+Zen mode ||| Mode zen ||| Zen-Modus
+Statistics ||| Statistiques ||| Statistiken
+Canvas background ||| Arrière-plan du canevas ||| Hintergrund der Zeichenfläche
+Freehand drawing ||| Dessin à main levée ||| Freihandzeichnung
+Web embed ||| Page web intégrée ||| Eingebettete Webseite
+Diagram from Mermaid… ||| Diagramme depuis Mermaid… ||| Diagramm aus Mermaid…
+Library… ||| Bibliothèque… ||| Bibliothek…
+Select ||| Sélectionner ||| Auswählen
+Hand (move the canvas) ||| Main (déplacer le canevas) ||| Hand (Zeichenfläche verschieben)
+Eraser ||| Gomme ||| Radiergummi
+Laser pointer ||| Pointeur laser ||| Laserpointer
+Keep the selected tool active ||| Garder l’outil sélectionné actif ||| Ausgewähltes Werkzeug aktiv lassen
+All drawing shortcuts… ||| Tous les raccourcis de dessin… ||| Alle Zeichen-Tastenkombinationen…
+Bring forward / send backward ||| Avancer / reculer ||| Nach vorne / nach hinten

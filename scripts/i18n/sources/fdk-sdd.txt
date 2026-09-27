@@ -1,0 +1,5 @@
+{label} ({n} of {total}) ||| {label} ({n} sur {total}) ||| {label} ({n} von {total})
+Heading ||| Titre ||| Überschrift
+Item {n} ||| Élément {n} ||| Element {n}
+Not an OpenDocument presentation ||| Ce n'est pas une présentation OpenDocument ||| Keine OpenDocument-Präsentation
+PDF document (all pages) ||| Document PDF (toutes les pages) ||| PDF-Dokument (alle Seiten)

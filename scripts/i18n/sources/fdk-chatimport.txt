@@ -1,0 +1,57 @@
+Import from link… ||| Importer depuis un lien… ||| Aus Link importieren…
+Import a file shared from Google Drive, OneDrive or SharePoint ||| Importer un fichier partagé depuis Google Drive, OneDrive ou SharePoint ||| Eine aus Google Drive, OneDrive oder SharePoint geteilte Datei importieren
+Chat ||| Discussion ||| Chat
+Chat settings ||| Paramètres de la discussion ||| Chat-Einstellungen
+Close chat ||| Fermer la discussion ||| Chat schließen
+Write a message… (@ to mention) ||| Écrire un message… (@ pour mentionner) ||| Nachricht schreiben… (@ zum Erwähnen)
+Insert emoji ||| Insérer un emoji ||| Emoji einfügen
+People to mention ||| Personnes à mentionner ||| Personen zum Erwähnen
+You ||| Vous ||| Sie
+Someone ||| Quelqu’un ||| Jemand
+No messages yet. Messages are seen by everyone who has this document open. ||| Aucun message pour l’instant. Les messages sont visibles par toutes les personnes qui ont ce document ouvert. ||| Noch keine Nachrichten. Nachrichten sehen alle, die dieses Dokument geöffnet haben.
+The chat is turned off for this document. Turn it on again in the chat settings (⋯). ||| La discussion est désactivée pour ce document. Réactivez-la dans les paramètres de la discussion (⋯). ||| Der Chat ist für dieses Dokument ausgeschaltet. Schalten Sie ihn in den Chat-Einstellungen (⋯) wieder ein.
+The chat is turned off for this document. ||| La discussion est désactivée pour ce document. ||| Der Chat ist für dieses Dokument ausgeschaltet.
+You can read the chat. To write, you need a comment or edit link. ||| Vous pouvez lire la discussion. Pour écrire, il vous faut un lien de commentaire ou de modification. ||| Sie können den Chat lesen. Zum Schreiben brauchen Sie einen Kommentar- oder Bearbeitungslink.
+Turn on chat for this document ||| Activer la discussion pour ce document ||| Chat für dieses Dokument einschalten
+Turn off chat for this document ||| Désactiver la discussion pour ce document ||| Chat für dieses Dokument ausschalten
+Clear chat history… ||| Effacer l’historique de la discussion… ||| Chatverlauf löschen…
+Clear chat history ||| Effacer l’historique de la discussion ||| Chatverlauf löschen
+All messages are deleted for everyone who has this document. This cannot be undone. ||| Tous les messages sont supprimés pour toutes les personnes qui ont ce document. Cette action est irréversible. ||| Alle Nachrichten werden für alle gelöscht, die dieses Dokument haben. Das kann nicht rückgängig gemacht werden.
+Chat history cleared ||| Historique de la discussion effacé ||| Chatverlauf gelöscht
+{name} mentioned you in the chat ||| {name} vous a mentionné dans la discussion ||| {name} hat Sie im Chat erwähnt
+{n} unread message ||| {n} message non lu ||| {n} ungelesene Nachricht
+{n} unread messages ||| {n} messages non lus ||| {n} ungelesene Nachrichten
+This does not look like a link. ||| Ceci ne ressemble pas à un lien. ||| Das sieht nicht wie ein Link aus.
+This is a “Publish to the web” link. Use the normal share link instead (Share ▸ Copy link). ||| C’est un lien « Publier sur le Web ». Utilisez plutôt le lien de partage normal (Partager ▸ Copier le lien). ||| Das ist ein „Im Web veröffentlichen“-Link. Verwenden Sie stattdessen den normalen Freigabelink (Freigeben ▸ Link kopieren).
+Google Drawings cannot be imported. Download it as an image instead. ||| Les dessins Google ne peuvent pas être importés. Téléchargez-le plutôt en image. ||| Google Zeichnungen können nicht importiert werden. Laden Sie sie stattdessen als Bild herunter.
+Google Forms cannot be imported. Create the form again in Ofimeo Forms. ||| Les formulaires Google ne peuvent pas être importés. Recréez le formulaire dans Ofimeo Formulaires. ||| Google Formulare können nicht importiert werden. Erstellen Sie das Formular in Ofimeo Formulare neu.
+This is a link to a folder. Open the folder and copy the link of one file. ||| C’est un lien vers un dossier. Ouvrez le dossier et copiez le lien d’un fichier. ||| Das ist ein Link zu einem Ordner. Öffnen Sie den Ordner und kopieren Sie den Link einer Datei.
+Only links to Google Docs, Sheets, Slides and Drive files, and to OneDrive or SharePoint files are supported. ||| Seuls les liens vers Google Docs, Sheets, Slides et les fichiers Google Drive, ainsi que vers des fichiers OneDrive ou SharePoint, sont pris en charge. ||| Unterstützt werden nur Links zu Google Docs, Tabellen, Präsentationen und Google-Drive-Dateien sowie zu OneDrive- oder SharePoint-Dateien.
+The file is not shared publicly. Ask its owner to share it as “Anyone with the link”, or download it yourself (step 1). ||| Le fichier n’est pas partagé publiquement. Demandez à son propriétaire de le partager avec « Tous les utilisateurs disposant du lien », ou téléchargez-le vous-même (étape 1). ||| Die Datei ist nicht öffentlich freigegeben. Bitten Sie die Eigentümerin oder den Eigentümer, sie für „Jeder mit dem Link“ freizugeben, oder laden Sie sie selbst herunter (Schritt 1).
+The file was not found. Check the link. ||| Le fichier est introuvable. Vérifiez le lien. ||| Die Datei wurde nicht gefunden. Prüfen Sie den Link.
+The file is too large for the school relay. Download it yourself (step 1). ||| Le fichier est trop volumineux pour le relais de l’établissement. Téléchargez-le vous-même (étape 1). ||| Die Datei ist zu groß für das Schul-Relay. Laden Sie sie selbst herunter (Schritt 1).
+The school relay is busy. Try again in a moment. ||| Le relais de l’établissement est occupé. Réessayez dans un instant. ||| Das Schul-Relay ist ausgelastet. Versuchen Sie es gleich noch einmal.
+The school relay does not accept this link. ||| Le relais de l’établissement n’accepte pas ce lien. ||| Das Schul-Relay akzeptiert diesen Link nicht.
+The school relay could not download the file ({status}). ||| Le relais de l’établissement n’a pas pu télécharger le fichier ({status}). ||| Das Schul-Relay konnte die Datei nicht herunterladen ({status}).
+Imported ||| Importé ||| Importiert
+The school relay could not download the file. ||| Le relais de l’établissement n’a pas pu télécharger le fichier. ||| Das Schul-Relay konnte die Datei nicht herunterladen.
+Choose the downloaded file… ||| Choisir le fichier téléchargé… ||| Heruntergeladene Datei auswählen…
+Drop the downloaded file here ||| Déposez ici le fichier téléchargé ||| Heruntergeladene Datei hier ablegen
+Open the downloaded file ||| Ouvrir le fichier téléchargé ||| Heruntergeladene Datei öffnen
+Browsers do not let web apps download files from Google or Microsoft directly, so the file goes through your Downloads folder. Ofimeo never sees your Google or Microsoft account. ||| Les navigateurs ne permettent pas aux applications web de télécharger directement des fichiers depuis Google ou Microsoft : le fichier passe donc par votre dossier Téléchargements. Ofimeo ne voit jamais votre compte Google ou Microsoft. ||| Browser erlauben Web-Apps nicht, Dateien direkt von Google oder Microsoft herunterzuladen. Die Datei geht daher über Ihren Download-Ordner. Ofimeo sieht Ihr Google- oder Microsoft-Konto nie.
+Download as .{format} from {provider} ||| Télécharger en .{format} depuis {provider} ||| Als .{format} von {provider} herunterladen
+Download from {provider} ||| Télécharger depuis {provider} ||| Von {provider} herunterladen
+Other formats ||| Autres formats ||| Andere Formate
+Try another download address ||| Essayer une autre adresse de téléchargement ||| Andere Download-Adresse versuchen
+If Google asks you to sign in or to request access, the file is not shared publicly: sign in with an account that can open it, or ask its owner to share it as “Anyone with the link”. You can also open the file and use File ▸ Download. ||| Si Google vous demande de vous connecter ou de demander l’accès, le fichier n’est pas partagé publiquement : connectez-vous avec un compte qui peut l’ouvrir, ou demandez à son propriétaire de le partager avec « Tous les utilisateurs disposant du lien ». Vous pouvez aussi ouvrir le fichier et utiliser Fichier ▸ Télécharger. ||| Wenn Google Sie auffordert, sich anzumelden oder Zugriff anzufordern, ist die Datei nicht öffentlich freigegeben: Melden Sie sich mit einem Konto an, das sie öffnen darf, oder bitten Sie die Eigentümerin oder den Eigentümer, sie für „Jeder mit dem Link“ freizugeben. Sie können die Datei auch öffnen und Datei ▸ Herunterladen verwenden.
+If a page opens instead of a download, sign in if asked, then use File ▸ Save as ▸ Download a copy (Word, Excel, PowerPoint) or the Download button of OneDrive or SharePoint. ||| Si une page s’ouvre au lieu d’un téléchargement, connectez-vous si nécessaire, puis utilisez Fichier ▸ Enregistrer sous ▸ Télécharger une copie (Word, Excel, PowerPoint) ou le bouton Télécharger de OneDrive ou SharePoint. ||| Wenn sich statt eines Downloads eine Seite öffnet, melden Sie sich bei Bedarf an und verwenden Sie dann Datei ▸ Speichern unter ▸ Kopie herunterladen (Word, Excel, PowerPoint) oder die Schaltfläche Herunterladen von OneDrive oder SharePoint.
+Import directly through the school relay ||| Importer directement via le relais de l’établissement ||| Direkt über das Schul-Relay importieren
+Downloading through the school relay… ||| Téléchargement via le relais de l’établissement… ||| Download über das Schul-Relay…
+Your school relay can download public files for you: ||| Le relais de votre établissement peut télécharger les fichiers publics pour vous : ||| Das Relay Ihrer Schule kann öffentliche Dateien für Sie herunterladen:
+Or do it yourself in two steps: ||| Ou faites-le vous-même en deux étapes : ||| Oder machen Sie es selbst in zwei Schritten:
+1. Download the file ||| 1. Téléchargez le fichier ||| 1. Datei herunterladen
+Open the link ||| Ouvrir le lien ||| Link öffnen
+2. Open it in Ofimeo ||| 2. Ouvrez-le dans Ofimeo ||| 2. In Ofimeo öffnen
+Paste the share link of a file in Google Drive (Docs, Sheets, Slides) or in Microsoft OneDrive or SharePoint. ||| Collez le lien de partage d’un fichier de Google Drive (Docs, Sheets, Slides) ou de Microsoft OneDrive ou SharePoint. ||| Fügen Sie den Freigabelink einer Datei aus Google Drive (Docs, Tabellen, Präsentationen) oder aus Microsoft OneDrive oder SharePoint ein.
+Import from link ||| Importer depuis un lien ||| Aus Link importieren
+Share link ||| Lien de partage ||| Freigabelink

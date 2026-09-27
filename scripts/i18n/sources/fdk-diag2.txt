@@ -1,0 +1,57 @@
+(deleted object) ||| (objet supprimé) ||| (gelöschtes Objekt)
+Add animation… ||| Ajouter une animation… ||| Animation hinzufügen…
+After previous ||| Après la précédente ||| Nach vorheriger
+All slides ||| Toutes les diapositives ||| Alle Folien
+Animations ||| Animations ||| Animationen
+Animations… ||| Animations… ||| Animationen…
+Appear ||| Apparaître ||| Erscheinen
+Comment on the slide instead ||| Commenter plutôt la diapositive ||| Stattdessen die Folie kommentieren
+Comments ||| Commentaires ||| Kommentare
+Delay (s) ||| Délai (s) ||| Verzögerung (s)
+Direction ||| Direction ||| Richtung
+Disappear ||| Disparaître ||| Verschwinden
+Duration (s) ||| Durée (s) ||| Dauer (s)
+Effect ||| Effet ||| Effekt
+Emphasis ||| Accentuation ||| Hervorhebung
+Entrance ||| Entrée ||| Eingang
+Exit ||| Sortie ||| Beenden
+Fade in ||| Fondu en entrée ||| Einblenden
+Fade out ||| Fondu en sortie ||| Ausblenden
+Fade ||| Fondu ||| Verblassen
+Fly in ||| Balayage entrant ||| Hineinfliegen
+Fly out ||| Balayage sortant ||| Hinausfliegen
+From the bottom ||| Depuis le bas ||| Von unten
+From the left ||| Depuis la gauche ||| Von links
+From the right ||| Depuis la droite ||| Von rechts
+From the top ||| Depuis le haut ||| Von oben
+Move down ||| Descendre ||| Nach unten
+Move up ||| Monter ||| Nach oben
+New comment ||| Nouveau commentaire ||| Neuer Kommentar
+No comments yet. ||| Aucun commentaire pour l’instant. ||| Noch keine Kommentare.
+Not a Visio file ||| Ce n’est pas un fichier Visio ||| Keine Visio-Datei
+Object animations ||| Animations des objets ||| Objektanimationen
+On click ||| Au clic ||| Beim Klicken
+On this slide (click an object to comment on it) ||| Sur cette diapositive (cliquez sur un objet pour le commenter) ||| Auf dieser Folie (klicken Sie auf ein Objekt, um es zu kommentieren)
+On this slide (select an object to comment on it) ||| Sur cette diapositive (sélectionnez un objet pour le commenter) ||| Auf dieser Folie (wählen Sie ein Objekt aus, um es zu kommentieren)
+On: {object} ||| Sur : {object} ||| Zu: {object}
+Picture ||| Image ||| Bild
+Preview ||| Aperçu ||| Vorschau
+Pulse ||| Pulsation ||| Impuls
+Push ||| Pousser ||| Schieben
+Resolved ||| Résolus ||| Erledigt
+Select an object on the slide, then add an animation. ||| Sélectionnez un objet de la diapositive, puis ajoutez une animation. ||| Wählen Sie ein Objekt auf der Folie aus und fügen Sie eine Animation hinzu.
+Shape ||| Forme ||| Form
+Show comments of ||| Afficher les commentaires de ||| Kommentare anzeigen von
+Slide transition ||| Transition de diapositive ||| Folienübergang
+SmartArt ||| SmartArt ||| SmartArt
+Spin ||| Rotation ||| Drehen
+Stencil ||| Gabarit ||| Schablone
+Teeter ||| Bascule ||| Wippen
+The Visio file has no pages ||| Le fichier Visio n’a aucune page ||| Die Visio-Datei hat keine Seiten
+This slide has no animations. ||| Cette diapositive n’a pas d’animation. ||| Diese Folie hat keine Animationen.
+This slide ||| Cette diapositive ||| Diese Folie
+Transition ||| Transition ||| Übergang
+Wipe out ||| Balayage en sortie ||| Wischen (Ausgang)
+Wipe ||| Balayage ||| Wischen
+With previous ||| Avec la précédente ||| Mit vorheriger
+{n} comments ||| {n} commentaires ||| {n} Kommentare

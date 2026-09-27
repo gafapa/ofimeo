@@ -1,0 +1,182 @@
+Edit chart… ||| Modifier le graphique… ||| Diagramm bearbeiten…
+Delete chart ||| Supprimer le graphique ||| Diagramm löschen
+Language of function help and number formats ||| Langue de l’aide des fonctions et des formats de nombre ||| Sprache der Funktionshilfe und der Zahlenformate
+Sheets ||| Feuilles ||| Tabellenblätter
+Charts ||| Graphiques ||| Diagramme
+Sum: {sum} · Average: {average} · Count: {count} ||| Somme : {sum} · Moyenne : {average} · Nombre : {count} ||| Summe: {sum} · Mittelwert: {average} · Anzahl: {count}
+Count: {count} ||| Nombre : {count} ||| Anzahl: {count}
+Paste special ||| Collage spécial ||| Inhalte einfügen
+Values only ||| Valeurs uniquement ||| Nur Werte
+Formatting only ||| Mise en forme uniquement ||| Nur Formatierung
+Contents ||| Contenu ||| Inhalt
+Contents and formatting ||| Contenu et mise en forme ||| Inhalt und Formatierung
+Selected rows ||| Lignes sélectionnées ||| Ausgewählte Zeilen
+Selected columns ||| Colonnes sélectionnées ||| Ausgewählte Spalten
+Freeze ||| Figer ||| Fixieren
+First row ||| Première ligne ||| Erste Zeile
+First column ||| Première colonne ||| Erste Spalte
+Up to the current cell ||| Jusqu’à la cellule active ||| Bis zur aktuellen Zelle
+Unfreeze ||| Libérer ||| Fixierung aufheben
+Gridlines ||| Quadrillage ||| Gitternetzlinien
+Toolbar ||| Barre d’outils ||| Symbolleiste
+Row above ||| Ligne au-dessus ||| Zeile oberhalb
+Row below ||| Ligne en dessous ||| Zeile unterhalb
+Column left ||| Colonne à gauche ||| Spalte links
+Column right ||| Colonne à droite ||| Spalte rechts
+Cells ||| Cellules ||| Zellen
+Shift cells down ||| Décaler les cellules vers le bas ||| Zellen nach unten verschieben
+Shift cells right ||| Décaler les cellules vers la droite ||| Zellen nach rechts verschieben
+Sheet ||| Feuille ||| Tabellenblatt
+Chart… ||| Graphique… ||| Diagramm…
+Image in cell… ||| Image dans la cellule… ||| Bild in Zelle…
+Function ||| Fonction ||| Funktion
+Average ||| Moyenne ||| Mittelwert
+Count ||| Nombre ||| Anzahl
+Minimum ||| Minimum ||| Minimum
+Number format… ||| Format de nombre… ||| Zahlenformat…
+Percent ||| Pourcentage ||| Prozent
+Currency ||| Monnaie ||| Währung
+Increase decimals ||| Ajouter une décimale ||| Dezimalstellen erhöhen
+Decrease decimals ||| Réduire les décimales ||| Dezimalstellen verringern
+Wrap text ||| Renvoyer à la ligne ||| Textumbruch
+Merge all ||| Tout fusionner ||| Alle verbinden
+Merge horizontally ||| Fusionner horizontalement ||| Horizontal verbinden
+Merge vertically ||| Fusionner verticalement ||| Vertikal verbinden
+Unmerge ||| Annuler la fusion ||| Verbund aufheben
+Conditional formatting ||| Mise en forme conditionnelle ||| Bedingte Formatierung
+New rule… ||| Nouvelle règle… ||| Neue Regel…
+Manage rules… ||| Gérer les règles… ||| Regeln verwalten…
+Clear rules from selection ||| Effacer les règles de la sélection ||| Regeln aus Auswahl löschen
+Fit column width ||| Ajuster la largeur de colonne ||| Spaltenbreite anpassen
+Paint format ||| Reproduire la mise en forme ||| Format übertragen
+Sort A → Z ||| Trier de A à Z ||| Sortieren A → Z
+Sort Z → A ||| Trier de Z à A ||| Sortieren Z → A
+Custom sort… ||| Tri personnalisé… ||| Benutzerdefiniert sortieren…
+Filter ||| Filtre ||| Filter
+Clear filter ||| Effacer le filtre ||| Filter löschen
+Reapply filter ||| Réappliquer le filtre ||| Filter erneut anwenden
+Data validation ||| Validation des données ||| Datenüberprüfung
+Split text to columns… ||| Répartir le texte en colonnes… ||| Text in Spalten aufteilen…
+Named ranges… ||| Plages nommées… ||| Benannte Bereiche…
+Protect range… ||| Protéger la plage… ||| Bereich schützen…
+Pivot table… ||| Tableau croisé dynamique… ||| Pivot-Tabelle…
+Refresh pivot tables ||| Actualiser les tableaux croisés ||| Pivot-Tabellen aktualisieren
+Descriptive statistics… ||| Statistiques descriptives… ||| Deskriptive Statistik…
+Recalculate formulas ||| Recalculer les formules ||| Formeln neu berechnen
+Statistics functions ||| Fonctions statistiques ||| Statistikfunktionen
+Charts and pivot tables ||| Graphiques et tableaux croisés ||| Diagramme und Pivot-Tabellen
+Paste values only ||| Coller les valeurs uniquement ||| Nur Werte einfügen
+Edit chart ||| Modifier le graphique ||| Diagramm bearbeiten
+Double click ||| Double-clic ||| Doppelklick
+Standard deviation (sample / population) ||| Écart type (échantillon / population) ||| Standardabweichung (Stichprobe / Grundgesamtheit)
+Variance (sample / population) ||| Variance (échantillon / population) ||| Varianz (Stichprobe / Grundgesamtheit)
+Quartile ||| Quartile ||| Quartil
+Percentile ||| Centile ||| Perzentil
+Correlation coefficient ||| Coefficient de corrélation ||| Korrelationskoeffizient
+Regression line ||| Droite de régression ||| Regressionsgerade
+Linear prediction ||| Prévision linéaire ||| Lineare Prognose
+Normal distribution ||| Loi normale ||| Normalverteilung
+Binomial distribution ||| Loi binomiale ||| Binomialverteilung
+Count with conditions ||| Compter avec conditions ||| Mit Bedingungen zählen
+Frequency table ||| Tableau de fréquences ||| Häufigkeitstabelle
+Rank ||| Rang ||| Rang
+Combinations, permutations ||| Combinaisons, permutations ||| Kombinationen, Permutationen
+Random integer ||| Entier aléatoire ||| Zufällige ganze Zahl
+Spanish name ||| Nom espagnol ||| Spanischer Name
+Use ||| Utilisation ||| Verwendung
+Formulas accept the English names and, in Spanish and Galician, the Spanish names too. Files are saved with the English names, which Excel and LibreOffice translate. ||| Les formules acceptent les noms anglais et aussi les noms espagnols. Les fichiers sont enregistrés avec les noms anglais, qu’Excel et LibreOffice traduisent. ||| Formeln akzeptieren die englischen und auch die spanischen Namen. Dateien werden mit den englischen Namen gespeichert, die Excel und LibreOffice übersetzen.
+Data ▸ Descriptive statistics… writes a summary table (n, mean, median, mode, standard deviation, variance, minimum, quartiles, maximum) with live formulas. Scatter charts can show a linear trendline with its equation and R². ||| Données ▸ Statistiques descriptives… écrit un tableau récapitulatif (n, moyenne, médiane, mode, écart type, variance, minimum, quartiles, maximum) avec des formules actualisées. Les nuages de points peuvent afficher une courbe de tendance linéaire avec son équation et R². ||| Daten ▸ Deskriptive Statistik… schreibt eine Übersichtstabelle (n, Mittelwert, Median, Modus, Standardabweichung, Varianz, Minimum, Quartile, Maximum) mit aktuellen Formeln. Streudiagramme können eine lineare Trendlinie mit Gleichung und R² zeigen.
+Pivot tables are built from ordinary formulas (SUMIFS, AVERAGEIFS, COUNTIFS, MINIFS, MAXIFS): values update live and export to Excel and LibreOffice, but new row or column keys only appear after Data ▸ Refresh pivot tables. Refreshing rewrites the table, so do not type inside it. ||| Les tableaux croisés sont faits de formules ordinaires (SOMME.SI.ENS, MOYENNE.SI.ENS, NB.SI.ENS, MIN.SI.ENS, MAX.SI.ENS) : les valeurs se mettent à jour et s’exportent vers Excel et LibreOffice, mais les nouvelles lignes ou colonnes n’apparaissent qu’après Données ▸ Actualiser les tableaux croisés. L’actualisation réécrit le tableau : n’écris pas dedans. ||| Pivot-Tabellen bestehen aus normalen Formeln (SUMMEWENNS, MITTELWERTWENNS, ZÄHLENWENNS, MINWENNS, MAXWENNS): Werte werden sofort aktualisiert und nach Excel und LibreOffice exportiert, neue Zeilen- oder Spaltenschlüssel erscheinen aber erst nach Daten ▸ Pivot-Tabellen aktualisieren. Das Aktualisieren schreibt die Tabelle neu, also nicht hineinschreiben.
+Insert ▸ Chart… draws a column, bar, line, area, pie, doughnut or scatter chart from a range. Charts update when the cells change, follow the range when rows or columns are inserted or deleted, print, and are saved as native charts in .xlsx and .ods files. Double click a chart (or right click it) to edit it. ||| Insertion ▸ Graphique… trace un graphique en colonnes, en barres, en courbes, en aires, en secteurs, en anneau ou en nuage de points à partir d’une plage. Les graphiques se mettent à jour quand les cellules changent, suivent la plage quand des lignes ou colonnes sont insérées ou supprimées, s’impriment et sont enregistrés comme graphiques natifs dans les fichiers .xlsx et .ods. Double-clique sur un graphique (ou clic droit) pour le modifier. ||| Einfügen ▸ Diagramm… zeichnet ein Säulen-, Balken-, Linien-, Flächen-, Kreis-, Ring- oder Streudiagramm aus einem Bereich. Diagramme werden aktualisiert, wenn sich Zellen ändern, folgen dem Bereich beim Einfügen oder Löschen von Zeilen oder Spalten, werden gedruckt und als native Diagramme in .xlsx- und .ods-Dateien gespeichert. Doppelklicke (oder Rechtsklick) auf ein Diagramm, um es zu bearbeiten.
+Pivot tables ||| Tableaux croisés dynamiques ||| Pivot-Tabellen
+Select cells of a single column ||| Sélectionne des cellules d’une seule colonne ||| Wähle Zellen einer einzigen Spalte aus
+Comma ||| Virgule ||| Komma
+Semicolon ||| Point-virgule ||| Semikolon
+Space ||| Espace ||| Leerzeichen
+Tab ||| Tabulation ||| Tabulator
+Separator ||| Séparateur ||| Trennzeichen
+Split text to columns ||| Répartir le texte en colonnes ||| Text in Spalten aufteilen
+Split ||| Répartir ||| Aufteilen
+Count (n) ||| Effectif (n) ||| Anzahl (n)
+Standard deviation (sample) ||| Écart type (échantillon) ||| Standardabweichung (Stichprobe)
+Standard deviation (population) ||| Écart type (population) ||| Standardabweichung (Grundgesamtheit)
+Variance (sample) ||| Variance (échantillon) ||| Varianz (Stichprobe)
+Variance (population) ||| Variance (population) ||| Varianz (Grundgesamtheit)
+First quartile (Q1) ||| Premier quartile (Q1) ||| Erstes Quartil (Q1)
+Third quartile (Q3) ||| Troisième quartile (Q3) ||| Drittes Quartil (Q3)
+Range ||| Étendue ||| Spannweite
+New sheet ||| Nouvelle feuille ||| Neues Tabellenblatt
+Next to the data ||| À côté des données ||| Neben den Daten
+At a cell… ||| Dans une cellule… ||| In einer Zelle…
+Data range (one variable per column) ||| Plage de données (une variable par colonne) ||| Datenbereich (eine Variable pro Spalte)
+First row contains labels ||| La première ligne contient des étiquettes ||| Erste Zeile enthält Beschriftungen
+Output ||| Résultat ||| Ausgabe
+The summary uses formulas, so it updates when the data change. ||| Le résumé utilise des formules : il se met à jour quand les données changent. ||| Die Übersicht verwendet Formeln und wird aktualisiert, wenn sich die Daten ändern.
+Descriptive statistics ||| Statistiques descriptives ||| Deskriptive Statistik
+Create ||| Créer ||| Erstellen
+Enter a range such as A1:C6 ||| Saisis une plage comme A1:C6 ||| Gib einen Bereich wie A1:C6 ein
+The range has no data ||| La plage ne contient pas de données ||| Der Bereich enthält keine Daten
+Enter a cell such as H1 ||| Saisis une cellule comme H1 ||| Gib eine Zelle wie H1 ein
+Statistic ||| Statistique ||| Kennzahl
+(none) ||| (aucun) ||| (keine)
+Source data (with a header row) ||| Données source (avec ligne d’en-tête) ||| Quelldaten (mit Kopfzeile)
+Values ||| Valeurs ||| Werte
+Summarize by ||| Synthétiser par ||| Zusammenfassen mit
+Filter (optional) ||| Filtre (facultatif) ||| Filter (optional)
+Place the table ||| Emplacement du tableau ||| Tabelle platzieren
+Pivot table ||| Tableau croisé dynamique ||| Pivot-Tabelle
+Select a range with a header row and data ||| Sélectionne une plage avec une ligne d’en-tête et des données ||| Wähle einen Bereich mit Kopfzeile und Daten aus
+Choose the rows and the values ||| Choisis les lignes et les valeurs ||| Wähle die Zeilen und die Werte
+The pivot table source no longer has the column {name} ||| La source du tableau croisé n’a plus la colonne {name} ||| Die Quelle der Pivot-Tabelle hat die Spalte {name} nicht mehr
+Total ||| Total ||| Gesamt
+(empty = all) ||| (vide = tous) ||| (leer = alle)
+Pivot tables refreshed: {n} ||| Tableaux croisés actualisés : {n} ||| Pivot-Tabellen aktualisiert: {n}
+There are no pivot tables in this spreadsheet ||| Ce classeur ne contient aucun tableau croisé ||| Diese Tabelle enthält keine Pivot-Tabellen
+Column ||| Colonnes ||| Säulen
+Area ||| Aires ||| Fläche
+Pie ||| Secteurs ||| Kreis
+Doughnut ||| Anneau ||| Ring
+Scatter ||| Nuage de points ||| Streuung
+Ofimeo ||| Ofimeo ||| Ofimeo
+Colorblind-safe ||| Adaptée au daltonisme ||| Farbenblind-geeignet
+Warm ||| Chaude ||| Warm
+Cool ||| Froide ||| Kalt
+Grayscale ||| Niveaux de gris ||| Graustufen
+Chart type ||| Type de graphique ||| Diagrammtyp
+Linear trendline with equation and R² ||| Courbe de tendance linéaire avec équation et R² ||| Lineare Trendlinie mit Gleichung und R²
+There is no sheet named {name} ||| Aucune feuille ne s’appelle {name} ||| Es gibt kein Tabellenblatt namens {name}
+Data range ||| Plage de données ||| Datenbereich
+Series in ||| Séries en ||| Datenreihen in
+First row as headers ||| Première ligne comme en-têtes ||| Erste Zeile als Überschriften
+First column as labels ||| Première colonne comme étiquettes ||| Erste Spalte als Beschriftungen
+Horizontal axis title ||| Titre de l’axe horizontal ||| Titel der horizontalen Achse
+Vertical axis title ||| Titre de l’axe vertical ||| Titel der vertikalen Achse
+Legend ||| Légende ||| Legende
+Colors ||| Couleurs ||| Farben
+Insert chart ||| Insérer un graphique ||| Diagramm einfügen
+Series {n} ||| Série {n} ||| Datenreihe {n}
+Chart ||| Graphique ||| Diagramm
+Other ||| Autre ||| Andere
+Sheet{n} ||| Feuille{n} ||| Tabelle{n}
+Statistics ||| Statistiques ||| Statistik
+Rows ||| Lignes ||| Zeilen
+Columns ||| Colonnes ||| Spalten
+Spreadsheet ||| Classeur ||| Tabelle
+Mean ||| Moyenne ||| Mittelwert
+Median ||| Médiane ||| Median
+Mode ||| Mode ||| Modus
+Maximum ||| Maximum ||| Maximum
+Sum ||| Somme ||| Summe
+Standard deviation ||| Écart type ||| Standardabweichung
+Image… ||| Image… ||| Bild…
+Link… ||| Lien… ||| Link…
+Note ||| Note ||| Notiz
+Table… ||| Tableau… ||| Tabelle…
+Number ||| Nombre ||| Zahl
+Align ||| Aligner ||| Ausrichten
+Merge cells ||| Fusionner les cellules ||| Zellen verbinden
+Clear formatting ||| Effacer la mise en forme ||| Formatierung löschen
+PDF (via Print, current sheet) ||| PDF (via Imprimer, feuille active) ||| PDF (über Drucken, aktuelles Blatt)
+Formatting ||| Mise en forme ||| Formatierung
+Delete ||| Supprimer ||| Löschen
+Mode (most frequent value) ||| Mode (valeur la plus fréquente) ||| Modus (häufigster Wert)

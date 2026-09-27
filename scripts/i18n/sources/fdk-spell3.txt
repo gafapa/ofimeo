@@ -1,0 +1,2 @@
+Allow spell check for respondents ||| Autoriser la correction orthographique pour les répondants ||| Rechtschreibprüfung für Antwortende erlauben
+Underlines misspelled words in written answers. Off by default in quizzes, where it could give answers away. ||| Souligne les mots mal orthographiés dans les réponses écrites. Désactivé par défaut dans les quiz, où cela pourrait révéler des réponses. ||| Unterstreicht falsch geschriebene Wörter in schriftlichen Antworten. In Quizzen standardmäßig aus, da es Antworten verraten könnte.

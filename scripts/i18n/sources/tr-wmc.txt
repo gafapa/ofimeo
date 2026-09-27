@@ -1,0 +1,74 @@
+Keep linked to the spreadsheet ||| Mantener vinculado a la hoja de cálculo ||| Manter ligado á folla de cálculo
+Chart data ||| Datos del gráfico ||| Datos do gráfico
+Remove row ||| Quitar fila ||| Quitar fila
+Remove column ||| Quitar columna ||| Quitar columna
+Row {row}, column {col} ||| Fila {row}, columna {col} ||| Fila {row}, columna {col}
+There are no spreadsheets in this browser yet: type the data or create a spreadsheet first. ||| Aún no hay hojas de cálculo en este navegador: escribe los datos o crea antes una hoja de cálculo. ||| Aínda non hai follas de cálculo neste navegador: escribe os datos ou crea antes unha folla de cálculo.
+This spreadsheet has no data ||| Esta hoja de cálculo no tiene datos ||| Esta folla de cálculo non ten datos
+From a spreadsheet ||| De una hoja de cálculo ||| Dunha folla de cálculo
+Type the data ||| Escribir los datos ||| Escribir os datos
+Caption ||| Pie de figura ||| Pé de figura
+Data typed in the document ||| Datos escritos en el documento ||| Datos escritos no documento
+TRUE ||| VERDADERO ||| VERDADEIRO
+FALSE ||| FALSO ||| FALSO
+Update from source ||| Actualizar desde el origen ||| Actualizar desde a orixe
+The source spreadsheet is not available in this browser; the chart keeps its last data. ||| La hoja de cálculo de origen no está disponible en este navegador; el gráfico conserva sus últimos datos. ||| A folla de cálculo de orixe non está dispoñible neste navegador; o gráfico conserva os seus últimos datos.
+The chart is up to date ||| El gráfico está al día ||| O gráfico está ao día
+Mail merge… ||| Combinar correspondencia… ||| Combinar correspondencia…
+Resize ||| Cambiar tamaño ||| Cambiar tamaño
+If ||| Si ||| Se
+Merge field: {name} ||| Campo de combinación: {name} ||| Campo de combinación: {name}
+(temporary) ||| (temporal) ||| (temporal)
+The PDF took too long to prepare ||| El PDF tardó demasiado en prepararse ||| O PDF tardou demasiado en prepararse
+The PDF could not be created ||| No se pudo crear el PDF ||| Non se puido crear o PDF
+is ||| es ||| é
+is not ||| no es ||| non é
+contains ||| contiene ||| contén
+greater than ||| mayor que ||| maior que
+less than ||| menor que ||| menor que
+is empty ||| está vacío ||| está baleiro
+is not empty ||| no está vacío ||| non está baleiro
+Data source ||| Origen de datos ||| Orixe de datos
+Choose the data… ||| Elige los datos… ||| Escolle os datos…
+File (CSV, Excel, OpenDocument)… ||| Archivo (CSV, Excel, OpenDocument)… ||| Ficheiro (CSV, Excel, OpenDocument)…
+This spreadsheet is not available in this browser ||| Esta hoja de cálculo no está disponible en este navegador ||| Esta folla de cálculo non está dispoñible neste navegador
+Reload the data ||| Volver a cargar los datos ||| Volver cargar os datos
+Data reloaded ||| Datos cargados de nuevo ||| Datos cargados de novo
+Conditional text… ||| Texto condicional… ||| Texto condicional…
+Filter field ||| Campo del filtro ||| Campo do filtro
+Value ||| Valor ||| Valor
+Previous record ||| Registro anterior ||| Rexistro anterior
+Next record ||| Registro siguiente ||| Rexistro seguinte
+Name files after ||| Nombrar los archivos según ||| Nomear os ficheiros segundo
+There are no records to merge ||| No hay registros que combinar ||| Non hai rexistros que combinar
+Merging {n} records… ||| Combinando {n} registros… ||| Combinando {n} rexistros…
+Mail merge failed: {message} ||| La combinación falló: {message} ||| A combinación fallou: {message}
+Merged document created ||| Documento combinado creado ||| Documento combinado creado
+PDF ready ||| PDF listo ||| PDF listo
+ZIP of Word files ||| ZIP de archivos de Word ||| ZIP de ficheiros de Word
+ZIP ready ||| ZIP listo ||| ZIP listo
+ZIP of PDF files ||| ZIP de archivos PDF ||| ZIP de ficheiros PDF
+Mail merge ||| Combinar correspondencia ||| Combinar correspondencia
+1. Data ||| 1. Datos ||| 1. Datos
+Field names in row ||| Nombres de campo en la fila ||| Nomes de campo na fila
+2. Fields ||| 2. Campos ||| 2. Campos
+Click a field to insert it at the cursor. ||| Haz clic en un campo para insertarlo en el cursor. ||| Fai clic nun campo para inserilo no cursor.
+3. Filter ||| 3. Filtro ||| 3. Filtro
+4. Preview ||| 4. Vista previa ||| 4. Vista previa
+Show the data of a record ||| Mostrar los datos de un registro ||| Amosar os datos dun rexistro
+5. Merge ||| 5. Combinar ||| 5. Combinar
+Record {n} of {total} ||| Registro {n} de {total} ||| Rexistro {n} de {total}
+No records ||| Sin registros ||| Sen rexistros
+Choose a spreadsheet of your library or a file with a header row. ||| Elige una hoja de cálculo de tu biblioteca o un archivo con una fila de encabezados. ||| Escolle unha folla de cálculo da túa biblioteca ou un ficheiro cunha fila de cabeceiras.
+No fields yet ||| Aún no hay campos ||| Aínda non hai campos
+No filter ||| Sin filtro ||| Sen filtro
+Numbered ||| Numerados ||| Numerados
+If the field ||| Si el campo ||| Se o campo
+Insert this text ||| Insertar este texto ||| Inserir este texto
+Otherwise insert ||| Si no, insertar ||| Se non, inserir
+Conditional text ||| Texto condicional ||| Texto condicional
+{n} record ||| {n} registro ||| {n} rexistro
+{n} records ||| {n} registros ||| {n} rexistros
+{n} record will be merged ||| Se combinará {n} registro ||| Combinarase {n} rexistro
+{n} records will be merged ||| Se combinarán {n} registros ||| Combinaranse {n} rexistros
+{title} (merged) ||| {title} (combinado) ||| {title} (combinado)

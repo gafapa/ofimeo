@@ -1,0 +1,74 @@
+Keep linked to the spreadsheet ||| Garder la liaison avec le classeur ||| Mit der Tabelle verknüpft lassen
+Chart data ||| Données du graphique ||| Diagrammdaten
+Remove row ||| Supprimer la ligne ||| Zeile entfernen
+Remove column ||| Supprimer la colonne ||| Spalte entfernen
+Row {row}, column {col} ||| Ligne {row}, colonne {col} ||| Zeile {row}, Spalte {col}
+There are no spreadsheets in this browser yet: type the data or create a spreadsheet first. ||| Il n’y a encore aucun classeur dans ce navigateur : saisissez les données ou créez d’abord un classeur. ||| In diesem Browser gibt es noch keine Tabellen: Geben Sie die Daten ein oder erstellen Sie zuerst eine Tabelle.
+This spreadsheet has no data ||| Ce classeur ne contient pas de données ||| Diese Tabelle enthält keine Daten
+From a spreadsheet ||| À partir d’un classeur ||| Aus einer Tabelle
+Type the data ||| Saisir les données ||| Daten eingeben
+Caption ||| Légende ||| Beschriftung
+Data typed in the document ||| Données saisies dans le document ||| Im Dokument eingegebene Daten
+TRUE ||| VRAI ||| WAHR
+FALSE ||| FAUX ||| FALSCH
+Update from source ||| Mettre à jour depuis la source ||| Aus der Quelle aktualisieren
+The source spreadsheet is not available in this browser; the chart keeps its last data. ||| Le classeur source n’est pas disponible dans ce navigateur ; le graphique garde ses dernières données. ||| Die Quelltabelle ist in diesem Browser nicht verfügbar; das Diagramm behält seine letzten Daten.
+The chart is up to date ||| Le graphique est à jour ||| Das Diagramm ist aktuell
+Mail merge… ||| Publipostage… ||| Serienbrief…
+Resize ||| Redimensionner ||| Größe ändern
+If ||| Si ||| Wenn
+Merge field: {name} ||| Champ de fusion : {name} ||| Seriendruckfeld: {name}
+(temporary) ||| (temporaire) ||| (temporär)
+The PDF took too long to prepare ||| La préparation du PDF a pris trop de temps ||| Die Vorbereitung des PDF hat zu lange gedauert
+The PDF could not be created ||| Impossible de créer le PDF ||| Das PDF konnte nicht erstellt werden
+is ||| est ||| ist
+is not ||| n’est pas ||| ist nicht
+contains ||| contient ||| enthält
+greater than ||| supérieur à ||| größer als
+less than ||| inférieur à ||| kleiner als
+is empty ||| est vide ||| ist leer
+is not empty ||| n’est pas vide ||| ist nicht leer
+Data source ||| Source de données ||| Datenquelle
+Choose the data… ||| Choisir les données… ||| Daten auswählen…
+File (CSV, Excel, OpenDocument)… ||| Fichier (CSV, Excel, OpenDocument)… ||| Datei (CSV, Excel, OpenDocument)…
+This spreadsheet is not available in this browser ||| Ce classeur n’est pas disponible dans ce navigateur ||| Diese Tabelle ist in diesem Browser nicht verfügbar
+Reload the data ||| Recharger les données ||| Daten neu laden
+Data reloaded ||| Données rechargées ||| Daten neu geladen
+Conditional text… ||| Texte conditionnel… ||| Bedingter Text…
+Filter field ||| Champ du filtre ||| Filterfeld
+Value ||| Valeur ||| Wert
+Previous record ||| Enregistrement précédent ||| Vorheriger Datensatz
+Next record ||| Enregistrement suivant ||| Nächster Datensatz
+Name files after ||| Nommer les fichiers d’après ||| Dateien benennen nach
+There are no records to merge ||| Aucun enregistrement à fusionner ||| Keine Datensätze zum Zusammenführen
+Merging {n} records… ||| Fusion de {n} enregistrements… ||| {n} Datensätze werden zusammengeführt…
+Mail merge failed: {message} ||| Échec du publipostage : {message} ||| Serienbrief fehlgeschlagen: {message}
+Merged document created ||| Document fusionné créé ||| Zusammengeführtes Dokument erstellt
+PDF ready ||| PDF prêt ||| PDF fertig
+ZIP of Word files ||| ZIP de fichiers Word ||| ZIP mit Word-Dateien
+ZIP ready ||| ZIP prêt ||| ZIP fertig
+ZIP of PDF files ||| ZIP de fichiers PDF ||| ZIP mit PDF-Dateien
+Mail merge ||| Publipostage ||| Serienbrief
+1. Data ||| 1. Données ||| 1. Daten
+Field names in row ||| Noms des champs à la ligne ||| Feldnamen in Zeile
+2. Fields ||| 2. Champs ||| 2. Felder
+Click a field to insert it at the cursor. ||| Cliquez sur un champ pour l’insérer au curseur. ||| Klicken Sie auf ein Feld, um es an der Cursorposition einzufügen.
+3. Filter ||| 3. Filtre ||| 3. Filter
+4. Preview ||| 4. Aperçu ||| 4. Vorschau
+Show the data of a record ||| Afficher les données d’un enregistrement ||| Daten eines Datensatzes anzeigen
+5. Merge ||| 5. Fusionner ||| 5. Zusammenführen
+Record {n} of {total} ||| Enregistrement {n} sur {total} ||| Datensatz {n} von {total}
+No records ||| Aucun enregistrement ||| Keine Datensätze
+Choose a spreadsheet of your library or a file with a header row. ||| Choisissez un classeur de votre bibliothèque ou un fichier avec une ligne d’en-têtes. ||| Wählen Sie eine Tabelle aus Ihrer Bibliothek oder eine Datei mit einer Kopfzeile.
+No fields yet ||| Aucun champ pour l’instant ||| Noch keine Felder
+No filter ||| Aucun filtre ||| Kein Filter
+Numbered ||| Numérotés ||| Nummeriert
+If the field ||| Si le champ ||| Wenn das Feld
+Insert this text ||| Insérer ce texte ||| Diesen Text einfügen
+Otherwise insert ||| Sinon, insérer ||| Sonst einfügen
+Conditional text ||| Texte conditionnel ||| Bedingter Text
+{n} record ||| {n} enregistrement ||| {n} Datensatz
+{n} records ||| {n} enregistrements ||| {n} Datensätze
+{n} record will be merged ||| {n} enregistrement sera fusionné ||| {n} Datensatz wird zusammengeführt
+{n} records will be merged ||| {n} enregistrements seront fusionnés ||| {n} Datensätze werden zusammengeführt
+{title} (merged) ||| {title} (fusionné) ||| {title} (zusammengeführt)

@@ -1,0 +1,27 @@
+Syncing with {name}… ||| Sincronizando con {name}… ||| Sincronizando con {name}…
+Synced to {name} ||| Sincronizado en {name} ||| Sincronizado en {name}
+Not yet synced to {name} ||| Aún no sincronizado en {name} ||| Aínda non sincronizado en {name}
+Waiting to sync to {name} ||| Esperando para sincronizar en {name} ||| Agardando para sincronizar en {name}
+Up to date from {name} ||| Actualizado desde {name} ||| Actualizado desde {name}
+Could not sync to {name} ||| No se pudo sincronizar en {name} ||| Non se puido sincronizar en {name}
+Encrypted copy up to date (last checked {time}). People who open the document later get your changes even if you are offline. ||| Copia cifrada al día (última comprobación: {time}). Quien abra el documento más tarde recibirá tus cambios aunque no estés conectado. ||| Copia cifrada ao día (última comprobación: {time}). Quen abra o documento máis tarde recibirá os teus cambios aínda que non esteas conectado.
+This link can only read: changes from {name} are downloaded, nothing is uploaded. ||| Este enlace solo permite leer: se descargan los cambios de {name}, no se sube nada. ||| Esta ligazón só permite ler: descárganse os cambios de {name}, non se sobe nada.
+Your latest changes will be uploaded (encrypted) in a moment. ||| Tus últimos cambios se subirán (cifrados) en un momento. ||| Os teus últimos cambios subiranse (cifrados) nun momento.
+{name} cannot be reached now. Your changes are kept in this browser and uploaded when it is reachable again. ||| Ahora no se puede acceder a {name}. Tus cambios se guardan en este navegador y se subirán cuando vuelva a estar disponible. ||| Agora non se pode acceder a {name}. Os teus cambios gárdanse neste navegador e subiranse cando volva estar dispoñible.
+Error: {message} ||| Error: {message} ||| Erro: {message}
+Could not sync. ||| No se pudo sincronizar. ||| Non se puido sincronizar.
+Checking for changes… ||| Buscando cambios… ||| Buscando cambios…
+Sync without being online together ||| Sincronizar sin estar conectados a la vez ||| Sincronizar sen estar conectados á vez
+Keeps an encrypted copy of the changes so that people who are never online at the same time still get them (for example, you edit in class and your teacher corrects at night). The server only sees encrypted data; the key travels in the document link. ||| Guarda una copia cifrada de los cambios para que las personas que nunca están conectadas a la vez los reciban igualmente (por ejemplo, editas en clase y tu docente corrige por la noche). El servidor solo ve datos cifrados; la clave viaja en el enlace del documento. ||| Garda unha copia cifrada dos cambios para que as persoas que nunca están conectadas á vez os reciban igualmente (por exemplo, editas na clase e o teu docente corrixe pola noite). O servidor só ve datos cifrados; a clave viaxa na ligazón do documento.
+Turned off by your school. ||| Desactivado por tu centro. ||| Desactivado polo teu centro.
+Needs a school relay that keeps encrypted copies (Ofimeo Relay). ||| Necesita un relé del centro que guarde copias cifradas (Ofimeo Relay). ||| Precisa un relé do centro que garde copias cifradas (Ofimeo Relay).
+Copies are deleted after {days} days without changes. ||| Las copias se borran tras {days} días sin cambios. ||| As copias bórranse tras {days} días sen cambios.
+On the school relay ({name}) ||| En el relé del centro ({name}) ||| No relé do centro ({name})
+On the school relay ||| En el relé del centro ||| No relé do centro
+In a Nextcloud folder ||| En una carpeta de Nextcloud ||| Nun cartafol de Nextcloud
+Connect a Nextcloud account first (File → Nextcloud account…). ||| Primero conecta una cuenta de Nextcloud (Archivo → Cuenta de Nextcloud…). ||| Primeiro conecta unha conta de Nextcloud (Arquivo → Conta de Nextcloud…).
+Nextcloud folder for encrypted copies ||| Carpeta de Nextcloud para las copias cifradas ||| Cartafol de Nextcloud para as copias cifradas
+Folder ||| Carpeta ||| Cartafol
+To sync with other people, use a folder shared with them in Nextcloud. ||| Para sincronizar con otras personas, usa una carpeta compartida con ellas en Nextcloud. ||| Para sincronizar con outras persoas, usa un cartafol compartido con elas en Nextcloud.
+This link can only read: changes are downloaded, nothing is uploaded. ||| Este enlace solo permite leer: se descargan los cambios, no se sube nada. ||| Esta ligazón só permite ler: descárganse os cambios, non se sobe nada.
+Sync now ||| Sincronizar ahora ||| Sincronizar agora

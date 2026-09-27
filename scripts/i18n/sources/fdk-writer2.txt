@@ -1,0 +1,88 @@
+This section ||| Cette section ||| Dieser Abschnitt
+Whole document ||| Tout le document ||| Gesamtes Dokument
+Apply to ||| Appliquer à ||| Anwenden auf
+Number of columns ||| Nombre de colonnes ||| Anzahl der Spalten
+Spacing ||| Espacement ||| Abstand
+Line between columns ||| Ligne entre les colonnes ||| Linie zwischen Spalten
+Insert a continuous section break to change the number of columns within a page. ||| Insérez un saut de section continu pour changer le nombre de colonnes dans une page. ||| Fügen Sie einen fortlaufenden Abschnittsumbruch ein, um die Spaltenzahl innerhalb einer Seite zu ändern.
+Headings 1–3 ||| Titres 1–3 ||| Überschriften 1–3
+Headings 1–6 ||| Titres 1–6 ||| Überschriften 1–6
+Update table of contents ||| Mettre à jour la table des matières ||| Inhaltsverzeichnis aktualisieren
+Table of contents ||| Table des matières ||| Inhaltsverzeichnis
+Citation… ||| Citation… ||| Zitat…
+Section break ||| Saut de section ||| Abschnittsumbruch
+Next page ||| Page suivante ||| Nächste Seite
+Continuous ||| Continu ||| Fortlaufend
+One column ||| Une colonne ||| Eine Spalte
+Two columns ||| Deux colonnes ||| Zwei Spalten
+Three columns ||| Trois colonnes ||| Drei Spalten
+More columns… ||| Plus de colonnes… ||| Weitere Spalten…
+Columns ||| Colonnes ||| Spalten
+APA (7th edition) ||| APA (7e édition) ||| APA (7. Auflage)
+MLA (9th edition) ||| MLA (9e édition) ||| MLA (9. Auflage)
+Chicago (author-date) ||| Chicago (auteur-date) ||| Chicago (Autor-Jahr)
+References ||| Références ||| Verweise
+Insert citation… ||| Insérer une citation… ||| Zitat einfügen…
+Insert bibliography ||| Insérer la bibliographie ||| Literaturverzeichnis einfügen
+Import sources (BibTeX, RIS)… ||| Importer des sources (BibTeX, RIS)… ||| Quellen importieren (BibTeX, RIS)…
+Citation style ||| Style de citation ||| Zitierstil
+Citation language ||| Langue des citations ||| Sprache der Zitate
+Document language ||| Langue du document ||| Dokumentsprache
+Sources… ||| Sources… ||| Quellen…
+PDF document (.pdf) ||| Document PDF (.pdf) ||| PDF-Dokument (.pdf)
+Update table ||| Mettre à jour la table ||| Verzeichnis aktualisieren
+No headings yet: use the Heading styles and update the table. ||| Aucun titre pour l’instant : utilisez les styles de titre et mettez la table à jour. ||| Noch keine Überschriften: Verwenden Sie die Überschriftenformate und aktualisieren Sie das Verzeichnis.
+Section break (continuous) ||| Saut de section (continu) ||| Abschnittsumbruch (fortlaufend)
+Section break (next page) ||| Saut de section (page suivante) ||| Abschnittsumbruch (nächste Seite)
+Book ||| Livre ||| Buch
+Book chapter ||| Chapitre de livre ||| Buchkapitel
+Journal article ||| Article de revue ||| Zeitschriftenartikel
+Web page ||| Page web ||| Webseite
+Report ||| Rapport ||| Bericht
+Thesis ||| Thèse ||| Abschlussarbeit
+Other ||| Autre ||| Sonstiges
+Journal ||| Revue ||| Zeitschrift
+Book title ||| Titre du livre ||| Buchtitel
+Website ||| Site web ||| Website
+Published in ||| Publié dans ||| Erschienen in
+Editors (one per line: Family, Given) ||| Éditeurs scientifiques (un par ligne : Nom, Prénom) ||| Herausgeber (einer pro Zeile: Nachname, Vorname)
+Edition ||| Édition ||| Auflage
+University ||| Université ||| Universität
+Institution ||| Institution ||| Institution
+Publisher ||| Éditeur ||| Verlag
+Place ||| Lieu ||| Ort
+Volume ||| Volume ||| Band
+Issue ||| Numéro ||| Heft
+Pages ||| Pages ||| Seiten
+Report number ||| Numéro du rapport ||| Berichtsnummer
+Kind of thesis ||| Type de thèse ||| Art der Arbeit
+Accessed on (YYYY-MM-DD) ||| Consulté le (AAAA-MM-JJ) ||| Abgerufen am (JJJJ-MM-TT)
+García Pérez, Ana ||| García Pérez, Ana ||| García Pérez, Ana
+2024 or 2024-05-17 ||| 2024 ou 2024-05-17 ||| 2024 oder 2024-05-17
+Authors (one per line: Family, Given; organizations in braces) ||| Auteurs (un par ligne : Nom, Prénom ; organisations entre accolades) ||| Autoren (einer pro Zeile: Nachname, Vorname; Organisationen in geschweiften Klammern)
+Edit source ||| Modifier la source ||| Quelle bearbeiten
+New source ||| Nouvelle source ||| Neue Quelle
+A source needs at least a title or an author ||| Une source doit avoir au moins un titre ou un auteur ||| Eine Quelle braucht mindestens einen Titel oder einen Autor
+{n} sources imported ||| {n} sources importées ||| {n} Quellen importiert
+Could not read the file: {message} ||| Impossible de lire le fichier : {message} ||| Die Datei konnte nicht gelesen werden: {message}
+No sources yet. Add one or import a BibTeX or RIS file (Zotero, Mendeley, Google Scholar…). ||| Aucune source pour l’instant. Ajoutez-en une ou importez un fichier BibTeX ou RIS (Zotero, Mendeley, Google Scholar…). ||| Noch keine Quellen. Fügen Sie eine hinzu oder importieren Sie eine BibTeX- oder RIS-Datei (Zotero, Mendeley, Google Scholar…).
+Delete source ||| Supprimer la source ||| Quelle löschen
+New source… ||| Nouvelle source… ||| Neue Quelle…
+Import BibTeX / RIS… ||| Importer BibTeX / RIS… ||| BibTeX / RIS importieren…
+Export BibTeX ||| Exporter en BibTeX ||| Als BibTeX exportieren
+Sources ||| Sources ||| Quellen
+Search sources ||| Rechercher des sources ||| Quellen suchen
+e.g. 23 or 23-25 ||| p. ex. 23 ou 23-25 ||| z. B. 23 oder 23-25
+Page or other locator (optional) ||| Page ou autre repère (facultatif) ||| Seite oder andere Fundstelle (optional)
+Remove citation ||| Supprimer la citation ||| Zitat entfernen
+Edit citation ||| Modifier la citation ||| Zitat bearbeiten
+Insert citation ||| Insérer une citation ||| Zitat einfügen
+Missing source ||| Source introuvable ||| Quelle fehlt
+No citations yet: insert citations and the bibliography lists their sources. ||| Aucune citation pour l’instant : insérez des citations et la bibliographie listera leurs sources. ||| Noch keine Zitate: Fügen Sie Zitate ein, dann listet das Literaturverzeichnis ihre Quellen auf.
+This .doc file is not a Word 97-2003 document; save it as .docx first ||| Ce fichier .doc n’est pas un document Word 97-2003 ; enregistrez-le d’abord en .docx ||| Diese .doc-Datei ist kein Word-97-2003-Dokument; speichern Sie sie zuerst als .docx
+The document is protected with a password ||| Le document est protégé par un mot de passe ||| Das Dokument ist kennwortgeschützt
+Could not read the document text ||| Impossible de lire le texte du document ||| Der Text des Dokuments konnte nicht gelesen werden
+Preparing the PDF for printing… ||| Préparation du PDF pour l’impression… ||| PDF wird zum Drucken vorbereitet…
+Not an Excel workbook ||| Ce n’est pas un classeur Excel ||| Keine Excel-Arbeitsmappe
+Only Excel 97-2003 (BIFF8) workbooks can be opened ||| Seuls les classeurs Excel 97-2003 (BIFF8) peuvent être ouverts ||| Nur Excel-97-2003-Arbeitsmappen (BIFF8) können geöffnet werden
+The workbook is protected with a password ||| Le classeur est protégé par un mot de passe ||| Die Arbeitsmappe ist kennwortgeschützt

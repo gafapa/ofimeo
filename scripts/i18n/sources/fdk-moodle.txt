@@ -1,0 +1,114 @@
+Hand in your work to an assignment in Moodle, or download it to hand it in another way. ||| Rendez votre travail dans un devoir Moodle, ou téléchargez-le pour le rendre autrement. ||| Geben Sie Ihre Arbeit in einer Moodle-Aufgabe ab oder laden Sie sie herunter, um sie anders abzugeben.
+Hand in to Moodle… ||| Rendre dans Moodle… ||| In Moodle abgeben…
+Hand in to Moodle ||| Rendre dans Moodle ||| In Moodle abgeben
+Moodle account… ||| Compte Moodle… ||| Moodle-Konto…
+Moodle account ||| Compte Moodle ||| Moodle-Konto
+Moodle ||| Moodle ||| Moodle
+Moodle address ||| Adresse de Moodle ||| Moodle-Adresse
+Students see their Moodle assignments and hand in to them (docs/moodle.md). ||| Les élèves voient leurs devoirs Moodle et les rendent (docs/moodle.md). ||| Die Lernenden sehen ihre Moodle-Aufgaben und geben darin ab (docs/moodle.md).
+Always through the school relay (the relay must be started with --moodle-url) ||| Toujours via le relais de l’établissement (le relais doit être lancé avec --moodle-url) ||| Immer über das Schul-Relay (das Relay muss mit --moodle-url gestartet werden)
+Only this Moodle can be used ||| Seul ce Moodle peut être utilisé ||| Nur dieses Moodle kann verwendet werden
+Something went wrong: {message} ||| Un problème est survenu : {message} ||| Etwas ist schiefgelaufen: {message}
+Only your school’s Moodle can be used. ||| Seul le Moodle de votre établissement peut être utilisé. ||| Nur das Moodle Ihrer Schule kann verwendet werden.
+Enter the address of your Moodle, for example https://moodle.school.org ||| Saisissez l’adresse de votre Moodle, par exemple https://moodle.ecole.fr ||| Geben Sie die Adresse Ihres Moodle ein, zum Beispiel https://moodle.schule.de
+You are offline. Connect to the Internet and try again. ||| Vous êtes hors connexion. Connectez-vous à Internet et réessayez. ||| Sie sind offline. Verbinden Sie sich mit dem Internet und versuchen Sie es erneut.
+Could not reach Moodle from this browser. Check the address. If it is right, your Moodle does not allow access from web apps: ask your school to turn on Moodle forwarding in its Ofimeo Relay (Help → Moodle). ||| Impossible de joindre Moodle depuis ce navigateur. Vérifiez l’adresse. Si elle est correcte, votre Moodle n’autorise pas l’accès depuis les applications web : demandez à votre établissement d’activer le transfert vers Moodle dans son Ofimeo Relay (Aide → Moodle). ||| Moodle ist von diesem Browser aus nicht erreichbar. Prüfen Sie die Adresse. Wenn sie stimmt, erlaubt Ihr Moodle keinen Zugriff aus Web-Apps: Bitten Sie Ihre Schule, die Moodle-Weiterleitung in ihrem Ofimeo Relay einzuschalten (Hilfe → Moodle).
+Your school relay forwards to another Moodle, so it cannot be used for this one. ||| Le relais de votre établissement transfère vers un autre Moodle ; il ne peut pas servir pour celui-ci. ||| Das Relay Ihrer Schule leitet an ein anderes Moodle weiter und kann für dieses nicht verwendet werden.
+Not connected: the relay was not used. ||| Non connecté : le relais n’a pas été utilisé. ||| Nicht verbunden: Das Relay wurde nicht verwendet.
+The school relay could not reach Moodle. Try again later. ||| Le relais de l’établissement n’a pas pu joindre Moodle. Réessayez plus tard. ||| Das Schul-Relay konnte Moodle nicht erreichen. Versuchen Sie es später erneut.
+This address does not answer like a Moodle site. Check it, or ask your school whether the Moodle app is allowed (mobile web services). ||| Cette adresse ne répond pas comme un site Moodle. Vérifiez-la, ou demandez à votre établissement si l’application Moodle est autorisée (services web mobiles). ||| Diese Adresse antwortet nicht wie eine Moodle-Seite. Prüfen Sie sie oder fragen Sie Ihre Schule, ob die Moodle-App erlaubt ist (mobile Webservices).
+Wrong username or password. ||| Nom d’utilisateur ou mot de passe incorrect. ||| Falscher Benutzername oder falsches Passwort.
+This Moodle does not allow the Moodle app (mobile web services are turned off). Ask your school’s Moodle administrator (Help → Moodle). ||| Ce Moodle n’autorise pas l’application Moodle (les services web mobiles sont désactivés). Demandez à l’administrateur Moodle de votre établissement (Aide → Moodle). ||| Dieses Moodle erlaubt die Moodle-App nicht (mobile Webservices sind ausgeschaltet). Fragen Sie die Moodle-Administration Ihrer Schule (Hilfe → Moodle).
+Your Moodle connection has expired. Connect again. ||| Votre connexion à Moodle a expiré. Reconnectez-vous. ||| Ihre Moodle-Verbindung ist abgelaufen. Verbinden Sie sich erneut.
+The file is too large for this assignment (maximum {size}). ||| Le fichier est trop volumineux pour ce devoir (maximum {size}). ||| Die Datei ist für diese Aufgabe zu groß (höchstens {size}).
+The file is too large for this assignment. ||| Le fichier est trop volumineux pour ce devoir. ||| Die Datei ist für diese Aufgabe zu groß.
+This assignment does not accept this type of file. Accepted: {types}. ||| Ce devoir n’accepte pas ce type de fichier. Acceptés : {types}. ||| Diese Aufgabe nimmt diesen Dateityp nicht an. Erlaubt: {types}.
+This assignment does not accept this type of file. ||| Ce devoir n’accepte pas ce type de fichier. ||| Diese Aufgabe nimmt diesen Dateityp nicht an.
+This assignment is not accepting submissions now. ||| Ce devoir n’accepte pas de remise pour le moment. ||| Diese Aufgabe nimmt derzeit keine Abgaben an.
+Tick the submission statement first. ||| Cochez d’abord la déclaration de remise. ||| Bestätigen Sie zuerst die Abgabeerklärung.
+Moodle says: {message} ||| Moodle indique : {message} ||| Moodle meldet: {message}
+Your Moodle signs in through a web page (single sign-on, for example with Google, Microsoft or your school account). Ofimeo cannot use that kind of sign-in yet: use Moodle in the browser, and hand in the file you download with Hand in. ||| Votre Moodle se connecte par une page web (authentification unique, par exemple avec Google, Microsoft ou le compte de l’établissement). Ofimeo ne peut pas encore utiliser ce type de connexion : utilisez Moodle dans le navigateur et rendez le fichier téléchargé avec Rendre. ||| Ihr Moodle meldet sich über eine Webseite an (Single Sign-on, zum Beispiel mit Google, Microsoft oder dem Schulkonto). Ofimeo kann diese Anmeldung noch nicht nutzen: Verwenden Sie Moodle im Browser und geben Sie die mit Abgeben heruntergeladene Datei dort ab.
+Use this relay for Moodle? ||| Utiliser ce relais pour Moodle ? ||| Dieses Relay für Moodle verwenden?
+Your Moodle cannot be reached directly from this browser. The relay {address} can pass your Moodle sign-in and work on to it. It sees them in transit: use it only if it is your school’s own relay. ||| Votre Moodle n’est pas joignable directement depuis ce navigateur. Le relais {address} peut lui transmettre votre connexion et votre travail. Il les voit passer : utilisez-le uniquement s’il s’agit du relais propre à votre établissement. ||| Ihr Moodle ist von diesem Browser aus nicht direkt erreichbar. Das Relay {address} kann Ihre Anmeldung und Ihre Arbeit an Moodle weitergeben. Es sieht sie dabei: Verwenden Sie es nur, wenn es das eigene Relay Ihrer Schule ist.
+Use this relay ||| Utiliser ce relais ||| Dieses Relay verwenden
+just now ||| à l’instant ||| gerade eben
+{n} minute ago ||| il y a {n} minute ||| vor {n} Minute
+{n} minutes ago ||| il y a {n} minutes ||| vor {n} Minuten
+{n} hour ago ||| il y a {n} heure ||| vor {n} Stunde
+{n} hours ago ||| il y a {n} heures ||| vor {n} Stunden
+Graded: {grade} ||| Noté : {grade} ||| Bewertet: {grade}
+Graded ||| Noté ||| Bewertet
+Handed in ||| Rendu ||| Abgegeben
+Draft (not handed in) ||| Brouillon (non rendu) ||| Entwurf (nicht abgegeben)
+Reopened ||| Rouvert ||| Wieder geöffnet
+Opens {date} ||| Ouvre le {date} ||| Öffnet am {date}
+Closed ||| Fermé ||| Geschlossen
+Overdue since {date} ||| En retard depuis le {date} ||| Überfällig seit {date}
+Due {date} ||| À rendre le {date} ||| Fällig am {date}
+No due date ||| Pas de date de remise ||| Kein Abgabetermin
+Disconnect ||| Se déconnecter ||| Trennen
+Disconnect from Moodle ||| Se déconnecter de Moodle ||| Von Moodle trennen
+Forget the Moodle connection in this browser? Your task list is removed from this browser too. Nothing changes in Moodle. ||| Oublier la connexion Moodle dans ce navigateur ? Votre liste de devoirs est aussi supprimée de ce navigateur. Rien ne change dans Moodle. ||| Die Moodle-Verbindung in diesem Browser vergessen? Ihre Aufgabenliste wird ebenfalls aus diesem Browser entfernt. In Moodle ändert sich nichts.
+Disconnected from Moodle ||| Déconnecté de Moodle ||| Von Moodle getrennt
+Connected through your school relay. ||| Connecté via le relais de votre établissement. ||| Über das Relay Ihrer Schule verbunden.
+Connected directly to Moodle. ||| Connecté directement à Moodle. ||| Direkt mit Moodle verbunden.
+Username ||| Nom d’utilisateur ||| Benutzername
+Your password is sent only to Moodle, once, to get a key for this browser. It is not saved. ||| Votre mot de passe est envoyé uniquement à Moodle, une seule fois, pour obtenir une clé pour ce navigateur. Il n’est pas enregistré. ||| Ihr Passwort wird nur einmal an Moodle gesendet, um einen Schlüssel für diesen Browser zu erhalten. Es wird nicht gespeichert.
+Enter your Moodle username and password. ||| Saisissez votre nom d’utilisateur et votre mot de passe Moodle. ||| Geben Sie Ihren Moodle-Benutzernamen und Ihr Passwort ein.
+Connected to Moodle as {name} ||| Connecté à Moodle en tant que {name} ||| Mit Moodle verbunden als {name}
+If you sign in to Moodle with {providers}, that sign-in cannot be used here yet. ||| Si vous vous connectez à Moodle avec {providers}, cette connexion ne peut pas encore être utilisée ici. ||| Wenn Sie sich bei Moodle mit {providers} anmelden, kann diese Anmeldung hier noch nicht verwendet werden.
+Only a Moodle key and your name are kept in this browser; “Disconnect” removes them. Your Moodle work goes only to your Moodle (or through your school relay), never to the people you share documents with. ||| Seuls une clé Moodle et votre nom sont conservés dans ce navigateur ; « Se déconnecter » les supprime. Votre travail Moodle va uniquement à votre Moodle (ou via le relais de votre établissement), jamais aux personnes avec qui vous partagez des documents. ||| In diesem Browser werden nur ein Moodle-Schlüssel und Ihr Name gespeichert; „Trennen“ entfernt sie. Ihre Moodle-Arbeit geht nur an Ihr Moodle (oder über das Relay Ihrer Schule), nie an die Personen, mit denen Sie Dokumente teilen.
+Moodle tasks ||| Devoirs Moodle ||| Moodle-Aufgaben
+Connect to Moodle ||| Se connecter à Moodle ||| Mit Moodle verbinden
+Connect ||| Se connecter ||| Verbinden
+Connect to your school’s Moodle to see your assignments here and hand in your work from Ofimeo. ||| Connectez-vous au Moodle de votre établissement pour voir vos devoirs ici et rendre votre travail depuis Ofimeo. ||| Verbinden Sie sich mit dem Moodle Ihrer Schule, um Ihre Aufgaben hier zu sehen und Ihre Arbeit aus Ofimeo abzugeben.
+Updating… ||| Mise à jour… ||| Wird aktualisiert…
+Refresh ||| Actualiser ||| Aktualisieren
+Last updated {when} ||| Mis à jour {when} ||| Aktualisiert {when}
+Loading your assignments… ||| Chargement de vos devoirs… ||| Ihre Aufgaben werden geladen…
+No task list yet. Press Refresh. ||| Pas encore de liste de devoirs. Appuyez sur Actualiser. ||| Noch keine Aufgabenliste. Drücken Sie Aktualisieren.
+You have no assignments in Moodle. ||| Vous n’avez aucun devoir dans Moodle. ||| Sie haben keine Aufgaben in Moodle.
+To do ||| À faire ||| Zu erledigen
+Handed in and graded ||| Rendus et notés ||| Abgegeben und bewertet
+Opens ||| Ouverture ||| Öffnet
+Due ||| Date de remise ||| Abgabetermin
+Extension until ||| Prolongation jusqu’au ||| Verlängerung bis
+Last day to hand in ||| Dernier jour pour rendre ||| Letzter Abgabetag
+Files ||| Fichiers ||| Dateien
+Any type ||| Tout type ||| Beliebiger Typ
+Your files ||| Vos fichiers ||| Ihre Dateien
+Last change ||| Dernière modification ||| Letzte Änderung
+Grade ||| Note ||| Note
+Open in Ofimeo ||| Ouvrir dans Ofimeo ||| In Ofimeo öffnen
+Files of the assignment ||| Fichiers du devoir ||| Dateien der Aufgabe
+Feedback ||| Commentaires ||| Feedback
+This assignment is answered as text in Moodle. ||| Ce devoir se rend sous forme de texte dans Moodle. ||| Diese Aufgabe wird als Text in Moodle beantwortet.
+This assignment is not handed in as a file. ||| Ce devoir ne se rend pas sous forme de fichier. ||| Diese Aufgabe wird nicht als Datei abgegeben.
+Open in Moodle ||| Ouvrir dans Moodle ||| In Moodle öffnen
+There is no open assignment that takes files in your Moodle right now. ||| Aucun devoir ouvert n’accepte de fichiers dans votre Moodle pour le moment. ||| In Ihrem Moodle gibt es gerade keine offene Aufgabe, die Dateien annimmt.
+Assignments answered as text, not open yet or past their last day are not listed. Press Refresh in Moodle tasks on the home screen if your teacher just added one. ||| Les devoirs à rendre sous forme de texte, pas encore ouverts ou dont le dernier jour est passé ne sont pas listés. Appuyez sur Actualiser dans Devoirs Moodle, sur l’écran d’accueil, si votre enseignant vient d’en ajouter un. ||| Aufgaben, die als Text beantwortet werden, noch nicht offen sind oder deren letzter Tag vorbei ist, werden nicht angezeigt. Drücken Sie Aktualisieren bei den Moodle-Aufgaben auf dem Startbildschirm, wenn Ihre Lehrkraft gerade eine hinzugefügt hat.
+A file from this device… ||| Un fichier de cet appareil… ||| Eine Datei von diesem Gerät…
+This app cannot export any of the accepted types ({types}). Choose a file from this device. ||| Cette application ne peut exporter aucun des types acceptés ({types}). Choisissez un fichier de cet appareil. ||| Diese App kann keinen der erlaubten Typen ({types}) exportieren. Wählen Sie eine Datei von diesem Gerät.
+For a PDF, use File → Print and choose “Save as PDF”, then pick that file with “A file from this device…”. ||| Pour un PDF, utilisez Fichier → Imprimer et choisissez « Enregistrer au format PDF », puis choisissez ce fichier avec « Un fichier de cet appareil… ». ||| Für ein PDF nutzen Sie Datei → Drucken und wählen „Als PDF speichern“; wählen Sie diese Datei dann mit „Eine Datei von diesem Gerät…“.
+Last day to hand in: {date} ||| Dernier jour pour rendre : {date} ||| Letzter Abgabetag: {date}
+Accepted: {types} ||| Acceptés : {types} ||| Erlaubt: {types}
+Any type of file ||| Tout type de fichier ||| Beliebiger Dateityp
+up to {size} ||| jusqu’à {size} ||| bis {size}
+You already handed in {files}. Handing in again replaces it. ||| Vous avez déjà rendu {files}. Rendre à nouveau le remplace. ||| Sie haben bereits {files} abgegeben. Eine erneute Abgabe ersetzt es.
+Handing in again replaces your earlier submission. ||| Rendre à nouveau remplace votre remise précédente. ||| Eine erneute Abgabe ersetzt Ihre frühere Abgabe.
+The file is submitted for grading: after that your teacher may need to allow changes. ||| Le fichier est envoyé pour évaluation : ensuite, votre enseignant devra peut-être autoriser des modifications. ||| Die Datei wird zur Bewertung eingereicht: Danach muss Ihre Lehrkraft Änderungen eventuell erst erlauben.
+This submission is my own work, except where I have acknowledged the use of the works of other people. ||| Ce travail est le mien, sauf là où j’ai indiqué utiliser le travail d’autres personnes. ||| Diese Abgabe ist meine eigene Arbeit, außer wo ich die Nutzung der Arbeit anderer angegeben habe.
+Assignment ||| Devoir ||| Aufgabe
+Hand in as ||| Rendre au format ||| Abgeben als
+File ||| Fichier ||| Datei
+Choose the file to hand in. ||| Choisissez le fichier à rendre. ||| Wählen Sie die Datei, die Sie abgeben möchten.
+Preparing your file… ||| Préparation de votre fichier… ||| Ihre Datei wird vorbereitet…
+Uploading {name}… ||| Envoi de {name}… ||| {name} wird hochgeladen…
+Saving your submission… ||| Enregistrement de votre remise… ||| Ihre Abgabe wird gespeichert…
+Submitting for grading… ||| Envoi pour évaluation… ||| Wird zur Bewertung eingereicht…
+Handed in to “{task}”. ||| Rendu dans « {task} ». ||| In „{task}“ abgegeben.
+Saved in “{task}”. ||| Enregistré dans « {task} ». ||| In „{task}“ gespeichert.
+Your teacher can see it in Moodle now. ||| Votre enseignant peut maintenant le voir dans Moodle. ||| Ihre Lehrkraft kann es jetzt in Moodle sehen.
+Moodle keeps it as your submission; you can replace it while the assignment is open. ||| Moodle le conserve comme votre remise ; vous pouvez le remplacer tant que le devoir est ouvert. ||| Moodle speichert es als Ihre Abgabe; Sie können es ersetzen, solange die Aufgabe offen ist.
+{n} other assignment is closed, not open yet or not handed in as a file. ||| {n} autre devoir est fermé, pas encore ouvert ou ne se rend pas sous forme de fichier. ||| {n} weitere Aufgabe ist geschlossen, noch nicht offen oder wird nicht als Datei abgegeben.
+{n} other assignments are closed, not open yet or not handed in as a file. ||| {n} autres devoirs sont fermés, pas encore ouverts ou ne se rendent pas sous forme de fichier. ||| {n} weitere Aufgaben sind geschlossen, noch nicht offen oder werden nicht als Datei abgegeben.

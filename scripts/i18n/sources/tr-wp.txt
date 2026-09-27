@@ -1,0 +1,29 @@
+A document needs at least one page. ||| Un documento necesita al menos una página. ||| Un documento necesita polo menos unha páxina.
+Add comment ||| Añadir comentario ||| Engadir comentario
+Click on a page, or press Enter, to place the stamp. Esc to stop. ||| Haz clic en una página, o pulsa Intro, para colocar el sello. Esc para terminar. ||| Fai clic nunha páxina, ou preme Intro, para colocar o selo. Esc para rematar.
+Click on a page, or press Enter, to place your signature. ||| Haz clic en una página, o pulsa Intro, para colocar tu firma. ||| Fai clic nunha páxina, ou preme Intro, para colocar a túa sinatura.
+Could not copy. Use {shortcut} instead. ||| No se pudo copiar. Usa {shortcut}. ||| Non se puido copiar. Usa {shortcut}.
+Delete page… ||| Eliminar página… ||| Eliminar páxina…
+Enter the password… ||| Introducir la contraseña… ||| Introducir o contrasinal…
+Markdown (.md) ||| Markdown (.md) ||| Markdown (.md)
+Move page down ||| Bajar página ||| Baixar páxina
+Move page up ||| Subir página ||| Subir páxina
+Move the page (thumbnails) ||| Mover la página (miniaturas) ||| Mover a páxina (miniaturas)
+No comments yet. Use "Add comment", or choose the sticky note tool (N) and click on a page (or press Enter). ||| Aún no hay comentarios. Usa «Añadir comentario», o elige la herramienta de nota adhesiva (N) y haz clic en una página (o pulsa Intro). ||| Aínda non hai comentarios. Usa «Engadir comentario», ou escolle a ferramenta de nota adhesiva (N) e fai clic nunha páxina (ou preme Intro).
+Page menu (thumbnails) ||| Menú de la página (miniaturas) ||| Menú da páxina (miniaturas)
+Password required ||| Se necesita contraseña ||| Cómpre un contrasinal
+Place the chosen annotation on the current page ||| Colocar la anotación elegida en la página actual ||| Colocar a anotación escollida na páxina actual
+Rotate left ||| Girar a la izquierda ||| Xirar á esquerda
+Rotate right ||| Girar a la derecha ||| Xirar á dereita
+Some content could not be imported: {list} ||| Parte del contenido no se pudo importar: {list} ||| Parte do contido non se puido importar: {list}
+The PDF could not be read. ||| No se pudo leer el PDF. ||| Non se puido ler o PDF.
+The file could not be read. ||| No se pudo leer el archivo. ||| Non se puido ler o ficheiro.
+The file is damaged or is not a PDF. ||| El archivo está dañado o no es un PDF. ||| O ficheiro está danado ou non é un PDF.
+The password is not correct. Try again. ||| La contraseña no es correcta. Inténtalo de nuevo. ||| O contrasinal non é correcto. Téntao de novo.
+This PDF is protected with a password. ||| Este PDF está protegido con contraseña. ||| Este PDF está protexido cun contrasinal.
+This PDF is protected. Enter its password to open it. ||| Este PDF está protegido. Introduce su contraseña para abrirlo. ||| Este PDF está protexido. Introduce o seu contrasinal para abrilo.
+This file is not an RTF document ||| Este archivo no es un documento RTF ||| Este ficheiro non é un documento RTF
+This removes the page and everything written on it from the document. Undo brings it back. ||| Esto quita del documento la página y todo lo escrito en ella. Deshacer la recupera. ||| Isto quita do documento a páxina e todo o escrito nela. Desfacer recupéraa.
+endnotes ||| notas al final ||| notas ao final
+some pictures ||| algunas imágenes ||| algunhas imaxes
+text boxes and drawings ||| cuadros de texto y dibujos ||| caixas de texto e debuxos

@@ -1,0 +1,15 @@
+Diacritic accent: “{word}” and “{fix}” are different words ||| Accent diacritique : « {word} » et « {fix} » sont des mots différents ||| Diakritischer Akzent: „{word}“ und „{fix}“ sind verschiedene Wörter
+Question and exclamation words take an accent: “{fix}” ||| Les mots interrogatifs et exclamatifs prennent un accent : « {fix} » ||| Frage- und Ausrufewörter tragen einen Akzent: „{fix}“
+“de el” and “a el” are written “del” and “al” (“de él”, “a él” for the pronoun) ||| « de el » et « a el » s’écrivent « del » et « al » (« de él », « a él » pour le pronom) ||| „de el“ und „a el“ werden „del“ und „al“ geschrieben („de él“, „a él“ beim Pronomen)
+The article does not agree with the noun: “{fix}” ||| L’article ne s’accorde pas avec le nom : « {fix} » ||| Der Artikel stimmt nicht mit dem Nomen überein: „{fix}“
+This construction takes “de que” ||| Cette construction demande « de que » ||| Diese Konstruktion verlangt „de que“
+Laísmo: the indirect object is “le” / “les” ||| Laísmo : le complément d’objet indirect est « le » / « les » ||| Laísmo: Das indirekte Objekt ist „le“ / „les“
+Before “lo”, “la”, “los” and “las”, the indirect object is “se” ||| Devant « lo », « la », « los » et « las », le complément d’objet indirect est « se » ||| Vor „lo“, „la“, „los“ und „las“ ist das indirekte Objekt „se“
+Style: “en base a” is better written “con base en”, “sobre la base de” or “según” ||| Style : au lieu de « en base a », préférez « con base en », « sobre la base de » ou « según » ||| Stil: Statt „en base a“ besser „con base en“, „sobre la base de“ oder „según“
+Style: “a nivel de” is right for levels (“a nivel del mar”); elsewhere, try “en cuanto a” or “en el ámbito de” ||| Style : « a nivel de » convient pour des niveaux (« a nivel del mar ») ; ailleurs, essayez « en cuanto a » ou « en el ámbito de » ||| Stil: „a nivel de“ passt bei Ebenen („a nivel del mar“); sonst besser „en cuanto a“ oder „en el ámbito de“
+Months and days of the week are written in lowercase ||| Les mois et les jours de la semaine s’écrivent en minuscules ||| Monate und Wochentage werden kleingeschrieben
+In English, days and months start with a capital letter ||| En anglais, les jours et les mois prennent une majuscule ||| Im Englischen werden Tage und Monate großgeschrieben
+Commonly confused: “its” / “it’s”, “your” / “you’re”, “their” / “there” ||| Confusion fréquente : « its » / « it’s », « your » / « you’re », « their » / « there » ||| Häufige Verwechslung: „its“ / „it’s“, „your“ / „you’re“, „their“ / „there“
+In Galician, the preposition and the article contract: “{fix}” ||| En galicien, la préposition et l’article se contractent : « {fix} » ||| Im Galicischen verschmelzen Präposition und Artikel: „{fix}“
+“einzig” has no superlative: “{fix}” ||| « einzig » n’a pas de superlatif : « {fix} » ||| „einzig“ hat keinen Superlativ: „{fix}“
+“wider” (against) and “wieder” (again) are different ||| « wider » (contre) et « wieder » (de nouveau) sont des mots différents ||| „wider“ (gegen) und „wieder“ (erneut) sind verschiedene Wörter

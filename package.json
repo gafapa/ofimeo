@@ -12,9 +12,10 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host",
     "typecheck": "tsc --noEmit",
-    "test:unit": "node scripts/test-spell.mjs",
+    "test:unit": "node scripts/test-spell.mjs && node scripts/i18n/check-keys.mjs",
     "test:e2e": "playwright test",
-    "test": "npm run test:unit && npm run test:e2e"
+    "test": "npm run test:unit && npm run test:e2e",
+    "i18n:check": "node scripts/i18n/check-keys.mjs"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.1",

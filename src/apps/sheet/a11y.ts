@@ -105,14 +105,21 @@ export function setupSheetA11y(o: SheetA11yOptions): SheetA11y {
     set(o.host.querySelector('[data-u-comp="formula-bar"] [data-u-comp="render-canvas"]'), 'aria-label', t('Formula bar'))
     for (const canvas of o.host.querySelectorAll('canvas[data-u-unit-id]')) {
       set(canvas, 'role', 'img')
-      set(canvas, 'aria-label', t('Spreadsheet grid (Alt+Shift+T: accessible table view)'))
+      set(canvas, 'aria-label', t('Spreadsheet grid'))
+      set(canvas, 'aria-describedby', hint.id)
     }
+    // Univer keeps the keyboard focus in a hidden editor while the grid is used.
+    const editor = document.getElementById('__editor___INTERNAL_EDITOR__DOCS_NORMAL')
+    set(editor, 'aria-label', t('Spreadsheet grid'))
+    set(editor, 'aria-describedby', hint.id)
   }
+  const hint = el('span', { class: 'sr-only', id: 'sheet-a11y-hint', textContent: t('Alt+Shift+T switches to the accessible table view, made for screen readers. F10 opens the menu bar.') })
+  o.appElement.append(hint)
   new MutationObserver(() => {
     if (queued) return
     queued = true
     requestAnimationFrame(label)
-  }).observe(o.host, { childList: true, subtree: true })
+  }).observe(document.body, { childList: true, subtree: true })
   label()
 
   // Arrow keys, Home and End move between the sheet tabs (Univer only takes clicks).

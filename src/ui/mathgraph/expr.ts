@@ -75,7 +75,7 @@ function tokenize(src: string): Tok[] {
       i += num[0].length
       continue
     }
-    const id = /^[A-Za-zͰ-Ͽ][A-Za-z0-9_Ͱ-Ͽ]*/.exec(s.slice(i))
+    const id = /^\p{L}[\p{L}\d_]*/u.exec(s.slice(i))
     if (id) {
       out.push({ t: 'id', v: id[0] })
       i += id[0].length

@@ -90,6 +90,13 @@ export default defineConfig({
         skipWaiting: true,
         runtimeCaching: [
           {
+            // School configuration (src/core/school-config.ts) and its files (logo): replaced
+            // on the server after the build, so not precached; the last copy is used offline.
+            urlPattern: ({ url, sameOrigin }) => sameOrigin && (url.pathname.endsWith('/ofimeo.config.json') || url.pathname.includes('/school/')),
+            handler: 'NetworkFirst',
+            options: { cacheName: 'school-config', networkTimeoutSeconds: 3, cacheableResponse: { statuses: [200] } },
+          },
+          {
             urlPattern: ({ url }) => url.pathname.includes('/excalidraw/fonts/'),
             handler: 'CacheFirst',
             options: { cacheName: 'excalidraw-fonts', cacheableResponse: { statuses: [0, 200] } },

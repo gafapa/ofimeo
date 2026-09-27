@@ -19,6 +19,7 @@ import { renderSvg, svgToPng, svgToString } from './export'
 import { DiagramSync } from './sync'
 import { createPageSettings, type PageSettings } from './page'
 import { pageDisplayName } from './model'
+import { graphSpelling } from './spell'
 
 export const DIAGRAM_ACCEPT = '.drawio,.xml,.vsdx,.vssx'
 
@@ -228,6 +229,7 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
       { label: t('Format panel'), run: () => editor.togglePanel(format.element), active: () => !format.element.hidden, enabled: editable() },
     ],
   }
+  const spelling = graphSpelling(session, editor, { pageLabel: (name) => pageDisplayName(name) || t('Untitled page') })
   const frame = mountFrame({
     session,
     shell,
@@ -241,8 +243,8 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
       details,
     },
     edit: { label: t('Edit'), items: editor.editMenu() },
-    menus: { view, insert, format: formatMenu, app: [{ label: t('Arrange'), items: editor.arrangeMenu() }, { label: t('Page'), items: pageMenu() }] },
-    help: { sections: () => shortcutSections(t('Diagram')) },
+    menus: { view, insert, format: formatMenu, app: [{ label: t('Arrange'), items: editor.arrangeMenu() }, { label: t('Page'), items: pageMenu() }], tools: { label: t('Tools'), items: spelling.menu() } },
+    help: { sections: () => shortcutSections(t('Diagram'), [[t('Spelling and grammar'), 'F7']]) },
     keys: { find: editor.find },
     zoom: editor.zoomTarget,
   })

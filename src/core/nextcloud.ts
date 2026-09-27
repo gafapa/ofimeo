@@ -338,6 +338,13 @@ export async function upload(a: NcAccount, path: string, blob: Blob, options: Up
   return { etag: etag ? quoteEtag(etag) : undefined, fileId }
 }
 
+// Deletes a file; a file that is already gone is not an error.
+export async function removeFile(a: NcAccount, path: string): Promise<void> {
+  const res = await dav(a, 'DELETE', path)
+  if (res.ok || res.status === 404) return
+  throw statusError(res)
+}
+
 export async function createFolder(a: NcAccount, path: string): Promise<void> {
   const res = await dav(a, 'MKCOL', path)
   if (res.status === 201) return

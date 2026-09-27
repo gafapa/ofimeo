@@ -324,14 +324,15 @@ function richTextEditing(graph: Graph): void {
   if (!editor) return
   // Esc ends editing and keeps the typed text, like draw.io and PowerPoint.
   editor.escapeCancelsEditing = false
-  // The browser's spell checker, in the interface language, while a label is edited.
+  // The browser's spell checker (when ours is off), in the document language
+  // (the container's lang attribute, see spell.ts) while a label is edited.
   const init = editor.init.bind(editor)
   editor.init = () => {
     init()
     editor.textarea?.setAttribute('spellcheck', 'true')
-    editor.textarea?.setAttribute('lang', document.documentElement.lang)
+    editor.textarea?.setAttribute('lang', graph.container?.closest('[lang]')?.getAttribute('lang') ?? document.documentElement.lang)
   }
-  // Our spelling and grammar checker (language: the nearest lang attribute). The
+  // Our spelling and grammar checker (language: the container's lang attribute). The
   // editor reuses one element that leaves the page after each edit, which
   // detaches the checker, so it is attached again every time editing starts.
   const startEditing = editor.startEditing.bind(editor)
@@ -339,7 +340,7 @@ function richTextEditing(graph: Graph): void {
   editor.startEditing = (cell, trigger) => {
     startEditing(cell, trigger)
     detachSpellcheck?.()
-    detachSpellcheck = editor.textarea?.isConnected ? attachSpellcheck(editor.textarea) : null
+    detachSpellcheck = editor.textarea?.isConnected ? attachSpellcheck(editor.textarea, () => graph.container?.closest('[lang]')?.getAttribute('lang')) : null
   }
   const isRich = (cell: Cell) => String((cell.getStyle() as Record<string, unknown> | null)?.html ?? '') === '1'
   const getInitialValue = editor.getInitialValue.bind(editor)

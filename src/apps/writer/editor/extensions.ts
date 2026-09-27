@@ -14,6 +14,8 @@ import { TaskList, TaskItem } from '@tiptap/extension-list'
 import { CharacterCount, Placeholder } from '@tiptap/extensions'
 import { CellBackground, Footnote, PageBreak, PageBreakShortcut, PageNumber, ParagraphFormat, SectionBreak } from './nodes'
 import { Equation } from './equation'
+import { ChartNode } from './chart'
+import { MergeField, MergeIf } from './merge'
 import { TableOfContents, type TocOptions } from './toc'
 import { Bibliography, Citation } from '../references/nodes'
 import { Suggesting } from './suggestions'
@@ -108,6 +110,9 @@ export function bodyExtensions(options: Options = {}): AnyExtension[] {
     Bibliography,
     Footnote,
     Equation,
+    ChartNode,
+    MergeField,
+    MergeIf,
     Suggesting,
     CommentRange,
     CharacterCount,

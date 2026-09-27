@@ -1,0 +1,19 @@
+/* "Import from link…" dialog (import-link.ts). */
+
+.import-link { display: flex; flex-direction: column; gap: var(--space-2); max-width: 640px; }
+.import-link > p { margin: 0; }
+.import-status { margin: 0; min-height: 1.4em; font-weight: 600; }
+.import-status.error { color: var(--danger-text); font-weight: normal; }
+.import-steps { display: flex; flex-direction: column; gap: var(--space-3); }
+.import-steps[hidden] { display: none; }
+.import-step { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); padding: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-l); }
+.import-step h3 { margin: 0; font-size: var(--fs-base); }
+.import-step p { margin: 0; }
+.import-download { display: inline-block; text-decoration: none; padding: 7px 14px; border-radius: var(--radius-m); background: var(--accent); color: var(--on-accent); }
+.import-download:hover { filter: brightness(1.08); }
+.import-url { display: block; max-width: 100%; overflow-wrap: anywhere; font-size: var(--fs-s); color: var(--muted); user-select: all; }
+.import-drop {
+  align-self: stretch; display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+  padding: var(--space-4); border: 2px dashed var(--border); border-radius: var(--radius-l); color: var(--muted); text-align: center;
+}
+.import-drop.over, .import-drop:focus-visible { border-color: var(--accent); background: var(--hover); color: var(--text); }

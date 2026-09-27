@@ -132,7 +132,7 @@ export async function mergeKeys(stored: LinkKeys | null, fromLink: LinkKeys): Pr
   }
 }
 
-async function signerFromSeed(seed: Uint8Array): Promise<{ key: CryptoKey; pub: string }> {
+export async function signerFromSeed(seed: Uint8Array): Promise<{ key: CryptoKey; pub: string }> {
   if (seed.length !== 32) throw new Error(t('Invalid key'))
   const pkcs8 = new Uint8Array(PKCS8_PREFIX.length + 32)
   pkcs8.set(PKCS8_PREFIX)

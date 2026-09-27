@@ -25,6 +25,10 @@
 //
 // A school relay (connectivity.ts) adds its Nostr relay and its STUN/TURN
 // servers; without one, Trystero's defaults are used.
+//
+// Store-and-forward (store-forward/) keeps encrypted copies of the channels in
+// mailboxes, for people who are never online at the same time. It uses
+// Channel.sealForStore (signers) and Channel.receiveStored (everyone).
 
 import * as Y from 'yjs'
 import * as syncProtocol from 'y-protocols/sync'
@@ -54,6 +58,10 @@ class RemotePeer {
 
 // True for Yjs transactions applied from the network.
 export const isRemoteOrigin = (origin: unknown) => origin instanceof RemotePeer
+
+// Origin of changes pulled from a store-and-forward mailbox (store-forward/).
+// Like a peer that is never in the room: what it brings is relayed to everyone.
+export const STORE_ORIGIN: unknown = new RemotePeer('store')
 
 export interface ChannelSecurity {
   // Verifies envelopes; its presence switches the channel to signed sync.
@@ -272,6 +280,35 @@ export class Channel {
     } else if (this.log) {
       for (const entry of this.log.entries) this.send(entry, peerId)
     }
+  }
+
+  // A signed envelope for the store: a diff, or the full state (checkpoint).
+  async sealForStore(update: Uint8Array, checkpoint = false): Promise<Uint8Array> {
+    if (!this.security?.signer) throw new Error('This browser cannot sign changes')
+    const sealed = this.signing.then(() => this.seal(checkpoint ? KIND_CHECKPOINT : KIND_UPDATE, update))
+    this.signing = sealed.catch(() => undefined)
+    return sealed
+  }
+
+  // Applies a signed envelope pulled from a store (and relays it to the peers
+  // here). Returns its update when the signature is valid, else null.
+  async receiveStored(data: Uint8Array): Promise<Uint8Array | null> {
+    if (!this.security) return null
+    const envelope = parseEnvelope(data)
+    if (!envelope) return null
+    await this.ready
+    if (!(await verify(this.security.verifier, envelope.signature, this.signedBytes(envelope.kind, envelope.update)))) {
+      console.warn('Rejected a stored change with an invalid signature')
+      return null
+    }
+    const id = toBase64Url(envelope.signature)
+    if (!this.seen.has(id)) {
+      this.seen.add(id)
+      Y.applyUpdate(this.doc, envelope.update, STORE_ORIGIN)
+      this.log?.add(data, envelope)
+      this.broadcast(data, null)
+    }
+    return envelope.update
   }
 
   private async receiveSigned(peer: RemotePeer, data: Uint8Array): Promise<void> {

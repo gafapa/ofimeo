@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/gafapa/words-online/main/docs/ofimeo.config.schema.json",
+  "title": "Ofimeo school configuration (ofimeo.config.json)",
+  "description": "Put this file next to index.html (or pass it to Ofimeo Relay with --school-config). Every property is optional; values that are not valid are ignored. See docs/deploy-school.md.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "const": 1, "description": "Format version." },
+    "school": {
+      "type": "object",
+      "description": "Shown next to the Ofimeo name on the home screen.",
+      "properties": {
+        "name": { "type": "string", "maxLength": 120, "examples": ["IES Rosalía de Castro"] },
+        "logo": { "type": "string", "description": "Image next to index.html (e.g. school/logo.svg, cached for offline use) or an https:// address.", "examples": ["school/logo.svg"] },
+        "url": { "type": "string", "format": "uri", "pattern": "^https?://", "description": "School website, linked from the name." }
+      }
+    },
+    "defaults": {
+      "type": "object",
+      "properties": {
+        "language": { "enum": ["es", "gl", "en", "fr", "de"], "description": "Interface language when the person has not chosen one (lock it with locked: [\"language\"])." },
+        "documentLanguage": { "type": "string", "pattern": "^[a-z]{2,3}([-_][A-Za-z0-9]{2,8})*$", "description": "Language of new text (spelling and grammar): a code or a regional variant.", "examples": ["gl", "es-ES", "es-MX", "en-GB"] }
+      }
+    },
+    "relay": {
+      "type": "object",
+      "description": "The school's Ofimeo Relay (docs/relay.md). Used unless the person set another one; always when locked includes \"relay\".",
+      "properties": {
+        "url": { "type": "string", "pattern": "^https?://", "examples": ["https://relay.school.example"] },
+        "only": { "type": "boolean", "description": "Use only the school relay for signaling (no public Nostr relays or STUN servers). Fixed when \"relay\" is locked." }
+      }
+    },
+    "nostr": {
+      "type": "object",
+      "properties": {
+        "relays": { "type": "array", "maxItems": 20, "items": { "type": "string", "pattern": "^wss?://" }, "description": "Extra Nostr relays, used together with the school relay (and the public ones, if allowed)." }
+      }
+    },
+    "iceServers": {
+      "type": "array",
+      "description": "Extra STUN/TURN servers (RTCIceServer). Credentials here are visible to everyone who can load the file; prefer Ofimeo Relay, which hands out short-lived ones.",
+      "items": {
+        "type": "object",
+        "required": ["urls"],
+        "properties": {
+          "urls": { "oneOf": [{ "type": "string", "pattern": "^(stun|turns?):" }, { "type": "array", "items": { "type": "string", "pattern": "^(stun|turns?):" } }] },
+          "username": { "type": "string" },
+          "credential": { "type": "string" }
+        }
+      }
+    },
+    "store": {
+      "type": "object",
+      "description": "Store-and-forward: where encrypted document changes may wait for people who are offline. Both are allowed by default.",
+      "properties": {
+        "relay": { "type": "boolean", "description": "On the school relay." },
+        "nextcloud": {
+          "oneOf": [
+            { "const": false },
+            {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "folder": { "type": "string", "description": "Folder in the person's Nextcloud.", "examples": ["/Ofimeo"] }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "nextcloud": {
+      "type": "object",
+      "properties": {
+        "servers": {
+          "type": "array",
+          "maxItems": 20,
+          "description": "Offered in Connect to Nextcloud; the first one is filled in. With locked [\"nextcloud\"], only these can be used.",
+          "items": {
+            "oneOf": [
+              { "type": "string", "pattern": "^https?://" },
+              { "type": "object", "required": ["url"], "properties": { "name": { "type": "string" }, "url": { "type": "string", "pattern": "^https?://" } } }
+            ]
+          }
+        }
+      }
+    },
+    "features": {
+      "type": "object",
+      "properties": {
+        "webmcp": { "type": "boolean", "default": true, "description": "false: AI assistants (WebMCP) cannot be turned on." },
+        "ai": { "type": "boolean", "default": true, "description": "false: no AI features at all (also turns WebMCP off)." },
+        "publicRelays": { "type": "boolean", "default": true, "description": "false: only the school's servers (relay, nostr.relays, iceServers); give at least one of them." },
+        "templates": {
+          "oneOf": [{ "enum": ["all", "none"] }, { "type": "array", "items": { "type": "string" } }],
+          "default": "all",
+          "description": "Templates of the home screen gallery: all, none or a list of template ids (src/templates/catalog.ts; the generator lists them)."
+        },
+        "hiddenApps": {
+          "type": "array",
+          "items": { "enum": ["writer", "sheet", "draw", "diagram", "slides", "forms", "pdf", "notebook"] },
+          "description": "Apps not offered for new documents (documents of that kind still open)."
+        }
+      }
+    },
+    "legal": {
+      "type": "object",
+      "description": "The school's privacy contacts, shown above the legal links (home screen and About). The built-in legal pages stay available.",
+      "properties": {
+        "organization": { "type": "string", "maxLength": 200 },
+        "contactEmail": { "type": "string", "format": "email" },
+        "privacyEmail": { "type": "string", "format": "email" },
+        "dpoEmail": { "type": "string", "format": "email" },
+        "privacyUrl": { "type": "string", "pattern": "^https?://" },
+        "legalNoticeUrl": { "type": "string", "pattern": "^https?://" }
+      }
+    },
+    "locked": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "enum": ["language", "webmcp", "relay", "nextcloud"] },
+      "description": "Settings people cannot change; the settings show \"Set by your school\". language: needs defaults.language. webmcp: AI assistants stay off. relay: needs relay.url. nextcloud: needs nextcloud.servers."
+    }
+  }
+}

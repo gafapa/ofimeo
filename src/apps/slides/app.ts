@@ -70,6 +70,8 @@ import {
   type Role,
 } from './model'
 import { NotesEditor } from './notes'
+import { graphSpelling } from '../diagram/spell'
+import { attachSpellcheck } from '../../ui/spell/inline'
 import { Presentation, presenters } from './present'
 import { SlideRenderer, editingCell, installTheme, svgDataUrl } from './render'
 import { SlideList } from './slidelist'
@@ -777,6 +779,31 @@ export function mountSlides(session: Session, root: HTMLElement): void {
   const unlessPresenting = (fn: () => void) => () => {
     if (!presentation.active) fn()
   }
+  // Spelling and grammar: slide labels and speaker notes (Tools, F7); notes are
+  // also checked as they are typed, in the document language.
+  const spelling = graphSpelling(session, editor, {
+    pageLabel: (_name, index) => t('Slide {n}', { n: index + 1 }),
+    showPage: (id) => showSlide(id),
+    extraItems: (id, index) => {
+      const text = notesText(doc, id).toString()
+      return text.trim() ? [{ key: `${id}/notes`, label: `${t('Slide {n}', { n: index + 1 })} · ${t('Speaker notes')}`, text, extra: 'notes' }] : []
+    },
+    replaceExtra: (item, from, to, text) => {
+      const notesDoc = notesText(doc, item.page)
+      if (notesDoc.toString().slice(from, to) !== item.text.slice(from, to)) return false
+      sync.materialize()
+      doc.transact(() => {
+        notesDoc.delete(from, to - from)
+        if (text) notesDoc.insert(from, text)
+      })
+      return true
+    },
+    revealExtra: (_item, from, to) => {
+      if (notes.element.hidden) toggleNotes()
+      notes.select(from, to)
+    },
+  })
+  if (!readOnly) attachSpellcheck(notes.area, spelling.language.tag)
   const frame = mountFrame({
     session,
     shell,
@@ -796,7 +823,7 @@ export function mountSlides(session: Session, root: HTMLElement): void {
       ],
     },
     edit: { label: t('Edit'), items: editor.editMenu() },
-    menus: { view: viewMenu, insert, format: formatMenu, app: [{ label: t('Arrange'), items: editor.arrangeMenu(false) }, { label: t('Slide'), items: slideMenu() }], review: [presentMenu] },
+    menus: { view: viewMenu, insert, format: formatMenu, app: [{ label: t('Arrange'), items: editor.arrangeMenu(false) }, { label: t('Slide'), items: slideMenu() }], tools: { label: t('Tools'), items: spelling.menu() }, review: [presentMenu] },
     help: {
       sections: () =>
         shortcutSections(t('Presentation'), [
@@ -804,6 +831,7 @@ export function mountSlides(session: Session, root: HTMLElement): void {
           [t('Bold / italic / underline'), 'Ctrl+B / Ctrl+I / Ctrl+U'],
           [t('Bigger / smaller text'), 'Ctrl+Shift+> / Ctrl+Shift+<'],
           [t('Comment'), 'Ctrl+Alt+M'],
+          [t('Spelling and grammar'), 'F7'],
           [t('Next / previous slide'), t('Page Down / Page Up')],
           [t('Present from the beginning / current slide'), 'F5 / Shift+F5'],
           [t('While presenting'), t('Arrows, Space, click · L: laser · B: black screen · Esc')],

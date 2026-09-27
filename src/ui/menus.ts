@@ -3,7 +3,7 @@
 // the documented slots instead of writing these menus by hand.
 //
 // File (fileMenu):
-//   New ▸ (one item per app) · Open… Ctrl+O · Open from Nextcloud… · All documents · Storage and backup…
+//   New ▸ (one item per app) · Open… Ctrl+O · Open from Nextcloud… · Import from link… · All documents · Storage and backup…
 //   [slots.open]
 //   ─ Make a copy · Save as template… · Save to Nextcloud Ctrl+S (when linked) / Save to Nextcloud… · Save to Nextcloud as… (when linked)
 //     · Nextcloud account… · Download as ▸ (session.hooks.exportFormats, then `download` extras)
@@ -84,6 +84,7 @@ export function fileMenu(session: Session, options: FileMenuOptions): Menu {
       },
       { label: t('Open…'), shortcut: mod('O'), run: options.openFile },
       { label: t('Open from Nextcloud…'), enabled: online, run: () => void openFromNextcloud() },
+      { label: t('Import from link…'), run: () => void import('./import-link').then((m) => m.openImportFromLink()) },
       { label: t('All documents'), run: () => (location.href = homePath()) },
       { label: t('Storage and backup…'), run: () => void import('../home/storage').then((m) => m.openStorageDialog()) },
       ...(slots.open ?? []),
@@ -190,6 +191,7 @@ export function helpMenuItems(session: Session | undefined, options: HelpMenuOpt
     { label: t('Keyboard shortcuts'), shortcut: mod('/'), run: options.shortcuts },
     { label: t('Accessibility…'), shortcut: 'Alt+Shift+A', run: () => togglePanel(true) },
     ...(connectionModule ? [{ label: t('Connection test…'), run: () => void openConnectionTest(session) }] : []),
+    { label: t('For administrators…'), run: () => void import('./admin-config').then((m) => m.openConfigGenerator()) },
     ...(options.extra ?? []),
     '-',
     { label: t('About {suite}', { suite: SUITE }), run: () => void aboutModule().then((m) => m.aboutDialog()) },

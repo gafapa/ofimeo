@@ -189,11 +189,10 @@ export function tagLabel(tag: TagId): string {
 }
 
 // Text marks of tags in exported files (and recognised again when importing Markdown).
-export const TAG_PREFIX: Record<TagId, string> = { todo: '☐', done: '☑', important: '⭐', question: '❓', remember: '📌' }
+export const TAG_PREFIX: Record<TagId, string> = { todo: '☐', done: '☑', important: '★', question: '⁇', remember: '☞' }
 
 export interface TaggedItem {
   page: string
-  // Index of the tagged block among the page's tagged blocks of the same text (to find it again).
   tag: TagId
   text: string
   // Position of the block in the page (depth-first index of tagged blocks).

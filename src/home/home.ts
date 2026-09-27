@@ -52,6 +52,10 @@ export function mountHome(root: HTMLElement): void {
   fileInput.accept = ALL_ACCEPT
   openButton.addEventListener('click', () => fileInput.click())
 
+  // Google Drive / Microsoft 365 share links (src/ui/import-link.ts, loaded on demand).
+  const linkOpen = el('button', { type: 'button', class: 'home-open', textContent: t('Import from link…'), title: t('Import a file shared from Google Drive, OneDrive or SharePoint') })
+  linkOpen.addEventListener('click', () => void import('../ui/import-link').then((m) => m.openImportFromLink()))
+
   // Nextcloud: open files from it, account settings (needs a connection).
   const cloudOpen = el('button', { type: 'button', class: 'home-open', textContent: t('Open from Nextcloud…') })
   cloudOpen.addEventListener('click', () => void openFromNextcloud())
@@ -114,7 +118,7 @@ export function mountHome(root: HTMLElement): void {
       el(
         'section',
         { class: 'home-new' },
-        el('div', { class: 'home-inner' }, el('div', { class: 'home-section-title' }, el('h2', { textContent: t('Start something new') }), el('span', { class: 'home-open-buttons' }, openButton, cloudOpen), fileInput), newCards),
+        el('div', { class: 'home-inner' }, el('div', { class: 'home-section-title' }, el('h2', { textContent: t('Start something new') }), el('span', { class: 'home-open-buttons' }, openButton, linkOpen, cloudOpen), fileInput), newCards),
       ),
       reminderSlot,
       templatesSection(),

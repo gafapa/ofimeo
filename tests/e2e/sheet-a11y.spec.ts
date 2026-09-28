@@ -127,7 +127,10 @@ test('the accessible table view edits with the keyboard, syncs to a second brows
 test('charts get a text summary and their data as a table', async ({ page }) => {
   await page.addInitScript(english)
   await open(page, newDoc())
+  // The shortcut works once the accessible view is set up (its skip link exists).
+  await page.getByRole('button', { name: 'Switch to accessible table view' }).waitFor({ state: 'attached' })
   await page.keyboard.press('Alt+Shift+T')
+  await expect(page.locator('.sheet-a11y-grid td[tabindex="0"]')).toBeFocused()
   for (const text of ['Month', 'Sep', 'Oct', 'Nov']) {
     await page.keyboard.type(text)
     await page.keyboard.press('Enter')
@@ -138,6 +141,8 @@ test('charts get a text summary and their data as a table', async ({ page }) => 
     await page.keyboard.type(text)
     await page.keyboard.press('Enter')
   }
+  // Every value reached the sheet before the chart is made from it.
+  for (const [ref, value] of [['A4', 'Nov'], ['B1', 'Grade'], ['B3', '7.5'], ['B4', '8']]) await expect(cell(page, ref)).toHaveText(value)
   await page.keyboard.press('Alt+Shift+T')
   // Select A1:B4 through the name box and insert a chart.
   const nameBox = page.locator('[data-u-comp="defined-name"] input')

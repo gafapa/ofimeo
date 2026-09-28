@@ -1,10 +1,11 @@
-// Home screen: create documents of every type, open files and list the
-// documents stored in this browser.
+// Home screen, in three tabs: Home (create, featured templates, recent
+// documents), Templates (the whole gallery) and My documents (the library of
+// the documents stored in this browser).
 
 import { ALL_ACCEPT, appForFile, appInfo, offeredApps, SUITE, type AppInfo } from '../apps/registry'
-import { newDocPath } from '../core/router'
+import { docPath, newDocPath } from '../core/router'
 import { isOfflineCapable, whenOfflineReady } from '../core/offline'
-import { languageSelect, t, tn } from '../core/i18n'
+import { languageSelect, locale, t, tn } from '../core/i18n'
 import * as store from '../core/store'
 import { legalFooter } from '../legal/links'
 import { accessibilityButton } from '../ui/accessibility'
@@ -109,13 +110,23 @@ export function mountHome(root: HTMLElement): void {
   )
 
   const docs = documentsSection()
+  const recent = recentSection(() => tabs.select('docs'))
   setChangeListener(() => {
     docs.refresh()
+    recent.refresh()
     renderReminder()
   })
   const reminderSlot = el('div', { class: 'home-inner reminder-slot' })
   const renderReminder = () => reminderSlot.replaceChildren(...[backupReminder()].filter((x): x is HTMLElement => !!x))
   renderReminder()
+
+  // Templates are a separate chunk (src/templates), shared by the Home and Templates tabs.
+  const featured = templatesPart((m, node) => m.mountFeaturedTemplates(node, () => tabs.select('templates')))
+  const gallery = templatesPart((m, node) => m.mountTemplates(node))
+  const tabs = homeTabs((id) => {
+    if (id === 'home') featured.refresh()
+    if (id === 'templates') gallery.refresh()
+  })
 
   root.replaceChildren(
     el(
@@ -137,26 +148,35 @@ export function mountHome(root: HTMLElement): void {
         nameInput,
         nameButton(nameInput),
       ),
-      el(
-        'section',
-        { class: 'home-new' },
-        el('div', { class: 'home-inner' }, el('div', { class: 'home-section-title' }, el('h2', { textContent: t('Start something new') }), el('span', { class: 'home-open-buttons' }, openButton, moreOpen), fileInput), newCards),
-      ),
-      moodleSlot,
-      reminderSlot,
-      templatesSection(),
-      el(
-        'section',
-        { class: 'home-recent' },
-        docs.element,
+      tabs.bar,
+      tabs.panel(
+        'home',
         el(
-          'div',
-          { class: 'home-inner' },
-          el('p', {
-            class: 'hint',
-            textContent:
-              t('Documents are stored in this browser. Share a document to edit it with others in real time; edits travel directly between browsers.'),
-          }),
+          'section',
+          { class: 'home-new' },
+          el('div', { class: 'home-inner' }, el('div', { class: 'home-section-title' }, el('h2', { textContent: t('Start something new') }), el('span', { class: 'home-open-buttons' }, openButton, moreOpen), fileInput), newCards),
+        ),
+        moodleSlot,
+        reminderSlot,
+        el('section', { class: 'home-templates home-featured' }, featured.element),
+        recent.element,
+      ),
+      tabs.panel('templates', el('section', { class: 'home-templates' }, gallery.element)),
+      tabs.panel(
+        'docs',
+        el(
+          'section',
+          { class: 'home-recent' },
+          docs.element,
+          el(
+            'div',
+            { class: 'home-inner' },
+            el('p', {
+              class: 'hint',
+              textContent:
+                t('Documents are stored in this browser. Share a document to edit it with others in real time; edits travel directly between browsers.'),
+            }),
+          ),
         ),
       ),
       legalFooter(),
@@ -170,7 +190,9 @@ export function mountHome(root: HTMLElement): void {
   registerShortcuts({ open: () => fileInput.click(), save: null, help: () => void showShortcuts() })
   // Titles and new documents from other tabs.
   window.addEventListener('storage', (e) => {
-    if (e.key === null || e.key.startsWith('ofimeo:')) docs.refresh()
+    if (e.key !== null && !e.key.startsWith('ofimeo:')) return
+    docs.refresh()
+    recent.refresh()
   })
 }
 
@@ -212,13 +234,100 @@ function helpButton(): HTMLButtonElement {
   return button
 }
 
-// Template gallery, loaded as a separate chunk (src/templates).
-function templatesSection(): HTMLElement {
+type GalleryModule = typeof import('../templates/gallery')
+
+// A part of the template gallery, mounted once its chunk has loaded.
+function templatesPart(mount: (m: GalleryModule, node: HTMLElement) => { refresh: () => void }): { element: HTMLElement; refresh: () => void } {
   const inner = el('div', { class: 'home-inner' })
+  let refresh = () => {}
   import('../templates/gallery')
-    .then(({ mountTemplates }) => mountTemplates(inner))
+    .then((m) => (refresh = mount(m, inner).refresh))
     .catch(() => inner.replaceChildren())
-  return el('section', { class: 'home-templates' }, inner)
+  return { element: inner, refresh: () => refresh() }
+}
+
+type TabId = 'home' | 'templates' | 'docs'
+
+// Tabs of the home screen (ARIA tabs: arrow keys, Home and End move between them).
+function homeTabs(onSelect: (id: TabId) => void): { bar: HTMLElement; panel: (id: TabId, ...children: HTMLElement[]) => HTMLElement; select: (id: TabId) => void } {
+  const labels: Record<TabId, string> = { home: t('Home'), templates: t('Templates'), docs: t('My documents') }
+  const ids = Object.keys(labels) as TabId[]
+  const buttons = new Map<TabId, HTMLButtonElement>()
+  const panels = new Map<TabId, HTMLElement>()
+  const list = el('div', { class: 'home-tabs-list', role: 'tablist' })
+  list.setAttribute('aria-label', t('Home screen sections'))
+  const select = (id: TabId, focus = false) => {
+    for (const other of ids) {
+      const on = other === id
+      buttons.get(other)!.setAttribute('aria-selected', String(on))
+      buttons.get(other)!.tabIndex = on ? 0 : -1
+      const panel = panels.get(other)
+      if (panel) panel.hidden = !on
+    }
+    if (focus) buttons.get(id)!.focus()
+    onSelect(id)
+  }
+  for (const id of ids) {
+    const b = el('button', { type: 'button', class: 'home-tab', id: `home-tab-${id}`, textContent: labels[id] })
+    b.setAttribute('role', 'tab')
+    b.setAttribute('aria-controls', `home-panel-${id}`)
+    b.setAttribute('aria-selected', String(id === 'home'))
+    b.tabIndex = id === 'home' ? 0 : -1
+    b.addEventListener('click', () => select(id))
+    b.addEventListener('keydown', (e) => {
+      const i = ids.indexOf(id)
+      const keys: Record<string, TabId> = { ArrowRight: ids[(i + 1) % ids.length], ArrowLeft: ids[(i + ids.length - 1) % ids.length], Home: ids[0], End: ids[ids.length - 1] }
+      const next = keys[e.key]
+      if (!next) return
+      e.preventDefault()
+      select(next, true)
+    })
+    buttons.set(id, b)
+    list.append(b)
+  }
+  const panel = (id: TabId, ...children: HTMLElement[]) => {
+    const node = el('div', { class: 'home-panel', id: `home-panel-${id}`, role: 'tabpanel' }, ...children)
+    node.setAttribute('aria-labelledby', `home-tab-${id}`)
+    node.hidden = id !== 'home'
+    panels.set(id, node)
+    return node
+  }
+  return { bar: el('nav', { class: 'home-tabs' }, el('div', { class: 'home-inner' }, list)), panel, select }
+}
+
+const RECENT_COUNT = 5
+
+// Home tab: the last documents opened or changed in this browser, and a link to the library.
+function recentSection(showAll: () => void): { element: HTMLElement; refresh: () => void } {
+  const list = el('div', { class: 'recent-list', role: 'list' })
+  const all = el('button', { type: 'button', class: 'tpl-more' })
+  all.addEventListener('click', showAll)
+  const refresh = () => {
+    const docs = store.listDocs().filter((d) => !d.trashed)
+    all.textContent = t('All my documents ({count})', { count: docs.length })
+    all.hidden = !docs.length
+    if (!docs.length) {
+      list.replaceChildren(el('p', { class: 'empty', textContent: t('Nothing here yet. Create a document above, open a file or open a link someone shared with you.') }))
+      return
+    }
+    list.replaceChildren(
+      ...docs.slice(0, RECENT_COUNT).map((d) => {
+        const app = appInfo(d.type)
+        const row = el(
+          'a',
+          { class: 'recent-row', href: docPath(d.type, d.id, d.key), role: 'listitem' },
+          appIcon(app, 'small'),
+          el('span', { class: 'recent-title', textContent: d.title || app.untitled }),
+          el('span', { class: 'recent-date', textContent: new Date(d.updated).toLocaleDateString(locale, { day: 'numeric', month: 'short' }) }),
+        )
+        row.dataset.id = d.id
+        return row
+      }),
+    )
+  }
+  refresh()
+  const element = el('section', { class: 'home-recent-short' }, el('div', { class: 'home-inner' }, el('div', { class: 'home-section-title' }, el('h2', { textContent: t('Recent documents') }), all), list))
+  return { element, refresh }
 }
 
 function appIcon(app: AppInfo, size: 'small' | 'large'): HTMLElement {

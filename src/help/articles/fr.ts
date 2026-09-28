@@ -7,13 +7,13 @@ const articles: Articles = {
   'getting-started': {
     title: 'Premiers pas',
     keywords: 'commencer début démarrer bienvenue accueil nouveau document ouvrir modèle compte',
-    body: `Ofimeo est une suite bureautique qui fonctionne entièrement dans votre navigateur${NB}: documents, classeurs, dessins, diagrammes, présentations, formulaires et correction de PDF. Elle est conçue pour l’école, pour les élèves comme pour les enseignants, mais tout le monde peut l’utiliser${NB}: à la maison, dans une association ou au travail. Aucun compte n’est nécessaire et rien n’est installé sur un serveur.
+    body: `Ofimeo est une suite bureautique qui fonctionne entièrement dans votre navigateur${NB}: documents, classeurs, dessins, diagrammes, présentations, formulaires et annotation de PDF. Elle est conçue pour l’école, pour les élèves comme pour les enseignants, mais tout le monde peut l’utiliser${NB}: à la maison, dans une association ou au travail. Aucun compte n’est nécessaire et rien n’est installé sur un serveur.
 
 ## L’écran d’accueil
-- **Créer quelque chose de nouveau**${NB}: cliquez sur une carte pour créer un document de ce type.
-- **Modèles**${NB}: dossiers, fiches d’exercices, cartes mentales, emplois du temps, présentations, grilles d’évaluation, carnets de notes et plus encore. Cliquez sur l’un d’eux pour obtenir votre propre copie.
-- **Ouvrir un fichier…**${NB}: ouvre des fichiers Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw et PDF de votre ordinateur.
-- **Vos documents**${NB}: tout ce que vous avez créé ou ouvert dans ce navigateur, avec recherche, dossiers, étiquettes et corbeille (les documents supprimés sont conservés 30${NB}jours).
+Il comporte trois onglets${NB}:
+- **Accueil**${NB}: cliquez sur une carte pour créer un document de ce type${NB}; **Ouvrir un fichier…** ouvre des fichiers Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw et PDF de votre ordinateur (**Plus** propose d’autres façons d’ouvrir). En dessous, quatre modèles et vos documents les plus récents.
+- **Modèles**${NB}: dossiers, fiches d’exercices, cartes mentales, emplois du temps, présentations, grilles d’évaluation, carnets de notes et plus encore, par application et langue du contenu, et vos propres modèles. Cliquez sur l’un d’eux pour obtenir votre propre copie.
+- **Mes documents**${NB}: tout ce que vous avez créé ou ouvert dans ce navigateur, avec recherche, dossiers, étiquettes et corbeille (les documents supprimés sont conservés 30${NB}jours).
 
 ## Votre nom
 Saisissez votre nom dans la case en haut à droite (sur un téléphone ou dans une fenêtre étroite, touchez le bouton en forme de personne en haut à droite). Vos collaborateurs le voient à côté de votre curseur et dans les commentaires, et il sert au nom du fichier quand vous rendez un travail. Un prénom ou des initiales suffisent.
@@ -224,7 +224,7 @@ Le service informatique trouve le guide d’installation dans la documentation d
 - **N’importe quel serveur web** (nginx, Apache, IIS) : copiez les fichiers compilés. L’application n’a pas de partie serveur.
 
 ## La configuration de l’établissement
-[Aide ▸ Pour les administrateurs…](action:admin) ouvre un formulaire qui crée ofimeo.config.json. Il définit :
+Sur l’écran d’accueil, [Aide ▸ Pour les administrateurs…](action:admin) ouvre un formulaire qui crée ofimeo.config.json. Il définit :
 - le nom et le logo de l’établissement, affichés sur l’écran d’accueil ;
 - la langue de l’interface par défaut et la langue des nouveaux documents ;
 - le relais de l’établissement, d’autres relais et si les serveurs publics sont autorisés ;
@@ -289,6 +289,7 @@ Les menus affichent le raccourci de chaque commande à côté de celle-ci.
 - **Règle de lecture** ou **masque de focus** qui suivent le pointeur et le curseur de texte.
 - **Lecture à voix haute** (\`Alt+Maj+R\`)${NB}: lit la sélection, le paragraphe ou tout le document avec les voix du navigateur.
 - **Dictée** (\`Alt+Maj+D\`)${NB}: écrit ce que vous dites. Elle nécessite une connexion et un navigateur compatible (Chrome, Edge).
+- **Boutons rapides**${NB}: cochez **Afficher un bouton de lecture à voix haute dans les applications** et **Afficher un bouton de dictée dans les applications** dans le panneau pour avoir 🔊 et 🎤 à côté du bouton d’accessibilité de chaque application. Le panneau garde leurs réglages (langue, vitesse, voix)${NB}; les touches fonctionnent avec ou sans les boutons.
 - **Clavier**${NB}: tout s’utilise au clavier. \`F10\` mène à la barre de menus et un lien «${NB}Aller au contenu${NB}» apparaît avec \`Tab\`. Voir [Raccourcis clavier](help:shortcuts).
 
 La langue de l’interface se change sur l’écran d’accueil ou dans le panneau.`,

@@ -2801,6 +2801,17 @@ const gl: Record<string, string> = {
   'Accounts': 'Contas',
   'Nothing here yet. Create a document above, open a file or open a link someone shared with you.': 'Aquí aínda non hai nada. Crea un documento arriba, abre un ficheiro ou abre unha ligazón que che compartisen.',
   'Your documents': 'Os teus documentos',
+  'Annotate a PDF': 'Anotar un PDF',
+  'Show a read aloud button in the apps': 'Amosar un botón de lectura en voz alta nas aplicacións',
+  'Show a dictation button in the apps': 'Amosar un botón de ditado nas aplicacións',
+  'Stop reading': 'Deter a lectura',
+  'Read aloud (Alt+Shift+R)': 'Ler en voz alta (Alt+Maiús+R)',
+  'Dictation (Alt+Shift+D)': 'Ditado (Alt+Maiús+D)',
+  'Home': 'Inicio',
+  'My documents': 'Os meus documentos',
+  'All my documents ({count})': 'Todos os meus documentos ({count})',
+  'Home screen sections': 'Seccións da pantalla principal',
+  'No documents yet. Create one on the Home tab, open a file or open a link someone shared with you.': 'Aínda non hai documentos. Crea un na lapela Inicio, abre un ficheiro ou abre unha ligazón que che compartisen.',
 }
 
 export default gl

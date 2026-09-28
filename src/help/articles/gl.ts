@@ -5,13 +5,13 @@ const articles: Articles = {
   'getting-started': {
     title: 'Primeiros pasos',
     keywords: 'comezar inicio empezar benvida pantalla principal novo documento abrir modelo conta',
-    body: `Ofimeo é unha suite ofimática que funciona enteira no teu navegador: documentos, follas de cálculo, debuxos, diagramas, presentacións, formularios e corrección de PDF. Está pensada para a educación, tanto para o alumnado como para o profesorado, pero calquera pode usala: na casa, nunha asociación ou no traballo. Non precisas conta e non se instala nada en ningún servidor.
+    body: `Ofimeo é unha suite ofimática que funciona enteira no teu navegador: documentos, follas de cálculo, debuxos, diagramas, presentacións, formularios e anotación de PDF. Está pensada para a educación, tanto para o alumnado como para o profesorado, pero calquera pode usala: na casa, nunha asociación ou no traballo. Non precisas conta e non se instala nada en ningún servidor.
 
 ## A pantalla principal
-- **Comeza algo novo**: fai clic nunha tarxeta para crear un documento dese tipo.
-- **Modelos**: traballos, fichas, mapas conceptuais, horarios, presentacións, rúbricas, cadernos de notas e máis. Fai clic nun para obter a túa propia copia.
-- **Abrir ficheiro…**: abre ficheiros de Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw e PDF do teu ordenador.
-- **Os teus documentos**: todo o que creaches ou abriches neste navegador, con busca, cartafoles, etiquetas e papeleira (os documentos eliminados gárdanse 30 días).
+Ten tres lapelas:
+- **Inicio**: fai clic nunha tarxeta para crear un documento dese tipo; **Abrir ficheiro…** abre ficheiros de Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw e PDF do teu ordenador (**Máis** ten outras formas de abrir). Debaixo, catro modelos e os teus documentos máis recentes.
+- **Modelos**: traballos, fichas, mapas conceptuais, horarios, presentacións, rúbricas, cadernos de notas e máis, por aplicación e idioma do contido, e os teus propios modelos. Fai clic nun para obter a túa propia copia.
+- **Os meus documentos**: todo o que creaches ou abriches neste navegador, con busca, cartafoles, etiquetas e papeleira (os documentos eliminados gárdanse 30 días).
 
 ## O teu nome
 Escribe o teu nome na caixa de arriba á dereita (nun móbil ou nunha xanela estreita, toca o botón da persoa de arriba á dereita). Os colaboradores véno xunto ao teu cursor e nos comentarios, e úsase no nome do ficheiro cando entregas un traballo. Abonda co nome ou coas iniciais.
@@ -222,7 +222,7 @@ O departamento de informática atopa a guía de instalación na documentación d
 - **Calquera servidor web** (nginx, Apache, IIS): copia os ficheiros compilados. A aplicación non ten parte de servidor.
 
 ## A configuración do centro
-[Axuda ▸ Para administradores…](action:admin) abre un formulario que crea ofimeo.config.json. Establece:
+Na pantalla principal, [Axuda ▸ Para administradores…](action:admin) abre un formulario que crea ofimeo.config.json. Establece:
 - o nome e o logotipo do centro, que se mostran na pantalla de inicio;
 - o idioma da interface por defecto e o idioma dos documentos novos;
 - o relé do centro, outros relés e se se poden usar servidores públicos;
@@ -287,6 +287,7 @@ Os menús amosan o atallo de cada orde ao seu carón.
 - **Regra de lectura** ou **máscara de foco** que seguen o punteiro e o cursor de texto.
 - **Ler en voz alta** (\`Alt+Maiús+R\`): le a selección, o parágrafo ou todo o documento coas voces do navegador.
 - **Ditado** (\`Alt+Maiús+D\`): escribe o que dis. Precisa conexión e un navegador compatible (Chrome, Edge).
+- **Botóns rápidos**: marca **Amosar un botón de lectura en voz alta nas aplicacións** e **Amosar un botón de ditado nas aplicacións** no panel para ter 🔊 e 🎤 xunto ao botón de accesibilidade de cada aplicación. O panel garda os seus axustes (idioma, velocidade, voz); as teclas funcionan con ou sen os botóns.
 - **Teclado**: todo se pode usar co teclado. \`F10\` leva á barra de menús e ao premer \`Tab\` aparece unha ligazón «Saltar ao contido». Consulta [Atallos de teclado](help:shortcuts).
 
 O idioma da interface cámbiase na pantalla principal ou no panel.`,

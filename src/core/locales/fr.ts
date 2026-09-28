@@ -2801,6 +2801,17 @@ const fr: Record<string, string> = {
   'Accounts': 'Comptes',
   'Nothing here yet. Create a document above, open a file or open a link someone shared with you.': 'Rien ici pour l’instant. Créez un document ci-dessus, ouvrez un fichier ou un lien que l’on vous a partagé.',
   'Your documents': 'Vos documents',
+  'Annotate a PDF': 'Annoter un PDF',
+  'Show a read aloud button in the apps': 'Afficher un bouton de lecture à voix haute dans les applications',
+  'Show a dictation button in the apps': 'Afficher un bouton de dictée dans les applications',
+  'Stop reading': 'Arrêter la lecture',
+  'Read aloud (Alt+Shift+R)': 'Lire à voix haute (Alt+Maj+R)',
+  'Dictation (Alt+Shift+D)': 'Dictée (Alt+Maj+D)',
+  'Home': 'Accueil',
+  'My documents': 'Mes documents',
+  'All my documents ({count})': 'Tous mes documents ({count})',
+  'Home screen sections': 'Sections de l’écran d’accueil',
+  'No documents yet. Create one on the Home tab, open a file or open a link someone shared with you.': 'Aucun document pour l’instant. Créez-en un dans l’onglet Accueil, ouvrez un fichier ou un lien que l’on vous a partagé.',
 }
 
 export default fr

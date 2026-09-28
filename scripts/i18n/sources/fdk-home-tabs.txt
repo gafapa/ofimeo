@@ -1,0 +1,5 @@
+Home ||| Accueil ||| Start
+My documents ||| Mes documents ||| Meine Dokumente
+All my documents ({count}) ||| Tous mes documents ({count}) ||| Alle meine Dokumente ({count})
+Home screen sections ||| Sections de l’écran d’accueil ||| Bereiche der Startseite
+No documents yet. Create one on the Home tab, open a file or open a link someone shared with you. ||| Aucun document pour l’instant. Créez-en un dans l’onglet Accueil, ouvrez un fichier ou un lien que l’on vous a partagé. ||| Noch keine Dokumente. Erstellen Sie eines im Reiter Start, öffnen Sie eine Datei oder einen Link, den Ihnen jemand geteilt hat.

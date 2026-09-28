@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { RELAYS, openApp, trackErrors } from './helpers'
+import { RELAYS, openApp, openLibrary, trackErrors } from './helpers'
 
 // Deletes everything this site stored (as "Clear browsing data" would).
 async function clearStorage(page: Page): Promise<void> {
@@ -41,6 +41,7 @@ test('backup and restore keep content, versions and comments', async ({ page }, 
 
   // Back up everything with a password.
   await page.goto(`/${RELAYS}`)
+  await openLibrary(page)
   await expect(page.locator('.doc-row')).toHaveCount(1)
   await page.locator('.home-storage').click()
   await page.getByRole('button', { name: 'Back up all documents…' }).click()
@@ -56,6 +57,7 @@ test('backup and restore keep content, versions and comments', async ({ page }, 
   await clearStorage(page)
   await page.goto('about:blank')
   await page.goto(`/${RELAYS}`)
+  await openLibrary(page)
   await expect(page.locator('.doc-table .empty')).toBeVisible()
 
   // …and the backup brings them back.
@@ -93,6 +95,7 @@ test('deleted documents go to the trash until it is emptied', async ({ page }) =
   await page.keyboard.type('To the trash')
   await page.waitForTimeout(300)
   await page.goto(`/${RELAYS}`)
+  await openLibrary(page)
   const row = page.locator('.doc-table .doc-row').first()
   const id = await row.getAttribute('data-id')
   const count = await page.locator('.doc-table .doc-row').count()

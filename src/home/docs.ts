@@ -542,7 +542,7 @@ export function documentsSection(): DocsSection {
               ? t('This folder is empty. Drag documents here or use “Move to folder…”.')
               : view.kind === 'tag'
                 ? t('No documents have this tag.')
-                : t('Nothing here yet. Create a document above, open a file or open a link someone shared with you.')
+                : t('No documents yet. Create one on the Home tab, open a file or open a link someone shared with you.')
       listHead.replaceChildren()
       list.replaceChildren(el('p', { class: 'empty', textContent: text }))
     } else {

@@ -193,7 +193,8 @@ export function helpMenuItems(session: Session | undefined, options: HelpMenuOpt
     { label: t('Keyboard shortcuts'), shortcut: mod('/'), run: options.shortcuts },
     { label: t('Accessibility…'), shortcut: 'Alt+Shift+A', run: () => togglePanel(true) },
     ...(connectionModule ? [{ label: t('Connection test…'), run: () => void openConnectionTest(session) }] : []),
-    { label: t('For administrators…'), run: () => void import('./admin-config').then((m) => m.openConfigGenerator()) },
+    // The school configuration generator: on the home screen only, not in every app.
+    ...(session ? [] : [{ label: t('For administrators…'), run: () => void import('./admin-config').then((m) => m.openConfigGenerator()) }]),
     ...(options.extra ?? []),
     '-',
     { label: t('About {suite}', { suite: SUITE }), run: () => void aboutModule().then((m) => m.aboutDialog()) },

@@ -118,11 +118,11 @@ function learningSituation(pptx: Pptx, lang: Lang): void {
 function oralPresentation(pptx: Pptx, lang: Lang): void {
   const L = pick(lang)
   const p = { accent: '188038', dark: '0D652D', light: 'E6F4EA' }
-  cover(pptx, L('[Título de la exposición]', '[Título da exposición]', '[Titre de l’exposé]', '[Titel des Referats]'), L('Nombre y apellidos · Curso · Fecha', 'Nome e apelidos · Curso · Data', 'Nom et prénom · Classe · Date', 'Vor- und Nachname · Klasse · Datum'), p)
+  cover(pptx, L('[Título de la exposición]', '[Título da exposición]', '[Titre de l’exposé]', '[Titel des Referats]', '[Title of the talk]'), L('Nombre y apellidos · Curso · Fecha', 'Nome e apelidos · Curso · Data', 'Nom et prénom · Classe · Date', 'Vor- und Nachname · Klasse · Datum', 'Full name · Class · Date'), p)
 
   let s = pptx.addSlide()
-  titleBar(s, L('Índice', 'Índice', 'Sommaire', 'Inhaltsverzeichnis'), p)
-  ;[L('Introducción', 'Introdución', 'Introduction', 'Einleitung'), L('Desarrollo', 'Desenvolvemento', 'Développement', 'Hauptteil'), L('Conclusiones', 'Conclusións', 'Conclusions', 'Fazit'), L('Fuentes', 'Fontes', 'Sources', 'Quellen')].forEach((item, i) => {
+  titleBar(s, L('Índice', 'Índice', 'Sommaire', 'Inhaltsverzeichnis', 'Contents'), p)
+  ;[L('Introducción', 'Introdución', 'Introduction', 'Einleitung', 'Introduction'), L('Desarrollo', 'Desenvolvemento', 'Développement', 'Hauptteil', 'Main body'), L('Conclusiones', 'Conclusións', 'Conclusions', 'Fazit', 'Conclusions'), L('Fuentes', 'Fontes', 'Sources', 'Quellen', 'Sources')].forEach((item, i) => {
     const y = 1.35 + i * 0.95
     s.addShape('ellipse', { x: 0.7, y, w: 0.7, h: 0.7, fill: { color: p.accent }, line: { color: p.accent } })
     s.addText(String(i + 1), { x: 0.7, y, w: 0.7, h: 0.7, fontFace: FONT, fontSize: 20, bold: true, color: 'FFFFFF', align: 'center', valign: 'middle' })
@@ -130,26 +130,26 @@ function oralPresentation(pptx: Pptx, lang: Lang): void {
   })
 
   s = pptx.addSlide()
-  titleBar(s, L('Introducción', 'Introdución', 'Introduction', 'Einleitung'), p)
-  bullets(s, [L('¿De qué trata el tema?', 'De que trata o tema?', 'De quoi parle le thème ?', 'Worum geht es?'), L('¿Por qué lo he elegido?', 'Por que o escollín?', 'Pourquoi l’ai-je choisi ?', 'Warum habe ich das Thema gewählt?'), L('¿Qué vais a aprender?', 'Que ides aprender?', 'Qu’allez-vous apprendre ?', 'Was werdet ihr lernen?')])
+  titleBar(s, L('Introducción', 'Introdución', 'Introduction', 'Einleitung', 'Introduction'), p)
+  bullets(s, [L('¿De qué trata el tema?', 'De que trata o tema?', 'De quoi parle le thème ?', 'Worum geht es?', 'What is the topic about?'), L('¿Por qué lo he elegido?', 'Por que o escollín?', 'Pourquoi l’ai-je choisi ?', 'Warum habe ich das Thema gewählt?', 'Why did I choose it?'), L('¿Qué vais a aprender?', 'Que ides aprender?', 'Qu’allez-vous apprendre ?', 'Was werdet ihr lernen?', 'What will you learn?')])
 
   s = pptx.addSlide()
-  titleBar(s, L('Desarrollo', 'Desenvolvemento', 'Développement', 'Hauptteil'), p)
-  bullets(s, [L('Idea principal 1', 'Idea principal 1', 'Idée principale 1', 'Hauptgedanke 1'), L('Dato o ejemplo', 'Dato ou exemplo', 'Donnée ou exemple', 'Fakt oder Beispiel')], 0.6, 1.3, 4.3, 3.8)
+  titleBar(s, L('Desarrollo', 'Desenvolvemento', 'Développement', 'Hauptteil', 'Main body'), p)
+  bullets(s, [L('Idea principal 1', 'Idea principal 1', 'Idée principale 1', 'Hauptgedanke 1', 'Main idea 1'), L('Dato o ejemplo', 'Dato ou exemplo', 'Donnée ou exemple', 'Fakt oder Beispiel', 'Fact or example')], 0.6, 1.3, 4.3, 3.8)
   s.addShape('rect', { x: 5.2, y: 1.4, w: 4.2, h: 3.4, fill: { color: p.light }, line: { color: p.accent, dashType: 'dash' } })
-  s.addText(L('[Imagen, gráfico o mapa]', '[Imaxe, gráfico ou mapa]', '[Image, graphique ou carte]', '[Bild, Grafik oder Karte]'), { x: 5.2, y: 1.4, w: 4.2, h: 3.4, fontFace: FONT, fontSize: 16, italic: true, color: MUTED, align: 'center', valign: 'middle' })
+  s.addText(L('[Imagen, gráfico o mapa]', '[Imaxe, gráfico ou mapa]', '[Image, graphique ou carte]', '[Bild, Grafik oder Karte]', '[Picture, chart or map]'), { x: 5.2, y: 1.4, w: 4.2, h: 3.4, fontFace: FONT, fontSize: 16, italic: true, color: MUTED, align: 'center', valign: 'middle' })
 
   s = pptx.addSlide()
-  titleBar(s, L('Conclusiones', 'Conclusións', 'Conclusions', 'Fazit'), p)
-  bullets(s, [L('Lo más importante es…', 'O máis importante é…', 'Le plus important, c’est…', 'Das Wichtigste ist…'), L('He aprendido que…', 'Aprendín que…', 'J’ai appris que…', 'Ich habe gelernt, dass…'), L('Me pregunto…', 'Pregúntome…', 'Je me demande…', 'Ich frage mich…')])
+  titleBar(s, L('Conclusiones', 'Conclusións', 'Conclusions', 'Fazit', 'Conclusions'), p)
+  bullets(s, [L('Lo más importante es…', 'O máis importante é…', 'Le plus important, c’est…', 'Das Wichtigste ist…', 'The most important thing is…'), L('He aprendido que…', 'Aprendín que…', 'J’ai appris que…', 'Ich habe gelernt, dass…', 'I learned that…'), L('Me pregunto…', 'Pregúntome…', 'Je me demande…', 'Ich frage mich…', 'I wonder…')])
 
   s = pptx.addSlide()
-  titleBar(s, L('Fuentes', 'Fontes', 'Sources', 'Quellen'), p)
+  titleBar(s, L('Fuentes', 'Fontes', 'Sources', 'Quellen', 'Sources'), p)
   bullets(
     s,
     [
-      L('Apellido, N. (Año). Título del libro. Editorial.', 'Apelido, N. (Ano). Título do libro. Editorial.', 'Nom, P. (Année). Titre du livre. Éditeur.', 'Nachname, V. (Jahr). Titel des Buches. Verlag.'),
-      L('Apellido, N. (Año). Título de la página. Sitio web. https://…', 'Apelido, N. (Ano). Título da páxina. Sitio web. https://…', 'Nom, P. (Année). Titre de la page. Site web. https://…', 'Nachname, V. (Jahr). Titel der Seite. Website. https://…'),
+      L('Apellido, N. (Año). Título del libro. Editorial.', 'Apelido, N. (Ano). Título do libro. Editorial.', 'Nom, P. (Année). Titre du livre. Éditeur.', 'Nachname, V. (Jahr). Titel des Buches. Verlag.', 'Surname, N. (Year). Title of the book. Publisher.'),
+      L('Apellido, N. (Año). Título de la página. Sitio web. https://…', 'Apelido, N. (Ano). Título da páxina. Sitio web. https://…', 'Nom, P. (Année). Titre de la page. Site web. https://…', 'Nachname, V. (Jahr). Titel der Seite. Website. https://…', 'Surname, N. (Year). Title of the page. Website. https://…'),
     ],
     0.6,
     1.3,
@@ -160,8 +160,8 @@ function oralPresentation(pptx: Pptx, lang: Lang): void {
 
   s = pptx.addSlide()
   s.background = { color: p.accent }
-  s.addText(L('¡Gracias!', 'Grazas!', 'Merci !', 'Danke!'), { x: 0.5, y: 1.5, w: 9, h: 1.4, fontFace: FONT, fontSize: 54, bold: true, color: 'FFFFFF', align: 'center', valign: 'middle' })
-  s.addText(L('¿Preguntas?', 'Preguntas?', 'Des questions ?', 'Fragen?'), { x: 0.5, y: 2.9, w: 9, h: 0.8, fontFace: FONT, fontSize: 26, color: 'FFFFFF', align: 'center', valign: 'middle' })
+  s.addText(L('¡Gracias!', 'Grazas!', 'Merci !', 'Danke!', 'Thank you!'), { x: 0.5, y: 1.5, w: 9, h: 1.4, fontFace: FONT, fontSize: 54, bold: true, color: 'FFFFFF', align: 'center', valign: 'middle' })
+  s.addText(L('¿Preguntas?', 'Preguntas?', 'Des questions ?', 'Fragen?', 'Any questions?'), { x: 0.5, y: 2.9, w: 9, h: 0.8, fontFace: FONT, fontSize: 26, color: 'FFFFFF', align: 'center', valign: 'middle' })
 }
 
 // Numbered cards in a row (steps, phases).
@@ -196,95 +196,95 @@ function table(slide: Slide, rows: string[][], p: Palette, colW: number[], y = 1
 function classPresentation(pptx: Pptx, lang: Lang): void {
   const L = pick(lang)
   const p = { accent: 'E8710A', dark: 'B06000', light: 'FEEFE3' }
-  cover(pptx, L('[Tema de la clase]', '[Tema da clase]', '[Thème du cours]', '[Thema der Stunde]'), L('Materia · Curso · Fecha', 'Materia · Curso · Data', 'Matière · Classe · Date', 'Fach · Klasse · Datum'), p)
+  cover(pptx, L('[Tema de la clase]', '[Tema da clase]', '[Thème du cours]', '[Thema der Stunde]', '[Lesson topic]'), L('Materia · Curso · Fecha', 'Materia · Curso · Data', 'Matière · Classe · Date', 'Fach · Klasse · Datum', 'Subject · Class · Date'), p)
 
   let s = pptx.addSlide()
-  titleBar(s, L('Hoy vamos a…', 'Hoxe imos…', 'Aujourd’hui, nous allons…', 'Heute werden wir…'), p)
+  titleBar(s, L('Hoy vamos a…', 'Hoxe imos…', 'Aujourd’hui, nous allons…', 'Heute werden wir…', 'Today we are going to…'), p)
   bullets(s, [
-    L('Recordar lo que ya sabemos sobre…', 'Lembrar o que xa sabemos sobre…', 'Rappeler ce que nous savons déjà sur…', 'Wiederholen, was wir schon über … wissen'),
-    L('Descubrir…', 'Descubrir…', 'Découvrir…', 'Entdecken, …'),
-    L('Practicar…', 'Practicar…', 'Nous entraîner à…', 'Üben, …'),
+    L('Recordar lo que ya sabemos sobre…', 'Lembrar o que xa sabemos sobre…', 'Rappeler ce que nous savons déjà sur…', 'Wiederholen, was wir schon über … wissen', 'Recall what we already know about…'),
+    L('Descubrir…', 'Descubrir…', 'Découvrir…', 'Entdecken, …', 'Discover…'),
+    L('Practicar…', 'Practicar…', 'Nous entraîner à…', 'Üben, …', 'Practise…'),
   ])
-  s.addNotes(L('Pregunta inicial para activar ideas previas.', 'Pregunta inicial para activar ideas previas.', 'Question de départ pour faire émerger les représentations.', 'Einstiegsfrage, um Vorwissen zu aktivieren.'))
+  s.addNotes(L('Pregunta inicial para activar ideas previas.', 'Pregunta inicial para activar ideas previas.', 'Question de départ pour faire émerger les représentations.', 'Einstiegsfrage, um Vorwissen zu aktivieren.', 'Starter question to bring out prior ideas.'))
 
   s = pptx.addSlide()
-  titleBar(s, L('Concepto clave', 'Concepto clave', 'Notion clé', 'Schlüsselbegriff'), p)
+  titleBar(s, L('Concepto clave', 'Concepto clave', 'Notion clé', 'Schlüsselbegriff', 'Key concept'), p)
   s.addShape('roundRect', { x: 0.6, y: 1.4, w: 8.8, h: 1.5, fill: { color: p.light }, line: { color: p.accent }, rectRadius: 0.15 })
-  s.addText(L('[Definición con palabras sencillas]', '[Definición con palabras sinxelas]', '[Définition en mots simples]', '[Definition in einfachen Worten]'), {
+  s.addText(L('[Definición con palabras sencillas]', '[Definición con palabras sinxelas]', '[Définition en mots simples]', '[Definition in einfachen Worten]', '[Definition in simple words]'), {
     x: 0.8, y: 1.5, w: 8.4, h: 1.3, fontFace: FONT, fontSize: 24, bold: true, color: INK, align: 'center', valign: 'middle',
   })
-  bullets(s, [L('Por ejemplo: …', 'Por exemplo: …', 'Par exemple : …', 'Zum Beispiel: …'), L('No confundir con: …', 'Non confundir con: …', 'À ne pas confondre avec : …', 'Nicht verwechseln mit: …')], 0.6, 3.2, 8.8, 1.9, 18)
+  bullets(s, [L('Por ejemplo: …', 'Por exemplo: …', 'Par exemple : …', 'Zum Beispiel: …', 'For example: …'), L('No confundir con: …', 'Non confundir con: …', 'À ne pas confondre avec : …', 'Nicht verwechseln mit: …', 'Not to be confused with: …')], 0.6, 3.2, 8.8, 1.9, 18)
 
   s = pptx.addSlide()
-  titleBar(s, L('Un ejemplo', 'Un exemplo', 'Un exemple', 'Ein Beispiel'), p)
-  bullets(s, [L('Observa…', 'Observa…', 'Observe…', 'Beobachte …'), L('¿Qué ocurre si…?', 'Que ocorre se…?', 'Que se passe-t-il si… ?', 'Was passiert, wenn …?'), L('Conclusión: …', 'Conclusión: …', 'Conclusion : …', 'Ergebnis: …')], 0.6, 1.3, 4.3, 3.8)
+  titleBar(s, L('Un ejemplo', 'Un exemplo', 'Un exemple', 'Ein Beispiel', 'An example'), p)
+  bullets(s, [L('Observa…', 'Observa…', 'Observe…', 'Beobachte …', 'Look at…'), L('¿Qué ocurre si…?', 'Que ocorre se…?', 'Que se passe-t-il si… ?', 'Was passiert, wenn …?', 'What happens if…?'), L('Conclusión: …', 'Conclusión: …', 'Conclusion : …', 'Ergebnis: …', 'Conclusion: …')], 0.6, 1.3, 4.3, 3.8)
   s.addShape('rect', { x: 5.2, y: 1.4, w: 4.2, h: 3.4, fill: { color: p.light }, line: { color: p.accent, dashType: 'dash' } })
-  s.addText(L('[Imagen, esquema o vídeo]', '[Imaxe, esquema ou vídeo]', '[Image, schéma ou vidéo]', '[Bild, Skizze oder Video]'), { x: 5.2, y: 1.4, w: 4.2, h: 3.4, fontFace: FONT, fontSize: 16, italic: true, color: MUTED, align: 'center', valign: 'middle' })
+  s.addText(L('[Imagen, esquema o vídeo]', '[Imaxe, esquema ou vídeo]', '[Image, schéma ou vidéo]', '[Bild, Skizze oder Video]', '[Picture, diagram or video]'), { x: 5.2, y: 1.4, w: 4.2, h: 3.4, fontFace: FONT, fontSize: 16, italic: true, color: MUTED, align: 'center', valign: 'middle' })
 
   s = pptx.addSlide()
-  titleBar(s, L('Actividad', 'Actividade', 'Activité', 'Aufgabe'), p)
+  titleBar(s, L('Actividad', 'Actividade', 'Activité', 'Aufgabe', 'Activity'), p)
   steps(s, [
-    [L('Lee', 'Le', 'Lis', 'Lies'), L('el texto o el enunciado', 'o texto ou o enunciado', 'le texte ou la consigne', 'den Text oder die Aufgabe')],
-    [L('Piensa', 'Pensa', 'Réfléchis', 'Denk nach'), L('solo, 2 minutos', 'só, 2 minutos', 'seul, 2 minutes', 'allein, 2 Minuten')],
-    [L('Comparte', 'Comparte', 'Partage', 'Tausch dich aus'), L('con tu pareja', 'coa túa parella', 'avec ton binôme', 'mit deinem Partner')],
-    [L('Presenta', 'Presenta', 'Présente', 'Stell vor'), L('al resto de la clase', 'ao resto da clase', 'au reste de la classe', 'der ganzen Klasse')],
+    [L('Lee', 'Le', 'Lis', 'Lies', 'Read'), L('el texto o el enunciado', 'o texto ou o enunciado', 'le texte ou la consigne', 'den Text oder die Aufgabe', 'the text or the task')],
+    [L('Piensa', 'Pensa', 'Réfléchis', 'Denk nach', 'Think'), L('solo, 2 minutos', 'só, 2 minutos', 'seul, 2 minutes', 'allein, 2 Minuten', 'alone, 2 minutes')],
+    [L('Comparte', 'Comparte', 'Partage', 'Tausch dich aus', 'Share'), L('con tu pareja', 'coa túa parella', 'avec ton binôme', 'mit deinem Partner', 'with your partner')],
+    [L('Presenta', 'Presenta', 'Présente', 'Stell vor', 'Present'), L('al resto de la clase', 'ao resto da clase', 'au reste de la classe', 'der ganzen Klasse', 'to the rest of the class')],
   ], p)
 
   s = pptx.addSlide()
-  titleBar(s, L('Resumen y ticket de salida', 'Resumo e ticket de saída', 'À retenir et ticket de sortie', 'Zusammenfassung und Exit-Ticket'), p)
+  titleBar(s, L('Resumen y ticket de salida', 'Resumo e ticket de saída', 'À retenir et ticket de sortie', 'Zusammenfassung und Exit-Ticket', 'Key points and exit ticket'), p)
   bullets(s, [
-    L('Hoy he aprendido…', 'Hoxe aprendín…', 'Aujourd’hui, j’ai appris…', 'Heute habe ich gelernt, …'),
-    L('Todavía tengo dudas sobre…', 'Aínda teño dúbidas sobre…', 'J’ai encore des questions sur…', 'Unklar ist mir noch …'),
-    L('Deberes: …', 'Deberes: …', 'Devoirs : …', 'Hausaufgabe: …'),
+    L('Hoy he aprendido…', 'Hoxe aprendín…', 'Aujourd’hui, j’ai appris…', 'Heute habe ich gelernt, …', 'Today I learned…'),
+    L('Todavía tengo dudas sobre…', 'Aínda teño dúbidas sobre…', 'J’ai encore des questions sur…', 'Unklar ist mir noch …', 'I still have questions about…'),
+    L('Deberes: …', 'Deberes: …', 'Devoirs : …', 'Hausaufgabe: …', 'Homework: …'),
   ])
 }
 
 function projectReport(pptx: Pptx, lang: Lang): void {
   const L = pick(lang)
   const p = { accent: '9334E6', dark: '681DA8', light: 'F3E8FD' }
-  cover(pptx, L('[Nombre del proyecto]', '[Nome do proxecto]', '[Nom du projet]', '[Name des Projekts]'), L('Equipo · Curso · Fecha', 'Equipo · Curso · Data', 'Équipe · Classe · Date', 'Team · Klasse · Datum'), p)
+  cover(pptx, L('[Nombre del proyecto]', '[Nome do proxecto]', '[Nom du projet]', '[Name des Projekts]', '[Project name]'), L('Equipo · Curso · Fecha', 'Equipo · Curso · Data', 'Équipe · Classe · Date', 'Team · Klasse · Datum', 'Team · Class · Date'), p)
 
   let s = pptx.addSlide()
-  titleBar(s, L('El equipo', 'O equipo', 'L’équipe', 'Das Team'), p)
+  titleBar(s, L('El equipo', 'O equipo', 'L’équipe', 'Das Team', 'The team'), p)
   const roles = [
-    L('Coordinación', 'Coordinación', 'Coordination', 'Koordination'),
-    L('Investigación', 'Investigación', 'Recherche', 'Recherche'),
-    L('Diseño', 'Deseño', 'Conception', 'Gestaltung'),
-    L('Comunicación', 'Comunicación', 'Communication', 'Präsentation'),
+    L('Coordinación', 'Coordinación', 'Coordination', 'Koordination', 'Coordination'),
+    L('Investigación', 'Investigación', 'Recherche', 'Recherche', 'Research'),
+    L('Diseño', 'Deseño', 'Conception', 'Gestaltung', 'Design'),
+    L('Comunicación', 'Comunicación', 'Communication', 'Präsentation', 'Communication'),
   ]
   roles.forEach((role, i) => {
     const x = 0.6 + i * 2.25
     s.addShape('ellipse', { x: x + 0.45, y: 1.5, w: 1.1, h: 1.1, fill: { color: p.light }, line: { color: p.accent } })
-    s.addText(L('[Nombre]', '[Nome]', '[Prénom]', '[Name]'), { x, y: 2.8, w: 2, h: 0.5, fontFace: FONT, fontSize: 17, bold: true, color: INK, align: 'center' })
+    s.addText(L('[Nombre]', '[Nome]', '[Prénom]', '[Name]', '[First name]'), { x, y: 2.8, w: 2, h: 0.5, fontFace: FONT, fontSize: 17, bold: true, color: INK, align: 'center' })
     s.addText(role, { x, y: 3.3, w: 2, h: 0.5, fontFace: FONT, fontSize: 14, color: MUTED, align: 'center' })
   })
 
   s = pptx.addSlide()
-  titleBar(s, L('Objetivo', 'Obxectivo', 'Objectif', 'Ziel'), p)
+  titleBar(s, L('Objetivo', 'Obxectivo', 'Objectif', 'Ziel', 'Objective'), p)
   s.addShape('roundRect', { x: 0.6, y: 1.4, w: 8.8, h: 1.4, fill: { color: p.light }, line: { color: p.accent }, rectRadius: 0.15 })
-  s.addText(L('[¿Qué queríamos conseguir y por qué?]', '[Que queriamos conseguir e por que?]', '[Que voulions-nous obtenir, et pourquoi ?]', '[Was wollten wir erreichen und warum?]'), {
+  s.addText(L('[¿Qué queríamos conseguir y por qué?]', '[Que queriamos conseguir e por que?]', '[Que voulions-nous obtenir, et pourquoi ?]', '[Was wollten wir erreichen und warum?]', '[What did we want to achieve, and why?]'), {
     x: 0.8, y: 1.5, w: 8.4, h: 1.2, fontFace: FONT, fontSize: 22, italic: true, color: INK, align: 'center', valign: 'middle',
   })
-  bullets(s, [L('Pregunta de investigación: …', 'Pregunta de investigación: …', 'Question de recherche : …', 'Forschungsfrage: …'), L('Hipótesis: …', 'Hipótese: …', 'Hypothèse : …', 'Hypothese: …')], 0.6, 3.1, 8.8, 2, 18)
+  bullets(s, [L('Pregunta de investigación: …', 'Pregunta de investigación: …', 'Question de recherche : …', 'Forschungsfrage: …', 'Research question: …'), L('Hipótesis: …', 'Hipótese: …', 'Hypothèse : …', 'Hypothese: …', 'Hypothesis: …')], 0.6, 3.1, 8.8, 2, 18)
 
   s = pptx.addSlide()
-  titleBar(s, L('Cómo lo hicimos', 'Como o fixemos', 'Comment nous avons procédé', 'So sind wir vorgegangen'), p)
+  titleBar(s, L('Cómo lo hicimos', 'Como o fixemos', 'Comment nous avons procédé', 'So sind wir vorgegangen', 'How we did it'), p)
   steps(s, [
-    [L('Investigar', 'Investigar', 'Se documenter', 'Recherchieren'), L('fuentes y datos', 'fontes e datos', 'sources et données', 'Quellen und Daten')],
-    [L('Planificar', 'Planificar', 'Planifier', 'Planen'), L('tareas y plazos', 'tarefas e prazos', 'tâches et délais', 'Aufgaben und Fristen')],
-    [L('Crear', 'Crear', 'Réaliser', 'Umsetzen'), L('el producto', 'o produto', 'le produit', 'das Produkt')],
-    [L('Probar', 'Probar', 'Tester', 'Testen'), L('y mejorar', 'e mellorar', 'et améliorer', 'und verbessern')],
+    [L('Investigar', 'Investigar', 'Se documenter', 'Recherchieren', 'Research'), L('fuentes y datos', 'fontes e datos', 'sources et données', 'Quellen und Daten', 'sources and data')],
+    [L('Planificar', 'Planificar', 'Planifier', 'Planen', 'Plan'), L('tareas y plazos', 'tarefas e prazos', 'tâches et délais', 'Aufgaben und Fristen', 'tasks and deadlines')],
+    [L('Crear', 'Crear', 'Réaliser', 'Umsetzen', 'Make'), L('el producto', 'o produto', 'le produit', 'das Produkt', 'the product')],
+    [L('Probar', 'Probar', 'Tester', 'Testen', 'Test'), L('y mejorar', 'e mellorar', 'et améliorer', 'und verbessern', 'and improve')],
   ], p)
 
   s = pptx.addSlide()
-  titleBar(s, L('Resultados', 'Resultados', 'Résultats', 'Ergebnisse'), p)
+  titleBar(s, L('Resultados', 'Resultados', 'Résultats', 'Ergebnisse', 'Results'), p)
   table(
     s,
     [
-      [L('Indicador', 'Indicador', 'Indicateur', 'Kennzahl'), L('Previsto', 'Previsto', 'Prévu', 'Geplant'), L('Conseguido', 'Conseguido', 'Obtenu', 'Erreicht')],
-      [L('[Dato 1]', '[Dato 1]', '[Donnée 1]', '[Wert 1]'), '', ''],
-      [L('[Dato 2]', '[Dato 2]', '[Donnée 2]', '[Wert 2]'), '', ''],
-      [L('[Dato 3]', '[Dato 3]', '[Donnée 3]', '[Wert 3]'), '', ''],
+      [L('Indicador', 'Indicador', 'Indicateur', 'Kennzahl', 'Indicator'), L('Previsto', 'Previsto', 'Prévu', 'Geplant', 'Planned'), L('Conseguido', 'Conseguido', 'Obtenu', 'Erreicht', 'Achieved')],
+      [L('[Dato 1]', '[Dato 1]', '[Donnée 1]', '[Wert 1]', '[Data 1]'), '', ''],
+      [L('[Dato 2]', '[Dato 2]', '[Donnée 2]', '[Wert 2]', '[Data 2]'), '', ''],
+      [L('[Dato 3]', '[Dato 3]', '[Donnée 3]', '[Wert 3]', '[Data 3]'), '', ''],
     ],
     p,
     [4.4, 2.2, 2.2],
@@ -293,60 +293,60 @@ function projectReport(pptx: Pptx, lang: Lang): void {
   )
 
   s = pptx.addSlide()
-  titleBar(s, L('Conclusiones y próximos pasos', 'Conclusións e próximos pasos', 'Conclusions et prochaines étapes', 'Fazit und nächste Schritte'), p)
+  titleBar(s, L('Conclusiones y próximos pasos', 'Conclusións e próximos pasos', 'Conclusions et prochaines étapes', 'Fazit und nächste Schritte', 'Conclusions and next steps'), p)
   bullets(s, [
-    L('Lo que funcionó: …', 'O que funcionou: …', 'Ce qui a marché : …', 'Was gut lief: …'),
-    L('Lo que cambiaríamos: …', 'O que cambiariamos: …', 'Ce que nous changerions : …', 'Was wir ändern würden: …'),
-    L('Siguiente paso: …', 'Seguinte paso: …', 'Prochaine étape : …', 'Nächster Schritt: …'),
+    L('Lo que funcionó: …', 'O que funcionou: …', 'Ce qui a marché : …', 'Was gut lief: …', 'What worked: …'),
+    L('Lo que cambiaríamos: …', 'O que cambiariamos: …', 'Ce que nous changerions : …', 'Was wir ändern würden: …', 'What we would change: …'),
+    L('Siguiente paso: …', 'Seguinte paso: …', 'Prochaine étape : …', 'Nächster Schritt: …', 'Next step: …'),
   ])
 }
 
 function lessonPlan(pptx: Pptx, lang: Lang): void {
   const L = pick(lang)
   const p = { accent: '00897B', dark: '00695C', light: 'E0F2F1' }
-  cover(pptx, L('Plan de la sesión', 'Plan da sesión', 'Plan de séance', 'Stundenentwurf'), L('[Materia] · [Curso] · Sesión [n.º] · [Fecha]', '[Materia] · [Curso] · Sesión [n.º] · [Data]', '[Matière] · [Classe] · Séance [n°] · [Date]', '[Fach] · [Klasse] · Stunde [Nr.] · [Datum]'), p)
+  cover(pptx, L('Plan de la sesión', 'Plan da sesión', 'Plan de séance', 'Stundenentwurf', 'Lesson plan'), L('[Materia] · [Curso] · Sesión [n.º] · [Fecha]', '[Materia] · [Curso] · Sesión [n.º] · [Data]', '[Matière] · [Classe] · Séance [n°] · [Date]', '[Fach] · [Klasse] · Stunde [Nr.] · [Datum]', '[Subject] · [Class] · Lesson [no.] · [Date]'), p)
 
   let s = pptx.addSlide()
-  titleBar(s, L('Objetivos', 'Obxectivos', 'Objectifs', 'Lernziele'), p)
+  titleBar(s, L('Objetivos', 'Obxectivos', 'Objectifs', 'Lernziele', 'Objectives'), p)
   bullets(s, [
-    L('Al final de la sesión, el alumnado será capaz de…', 'Ao final da sesión, o alumnado será quen de…', 'À la fin de la séance, les élèves seront capables de…', 'Am Ende der Stunde können die Schülerinnen und Schüler …'),
-    L('Contenidos: …', 'Contidos: …', 'Contenus : …', 'Inhalte: …'),
-    L('Competencias: …', 'Competencias: …', 'Compétences : …', 'Kompetenzen: …'),
+    L('Al final de la sesión, el alumnado será capaz de…', 'Ao final da sesión, o alumnado será quen de…', 'À la fin de la séance, les élèves seront capables de…', 'Am Ende der Stunde können die Schülerinnen und Schüler …', 'By the end of the lesson, students will be able to…'),
+    L('Contenidos: …', 'Contidos: …', 'Contenus : …', 'Inhalte: …', 'Content: …'),
+    L('Competencias: …', 'Competencias: …', 'Compétences : …', 'Kompetenzen: …', 'Skills: …'),
   ])
 
   s = pptx.addSlide()
-  titleBar(s, L('Desarrollo de la sesión', 'Desenvolvemento da sesión', 'Déroulement de la séance', 'Stundenverlauf'), p)
+  titleBar(s, L('Desarrollo de la sesión', 'Desenvolvemento da sesión', 'Déroulement de la séance', 'Stundenverlauf', 'Lesson outline'), p)
   table(
     s,
     [
-      [L('Tiempo', 'Tempo', 'Durée', 'Zeit'), L('Fase', 'Fase', 'Phase', 'Phase'), L('Actividad', 'Actividade', 'Activité', 'Aktivität'), L('Agrupamiento', 'Agrupamento', 'Organisation', 'Sozialform')],
-      ['10 min', L('Inicio', 'Inicio', 'Lancement', 'Einstieg'), L('Pregunta inicial e ideas previas', 'Pregunta inicial e ideas previas', 'Question de départ et représentations', 'Einstiegsfrage und Vorwissen'), L('Gran grupo', 'Grupo grande', 'Classe entière', 'Plenum')],
-      ['25 min', L('Desarrollo', 'Desenvolvemento', 'Développement', 'Erarbeitung'), L('Explicación y práctica guiada', 'Explicación e práctica guiada', 'Explication et pratique guidée', 'Erklärung und angeleitete Übung'), L('Parejas', 'Parellas', 'Binômes', 'Partnerarbeit')],
-      ['15 min', L('Cierre', 'Peche', 'Synthèse', 'Sicherung'), L('Puesta en común y ticket de salida', 'Posta en común e ticket de saída', 'Mise en commun et ticket de sortie', 'Besprechung und Exit-Ticket'), L('Individual', 'Individual', 'Individuel', 'Einzelarbeit')],
+      [L('Tiempo', 'Tempo', 'Durée', 'Zeit', 'Time'), L('Fase', 'Fase', 'Phase', 'Phase', 'Phase'), L('Actividad', 'Actividade', 'Activité', 'Aktivität', 'Activity'), L('Agrupamiento', 'Agrupamento', 'Organisation', 'Sozialform', 'Grouping')],
+      ['10 min', L('Inicio', 'Inicio', 'Lancement', 'Einstieg', 'Starter'), L('Pregunta inicial e ideas previas', 'Pregunta inicial e ideas previas', 'Question de départ et représentations', 'Einstiegsfrage und Vorwissen', 'Starter question and prior ideas'), L('Gran grupo', 'Grupo grande', 'Classe entière', 'Plenum', 'Whole class')],
+      ['25 min', L('Desarrollo', 'Desenvolvemento', 'Développement', 'Erarbeitung', 'Main activity'), L('Explicación y práctica guiada', 'Explicación e práctica guiada', 'Explication et pratique guidée', 'Erklärung und angeleitete Übung', 'Explanation and guided practice'), L('Parejas', 'Parellas', 'Binômes', 'Partnerarbeit', 'Pairs')],
+      ['15 min', L('Cierre', 'Peche', 'Synthèse', 'Sicherung', 'Plenary'), L('Puesta en común y ticket de salida', 'Posta en común e ticket de saída', 'Mise en commun et ticket de sortie', 'Besprechung und Exit-Ticket', 'Sharing and exit ticket'), L('Individual', 'Individual', 'Individuel', 'Einzelarbeit', 'Individual')],
     ],
     p,
     [1.3, 1.7, 3.9, 1.9],
   )
 
   s = pptx.addSlide()
-  titleBar(s, L('Materiales y atención a la diversidad', 'Materiais e atención á diversidade', 'Matériel et différenciation', 'Material und Differenzierung'), p)
-  bullets(s, [L('Materiales: …', 'Materiais: …', 'Matériel : …', 'Material: …'), L('Recursos digitales: …', 'Recursos dixitais: …', 'Ressources numériques : …', 'Digitale Medien: …')], 0.6, 1.3, 4.3, 3.8, 18)
-  bullets(s, [L('Refuerzo: …', 'Reforzo: …', 'Soutien : …', 'Förderung: …'), L('Ampliación: …', 'Ampliación: …', 'Approfondissement : …', 'Forderung: …')], 5.1, 1.3, 4.3, 3.8, 18)
+  titleBar(s, L('Materiales y atención a la diversidad', 'Materiais e atención á diversidade', 'Matériel et différenciation', 'Material und Differenzierung', 'Materials and differentiation'), p)
+  bullets(s, [L('Materiales: …', 'Materiais: …', 'Matériel : …', 'Material: …', 'Materials: …'), L('Recursos digitales: …', 'Recursos dixitais: …', 'Ressources numériques : …', 'Digitale Medien: …', 'Digital resources: …')], 0.6, 1.3, 4.3, 3.8, 18)
+  bullets(s, [L('Refuerzo: …', 'Reforzo: …', 'Soutien : …', 'Förderung: …', 'Support: …'), L('Ampliación: …', 'Ampliación: …', 'Approfondissement : …', 'Forderung: …', 'Extension: …')], 5.1, 1.3, 4.3, 3.8, 18)
 
   s = pptx.addSlide()
-  titleBar(s, L('Evaluación', 'Avaliación', 'Évaluation', 'Bewertung'), p)
+  titleBar(s, L('Evaluación', 'Avaliación', 'Évaluation', 'Bewertung', 'Assessment'), p)
   table(
     s,
     [
-      [L('Criterio', 'Criterio', 'Critère', 'Kriterium'), L('Instrumento', 'Instrumento', 'Outil', 'Instrument'), L('Peso', 'Peso', 'Poids', 'Gewicht')],
-      [L('[Criterio 1]', '[Criterio 1]', '[Critère 1]', '[Kriterium 1]'), L('Observación', 'Observación', 'Observation', 'Beobachtung'), '30%'],
-      [L('[Criterio 2]', '[Criterio 2]', '[Critère 2]', '[Kriterium 2]'), L('Ticket de salida', 'Ticket de saída', 'Ticket de sortie', 'Exit-Ticket'), '30%'],
-      [L('[Criterio 3]', '[Criterio 3]', '[Critère 3]', '[Kriterium 3]'), L('Producto / cuaderno', 'Produto / caderno', 'Production / cahier', 'Produkt / Heft'), '40%'],
+      [L('Criterio', 'Criterio', 'Critère', 'Kriterium', 'Criterion'), L('Instrumento', 'Instrumento', 'Outil', 'Instrument', 'Tool'), L('Peso', 'Peso', 'Poids', 'Gewicht', 'Weight')],
+      [L('[Criterio 1]', '[Criterio 1]', '[Critère 1]', '[Kriterium 1]', '[Criterion 1]'), L('Observación', 'Observación', 'Observation', 'Beobachtung', 'Observation'), '30%'],
+      [L('[Criterio 2]', '[Criterio 2]', '[Critère 2]', '[Kriterium 2]', '[Criterion 2]'), L('Ticket de salida', 'Ticket de saída', 'Ticket de sortie', 'Exit-Ticket', 'Exit ticket'), '30%'],
+      [L('[Criterio 3]', '[Criterio 3]', '[Critère 3]', '[Kriterium 3]', '[Criterion 3]'), L('Producto / cuaderno', 'Produto / caderno', 'Production / cahier', 'Produkt / Heft', 'Work / notebook'), '40%'],
     ],
     p,
     [4.4, 3, 1.4],
   )
-  s.addText(L('Observaciones tras la sesión: …', 'Observacións tras a sesión: …', 'Remarques après la séance : …', 'Notizen nach der Stunde: …'), { x: 0.6, y: 4.3, w: 8.8, h: 0.6, fontFace: FONT, fontSize: 16, italic: true, color: MUTED })
+  s.addText(L('Observaciones tras la sesión: …', 'Observacións tras a sesión: …', 'Remarques après la séance : …', 'Notizen nach der Stunde: …', 'Notes after the lesson: …'), { x: 0.6, y: 4.3, w: 8.8, h: 0.6, fontFace: FONT, fontSize: 16, italic: true, color: MUTED })
 }
 
 const BUILDERS: Record<string, (pptx: Pptx, lang: Lang) => void> = {

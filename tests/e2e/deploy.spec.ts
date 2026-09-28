@@ -167,7 +167,8 @@ test('school configuration: locked school relay and Nextcloud servers', async ({
   await expect(relay.getByRole('button', { name: 'Stop using it' })).toHaveCount(0)
   await page.keyboard.press('Escape')
 
-  await page.getByRole('button', { name: 'Nextcloud account' }).click()
+  await page.locator('.home-accounts').click()
+  await page.getByRole('menuitem', { name: 'Nextcloud account…' }).click()
   const server = page.getByLabel('Nextcloud address')
   await expect(server).toHaveValue('https://cloud.proba.example')
   await expect(server).not.toBeEditable()

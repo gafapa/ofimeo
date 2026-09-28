@@ -64,8 +64,10 @@ test('home Download builds a PDF without opening it, alone and in a zip', async 
 
 test('content search finds form questions and PDF text and notes', async ({ page }) => {
   const errors = trackErrors(page)
-  // A form from the review quiz template (Spanish content in the English UI).
+  // A form from the review quiz template (Spanish content chosen in the English UI).
   await page.goto(`/${RELAYS}`)
+  await page.locator('.tpl-lang-select').selectOption('es')
+  await page.getByRole('button', { name: /Show all templates/ }).click()
   await page.locator('.tpl-filters .chip', { hasText: 'Form' }).first().click()
   await page.locator('.tpl-card', { hasText: 'Cuestionario de repaso' }).click()
   await page.locator('.app-forms').waitFor({ timeout: 60_000 })
@@ -92,5 +94,58 @@ test('content search finds form questions and PDF text and notes', async ({ page
   // so search for its feedback instead.
   await search.fill('capitales europeas')
   await expect(rows).toHaveCount(0)
+  expect(errors).toEqual([])
+})
+
+test('a new library shows a light home screen', async ({ page }) => {
+  const errors = trackErrors(page)
+  await page.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
+  await page.goto(`/${RELAYS}`)
+  // No documents yet: only the empty list, without search, folders or filters.
+  await expect(page.locator('.docs-bare .empty')).toBeVisible()
+  await expect(page.locator('.home-search')).toBeHidden()
+  await expect(page.locator('.lib-side')).toBeHidden()
+  // Four templates; the app filters and "My templates" come with the whole gallery.
+  await expect(page.locator('.home-templates .tpl-card')).toHaveCount(4)
+  await expect(page.locator('.tpl-filters')).toBeHidden()
+  await expect(page.locator('.my-templates')).toBeHidden()
+  await page.getByRole('button', { name: /Show all templates/ }).click()
+  await expect(page.locator('.tpl-filters')).toBeVisible()
+  await expect(page.locator('.my-templates')).toBeVisible()
+  // Other ways to open are in the More menu.
+  await page.getByRole('button', { name: 'More', exact: true }).click()
+  await expect(page.getByRole('menuitem', { name: 'Import from link…' })).toBeVisible()
+  await page.keyboard.press('Escape')
+
+  // With a document, the library tools appear.
+  await page.locator('.new-card[href*="app=writer"]').click()
+  await page.locator('.ProseMirror').first().waitFor({ timeout: 60_000 })
+  await page.goto(`/${RELAYS}`)
+  await expect(page.locator('.home-search')).toBeVisible()
+  await expect(page.locator('.docs-bare')).toHaveCount(0)
+  expect(errors).toEqual([])
+})
+
+test('templates have English content for the English interface', async ({ page }) => {
+  const errors = trackErrors(page)
+  await page.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
+  const create = async (name: string, ready: string) => {
+    await page.goto(`/${RELAYS}`)
+    await expect(page.locator('.tpl-lang-select')).toHaveValue('en')
+    await page.getByRole('button', { name: /Show all templates/ }).click()
+    await page.locator('.tpl-card', { hasText: name }).first().click()
+    await page.locator(ready).first().waitFor({ timeout: 60_000 })
+  }
+  await page.goto(`/${RELAYS}`)
+  await page.getByRole('button', { name: /Show all templates/ }).click()
+  // Every template except the two tied to Spanish regulations.
+  await expect(page.locator('.home-templates .tpl-grid:not(.my-tpl-grid) .tpl-card')).toHaveCount(27)
+
+  await create('Student report', '.ProseMirror')
+  await expect(page.locator('.ProseMirror').first()).toContainText('Title of the work')
+  await create('Review quiz', '.app-forms')
+  await expect(page.getByRole('textbox', { name: 'Question' }).first()).toHaveValue('What is the capital of Portugal?')
+  await create('Class notes', '.app-notebook')
+  await expect(page.locator('.app-notebook')).toContainText('Unit 1')
   expect(errors).toEqual([])
 })

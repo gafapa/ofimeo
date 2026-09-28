@@ -24,7 +24,7 @@ const steps = (): Step[] => [
   {
     icon: null,
     title: t('Welcome to {suite}', { suite: SUITE }),
-    text: t('Write documents, spreadsheets, presentations, diagrams, drawings and forms, and correct PDFs, alone or with your class. No account is needed: everything runs in your browser.'),
+    text: t('Write documents, spreadsheets, presentations, diagrams, drawings, forms and notes, and annotate PDFs, on your own or with others. Designed for schools, useful for anyone: at home, in class or at work. No account is needed: everything runs in your browser.'),
   },
   {
     icon: HardDrive,
@@ -44,7 +44,7 @@ const steps = (): Step[] => [
   {
     icon: Send,
     title: t('Hand in your work'),
-    text: t('Students click Hand in to download their work as a ZIP file for the teacher, save it as PDF or upload it to the teacher’s Nextcloud link.'),
+    text: t('Hand in saves your work as a ZIP file or a PDF for your teacher, or sends it straight to a Nextcloud upload link or to Moodle. If you teach, a copy link gives each student their own worksheet.'),
   },
 ]
 
@@ -141,7 +141,7 @@ export function quickStartTips(session: Session): string[] {
     return [
       t('Type your name, answer the questions and press Submit.'),
       t('If you are offline, your response is sent when the connection returns.'),
-      t('If no teacher is online, use “Download my response” and hand the file in.'),
+      t('If nobody who manages the form is online, use “Download my response” and hand the file in.'),
     ]
   if (!session.canEdit)
     return [
@@ -153,8 +153,8 @@ export function quickStartTips(session: Session): string[] {
     writer: [
       t('Use the menus and the toolbar to format text; right-click for more options.'),
       t('Headings build the table of contents (References ▸ Table of contents).'),
-      t('To correct work, switch the mode from Editing to Suggesting, or select text and press Ctrl+Alt+M to comment.'),
-      t('Everything is saved in this browser as you type. Share invites others to write with you.'),
+      t('To review a text, switch the mode from Editing to Suggesting, or select text and press Ctrl+Alt+M to comment. Suggestions you receive can be accepted or rejected one by one.'),
+      t('Everything is saved in this browser as you type. Share invites others to write with you; Hand in sends your work to your teacher.'),
     ],
     sheet: [
       t('Type = to start a formula, for example =SUM(B2:B30).'),
@@ -183,13 +183,13 @@ export function quickStartTips(session: Session): string[] {
     forms: [
       t('Question adds a question of the type you choose; Section makes a new page.'),
       t('Turn on Quiz to set correct answers, points and feedback.'),
-      t('Send gives the link and a QR code for your students.'),
+      t('Send gives the link and a QR code to pass the form around.'),
       t('Responses arrive while you (or another editor) are online; see them in Responses.'),
     ],
     pdf: [
       t('Choose a tool: highlight, pen, text box, stamps, sticky notes or your signature.'),
       t('Select text to highlight, underline or strike it out.'),
-      t('Share the PDF to correct it together or to return it to the student.'),
+      t('Share the PDF to annotate it together or to give someone your notes.'),
       t('File ▸ Download as saves the PDF with your annotations.'),
     ],
     notebook: [

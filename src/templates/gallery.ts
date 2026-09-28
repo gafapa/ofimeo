@@ -1,5 +1,5 @@
 // Template gallery on the home screen: filter by app, pick the content
-// language (Spanish, Galician, French, German), click a card to create and open
+// language (Spanish, Galician, English, French, German), click a card to create and open
 // the document. Templates tied to Spanish regulations exist in Spanish and
 // Galician only and are hidden for the other content languages.
 
@@ -17,7 +17,11 @@ import './gallery.css'
 const TEMPLATES = CATALOG.filter((tpl) => templateAllowed(tpl.id) && !appHidden(tpl.app))
 
 const LANG_KEY = 'wo-template-lang'
-const COLLAPSED_COUNT = 8
+const COLLAPSED_COUNT = 4
+// Shown first: a varied set (a report, a presentation, a spreadsheet, a diagram).
+const FEATURED = ['report', 'oral-presentation', 'timetable', 'concept-map']
+const featuredFirst = (list: Template[]) => [...list].sort((a, b) => rank(a) - rank(b))
+const rank = (tpl: Template) => (FEATURED.includes(tpl.id) ? FEATURED.indexOf(tpl.id) : FEATURED.length)
 
 function initialLang(): Lang {
   try {
@@ -26,11 +30,8 @@ function initialLang(): Lang {
   } catch {
     // Storage may be unavailable (private mode); fall back to the default.
   }
-  // The interface language; with the English interface, the first content
-  // language the browser prefers, else Spanish.
-  if (language !== 'en') return language
-  const code = (navigator.languages ?? [navigator.language]).map((l) => l.toLowerCase().slice(0, 2)).find((l) => l in LANG_NAMES)
-  return (code as Lang | undefined) ?? 'es'
+  // The interface language (every interface language has template content).
+  return language
 }
 
 export function mountTemplates(container: HTMLElement): void {
@@ -39,28 +40,25 @@ export function mountTemplates(container: HTMLElement): void {
   let expanded = false
   let busy = false
 
-  const langSwitch = el('div', { class: 'tpl-lang', role: 'radiogroup' })
+  const langSwitch = el('select', { class: 'tpl-lang-select' })
   langSwitch.setAttribute('aria-label', t('Template language'))
-  const renderLang = () =>
-    langSwitch.replaceChildren(
-      ...(Object.entries(LANG_NAMES) as [Lang, string][]).map(([value, label]) => {
-        const b = el('button', { type: 'button', class: lang === value ? 'active' : '', textContent: label })
-        b.setAttribute('role', 'radio')
-        b.setAttribute('aria-checked', String(lang === value))
-        b.lang = value
-        b.addEventListener('click', () => {
-          lang = value
-          try {
-            localStorage.setItem(LANG_KEY, value)
-          } catch {
-            // Not remembered; still applies to this page.
-          }
-          renderLang()
-          renderCards()
-        })
-        return b
-      }),
-    )
+  langSwitch.append(
+    ...(Object.entries(LANG_NAMES) as [Lang, string][]).map(([value, label]) => {
+      const option = el('option', { value, textContent: label })
+      option.lang = value
+      return option
+    }),
+  )
+  langSwitch.addEventListener('change', () => {
+    lang = langSwitch.value as Lang
+    try {
+      localStorage.setItem(LANG_KEY, lang)
+    } catch {
+      // Not remembered; still applies to this page.
+    }
+    renderCards()
+  })
+  const renderLang = () => (langSwitch.value = lang)
 
   const apps = [...new Set(TEMPLATES.map((tpl) => tpl.app))]
   const filters = el('div', { class: 'home-filters tpl-filters', role: 'tablist' })
@@ -85,16 +83,23 @@ export function mountTemplates(container: HTMLElement): void {
   const more = el('button', { type: 'button', class: 'tpl-more' })
   more.addEventListener('click', () => {
     expanded = !expanded
+    if (!expanded) filter = 'all'
+    renderFilters()
     renderCards()
   })
 
+  // Collapsed: four varied templates; the app filters and "My templates" (when
+  // empty) appear with the whole gallery.
   const renderCards = () => {
-    const list = TEMPLATES.filter((tpl) => tpl.langs.includes(lang) && (filter === 'all' || tpl.app === filter))
-    const collapsible = filter === 'all' && list.length > COLLAPSED_COUNT
-    const shown = collapsible && !expanded ? list.slice(0, COLLAPSED_COUNT) : list
-    grid.replaceChildren(...shown.map((tpl) => card(tpl)))
+    const inLang = TEMPLATES.filter((tpl) => tpl.langs.includes(lang))
+    const collapsible = inLang.length > COLLAPSED_COUNT
+    const open = expanded || !collapsible
+    const list = featuredFirst(inLang.filter((tpl) => !open || filter === 'all' || tpl.app === filter))
+    grid.replaceChildren(...(open ? list : list.slice(0, COLLAPSED_COUNT)).map((tpl) => card(tpl)))
+    filters.hidden = !open || apps.length < 2
     more.hidden = !collapsible
-    more.textContent = expanded ? t('Show fewer') : t('Show all templates ({count})', { count: list.length })
+    more.textContent = expanded ? t('Show fewer') : t('Show all templates ({count})', { count: inLang.length })
+    mine.hidden = !open && !ownCount
   }
 
   const card = (tpl: Template): HTMLElement => {
@@ -132,13 +137,17 @@ export function mountTemplates(container: HTMLElement): void {
   }
 
   const mine = el('div', { class: 'my-templates' })
+  let ownCount = 0
   container.replaceChildren(
-    el('div', { class: 'home-section-title' }, el('h2', { textContent: t('Templates') }), el('span', { class: 'tpl-lang-wrap' }, el('span', { class: 'tpl-lang-label', textContent: t('Content language') }), langSwitch)),
+    el('div', { class: 'home-section-title' }, el('h2', { textContent: t('Templates') }), el('label', { class: 'tpl-lang-wrap' }, el('span', { class: 'tpl-lang-label', textContent: t('Content language') }), langSwitch)),
     ...(TEMPLATES.length ? [filters, grid, more] : []),
     mine,
   )
   // Own templates (File ▸ Save as template…).
-  mountMyTemplates(mine)
+  mountMyTemplates(mine, (count) => {
+    ownCount = count
+    renderCards()
+  })
   renderLang()
   renderFilters()
   renderCards()

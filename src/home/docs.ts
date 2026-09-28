@@ -481,7 +481,7 @@ export function documentsSection(): DocsSection {
 
   const renderHeading = () => {
     const titles: Record<View['kind'], () => string> = {
-      all: () => t('Recent documents'),
+      all: () => t('Your documents'),
       folder: () =>
         lib
           .folderPath((view as { id: string }).id)
@@ -542,7 +542,7 @@ export function documentsSection(): DocsSection {
               ? t('This folder is empty. Drag documents here or use “Move to folder…”.')
               : view.kind === 'tag'
                 ? t('No documents have this tag.')
-                : t('No documents yet. Create one above or open a file.')
+                : t('Nothing here yet. Create a document above, open a file or open a link someone shared with you.')
       listHead.replaceChildren()
       list.replaceChildren(el('p', { class: 'empty', textContent: text }))
     } else {
@@ -677,7 +677,11 @@ export function documentsSection(): DocsSection {
     return row
   }
 
+  // A new library (no documents, folders or tags) shows only the empty list:
+  // search, sorting, folders and filters appear with the first document.
+  const renderBare = () => element.classList.toggle('docs-bare', !store.listDocs().length && !lib.listFolders().length && !lib.listTags().length)
   const renderAll = () => {
+    renderBare()
     renderSide()
     renderFilters()
     if (query) void runSearch()
@@ -698,16 +702,16 @@ export function documentsSection(): DocsSection {
     }, 1000)
   }
 
-  renderLayoutButtons()
-  renderAll()
-  reindex()
-
   const element = el(
     'div',
     { class: 'home-inner' },
     el('div', { class: 'home-section-title docs-title' }, heading, el('span', { class: 'docs-tools' }, search, sortSelect, layoutButtons)),
     el('div', { class: 'lib-layout' }, side, el('div', { class: 'lib-main' }, filters, trashBar, selectionBar, listHead, list)),
   )
+  renderLayoutButtons()
+  renderAll()
+  reindex()
+
   return {
     element,
     refresh: () => {

@@ -73,7 +73,8 @@ test('links that cannot be imported explain why', () => {
 
 test('Import from link: guided download and drop zone', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('button', { name: 'Import from link…' }).click()
+  await page.getByRole('button', { name: 'More', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Import from link…' }).click()
   const dialog = page.locator('dialog.dlg')
   await dialog.getByLabel('Share link').fill('https://docs.google.com/document/d/1AbCdEfGhIjKlMnOpQrStUvWxYz/edit?usp=sharing')
   await expect(dialog.locator('.import-status')).toHaveText('Google · Document')
@@ -109,7 +110,8 @@ test('Import from link through the school relay import proxy', async ({ page, co
     })
   })
   await page.goto('/?relay=https://relay.test')
-  await page.getByRole('button', { name: 'Import from link…' }).click()
+  await page.getByRole('button', { name: 'More', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Import from link…' }).click()
   const dialog = page.locator('dialog.dlg')
   await dialog.getByLabel('Share link').fill('https://drive.google.com/file/d/1FileIdabcdefghijk/view')
   await dialog.getByRole('button', { name: 'Import directly through the school relay' }).click()

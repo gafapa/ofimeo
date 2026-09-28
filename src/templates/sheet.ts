@@ -186,17 +186,18 @@ const grade0to10 = (lang: Lang) => ({
   operator: 'between',
   formula1: '0',
   formula2: '10',
-  error: pick(lang)('Introduce una nota entre 0 y 10', 'Introduce unha nota entre 0 e 10', 'Saisis une note entre 0 et 10', 'Gib eine Note zwischen 0 und 10 ein'),
+  error: pick(lang)('Introduce una nota entre 0 y 10', 'Introduce unha nota entre 0 e 10', 'Saisis une note entre 0 et 10', 'Gib eine Note zwischen 0 und 10 ein', 'Enter a grade between 0 and 10'),
 })
 
 // Qualitative grades for 0-10 grades (<5, <6, <7, <9, else), with their abbreviation:
-// the LOMLOE scale in Spain (IN, SU, BI, NT, SB), the usual mentions in France
-// and the school grades in Germany. The pass mark stays at 5.
+// the LOMLOE scale in Spain (IN, SU, BI, NT, SB), the usual mentions in France,
+// the school grades in Germany and letter grades in English. The pass mark stays at 5.
 const GRADE_NAMES: Record<Lang, [string, string][]> = {
   es: [['Insuficiente', 'IN'], ['Suficiente', 'SU'], ['Bien', 'BI'], ['Notable', 'NT'], ['Sobresaliente', 'SB']],
   gl: [['Insuficiente', 'IN'], ['Suficiente', 'SU'], ['Ben', 'BI'], ['Notable', 'NT'], ['Sobresaliente', 'SB']],
   fr: [['Insuffisant', 'I'], ['Passable', 'P'], ['Assez bien', 'AB'], ['Bien', 'B'], ['Très bien', 'TB']],
   de: [['Mangelhaft', '5'], ['Ausreichend', '4'], ['Befriedigend', '3'], ['Gut', '2'], ['Sehr gut', '1']],
+  en: [['Fail', 'F'], ['Pass', 'D'], ['Good', 'C'], ['Very good', 'B'], ['Excellent', 'A']],
 }
 
 function levelFormula(lang: Lang, cell: string): string {
@@ -211,18 +212,18 @@ const sample = (i: number, j: number) => Math.round((4 + ((i * 7 + j * 3) % 13) 
 
 function gradebook(lang: Lang): Partial<IWorkbookData> {
   const L = pick(lang)
-  const W = `'${L('Ponderación', 'Ponderación', 'Pondération', 'Gewichtung')}'`
-  const acts = [L('Prueba escrita', 'Proba escrita', 'Contrôle écrit', 'Klassenarbeit'), L('Trabajos y proyectos', 'Traballos e proxectos', 'Travaux et projets', 'Arbeiten und Projekte'), L('Cuaderno y tareas', 'Caderno e tarefas', 'Cahier et devoirs', 'Heft und Hausaufgaben')]
-  const evals = [L('1.ª evaluación', '1.ª avaliación', '1er trimestre', '1. Trimester'), L('2.ª evaluación', '2.ª avaliación', '2e trimestre', '2. Trimester'), L('3.ª evaluación', '3.ª avaliación', '3e trimestre', '3. Trimester')]
+  const W = `'${L('Ponderación', 'Ponderación', 'Pondération', 'Gewichtung', 'Weighting')}'`
+  const acts = [L('Prueba escrita', 'Proba escrita', 'Contrôle écrit', 'Klassenarbeit', 'Written test'), L('Trabajos y proyectos', 'Traballos e proxectos', 'Travaux et projets', 'Arbeiten und Projekte', 'Assignments and projects'), L('Cuaderno y tareas', 'Caderno e tarefas', 'Cahier et devoirs', 'Heft und Hausaufgaben', 'Notebook and homework')]
+  const evals = [L('1.ª evaluación', '1.ª avaliación', '1er trimestre', '1. Trimester', '1st term'), L('2.ª evaluación', '2.ª avaliación', '2e trimestre', '2. Trimester', '2nd term'), L('3.ª evaluación', '3.ª avaliación', '3e trimestre', '3. Trimester', '3rd term')]
   const students = 25
   const first = 5 // first student row
   const last = first + students - 1
 
   // Weights sheet: activity weights per evaluation (rows 4-6) and each evaluation's weight in the final grade.
-  const w = new SheetBuilder('sheet-2', L('Ponderación', 'Ponderación', 'Pondération', 'Gewichtung'))
-  w.set(0, 0, L('Ponderación de los instrumentos de evaluación', 'Ponderación dos instrumentos de avaliación', 'Pondération des instruments d’évaluation', 'Gewichtung der Bewertungsinstrumente'), S.title)
-  w.set(1, 0, L('Cambia los porcentajes: las medias del cuaderno de notas se recalculan solas.', 'Cambia as porcentaxes: as medias do caderno de notas recalcúlanse soas.', 'Modifie les pourcentages : les moyennes du carnet de notes se recalculent automatiquement.', 'Ändere die Prozentsätze: Die Durchschnitte im Notenbuch werden automatisch neu berechnet.'), S.note)
-  w.row(2, 0, [L('Evaluación', 'Avaliación', 'Période', 'Zeitraum'), ...acts, L('Suma', 'Suma', 'Somme', 'Summe'), L('Peso en la nota final', 'Peso na nota final', 'Poids dans la note finale', 'Gewicht in der Endnote')], S.head)
+  const w = new SheetBuilder('sheet-2', L('Ponderación', 'Ponderación', 'Pondération', 'Gewichtung', 'Weighting'))
+  w.set(0, 0, L('Ponderación de los instrumentos de evaluación', 'Ponderación dos instrumentos de avaliación', 'Pondération des instruments d’évaluation', 'Gewichtung der Bewertungsinstrumente', 'Weighting of the assessment tools'), S.title)
+  w.set(1, 0, L('Cambia los porcentajes: las medias del cuaderno de notas se recalculan solas.', 'Cambia as porcentaxes: as medias do caderno de notas recalcúlanse soas.', 'Modifie les pourcentages : les moyennes du carnet de notes se recalculent automatiquement.', 'Ändere die Prozentsätze: Die Durchschnitte im Notenbuch werden automatisch neu berechnet.', 'Change the percentages: the averages in the gradebook are recalculated automatically.'), S.note)
+  w.row(2, 0, [L('Evaluación', 'Avaliación', 'Période', 'Zeitraum', 'Term'), ...acts, L('Suma', 'Suma', 'Somme', 'Summe', 'Sum'), L('Peso en la nota final', 'Peso na nota final', 'Poids dans la note finale', 'Gewicht in der Endnote', 'Weight in the final grade')], S.head)
   const weights = [
     [0.6, 0.3, 0.1, 0.3],
     [0.6, 0.3, 0.1, 0.3],
@@ -235,40 +236,40 @@ function gradebook(lang: Lang): Partial<IWorkbookData> {
     w.set(r, 4, `=SUM(B${r + 1}:D${r + 1})`, S.pct)
     w.set(r, 5, row[3], { ...S.pct, bg: { rgb: '#fef7e0' } })
   })
-  w.set(6, 4, L('Total', 'Total', 'Total', 'Gesamt'), S.label).set(6, 5, '=SUM(F4:F6)', S.pct)
+  w.set(6, 4, L('Total', 'Total', 'Total', 'Gesamt', 'Total'), S.label).set(6, 5, '=SUM(F4:F6)', S.pct)
   w.highlight(range(3, 4, 5, 4), { subType: 'number', operator: 'notEqual', value: 1 }, FAIL)
   w.highlight(range(6, 5, 6, 5), { subType: 'number', operator: 'notEqual', value: 1 }, FAIL)
-  w.set(8, 0, L('Escala de calificación', 'Escala de cualificación', 'Barème', 'Notenskala'), { bl: 1, fs: 12 })
-  w.row(9, 0, [L('Calificación', 'Cualificación', 'Appréciation', 'Bewertung'), L('Nota', 'Nota', 'Note', 'Punkte')], S.head)
+  w.set(8, 0, L('Escala de calificación', 'Escala de cualificación', 'Barème', 'Notenskala', 'Scale'), { bl: 1, fs: 12 })
+  w.row(9, 0, [L('Calificación', 'Cualificación', 'Appréciation', 'Bewertung', 'Descriptor'), L('Nota', 'Nota', 'Note', 'Punkte', 'Grade')], S.head)
   const bands = ['0 – 4,99', '5 – 5,99', '6 – 6,99', '7 – 8,99', '9 – 10']
   GRADE_NAMES[lang].forEach(([name, abbr], i) => w.row(10 + i, 0, [`${name} (${abbr})`, bands[i]], S.cell))
   w.width(0, 170).width(1, 130, 3).width(4, 80).width(5, 150).height(2, 40)
 
   // Grades sheet.
-  const g = new SheetBuilder('sheet-1', L('Notas', 'Notas', 'Notes', 'Noten'))
-  g.set(0, 0, L('Cuaderno de notas', 'Caderno de notas', 'Carnet de notes', 'Notenbuch'), S.title)
-  g.set(1, 1, L('Materia', 'Materia', 'Matière', 'Fach'), { ...S.label, ht: 3 })
+  const g = new SheetBuilder('sheet-1', L('Notas', 'Notas', 'Notes', 'Noten', 'Grades'))
+  g.set(0, 0, L('Cuaderno de notas', 'Caderno de notas', 'Carnet de notes', 'Notenbuch', 'Gradebook'), S.title)
+  g.set(1, 1, L('Materia', 'Materia', 'Matière', 'Fach', 'Subject'), { ...S.label, ht: 3 })
   g.set(1, 2, '', S.input).style(1, 3, 1, 5, S.input).merge(1, 2, 1, 5)
-  g.set(1, 6, L('Grupo', 'Grupo', 'Groupe', 'Gruppe'), { ...S.label, ht: 3 })
+  g.set(1, 6, L('Grupo', 'Grupo', 'Groupe', 'Gruppe', 'Group'), { ...S.label, ht: 3 })
   g.set(1, 7, '', S.input).style(1, 8, 1, 8, S.input).merge(1, 7, 1, 8)
-  g.set(1, 10, L('Curso escolar', 'Curso escolar', 'Année scolaire', 'Schuljahr'), { ...S.label, ht: 3 }).merge(1, 10, 1, 11)
+  g.set(1, 10, L('Curso escolar', 'Curso escolar', 'Année scolaire', 'Schuljahr', 'School year'), { ...S.label, ht: 3 }).merge(1, 10, 1, 11)
   g.set(1, 12, '', S.input).style(1, 13, 1, 13, S.input).merge(1, 12, 1, 13)
-  g.set(3, 0, L('N.º', 'N.º', 'N°', 'Nr.'), S.head).set(3, 1, L('Alumno/a', 'Alumno/a', 'Élève', 'Schüler/in'), S.head)
+  g.set(3, 0, L('N.º', 'N.º', 'N°', 'Nr.', 'No.'), S.head).set(3, 1, L('Alumno/a', 'Alumno/a', 'Élève', 'Schüler/in', 'Student'), S.head)
   g.merge(3, 0, 4, 0).merge(3, 1, 4, 1)
   g.style(4, 0, 4, 1, S.head)
   evals.forEach((name, e) => {
     const c = 2 + e * 4
     g.set(3, c, name, S.group).style(3, c + 1, 3, c + 3, S.group).merge(3, c, 3, c + 3)
-    g.row(4, c, [...acts, L('Media', 'Media', 'Moyenne', 'Schnitt')], S.head)
+    g.row(4, c, [...acts, L('Media', 'Media', 'Moyenne', 'Schnitt', 'Average')], S.head)
   })
-  g.set(3, 14, L('Final', 'Final', 'Final', 'Gesamt'), S.group).style(3, 15, 3, 15, S.group).merge(3, 14, 3, 15)
-  g.row(4, 14, [L('Nota final', 'Nota final', 'Note finale', 'Endnote'), L('Calificación', 'Cualificación', 'Appréciation', 'Bewertung')], S.head)
+  g.set(3, 14, L('Final', 'Final', 'Final', 'Gesamt', 'Final'), S.group).style(3, 15, 3, 15, S.group).merge(3, 14, 3, 15)
+  g.row(4, 14, [L('Nota final', 'Nota final', 'Note finale', 'Endnote', 'Final grade'), L('Calificación', 'Cualificación', 'Appréciation', 'Bewertung', 'Descriptor')], S.head)
 
   for (let i = 0; i < students; i++) {
     const r = first + i
     const n = r + 1
     g.set(r, 0, i + 1, S.center)
-    g.set(r, 1, i < 5 ? `${L('Alumno/a de ejemplo', 'Alumno/a de exemplo', 'Élève exemple', 'Beispielschüler/in')} ${i + 1}` : '', S.cell)
+    g.set(r, 1, i < 5 ? `${L('Alumno/a de ejemplo', 'Alumno/a de exemplo', 'Élève exemple', 'Beispielschüler/in', 'Sample student')} ${i + 1}` : '', S.cell)
     for (let e = 0; e < 3; e++) {
       const c = 2 + e * 4
       for (let j = 0; j < 3; j++) g.set(r, c + j, i < 5 && e < 2 ? sample(i, e * 3 + j) : null, S.center)
@@ -286,10 +287,10 @@ function gradebook(lang: Lang): Partial<IWorkbookData> {
 
   // Group statistics.
   const stats: [string, (c: string) => string, IStyleData][] = [
-    [L('Media del grupo', 'Media do grupo', 'Moyenne du groupe', 'Klassenschnitt'), (c) => `=IFERROR(ROUND(AVERAGE(${c}),2),"")`, S.avg],
-    [L('Aprobados', 'Aprobados', 'Admis', 'Bestanden'), (c) => `=COUNTIF(${c},">=5")`, S.center],
-    [L('Suspensos', 'Suspensos', 'Non admis', 'Nicht bestanden'), (c) => `=COUNTIF(${c},"<5")`, S.center],
-    [L('% de aprobados', '% de aprobados', '% d’admis', '% bestanden'), (c) => `=IF(COUNT(${c})=0,"",COUNTIF(${c},">=5")/COUNT(${c}))`, S.pct],
+    [L('Media del grupo', 'Media do grupo', 'Moyenne du groupe', 'Klassenschnitt', 'Group average'), (c) => `=IFERROR(ROUND(AVERAGE(${c}),2),"")`, S.avg],
+    [L('Aprobados', 'Aprobados', 'Admis', 'Bestanden', 'Passed'), (c) => `=COUNTIF(${c},">=5")`, S.center],
+    [L('Suspensos', 'Suspensos', 'Non admis', 'Nicht bestanden', 'Not passed'), (c) => `=COUNTIF(${c},"<5")`, S.center],
+    [L('% de aprobados', '% de aprobados', '% d’admis', '% bestanden', '% passed'), (c) => `=IF(COUNT(${c})=0,"",COUNTIF(${c},">=5")/COUNT(${c}))`, S.pct],
   ]
   stats.forEach(([label, f, s], k) => {
     const r = last + 2 + k
@@ -299,7 +300,7 @@ function gradebook(lang: Lang): Partial<IWorkbookData> {
 
   // Grade distribution of the final grades (qualitative levels) and its chart.
   const dist = last + 7
-  g.row(dist, 1, [L('Distribución de calificaciones', 'Distribución de cualificacións', 'Répartition des appréciations', 'Notenverteilung'), L('Alumnos', 'Alumnado', 'Élèves', 'Schüler/innen')], S.head).height(dist, 40)
+  g.row(dist, 1, [L('Distribución de calificaciones', 'Distribución de cualificacións', 'Répartition des appréciations', 'Notenverteilung', 'Distribution of descriptors'), L('Alumnos', 'Alumnado', 'Élèves', 'Schüler/innen', 'Students')], S.head).height(dist, 40)
   GRADE_NAMES[lang].forEach(([name, abbr], k) => {
     g.set(dist + 1 + k, 1, `${name} (${abbr})`, S.side)
     g.set(dist + 1 + k, 2, `=COUNTIF($P$${first + 1}:$P$${last + 1},"${name}")`, S.center)
@@ -314,10 +315,10 @@ function gradebook(lang: Lang): Partial<IWorkbookData> {
       seriesIn: 'columns',
       headerRow: true,
       headerCol: true,
-      title: L('Distribución de la nota final', 'Distribución da nota final', 'Répartition de la note finale', 'Verteilung der Endnoten'),
+      title: L('Distribución de la nota final', 'Distribución da nota final', 'Répartition de la note finale', 'Verteilung der Endnoten', 'Distribution of the final grade'),
       legend: 'none',
       xTitle: '',
-      yTitle: L('Alumnos', 'Alumnado', 'Élèves', 'Schüler/innen'),
+      yTitle: L('Alumnos', 'Alumnado', 'Élèves', 'Schüler/innen', 'Students'),
       palette: 'ofimeo',
     },
   }
@@ -328,7 +329,7 @@ function gradebook(lang: Lang): Partial<IWorkbookData> {
   g.highlight(range(first, 15, last, 15), { subType: 'text', operator: 'equal', value: GRADE_NAMES[lang][0][0] }, FAIL)
   for (let e = 0; e < 3; e++) g.validate(range(first, 2 + e * 4, last, 4 + e * 4), grade0to10(lang))
   // German activity names are longer.
-  g.width(0, 40).width(1, 200).width(2, lang === 'de' ? 112 : 88, 13).width(14, 80).width(15, 110).height(4, 48)
+  g.width(0, 40).width(1, 200).width(2, lang === 'de' || lang === 'en' ? 112 : 88, 13).width(14, 80).width(15, 110).height(4, 48)
   g.freezeAt(first, 2)
 
   return workbook([g, w], [chart])
@@ -336,23 +337,24 @@ function gradebook(lang: Lang): Partial<IWorkbookData> {
 
 function timetable(lang: Lang): Partial<IWorkbookData> {
   const L = pick(lang)
-  const s = new SheetBuilder('sheet-1', L('Horario', 'Horario', 'Emploi du temps', 'Stundenplan'))
+  const s = new SheetBuilder('sheet-1', L('Horario', 'Horario', 'Emploi du temps', 'Stundenplan', 'Timetable'))
   const days = {
     es: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'],
     gl: ['Luns', 'Martes', 'Mércores', 'Xoves', 'Venres'],
     fr: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'],
     de: ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'],
+    en: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
   }[lang]
   const slots = ['08:45 – 09:35', '09:35 – 10:25', '10:25 – 11:15', 'break', '11:45 – 12:35', '12:35 – 13:25', '13:25 – 14:15']
-  s.set(0, 0, L('Horario semanal', 'Horario semanal', 'Emploi du temps hebdomadaire', 'Wochenstundenplan'), S.title)
-  s.set(1, 0, L('Grupo / docente', 'Grupo / docente', 'Groupe / enseignant(e)', 'Klasse / Lehrkraft'), S.label).set(1, 1, '', S.input)
-  s.set(1, 3, L('Curso escolar', 'Curso escolar', 'Année scolaire', 'Schuljahr'), S.label).set(1, 4, '', S.input)
-  s.row(3, 0, [L('Hora', 'Hora', 'Heure', 'Zeit'), ...days], S.head)
+  s.set(0, 0, L('Horario semanal', 'Horario semanal', 'Emploi du temps hebdomadaire', 'Wochenstundenplan', 'Weekly timetable'), S.title)
+  s.set(1, 0, L('Grupo / docente', 'Grupo / docente', 'Groupe / enseignant(e)', 'Klasse / Lehrkraft', 'Group / teacher'), S.label).set(1, 1, '', S.input)
+  s.set(1, 3, L('Curso escolar', 'Curso escolar', 'Année scolaire', 'Schuljahr', 'School year'), S.label).set(1, 4, '', S.input)
+  s.row(3, 0, [L('Hora', 'Hora', 'Heure', 'Zeit', 'Time'), ...days], S.head)
   slots.forEach((slot, i) => {
     const r = 4 + i
     if (slot === 'break') {
       s.set(r, 0, '11:15 – 11:45', { ...S.side, ht: 2 })
-      s.set(r, 1, L('Recreo', 'Recreo', 'Récréation', 'Pause'), { ...S.head, bg: { rgb: '#e8eaed' } }).style(r, 2, r, 5, S.head).merge(r, 1, r, 5)
+      s.set(r, 1, L('Recreo', 'Recreo', 'Récréation', 'Pause', 'Break'), { ...S.head, bg: { rgb: '#e8eaed' } }).style(r, 2, r, 5, S.head).merge(r, 1, r, 5)
       s.height(r, 28)
       return
     }
@@ -360,17 +362,17 @@ function timetable(lang: Lang): Partial<IWorkbookData> {
     for (let d = 1; d <= 5; d++) s.set(r, d, '', { ...S.center, tb: 3 })
     s.height(r, 52)
   })
-  s.set(12, 0, L('Materias, docentes y aulas', 'Materias, docentes e aulas', 'Matières, enseignants et salles', 'Fächer, Lehrkräfte und Räume'), { bl: 1, fs: 12 })
-  s.row(13, 0, [L('Materia', 'Materia', 'Matière', 'Fach'), L('Docente', 'Docente', 'Enseignant(e)', 'Lehrkraft'), L('Aula', 'Aula', 'Salle', 'Raum'), L('Horas semanales', 'Horas semanais', 'Heures par semaine', 'Wochenstunden')], S.head)
+  s.set(12, 0, L('Materias, docentes y aulas', 'Materias, docentes e aulas', 'Matières, enseignants et salles', 'Fächer, Lehrkräfte und Räume', 'Subjects, teachers and rooms'), { bl: 1, fs: 12 })
+  s.row(13, 0, [L('Materia', 'Materia', 'Matière', 'Fach', 'Subject'), L('Docente', 'Docente', 'Enseignant(e)', 'Lehrkraft', 'Teacher'), L('Aula', 'Aula', 'Salle', 'Raum', 'Room'), L('Horas semanales', 'Horas semanais', 'Heures par semaine', 'Wochenstunden', 'Hours per week')], S.head)
   for (let i = 0; i < 8; i++) s.row(14 + i, 0, ['', '', '', ''], S.cell)
-  s.set(22, 2, L('Total', 'Total', 'Total', 'Gesamt'), S.label).set(22, 3, '=SUM(D15:D22)', S.center)
+  s.set(22, 2, L('Total', 'Total', 'Total', 'Gesamt', 'Total'), S.label).set(22, 3, '=SUM(D15:D22)', S.center)
   s.width(0, 120).width(1, 150, 5).height(3, 30)
   return workbook([s])
 }
 
 function attendance(lang: Lang): Partial<IWorkbookData> {
   const L = pick(lang)
-  const s = new SheetBuilder('sheet-1', L('Asistencia', 'Asistencia', 'Présences', 'Anwesenheit'))
+  const s = new SheetBuilder('sheet-1', L('Asistencia', 'Asistencia', 'Présences', 'Anwesenheit', 'Attendance'))
   const now = new Date()
   const students = 30
   const first = 5
@@ -383,17 +385,18 @@ function attendance(lang: Lang): Partial<IWorkbookData> {
     gl: ['D', 'L', 'M', 'Mé', 'X', 'V', 'S'],
     fr: ['Di', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa'],
     de: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+    en: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
   }[lang]
   // Codes for absence, justified absence and late arrival.
-  const [A, J, R] = { es: 'FJR', gl: 'FJR', fr: 'AJR', de: 'FEV' }[lang]
+  const [A, J, R] = { es: 'FJR', gl: 'FJR', fr: 'AJR', de: 'FEV', en: 'AEL' }[lang]
 
-  s.set(0, 0, L('Registro de asistencia', 'Rexistro de asistencia', 'Registre de présence', 'Anwesenheitsliste'), S.title)
-  s.set(1, 0, L('Mes', 'Mes', 'Mois', 'Monat'), S.label).set(1, 1, now.getMonth() + 1, { ...S.input, ht: 2 })
-  s.set(1, 2, L('Año', 'Ano', 'Année', 'Jahr'), S.label).merge(1, 2, 1, 3)
+  s.set(0, 0, L('Registro de asistencia', 'Rexistro de asistencia', 'Registre de présence', 'Anwesenheitsliste', 'Attendance register'), S.title)
+  s.set(1, 0, L('Mes', 'Mes', 'Mois', 'Monat', 'Month'), S.label).set(1, 1, now.getMonth() + 1, { ...S.input, ht: 2 })
+  s.set(1, 2, L('Año', 'Ano', 'Année', 'Jahr', 'Year'), S.label).merge(1, 2, 1, 3)
   s.set(1, 4, now.getFullYear(), { ...S.input, ht: 2 }).style(1, 5, 1, 5, S.input).merge(1, 4, 1, 5)
-  s.set(1, 7, L('Grupo', 'Grupo', 'Groupe', 'Gruppe'), S.label).merge(1, 7, 1, 8)
+  s.set(1, 7, L('Grupo', 'Grupo', 'Groupe', 'Gruppe', 'Group'), S.label).merge(1, 7, 1, 8)
   s.set(1, 9, '', S.input).style(1, 10, 1, 13, S.input).merge(1, 9, 1, 13)
-  s.set(1, 16, L('Días lectivos', 'Días lectivos', 'Jours de classe', 'Schultage'), S.label).merge(1, 16, 1, 20)
+  s.set(1, 16, L('Días lectivos', 'Días lectivos', 'Jours de classe', 'Schultage', 'School days'), S.label).merge(1, 16, 1, 20)
   s.set(1, 21, '=NETWORKDAYS(DATE(E2,B2,1),EOMONTH(DATE(E2,B2,1),0))', { ...S.input, ht: 2 }).style(1, 22, 1, 22, S.input).merge(1, 21, 1, 22)
   s.set(
     2,
@@ -403,17 +406,18 @@ function attendance(lang: Lang): Partial<IWorkbookData> {
       'Códigos: F = falta · J = falta xustificada · R = atraso · (baleiro) = presente. Axusta os días lectivos se hai festivos.',
       'Codes : A = absence · J = absence justifiée · R = retard · (vide) = présent. Ajuste le nombre de jours de classe en cas de jours fériés.',
       'Codes: F = Fehltag · E = entschuldigt · V = Verspätung · (leer) = anwesend. Passe die Schultage bei Feiertagen an.',
+      'Codes: A = absent · E = excused absence · L = late · (blank) = present. Adjust the number of school days for holidays.',
     ),
     S.note,
   )
-  s.set(3, 0, L('N.º', 'N.º', 'N°', 'Nr.'), S.head).set(3, 1, L('Alumno/a', 'Alumno/a', 'Élève', 'Schüler/in'), S.head).merge(3, 0, 4, 0).merge(3, 1, 4, 1).style(4, 0, 4, 1, S.head)
+  s.set(3, 0, L('N.º', 'N.º', 'N°', 'Nr.', 'No.'), S.head).set(3, 1, L('Alumno/a', 'Alumno/a', 'Élève', 'Schüler/in', 'Student'), S.head).merge(3, 0, 4, 0).merge(3, 1, 4, 1).style(4, 0, 4, 1, S.head)
   for (let d = 1; d <= 31; d++) {
     const c = DAY0 + d - 1
     s.set(3, c, d <= 28 ? d : `=IF(${d}<=DAY(EOMONTH(DATE($E$2,$B$2,1),0)),${d},"")`, S.head)
     s.set(4, c, `=IF(${ref(3, c)}="","",CHOOSE(WEEKDAY(${date(c)}),${weekdays.map((w) => `"${w}"`).join(',')}))`, { ...S.head, bl: 0 })
   }
   const tot = DAYN + 1
-  const totals = [A, J, R, L('% asist.', '% asist.', '% prés.', '% anw.')]
+  const totals = [A, J, R, L('% asist.', '% asist.', '% prés.', '% anw.', '% pres.')]
   totals.forEach((label, i) => s.set(3, tot + i, label, S.group).merge(3, tot + i, 4, tot + i).style(4, tot + i, 4, tot + i, S.group))
 
   for (let i = 0; i < students; i++) {
@@ -428,7 +432,7 @@ function attendance(lang: Lang): Partial<IWorkbookData> {
     s.set(r, tot + 3, `=IF($V$2=0,"",1-(${col(tot)}${n}+${col(tot + 1)}${n})/$V$2)`, { ...S.pct, bl: 1 })
   }
   const sumRow = last + 1
-  s.set(sumRow, 1, L('Ausencias del día', 'Ausencias do día', 'Absences du jour', 'Fehlende am Tag'), S.side)
+  s.set(sumRow, 1, L('Ausencias del día', 'Ausencias do día', 'Absences du jour', 'Fehlende am Tag', 'Absences today'), S.side)
   for (let c = DAY0; c <= DAYN + 3; c++) {
     const rg = `${col(c)}${first + 1}:${col(c)}${last + 1}`
     s.set(sumRow, c, c <= DAYN ? `=COUNTIF(${rg},"${A}")+COUNTIF(${rg},"${J}")` : `=SUM(${rg})`, S.count)
@@ -442,7 +446,7 @@ function attendance(lang: Lang): Partial<IWorkbookData> {
   s.highlight(range(first, DAY0, last, DAYN), { subType: 'formula', value: `=AND(ISNUMBER(${col(DAY0)}$4),WEEKDAY(DATE($E$2,$B$2,${col(DAY0)}$4),2)>5)` }, { bg: { rgb: '#e8eaed' } })
   s.highlight(range(first, tot + 3, last, tot + 3), { subType: 'number', operator: 'lessThan', value: 0.85 }, FAIL)
   // Text render mode: no dropdown chip in every cell of the grid.
-  s.validate(grid, { type: 'list', formula1: `${A},${J},${R}`, renderMode: 0, error: L('Usa F, J o R', 'Usa F, J ou R', 'Utilise A, J ou R', 'Verwende F, E oder V') })
+  s.validate(grid, { type: 'list', formula1: `${A},${J},${R}`, renderMode: 0, error: L('Usa F, J o R', 'Usa F, J ou R', 'Utilise A, J ou R', 'Verwende F, E oder V', 'Use A, E or L') })
   s.width(0, 36).width(1, 190).width(DAY0, 30, 31).width(tot, 40, 3).width(tot + 3, 70)
   s.freezeAt(first, 2)
   return workbook([s])
@@ -450,80 +454,80 @@ function attendance(lang: Lang): Partial<IWorkbookData> {
 
 function scoredRubric(lang: Lang): Partial<IWorkbookData> {
   const L = pick(lang)
-  const R = `'${L('Rúbrica', 'Rúbrica', 'Grille', 'Raster')}'`
+  const R = `'${L('Rúbrica', 'Rúbrica', 'Grille', 'Raster', 'Rubric')}'`
   const levels = [
-    L('Excelente (4)', 'Excelente (4)', 'Excellent (4)', 'Sehr gut (4)'),
-    L('Bien (3)', 'Ben (3)', 'Bien (3)', 'Gut (3)'),
-    L('Suficiente (2)', 'Suficiente (2)', 'Suffisant (2)', 'Ausreichend (2)'),
-    L('Insuficiente (1)', 'Insuficiente (1)', 'Insuffisant (1)', 'Nicht ausreichend (1)'),
+    L('Excelente (4)', 'Excelente (4)', 'Excellent (4)', 'Sehr gut (4)', 'Excellent (4)'),
+    L('Bien (3)', 'Ben (3)', 'Bien (3)', 'Gut (3)', 'Good (3)'),
+    L('Suficiente (2)', 'Suficiente (2)', 'Suffisant (2)', 'Ausreichend (2)', 'Satisfactory (2)'),
+    L('Insuficiente (1)', 'Insuficiente (1)', 'Insuffisant (1)', 'Nicht ausreichend (1)', 'Insufficient (1)'),
   ]
   const criteria: [string, number, string[]][] = [
     [
-      L('Contenido', 'Contido', 'Contenu', 'Inhalt'),
+      L('Contenido', 'Contido', 'Contenu', 'Inhalt', 'Content'),
       0.3,
       [
-        L('Completo, riguroso y bien relacionado.', 'Completo, rigoroso e ben relacionado.', 'Complet, rigoureux et bien relié.', 'Vollständig, genau und gut verknüpft.'),
-        L('Correcto con pequeñas omisiones.', 'Correcto con pequenas omisións.', 'Correct avec de petits oublis.', 'Korrekt mit kleinen Lücken.'),
-        L('Básico, con algunos errores.', 'Básico, con algúns erros.', 'Basique, avec quelques erreurs.', 'Grundlegend, mit einigen Fehlern.'),
-        L('Escaso o incorrecto.', 'Escaso ou incorrecto.', 'Insuffisant ou incorrect.', 'Lückenhaft oder falsch.'),
+        L('Completo, riguroso y bien relacionado.', 'Completo, rigoroso e ben relacionado.', 'Complet, rigoureux et bien relié.', 'Vollständig, genau und gut verknüpft.', 'Complete, accurate and well connected.'),
+        L('Correcto con pequeñas omisiones.', 'Correcto con pequenas omisións.', 'Correct avec de petits oublis.', 'Korrekt mit kleinen Lücken.', 'Correct with small gaps.'),
+        L('Básico, con algunos errores.', 'Básico, con algúns erros.', 'Basique, avec quelques erreurs.', 'Grundlegend, mit einigen Fehlern.', 'Basic, with some errors.'),
+        L('Escaso o incorrecto.', 'Escaso ou incorrecto.', 'Insuffisant ou incorrect.', 'Lückenhaft oder falsch.', 'Insufficient or incorrect.'),
       ],
     ],
     [
-      L('Organización', 'Organización', 'Organisation', 'Aufbau'),
+      L('Organización', 'Organización', 'Organisation', 'Aufbau', 'Organisation'),
       0.2,
-      [L('Estructura clara y lógica.', 'Estrutura clara e lóxica.', 'Structure claire et logique.', 'Klare und logische Struktur.'), L('Clara con algún salto.', 'Clara con algún salto.', 'Claire avec quelques ruptures.', 'Klar mit einzelnen Sprüngen.'), L('Poco clara.', 'Pouco clara.', 'Peu claire.', 'Wenig klar.'), L('Sin estructura.', 'Sen estrutura.', 'Sans structure.', 'Ohne Struktur.')],
+      [L('Estructura clara y lógica.', 'Estrutura clara e lóxica.', 'Structure claire et logique.', 'Klare und logische Struktur.', 'Clear and logical structure.'), L('Clara con algún salto.', 'Clara con algún salto.', 'Claire avec quelques ruptures.', 'Klar mit einzelnen Sprüngen.', 'Clear with a few jumps.'), L('Poco clara.', 'Pouco clara.', 'Peu claire.', 'Wenig klar.', 'Unclear.'), L('Sin estructura.', 'Sen estrutura.', 'Sans structure.', 'Ohne Struktur.', 'No structure.')],
     ],
     [
-      L('Expresión', 'Expresión', 'Expression', 'Ausdruck'),
+      L('Expresión', 'Expresión', 'Expression', 'Ausdruck', 'Expression'),
       0.2,
-      [L('Precisa y sin errores.', 'Precisa e sen erros.', 'Précise et sans erreurs.', 'Präzise und fehlerfrei.'), L('Adecuada, errores leves.', 'Axeitada, erros leves.', 'Adaptée, erreurs légères.', 'Angemessen, leichte Fehler.'), L('Limitada, varios errores.', 'Limitada, varios erros.', 'Limitée, plusieurs erreurs.', 'Begrenzt, mehrere Fehler.'), L('Errores graves.', 'Erros graves.', 'Erreurs graves.', 'Schwere Fehler.')],
+      [L('Precisa y sin errores.', 'Precisa e sen erros.', 'Précise et sans erreurs.', 'Präzise und fehlerfrei.', 'Precise, no errors.'), L('Adecuada, errores leves.', 'Axeitada, erros leves.', 'Adaptée, erreurs légères.', 'Angemessen, leichte Fehler.', 'Suitable, minor errors.'), L('Limitada, varios errores.', 'Limitada, varios erros.', 'Limitée, plusieurs erreurs.', 'Begrenzt, mehrere Fehler.', 'Limited, several errors.'), L('Errores graves.', 'Erros graves.', 'Erreurs graves.', 'Schwere Fehler.', 'Serious errors.')],
     ],
     [
-      L('Trabajo en equipo', 'Traballo en equipo', 'Travail en équipe', 'Teamarbeit'),
+      L('Trabajo en equipo', 'Traballo en equipo', 'Travail en équipe', 'Teamarbeit', 'Teamwork'),
       0.15,
-      [L('Lidera y colabora siempre.', 'Lidera e colabora sempre.', 'Mène le groupe et coopère toujours.', 'Übernimmt Führung und arbeitet immer mit.'), L('Colabora casi siempre.', 'Colabora case sempre.', 'Coopère presque toujours.', 'Arbeitet fast immer mit.'), L('Colabora a veces.', 'Colabora ás veces.', 'Coopère parfois.', 'Arbeitet manchmal mit.'), L('No colabora.', 'Non colabora.', 'Ne coopère pas.', 'Arbeitet nicht mit.')],
+      [L('Lidera y colabora siempre.', 'Lidera e colabora sempre.', 'Mène le groupe et coopère toujours.', 'Übernimmt Führung und arbeitet immer mit.', 'Leads the group and always cooperates.'), L('Colabora casi siempre.', 'Colabora case sempre.', 'Coopère presque toujours.', 'Arbeitet fast immer mit.', 'Almost always cooperates.'), L('Colabora a veces.', 'Colabora ás veces.', 'Coopère parfois.', 'Arbeitet manchmal mit.', 'Sometimes cooperates.'), L('No colabora.', 'Non colabora.', 'Ne coopère pas.', 'Arbeitet nicht mit.', 'Does not cooperate.')],
     ],
     [
-      L('Presentación', 'Presentación', 'Présentation', 'Gestaltung'),
+      L('Presentación', 'Presentación', 'Présentation', 'Gestaltung', 'Presentation'),
       0.15,
-      [L('Cuidada y original.', 'Coidada e orixinal.', 'Soignée et originale.', 'Sorgfältig und originell.'), L('Cuidada.', 'Coidada.', 'Soignée.', 'Sorgfältig.'), L('Aceptable.', 'Aceptable.', 'Acceptable.', 'Akzeptabel.'), L('Descuidada.', 'Descoidada.', 'Négligée.', 'Nachlässig.')],
+      [L('Cuidada y original.', 'Coidada e orixinal.', 'Soignée et originale.', 'Sorgfältig und originell.', 'Careful and original.'), L('Cuidada.', 'Coidada.', 'Soignée.', 'Sorgfältig.', 'Careful.'), L('Aceptable.', 'Aceptable.', 'Acceptable.', 'Akzeptabel.', 'Acceptable.'), L('Descuidada.', 'Descoidada.', 'Négligée.', 'Nachlässig.', 'Careless.')],
     ],
   ]
 
-  const r = new SheetBuilder('sheet-1', L('Rúbrica', 'Rúbrica', 'Grille', 'Raster'))
-  r.set(0, 0, L('Rúbrica: ', 'Rúbrica: ', 'Grille : ', 'Raster: ') + L('descriptores y pesos', 'descritores e pesos', 'descripteurs et poids', 'Beschreibungen und Gewichtung'), S.title)
-  r.set(1, 0, L('Edita criterios, descriptores y pesos; la hoja «Puntuación» calcula la nota.', 'Edita criterios, descritores e pesos; a folla «Puntuación» calcula a nota.', 'Modifie les critères, les descripteurs et les poids ; la feuille « Score » calcule la note.', 'Bearbeite Kriterien, Beschreibungen und Gewichtung; das Blatt „Punkte“ berechnet die Note.'), S.note)
-  r.row(3, 0, [L('Criterio', 'Criterio', 'Critère', 'Kriterium'), L('Peso', 'Peso', 'Poids', 'Gewichtung'), ...levels], S.head)
+  const r = new SheetBuilder('sheet-1', L('Rúbrica', 'Rúbrica', 'Grille', 'Raster', 'Rubric'))
+  r.set(0, 0, L('Rúbrica: ', 'Rúbrica: ', 'Grille : ', 'Raster: ', 'Rubric: ') + L('descriptores y pesos', 'descritores e pesos', 'descripteurs et poids', 'Beschreibungen und Gewichtung', 'descriptors and weights'), S.title)
+  r.set(1, 0, L('Edita criterios, descriptores y pesos; la hoja «Puntuación» calcula la nota.', 'Edita criterios, descritores e pesos; a folla «Puntuación» calcula a nota.', 'Modifie les critères, les descripteurs et les poids ; la feuille « Score » calcule la note.', 'Bearbeite Kriterien, Beschreibungen und Gewichtung; das Blatt „Punkte“ berechnet die Note.', 'Change the criteria, descriptors and weights; the “Score” sheet calculates the grade.'), S.note)
+  r.row(3, 0, [L('Criterio', 'Criterio', 'Critère', 'Kriterium', 'Criterion'), L('Peso', 'Peso', 'Poids', 'Gewichtung', 'Weight'), ...levels], S.head)
   criteria.forEach(([name, weight, desc], i) => {
     r.set(4 + i, 0, name, S.side).set(4 + i, 1, weight, { ...S.pct, bg: { rgb: '#fef7e0' } })
     desc.forEach((d, j) => r.set(4 + i, 2 + j, d, S.wrap))
     r.height(4 + i, 54)
   })
-  r.set(9, 0, L('Total', 'Total', 'Total', 'Gesamt'), S.label).set(9, 1, '=SUM(B5:B9)', S.pct)
+  r.set(9, 0, L('Total', 'Total', 'Total', 'Gesamt', 'Total'), S.label).set(9, 1, '=SUM(B5:B9)', S.pct)
   r.highlight(range(9, 1, 9, 1), { subType: 'number', operator: 'notEqual', value: 1 }, FAIL)
   r.width(0, 150).width(1, 70).width(2, 170, 4).height(3, 30)
 
-  const p = new SheetBuilder('sheet-2', L('Puntuación', 'Puntuación', 'Score', 'Punkte'))
+  const p = new SheetBuilder('sheet-2', L('Puntuación', 'Puntuación', 'Score', 'Punkte', 'Score'))
   const n = criteria.length
   const lastC = 2 + n - 1
   const students = 25
   const first = 5
   const last = first + students - 1
-  p.set(0, 0, L('Puntuación automática', 'Puntuación automática', 'Score automatique', 'Automatische Punktevergabe'), S.title)
-  p.set(1, 0, L('Escribe el nivel de cada criterio (1 = Insuficiente … 4 = Excelente). Nota = Σ(nivel × peso) ÷ 4 × 10.', 'Escribe o nivel de cada criterio (1 = Insuficiente … 4 = Excelente). Nota = Σ(nivel × peso) ÷ 4 × 10.', 'Saisis le niveau de chaque critère (1 = Insuffisant … 4 = Excellent). Note = Σ(niveau × poids) ÷ 4 × 10.', 'Gib für jedes Kriterium die Stufe ein (1 = Nicht ausreichend … 4 = Sehr gut). Note = Σ(Stufe × Gewichtung) ÷ 4 × 10.'), S.note)
-  p.set(3, 0, L('N.º', 'N.º', 'N°', 'Nr.'), S.head).set(3, 1, L('Alumno/a', 'Alumno/a', 'Élève', 'Schüler/in'), S.head)
-  p.set(4, 0, '', S.head).set(4, 1, L('Peso', 'Peso', 'Poids', 'Gewichtung'), S.head)
+  p.set(0, 0, L('Puntuación automática', 'Puntuación automática', 'Score automatique', 'Automatische Punktevergabe', 'Automatic score'), S.title)
+  p.set(1, 0, L('Escribe el nivel de cada criterio (1 = Insuficiente … 4 = Excelente). Nota = Σ(nivel × peso) ÷ 4 × 10.', 'Escribe o nivel de cada criterio (1 = Insuficiente … 4 = Excelente). Nota = Σ(nivel × peso) ÷ 4 × 10.', 'Saisis le niveau de chaque critère (1 = Insuffisant … 4 = Excellent). Note = Σ(niveau × poids) ÷ 4 × 10.', 'Gib für jedes Kriterium die Stufe ein (1 = Nicht ausreichend … 4 = Sehr gut). Note = Σ(Stufe × Gewichtung) ÷ 4 × 10.', 'Enter the level of each criterion (1 = Insufficient … 4 = Excellent). Grade = Σ(level × weight) ÷ 4 × 10.'), S.note)
+  p.set(3, 0, L('N.º', 'N.º', 'N°', 'Nr.', 'No.'), S.head).set(3, 1, L('Alumno/a', 'Alumno/a', 'Élève', 'Schüler/in', 'Student'), S.head)
+  p.set(4, 0, '', S.head).set(4, 1, L('Peso', 'Peso', 'Poids', 'Gewichtung', 'Weight'), S.head)
   for (let j = 0; j < n; j++) {
     p.set(3, 2 + j, `=${R}!A${5 + j}`, S.head)
     p.set(4, 2 + j, `=${R}!B${5 + j}`, { ...S.pct, bl: 1, bg: { rgb: '#dbe7f7' } })
   }
-  p.set(3, lastC + 1, L('Nota (0–10)', 'Nota (0–10)', 'Note (0–10)', 'Punkte (0–10)'), S.group).set(3, lastC + 2, L('Calificación', 'Cualificación', 'Appréciation', 'Bewertung'), S.group)
+  p.set(3, lastC + 1, L('Nota (0–10)', 'Nota (0–10)', 'Note (0–10)', 'Punkte (0–10)', 'Grade (0–10)'), S.group).set(3, lastC + 2, L('Calificación', 'Cualificación', 'Appréciation', 'Bewertung', 'Descriptor'), S.group)
   p.style(4, lastC + 1, 4, lastC + 2, S.group)
   const levelsRange = `$C$5:$${col(lastC)}$5`
   for (let i = 0; i < students; i++) {
     const row = first + i
     const nr = row + 1
-    p.set(row, 0, i + 1, S.center).set(row, 1, i < 3 ? `${L('Alumno/a de ejemplo', 'Alumno/a de exemplo', 'Élève exemple', 'Beispielschüler/in')} ${i + 1}` : '', S.cell)
+    p.set(row, 0, i + 1, S.center).set(row, 1, i < 3 ? `${L('Alumno/a de ejemplo', 'Alumno/a de exemplo', 'Élève exemple', 'Beispielschüler/in', 'Sample student')} ${i + 1}` : '', S.cell)
     for (let j = 0; j < n; j++) p.set(row, 2 + j, RUBRIC_SAMPLE[i]?.[j] ?? null, S.center)
     const cells = `C${nr}:${col(lastC)}${nr}`
     p.set(row, lastC + 1, `=IF(COUNT(${cells})=0,"",ROUND(SUMPRODUCT(${cells},${levelsRange})/(4*SUM(${levelsRange}))*10,2))`, S.final)
@@ -535,7 +539,7 @@ function scoredRubric(lang: Lang): Partial<IWorkbookData> {
     [4, '#81c995'],
   ])
   p.highlight(range(first, lastC + 1, last, lastC + 1), failRule(`${col(lastC + 1)}${first + 1}`), FAIL)
-  p.validate(range(first, 2, last, lastC), { type: 'whole', operator: 'between', formula1: '1', formula2: '4', error: L('El nivel va de 1 a 4', 'O nivel vai de 1 a 4', 'Le niveau va de 1 à 4', 'Die Stufe liegt zwischen 1 und 4') })
+  p.validate(range(first, 2, last, lastC), { type: 'whole', operator: 'between', formula1: '1', formula2: '4', error: L('El nivel va de 1 a 4', 'O nivel vai de 1 a 4', 'Le niveau va de 1 à 4', 'Die Stufe liegt zwischen 1 und 4', 'The level goes from 1 to 4') })
   p.width(0, 40).width(1, 200).width(2, 110, n).width(lastC + 1, 90).width(lastC + 2, 110).height(3, 36)
   p.freezeAt(first, 2)
 

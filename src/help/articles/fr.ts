@@ -7,11 +7,11 @@ const articles: Articles = {
   'getting-started': {
     title: 'Premiers pas',
     keywords: 'commencer début démarrer bienvenue accueil nouveau document ouvrir modèle compte',
-    body: `Ofimeo est une suite bureautique qui fonctionne entièrement dans votre navigateur${NB}: documents, classeurs, dessins, diagrammes, présentations, formulaires et correction de PDF. Aucun compte n’est nécessaire et rien n’est installé sur un serveur.
+    body: `Ofimeo est une suite bureautique qui fonctionne entièrement dans votre navigateur${NB}: documents, classeurs, dessins, diagrammes, présentations, formulaires et correction de PDF. Elle est conçue pour l’école, pour les élèves comme pour les enseignants, mais tout le monde peut l’utiliser${NB}: à la maison, dans une association ou au travail. Aucun compte n’est nécessaire et rien n’est installé sur un serveur.
 
 ## L’écran d’accueil
 - **Créer quelque chose de nouveau**${NB}: cliquez sur une carte pour créer un document de ce type.
-- **Modèles**${NB}: fiches d’exercices, grilles d’évaluation, carnets de notes, emplois du temps, cartes mentales et plus encore. Cliquez sur l’un d’eux pour obtenir votre propre copie.
+- **Modèles**${NB}: dossiers, fiches d’exercices, cartes mentales, emplois du temps, présentations, grilles d’évaluation, carnets de notes et plus encore. Cliquez sur l’un d’eux pour obtenir votre propre copie.
 - **Ouvrir un fichier…**${NB}: ouvre des fichiers Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw et PDF de votre ordinateur.
 - **Vos documents**${NB}: tout ce que vous avez créé ou ouvert dans ce navigateur, avec recherche, dossiers, étiquettes et corbeille (les documents supprimés sont conservés 30${NB}jours).
 
@@ -21,17 +21,43 @@ Saisissez votre nom dans la case en haut à droite (sur un téléphone ou dans u
 ## À savoir
 - Les documents sont enregistrés **uniquement dans ce navigateur**. Lisez [Travailler hors ligne et où sont stockées vos données](help:offline) et faites des [sauvegardes](help:backup).
 - Pour travailler à plusieurs, envoyez un [lien de partage](help:sharing).
-- Les élèves rendent leurs travaux avec le bouton [Rendre](help:handin).
+- Pour rendre un travail, utilisez le bouton [Rendre](help:handin).
+- Comment élèves et enseignants travaillent ensemble${NB}: [Élèves et enseignants](help:classroom).
 
 [Revoir la visite guidée](action:tour)
 
 ## Importer depuis Google Drive ou Microsoft 365
-**Importer depuis un lien…** (écran d’accueil et menu Fichier de chaque application) ouvre les fichiers partagés depuis Google Docs, Sheets, Slides et Drive, OneDrive ou SharePoint :
+**Importer depuis un lien…** (écran d’accueil ▸ Plus, et menu Fichier de chaque application) ouvre les fichiers partagés depuis Google Docs, Sheets, Slides et Drive, OneDrive ou SharePoint :
 1. Collez le lien de partage. Le fichier doit être partagé avec **Tous les utilisateurs disposant du lien**, ou vous devez pouvoir l’ouvrir avec votre propre compte.
 2. Cliquez sur le bouton de téléchargement : votre navigateur télécharge le fichier au format Word, Excel ou PowerPoint.
 3. Déposez le fichier téléchargé dans la boîte de dialogue (ou choisissez-le). Il s’ouvre comme un nouveau document Ofimeo.
 
 Les navigateurs ne permettent pas aux applications web de télécharger directement ces fichiers : le fichier passe donc par votre dossier Téléchargements ; Ofimeo ne voit jamais votre compte Google ou Microsoft. Si le relais de votre établissement le propose, **Importer directement via le relais de l’établissement** le fait en un clic pour les fichiers publics.`,
+  },
+  classroom: {
+    title: 'Élèves et enseignants',
+    keywords: 'élève étudiant enseignant professeur prof classe groupe travail de groupe fiche devoirs correction note rôle',
+    body: `Ofimeo est la même application pour tout le monde${NB}: ce que vous pouvez faire dans un document dépend du lien que vous avez ouvert, pas de qui vous êtes.
+
+## Si vous êtes élève
+- **Ouvrez le lien que vous donne votre enseignant.** Si vous pouvez seulement lire ou commenter, l’étiquette **Lecture seule** ou **Commentaires autorisés** l’indique en haut${NB}; sinon, vous pouvez modifier. Un lien **Crée une copie** vous donne votre propre copie (une fiche, par exemple) que vous seul modifiez.
+- **Retrouvez-le** sur l’écran d’accueil${NB}: tout ce que vous ouvrez reste dans ce navigateur. Utilisez le même appareil et le même navigateur, ou faites une [sauvegarde](help:backup).
+- **Travail de groupe**${NB}: une personne crée le document et partage un lien de modification avec le groupe. Tout le monde écrit en même temps${NB}; Révision ▸ Afficher les auteurs (dans Documents) montre qui a écrit quoi, et la [discussion](help:sharing) aide à s’organiser.
+- **Votre nom**${NB}: saisissez-le en haut à droite. Votre groupe et votre enseignant le voient, et il nomme le fichier que vous rendez.
+- **Rendez** votre travail avec le bouton [Rendre](help:handin), ou directement dans [Moodle](help:moodle).
+- **Corrections**${NB}: ouvrez le document ou le PDF corrigé que votre enseignant vous renvoie. Dans Documents, les suggestions s’acceptent ou se refusent une par une, et on peut répondre aux commentaires.
+- **Présentations**${NB}: préparez-les en groupe dans [Ofimeo Présentations](help:slides) et présentez avec le mode Présentateur.
+- **Prenez des notes** dans [Ofimeo Bloc-notes](help:notebook).
+
+## Si vous enseignez
+- **Distribuez le travail** avec un lien **Crée une copie**${NB}: chaque élève reçoit sa propre fiche. Utilisez un lien **Peut afficher** pour les lectures et les présentations que tout le monde suit.
+- **Recueillez les travaux** avec Rendre${NB}: les élèves vous envoient un ZIP ou un PDF, le déposent dans un dossier de dépôt Nextcloud ou le rendent dans Moodle.
+- **Corrigez** dans [Documents](help:writer) avec des commentaires et des suggestions, et dans [Ofimeo PDF](help:pdf) avec des tampons, le stylo et des notes.
+- **Quiz et sondages** avec [Ofimeo Formulaires](help:forms).
+- **Présentez** avec [Ofimeo Présentations](help:slides)${NB}: les élèves peuvent suivre vos diapositives sur leurs appareils.
+- Les [modèles](help:getting-started) comprennent des fiches, des grilles d’évaluation, des carnets de notes et une situation d’apprentissage.
+
+Rappelez aux élèves d’utiliser un prénom ou leurs initiales et de faire des sauvegardes${NB}: voir [Confidentialité](help:privacy).`,
   },
   sharing: {
     title: 'Partage et autorisations',
@@ -42,9 +68,9 @@ Les navigateurs ne permettent pas aux applications web de télécharger directem
 - **Peut modifier**${NB}: les personnes peuvent modifier le document avec vous.
 - **Commentaires autorisés**${NB}: les personnes peuvent lire et ajouter des commentaires, mais pas modifier le texte.
 - **Peut afficher**${NB}: les personnes peuvent lire le document et suivre les modifications en direct.
-- **Crée une copie**${NB}: chaque personne qui l’ouvre obtient sa propre copie privée. Utilisez-le pour donner une fiche à chaque élève.
+- **Crée une copie**${NB}: chaque personne qui l’ouvre obtient sa propre copie privée. Par exemple, une fiche que chaque élève remplit.
 
-La boîte de dialogue affiche aussi un **code QR**, pratique pour les tablettes et les téléphones en classe.
+La boîte de dialogue affiche aussi un **code QR**, pratique pour les tablettes et les téléphones.
 
 ## Bon à savoir
 - Un lien est comme une clé${NB}: quiconque le possède obtient son accès. Ne le partagez qu’avec les personnes concernées.
@@ -57,7 +83,7 @@ La boîte de dialogue affiche aussi un **code QR**, pratique pour les tablettes 
 - Le bouton en forme de bulle à côté des personnes du document (ou \`Alt+Shift+C\`) ouvre la discussion. Un nombre indique les messages non lus ; il devient rouge quand quelqu’un vous mentionne.
 - Tapez \`@\` pour mentionner une personne présente. Les liens s’ouvrent dans un nouvel onglet ; le bouton smiley ajoute des emojis. \`Entrée\` envoie, \`Maj+Entrée\` commence une nouvelle ligne, \`Échap\` ferme la discussion.
 - Les personnes qui ont un lien de modification ou de commentaire peuvent écrire ; celles qui ont un lien de lecture peuvent seulement lire.
-- Enseignants (lien de modification) : le bouton ⋯ de la discussion la désactive pour ce document ou efface son historique pour tout le monde.
+- Les personnes qui ont un lien de modification (par exemple, l’enseignant qui a créé le document)${NB}: le bouton ⋯ de la discussion la désactive pour ce document ou efface son historique pour tout le monde.
 - Les messages sont conservés avec le document dans ce navigateur et dans les sauvegardes, mais pas dans les versions, les copies ni les fichiers téléchargés.`,
   },
   offline: {
@@ -99,10 +125,10 @@ La boîte de dialogue affiche aussi un **code QR**, pratique pour les tablettes 
     body: `Si votre établissement dispose d’un serveur Nextcloud, vous pouvez y ouvrir des fichiers et les y enregistrer. Votre navigateur communique directement avec Nextcloud.
 
 ## Connecter votre compte
-Ouvrez [Compte Nextcloud](action:nextcloud) (bouton Nextcloud de l’écran d’accueil, ou Fichier ▸ Compte Nextcloud…). Saisissez l’adresse du serveur et choisissez **Se connecter avec Nextcloud**, ou utilisez un **mot de passe d’application** (Nextcloud ▸ Paramètres personnels ▸ Sécurité ▸ Créer un nouveau mot de passe d’application). Ne saisissez jamais votre mot de passe principal. **Tester la connexion** explique ce qui ne va pas en cas d’échec.
+Ouvrez [Compte Nextcloud](action:nextcloud) (écran d’accueil ▸ Comptes ▸ Compte Nextcloud…, ou Fichier ▸ Compte Nextcloud…). Saisissez l’adresse du serveur et choisissez **Se connecter avec Nextcloud**, ou utilisez un **mot de passe d’application** (Nextcloud ▸ Paramètres personnels ▸ Sécurité ▸ Créer un nouveau mot de passe d’application). Ne saisissez jamais votre mot de passe principal. **Tester la connexion** explique ce qui ne va pas en cas d’échec.
 
 ## Ouvrir et enregistrer
-- **Ouvrir depuis Nextcloud…** (écran d’accueil et menu Fichier) ouvre un fichier comme nouveau document **lié** à celui-ci.
+- **Ouvrir depuis Nextcloud…** (écran d’accueil ▸ Plus, et menu Fichier) ouvre un fichier comme nouveau document **lié** à celui-ci.
 - **Enregistrer dans Nextcloud** (\`Ctrl+S\`) met à jour le fichier lié. **Enregistrer dans Nextcloud sous…** permet de choisir le dossier, le nom et le format.
 - Si le fichier a été modifié entre-temps dans Nextcloud, vous choisissez de l’écraser, d’enregistrer une copie ou d’annuler.
 - Enregistrement automatique facultatif toutes les quelques minutes.
@@ -115,7 +141,8 @@ Ouvrez [Compte Nextcloud](action:nextcloud) (bouton Nextcloud de l’écran d’
   handin: {
     title: 'Rendre un travail',
     keywords: 'rendre remettre devoir travail professeur enseignant élève zip pdf déposer lien de dépôt envoyer',
-    body: `**Pour les élèves.** Cliquez sur **Rendre** (à côté de Partager). Ofimeo télécharge un fichier ZIP à votre nom et au titre du document, qui contient le document dans ses formats d’origine (par exemple .odt et .docx, ou .pptx et des images des diapositives).
+    body: `## Rendre votre travail
+Cliquez sur **Rendre** (à côté de Partager). Ofimeo télécharge un fichier ZIP à votre nom et au titre du document, qui contient le document dans ses formats d’origine (par exemple .odt et .docx, ou .pptx et des images des diapositives).
 
 - Si vous n’avez pas encore saisi votre nom, il vous est demandé${NB}: il figure dans le nom du fichier.
 - Déposez ou envoyez le ZIP à votre professeur comme il l’a demandé (ENT, e-mail…).
@@ -123,7 +150,7 @@ Ouvrez [Compte Nextcloud](action:nextcloud) (bouton Nextcloud de l’écran d’
 - **Déposer dans un lien de partage Nextcloud…**${NB}: si votre professeur vous a donné un lien de dépôt, le fichier y est envoyé directement. Aucun compte Nextcloud n’est nécessaire.
 - **Rendre dans Moodle…**${NB}: si votre établissement utilise Moodle, rendez directement dans un devoir. Voir [Moodle](help:moodle).
 
-**Pour les enseignants.**
+## Recueillir les travaux (si vous enseignez)
 - Donnez à chaque élève sa propre fiche avec un lien **Crée une copie** (voir [Partage](help:sharing)).
 - Créez un lien de dépôt («${NB}Dépôt de fichiers${NB}») dans votre Nextcloud et donnez-le à la classe.
 - Ouvrez les PDF des élèves, ou les ZIP rendus, dans [Ofimeo PDF](help:pdf) pour les corriger.
@@ -135,7 +162,7 @@ Ouvrez [Compte Nextcloud](action:nextcloud) (bouton Nextcloud de l’écran d’
     body: `Connectez Ofimeo au Moodle de votre établissement pour voir vos devoirs sur l’écran d’accueil et rendre votre travail sans télécharger ni déposer de fichiers.
 
 ## Se connecter
-Ouvrez [Moodle](action:moodle) (bouton Moodle de l’écran d’accueil, ou Fichier ▸ Compte Moodle…). Saisissez l’adresse de Moodle (votre établissement l’a peut-être déjà remplie), votre nom d’utilisateur et votre mot de passe, puis choisissez **Se connecter**.
+Ouvrez [Moodle](action:moodle) (écran d’accueil ▸ Comptes ▸ Compte Moodle…, ou Fichier ▸ Compte Moodle…). Saisissez l’adresse de Moodle (votre établissement l’a peut-être déjà remplie), votre nom d’utilisateur et votre mot de passe, puis choisissez **Se connecter**.
 - Votre mot de passe est envoyé uniquement à Moodle, une seule fois. Ofimeo ne garde dans ce navigateur qu’une clé Moodle et votre nom. **Se déconnecter** les supprime.
 - Si votre établissement se connecte à Moodle par une page web (Google, Microsoft ou un accès de l’établissement, «${NB}authentification unique${NB}»), ce type de connexion ne fonctionne pas encore dans Ofimeo. Ofimeo vous prévient lorsqu’il le détecte. Rendez votre travail avec [Rendre](help:handin) comme d’habitude et déposez le fichier dans Moodle.
 
@@ -225,7 +252,7 @@ Le guide pas à pas pour le service informatique se trouve dans la documentation
 - **Nextcloud**${NB}: votre mot de passe n’est envoyé qu’à votre serveur Nextcloud.
 - **La dictée** utilise la reconnaissance vocale du navigateur, qui peut envoyer l’audio au service de l’éditeur du navigateur.
 
-## Conseils pour la classe
+## Conseils pour le partage
 - Utilisez un prénom, des initiales ou un pseudonyme.
 - Ne mettez pas de données personnelles sensibles (santé, situation familiale) dans des documents partagés.
 
@@ -323,10 +350,11 @@ Les fichiers Word et OpenDocument gardent le graphique comme une image avec la c
 - **Références** propose des citations et une bibliographie aux styles APA, MLA ou Chicago.
 - Le format de page, les marges et l’orientation se trouvent dans Fichier ▸ Mise en page…
 
-## Réviser (corriger les travaux des élèves)
+## Réviser${NB}: commentaires et suggestions
 - **Commentaires**${NB}: sélectionnez du texte et appuyez sur \`Ctrl+Alt+M\` (ou Révision ▸ Commentaire). Les personnes disposant d’un lien de commentaire peuvent aussi commenter.
 - **Suggestions**${NB}: passez du mode **Modification** au mode **Suggestion**. Vos changements sont marqués et l’auteur les accepte ou les refuse.
-- Révision ▸ Afficher les auteurs colore le texte selon la personne qui l’a écrit.
+- **Suggestions reçues** (par exemple, les corrections de votre enseignant)${NB}: cliquez sur l’une d’elles et choisissez **Accepter** ou **Refuser**, ou utilisez Révision ▸ Accepter toutes les suggestions.
+- Révision ▸ Afficher les auteurs colore le texte selon la personne qui l’a écrit${NB}: utile pour les travaux de groupe.
 
 ## Graphiques
 **Insertion ▸ Graphique…** ajoute un graphique en colonnes, barres, lignes, aires, secteurs, anneau ou nuage de points. Prenez les données d’un classeur de votre bibliothèque (choisissez la feuille et la plage) ou saisissez-les dans le petit tableau. Un graphique **lié** à un classeur se met à jour tout seul quand ce classeur change dans ce navigateur ; **Mettre à jour depuis la source** (sur le graphique ou dans son menu contextuel) le fait tout de suite. Le document garde une copie des données : tout le monde voit le graphique, même sans le classeur. Faites glisser le coin pour le redimensionner ; double-cliquez pour le modifier ou ajouter une légende. Les fichiers Word le gardent comme vrai graphique.
@@ -362,12 +390,12 @@ La grille est dessinée comme une image${NB}: **Affichage ▸ Vue tableau access
 ## Fichiers
 Ouvre et télécharge Excel (.xlsx), OpenDocument (.ods) et CSV. Les graphiques sont enregistrés comme de vrais graphiques modifiables dans Excel et LibreOffice. Imprimez ou enregistrez la feuille active en PDF avec Fichier ▸ Imprimer.
 
-Les modèles de carnet de notes, d’appel et de grille d’évaluation de l’écran d’accueil sont prêts à l’emploi.`,
+L’écran d’accueil propose des modèles de classeur comme un emploi du temps, un carnet de notes, une feuille d’appel et une grille d’évaluation notée.`,
   },
   draw: {
     title: 'Ofimeo Dessin (tableau blanc)',
     keywords: 'dessin tableau blanc croquis dessiner à main levée excalidraw remue-méninges formes flèches',
-    body: `Un tableau blanc pour dessiner à main levée ou avec des formes, des flèches et du texte, seul ou avec la classe.
+    body: `Un tableau blanc pour dessiner à main levée ou avec des formes, des flèches et du texte, seul ou à plusieurs${NB}: remue-méninges, croquis, tableaux de groupe.
 
 - Choisissez un outil dans la barre d’outils du canevas et faites glisser pour dessiner. Les flèches restent attachées aux formes qu’elles relient.
 - Le panneau à côté de la sélection modifie les couleurs, les traits, le remplissage et la police.
@@ -399,7 +427,7 @@ L’écran d’accueil propose des modèles de cartes mentales, frises chronolog
   slides: {
     title: 'Ofimeo Présentations',
     keywords: 'présentation diapositives powerpoint pptx odp présenter projecteur présentateur notes animation thème disposition suivre',
-    body: `Des présentations pour la classe.
+    body: `Des présentations pour les cours, les exposés et les projets.
 
 - Le **volet des diapositives** à gauche affiche les diapositives. Cliquez avec le bouton droit sur une miniature pour ajouter, dupliquer, déplacer ou supprimer une diapositive et pour changer sa disposition ou son arrière-plan.
 - Choisissez un **thème** et une **disposition** pour chaque diapositive. Cliquez sur les espaces réservés pour ajouter un titre et du texte.
@@ -417,23 +445,24 @@ Ouvre PowerPoint (.pptx). Télécharge PowerPoint (.pptx), OpenDocument (.odp), 
     keywords: 'formulaire quiz questionnaire test examen sondage enquête questions réponses noter note score autoévaluation',
     body: `Des formulaires, sondages et quiz qui se corrigent tout seuls.
 
-## Pour les enseignants
+## Créer un formulaire
+Tout le monde peut en créer un${NB}: un quiz de l’enseignant ou un sondage pour un projet de classe.
 - **Question** ajoute une question${NB}; choisissez son type${NB}: réponse courte, paragraphe, choix multiple, cases à cocher, liste déroulante, échelle, grille, date, heure ou nombre. **Section** crée une nouvelle page.
 - Activez **Quiz** pour définir les bonnes réponses, les points et les commentaires. La correction est automatique${NB}; les paragraphes sont corrigés à la main.
-- **Envoyer** donne le lien et un code QR pour vos élèves. Ils ne voient que le formulaire, pas les réponses des autres.
+- **Envoyer** donne le lien et un code QR. Les personnes qui répondent ne voient que le formulaire, pas les réponses des autres.
 - Les réponses arrivent quand votre navigateur (ou celui d’un autre éditeur) est en ligne. Consultez-les dans **Réponses**, avec graphiques et statistiques, et exportez-les vers un classeur.
 
-## Pour les élèves
+## Répondre à un formulaire
 - Saisissez votre nom, répondez aux questions et appuyez sur **Envoyer**.
 - Si vous êtes hors ligne, la réponse est envoyée au retour de la connexion.
-- Si aucun enseignant n’est en ligne, utilisez **Télécharger ma réponse** et remettez le fichier à votre enseignant.
+- Si personne qui gère le formulaire n’est en ligne, utilisez **Télécharger ma réponse** et remettez le fichier (par exemple, à votre enseignant).
 
-Les réponses sont chiffrées dans le navigateur de l’élève${NB}: seuls les éditeurs du formulaire peuvent les lire.`,
+Les réponses sont chiffrées dans le navigateur de la personne qui répond${NB}: seuls les éditeurs du formulaire peuvent les lire.`,
   },
   pdf: {
-    title: 'Ofimeo PDF (corriger des PDF)',
+    title: 'Ofimeo PDF (annoter des PDF)',
     keywords: 'pdf corriger noter annoter surligner stylo tampon signature note acrobat copie rendue zip',
-    body: `Corrigez et annotez des fichiers PDF, par exemple les travaux rendus par vos élèves.
+    body: `Annotez des fichiers PDF${NB}: remplissez et signez une fiche, annotez une lecture ou corrigez des travaux rendus.
 
 - Ouvrez un PDF depuis l’écran d’accueil, depuis Fichier ▸ Ouvrir…, ou ouvrez un ZIP rendu${NB}: les PDF qu’il contient sont listés.
 - Outils${NB}: surligner, souligner et barrer (sélectionnez du texte), stylo et gomme, zones de texte, formes, **tampons** (coche, croix, «${NB}Bien${NB}», une note…), **notes** et votre **signature**.

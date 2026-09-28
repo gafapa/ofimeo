@@ -2789,6 +2789,18 @@ const es: Record<string, string> = {
 
   'Show': 'Mostrar',
   'Hide': 'Ocultar',
+  'Hand in saves your work as a ZIP file or a PDF for your teacher, or sends it straight to a Nextcloud upload link or to Moodle. If you teach, a copy link gives each student their own worksheet.': 'Entregar guarda tu trabajo como archivo ZIP o PDF para tu profe, o lo envía directamente a un enlace de subida de Nextcloud o a Moodle. Si das clase, un enlace de copia da a cada alumno su propia ficha.',
+  'If nobody who manages the form is online, use “Download my response” and hand the file in.': 'Si nadie que gestione el formulario está conectado, usa «Descargar mi respuesta» y entrega el archivo.',
+  'To review a text, switch the mode from Editing to Suggesting, or select text and press Ctrl+Alt+M to comment. Suggestions you receive can be accepted or rejected one by one.': 'Para revisar un texto, cambia el modo de Edición a Sugerencias, o selecciona texto y pulsa Ctrl+Alt+M para comentar. Las sugerencias que recibas se pueden aceptar o rechazar una a una.',
+  'Everything is saved in this browser as you type. Share invites others to write with you; Hand in sends your work to your teacher.': 'Todo se guarda en este navegador mientras escribes. Compartir invita a otras personas a escribir contigo; Entregar envía tu trabajo a tu profe.',
+  'Send gives the link and a QR code to pass the form around.': 'Enviar da el enlace y un código QR para repartir el formulario.',
+  'Share the PDF to annotate it together or to give someone your notes.': 'Comparte el PDF para anotarlo en grupo o para pasarle tus anotaciones a alguien.',
+  'Write documents, spreadsheets, presentations, diagrams, drawings, forms and notes, and annotate PDFs, on your own or with others. Designed for schools, useful for anyone: at home, in class or at work. No account is needed: everything runs in your browser.': 'Crea documentos, hojas de cálculo, presentaciones, diagramas, dibujos, formularios y apuntes, y anota PDF, a solas o con otras personas. Pensada para la educación, útil para cualquiera: en casa, en clase o en el trabajo. No necesitas cuenta: todo funciona en tu navegador.',
+  'More ways to open': 'Más formas de abrir',
+  'Nextcloud and Moodle accounts': 'Cuentas de Nextcloud y Moodle',
+  'Accounts': 'Cuentas',
+  'Nothing here yet. Create a document above, open a file or open a link someone shared with you.': 'Aquí todavía no hay nada. Crea un documento arriba, abre un archivo o abre un enlace que te hayan compartido.',
+  'Your documents': 'Tus documentos',
 }
 
 export default es

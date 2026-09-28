@@ -23,8 +23,6 @@
 }
 .tpl-app { display: flex; align-items: center; gap: 6px; padding: 4px 12px 0; color: var(--muted); font-size: 12px; }
 .tpl-app .app-icon.small { width: 16px; height: 16px; font-size: 10px; border-radius: 4px; }
-.tpl-more { display: block; margin: 12px auto 0; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 16px; padding: 5px 16px; font-size: 13px; }
-.tpl-more:hover { background: var(--hover); }
 .tpl-loading { color: var(--muted); padding: 12px 0; }
 
 @media (max-width: 640px) {

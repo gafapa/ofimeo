@@ -790,8 +790,8 @@ Ofimeo Notebook (`src/apps/notebook/`) keeps class notes like OneNote:
 
 ## Templates
 
-The home screen has three tabs: **Home** (create a document, open a file, four
-featured templates and the five most recent documents), **Templates** (the whole
+The home screen has three tabs: **Home** (create a document, open a file),
+**Templates** (the whole
 gallery, with app filters, the content language and *My templates*) and **My
 documents** (the library: search, folders, tags, trash). Template content is written in Spanish, Galician, English,
 French and German; the two tied to Spanish regulations (LOMLOE learning

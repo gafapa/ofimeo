@@ -11,7 +11,7 @@ const articles: Articles = {
 
 ## L’écran d’accueil
 Il comporte trois onglets${NB}:
-- **Accueil**${NB}: cliquez sur une carte pour créer un document de ce type${NB}; **Ouvrir un fichier…** ouvre des fichiers Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw et PDF de votre ordinateur (**Plus** propose d’autres façons d’ouvrir). En dessous, quatre modèles et vos documents les plus récents.
+- **Accueil**${NB}: cliquez sur une carte pour créer un document de ce type${NB}; **Ouvrir un fichier…** ouvre des fichiers Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw et PDF de votre ordinateur (**Plus** propose d’autres façons d’ouvrir).
 - **Modèles**${NB}: dossiers, fiches d’exercices, cartes mentales, emplois du temps, présentations, grilles d’évaluation, carnets de notes et plus encore, par application et langue du contenu, et vos propres modèles. Cliquez sur l’un d’eux pour obtenir votre propre copie.
 - **Mes documents**${NB}: tout ce que vous avez créé ou ouvert dans ce navigateur, avec recherche, dossiers, étiquettes et corbeille (les documents supprimés sont conservés 30${NB}jours).
 

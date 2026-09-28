@@ -10,8 +10,7 @@ import * as tpls from '../core/library-templates'
 import { confirmDialog, el, showContextMenu, showDialog, toast, uiZoom, type MenuEntry } from '../ui/widgets'
 import './storage.css'
 
-// onCount: the number of own templates, after each render.
-export function mountMyTemplates(container: HTMLElement, onCount?: (count: number) => void): void {
+export function mountMyTemplates(container: HTMLElement): void {
   let busy = false
   const grid = el('div', { class: 'tpl-grid my-tpl-grid', role: 'list' })
   grid.setAttribute('aria-label', t('My templates'))
@@ -126,7 +125,6 @@ export function mountMyTemplates(container: HTMLElement, onCount?: (count: numbe
     const list = await tpls.listOwnTemplates()
     grid.replaceChildren(...list.map(card))
     if (!list.length) grid.replaceChildren(el('p', { class: 'hint my-tpl-empty', textContent: t('Save any document as a template with File ▸ Save as template…, or import a template file.') }))
-    onCount?.(list.length)
   }
 
   container.replaceChildren(

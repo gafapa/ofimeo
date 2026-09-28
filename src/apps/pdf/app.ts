@@ -123,7 +123,7 @@ export async function mountPdf(session: Session, root: HTMLElement): Promise<voi
       const blank = el('button', { type: 'button', textContent: t('Start with a blank page') })
       blank.addEventListener('click', () => doc.transact(() => pages.push([blankPage()]), LOCAL))
       empty.append(
-        el('h2', { textContent: t('Correct a PDF') }),
+        el('h2', { textContent: t('Annotate a PDF') }),
         el('p', { textContent: t('Open a PDF (or a hand-in ZIP) or drop it here. Highlight, write, add stamps and comments, then download it or hand it back.') }),
         ...(session.canEdit ? [el('div', { class: 'pdf-empty-actions' }, open, blank)] : [el('p', { textContent: t('Waiting for the document…') })]),
       )

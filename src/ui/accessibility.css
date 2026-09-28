@@ -119,13 +119,12 @@ html[data-a11y-focus='large'] [contenteditable]:focus-visible { outline: 2px das
 .a11y-range-row { display: flex; align-items: center; gap: 8px; }
 .a11y-range { flex: 1; min-width: 0; accent-color: var(--accent); }
 .a11y-range-row output { min-width: 42px; text-align: right; color: var(--text); font-variant-numeric: tabular-nums; }
-.a11y-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
-.a11y-action {
-  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
-  border: 1px solid var(--border); border-radius: var(--radius-pill); background: var(--surface);
-}
-.a11y-action:hover:not(:disabled) { background: var(--hover); }
-.a11y-action.on { background: var(--danger-strong); border-color: var(--danger-strong); color: var(--on-danger); }
+/* Read aloud and dictation quick buttons in the app bars (speechButtons). */
+.a11y-quick { display: inline-flex; align-items: center; gap: 2px; flex: none; }
+.a11y-quick[hidden], .a11y-quick-btn[hidden] { display: none; }
+.a11y-quick-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.a11y-quick-btn[aria-pressed='true'] { background: var(--hover); border-color: var(--border); }
+.a11y-quick-btn.on { background: var(--danger-strong); border-color: var(--danger-strong); color: var(--on-danger); }
 .a11y-warn { margin: 0; padding: 6px 8px; border-radius: var(--radius-m); background: var(--hover); color: var(--text); font-size: var(--fs-s); border-left: 3px solid var(--warn-strong); }
 .a11y-status { margin: 0; min-height: 1em; font-size: var(--fs-m); color: var(--text); }
 .a11y-status:empty { display: none; }

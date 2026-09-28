@@ -24,6 +24,10 @@ export function trackErrors(page: Page): string[] {
   return errors
 }
 
+// Home screen tabs (by id, in any interface language).
+export const openLibrary = (page: Page) => page.locator('#home-tab-docs').click()
+export const openTemplates = (page: Page) => page.locator('#home-tab-templates').click()
+
 export async function openApp(page: Page, app: string, doc = uniqueDoc(app)): Promise<void> {
   await page.goto(`/${RELAYS}#app=${app}&doc=${doc}`)
   await page.locator(APP_READY[app]).first().waitFor({ timeout: 60_000 })

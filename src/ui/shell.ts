@@ -5,7 +5,7 @@ import type { AppInfo } from '../apps/registry'
 import { t } from '../core/i18n'
 import { homePath } from '../core/router'
 import { loadUser } from '../core/store'
-import { accessibilityButton } from './accessibility'
+import { accessibilityButton, speechButtons } from './accessibility'
 import { el, icon, promptText } from './widgets'
 import { Cloud, Inbox, Share2, UserRoundPen } from 'lucide'
 
@@ -43,7 +43,8 @@ export function renderShell(app: AppInfo, root: HTMLElement): Shell {
       <main id="app-main" class="app-main"></main>
       <footer id="statusbar" class="statusbar"></footer>
     </div>`
-  root.querySelector('.appbar-actions')!.prepend(accessibilityButton())
+  // Read aloud and dictation quick buttons (when enabled), then the accessibility panel.
+  root.querySelector('.appbar-actions')!.prepend(speechButtons(), accessibilityButton())
   const nameInput = root.querySelector<HTMLInputElement>('#user-name')!
   nameInput.after(nameButton(nameInput))
   // The logo leads to the home screen; its tooltip names the app of the suite.

@@ -1,7 +1,9 @@
 // Accessibility preferences for the whole suite, stored per browser: reading
 // fonts, UI zoom, text spacing, themes, reduced motion, large cursor and focus
 // rings, reading ruler, read aloud and dictation. Everything is display only:
-// documents keep their own fonts and formatting.
+// documents keep their own fonts and formatting. Read aloud and dictation are
+// set up here and used from quick buttons in each app bar (speechButtons) or
+// with Alt+Shift+R / Alt+Shift+D.
 
 import '@fontsource/opendyslexic/400.css'
 import '@fontsource/opendyslexic/700.css'
@@ -33,6 +35,8 @@ interface Prefs {
   rate: number
   readLang: speech.ReadLang
   dictLang: string // 'auto' or a BCP 47 tag
+  readButton: boolean // quick button in the app bars
+  dictButton: boolean
 }
 
 const DEFAULTS: Prefs = {
@@ -50,6 +54,8 @@ const DEFAULTS: Prefs = {
   rate: 1,
   readLang: 'auto',
   dictLang: 'auto',
+  readButton: false,
+  dictButton: false,
 }
 
 const KEY = 'ofimeo:a11y'
@@ -99,6 +105,7 @@ function apply(): void {
   set('data-a11y-focus', prefs.bigFocus ? 'large' : null)
   updateRuler()
   syncPanel?.()
+  syncQuick()
 }
 
 // ---------- Reading ruler / focus mask ----------
@@ -285,6 +292,7 @@ function toggleDictation(on = !speech.isDictating()): void {
     node.hidden = true
     setStatus(t('Dictation stopped.'))
     syncPanel?.()
+    syncQuick()
     return
   }
   if (speech.dictationStatus() !== 'ok') {
@@ -305,6 +313,7 @@ function toggleDictation(on = !speech.isDictating()): void {
       node.hidden = !active
       if (message) setStatus(message, !active)
       syncPanel?.()
+      syncQuick()
     },
   })
 }
@@ -341,14 +350,6 @@ function checkbox(label: string, value: () => boolean, onChange: (v: boolean) =>
   const input = el('input', { type: 'checkbox', checked: value() })
   input.addEventListener('change', () => onChange(input.checked))
   return el('label', { class: 'a11y-check' }, input, el('span', {}, label, hint ? el('small', { textContent: hint }) : null))
-}
-
-// Buttons that act on the document keep its selection and focus.
-function actionButton(node: Parameters<typeof icon>[0], label: string, run: () => void): HTMLButtonElement {
-  const b = el('button', { type: 'button', class: 'a11y-action' }, icon(node, 16), el('span', { textContent: label }))
-  b.addEventListener('mousedown', (e) => e.preventDefault())
-  b.addEventListener('click', run)
-  return b
 }
 
 function buildPanel(): HTMLElement {
@@ -438,7 +439,7 @@ function buildPanel(): HTMLElement {
     voiceSelect.replaceChildren(
       el('option', { value: '', textContent: t('Automatic (by language)') }),
       ...voices
-        .filter((v) => /^(es|gl|en)/i.test(v.lang) || v.voiceURI === prefs.voice)
+        .filter((v) => /^(es|gl|en|fr|de)/i.test(v.lang) || v.voiceURI === prefs.voice)
         .map((v) => el('option', { value: v.voiceURI, textContent: `${v.name} (${v.lang})` })),
     )
     voiceSelect.value = prefs.voice
@@ -449,14 +450,11 @@ function buildPanel(): HTMLElement {
   const rate = el('input', { type: 'range', min: '0.5', max: '2', step: '0.1', class: 'a11y-range' })
   const rateValue = el('output', {})
   rate.addEventListener('input', () => update({ rate: Number(rate.value) }))
-  const readButton = actionButton(Volume2, t('Read selection'), () => readAloud('auto'))
-  const readAll = actionButton(Volume2, t('Read everything'), () => readAloud('all'))
-  const stopRead = actionButton(CircleStop, t('Stop'), () => speech.stopReading())
   const readGroup = el(
     'fieldset',
     { class: 'a11y-group' },
     el('legend', { textContent: t('Read aloud') }),
-    el('div', { class: 'a11y-buttons' }, readButton, readAll, bind(stopRead, (n) => (n.disabled = !speech.isReading()))),
+    bind(checkbox(t('Show a read aloud button in the apps'), () => prefs.readButton, (readButton) => update({ readButton })), (n) => (n.querySelector('input')!.checked = prefs.readButton)),
     el('small', { class: 'a11y-note', textContent: t('Reads the selection or the paragraph with the cursor (Alt+Shift+R).') }),
     el(
       'div',
@@ -475,21 +473,12 @@ function buildPanel(): HTMLElement {
   if (!speech.canSpeak()) readGroup.append(el('p', { class: 'a11y-warn', textContent: t('Read aloud is not available in this browser.') }))
 
   // Dictation
-  const dictButton = actionButton(Mic, t('Start dictation'), () => toggleDictation())
   const dictWarn = el('p', { class: 'a11y-warn' })
   const dictGroup = el(
     'fieldset',
     { class: 'a11y-group' },
     el('legend', { textContent: t('Dictation') }),
-    el(
-      'div',
-      { class: 'a11y-buttons' },
-      bind(dictButton, (n) => {
-        n.querySelector('span')!.textContent = speech.isDictating() ? t('Stop dictation') : t('Start dictation')
-        n.classList.toggle('on', speech.isDictating())
-        n.disabled = !speech.isDictating() && speech.dictationStatus() !== 'ok'
-      }),
-    ),
+    bind(checkbox(t('Show a dictation button in the apps'), () => prefs.dictButton, (dictButton) => update({ dictButton })), (n) => (n.querySelector('input')!.checked = prefs.dictButton)),
     field(
       t('Language'),
       bind(
@@ -505,7 +494,7 @@ function buildPanel(): HTMLElement {
   )
 
   const reset = el('button', { type: 'button', class: 'a11y-reset', textContent: t('Reset all') })
-  reset.addEventListener('click', () => update({ ...DEFAULTS, voice: prefs.voice, rate: prefs.rate }))
+  reset.addEventListener('click', () => update({ ...DEFAULTS, voice: prefs.voice, rate: prefs.rate, readButton: prefs.readButton, dictButton: prefs.dictButton }))
   statusLine = el('p', { class: 'a11y-status', role: 'status' })
   statusLine.setAttribute('aria-live', 'polite')
 
@@ -536,6 +525,7 @@ function buildPanel(): HTMLElement {
   syncPanel()
   speech.onSpeechState(({ message }) => {
     syncPanel?.()
+    syncQuick()
     if (message !== undefined) setStatus(message, /not|no |non |stopped:|detenid|detid/i.test(message))
   })
   window.addEventListener('online', () => syncPanel?.())
@@ -569,6 +559,48 @@ export function accessibilityButton(withLabel = false): HTMLButtonElement {
   b.addEventListener('click', () => togglePanel())
   openers.add(b)
   return b
+}
+
+// ---------- Quick buttons (app bars) ----------
+
+const quickGroups = new Set<{ group: HTMLElement; read: HTMLButtonElement; dict: HTMLButtonElement }>()
+
+// Read aloud and dictation buttons for an app bar, shown when enabled in the panel.
+export function speechButtons(): HTMLElement {
+  const quick = (node: Parameters<typeof icon>[0], run: () => void) => {
+    const b = el('button', { type: 'button', class: 'a11y-btn a11y-quick-btn' }, icon(node, 20))
+    // Keep the document's selection and caret: they say what to read and where to write.
+    b.addEventListener('mousedown', (e) => e.preventDefault())
+    b.addEventListener('click', run)
+    return b
+  }
+  const read = quick(Volume2, () => readAloud('auto'))
+  const dict = quick(Mic, () => toggleDictation())
+  const group = el('span', { class: 'a11y-quick' }, read, dict)
+  quickGroups.add({ group, read, dict })
+  syncQuick()
+  return group
+}
+
+function syncQuick(): void {
+  const reading = speech.isReading()
+  const dictating = speech.isDictating()
+  for (const { group, read, dict } of quickGroups) {
+    read.hidden = !prefs.readButton
+    read.replaceChildren(icon(reading ? CircleStop : Volume2, 20))
+    read.title = reading ? t('Stop reading') : t('Read aloud (Alt+Shift+R)')
+    read.setAttribute('aria-label', read.title)
+    read.setAttribute('aria-pressed', String(reading))
+    read.disabled = !speech.canSpeak()
+    dict.hidden = !prefs.dictButton
+    const status = speech.dictationStatusText()
+    dict.title = dictating ? t('Stop dictation') : status || t('Dictation (Alt+Shift+D)')
+    dict.setAttribute('aria-label', dictating ? t('Stop dictation') : t('Dictation (Alt+Shift+D)'))
+    dict.setAttribute('aria-pressed', String(dictating))
+    dict.classList.toggle('on', dictating)
+    dict.disabled = !dictating && speech.dictationStatus() !== 'ok'
+    group.hidden = read.hidden && dict.hidden
+  }
 }
 
 // ---------- Skip link and shortcuts ----------
@@ -611,6 +643,9 @@ window.addEventListener('storage', (e) => {
   prefs = load()
   apply()
 })
+speech.onSpeechState(() => syncQuick())
+window.addEventListener('online', () => syncQuick())
+window.addEventListener('offline', () => syncQuick())
 trackFocus()
 shortcuts()
 if (document.body) skipLink()

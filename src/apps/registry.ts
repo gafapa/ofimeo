@@ -117,7 +117,7 @@ export const APPS: AppInfo[] = [
     name: t('PDF'),
     product: t('Ofimeo PDF'),
     plural: t('PDFs'),
-    newLabel: t('Correct a PDF'),
+    newLabel: t('Annotate a PDF'),
     untitled: t('Untitled PDF'),
     letter: 'A',
     color: '#b3261e',

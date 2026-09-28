@@ -5,13 +5,13 @@ const articles: Articles = {
   'getting-started': {
     title: 'Erste Schritte',
     keywords: 'anfangen start beginnen willkommen startseite neu dokument öffnen vorlage konto anmelden',
-    body: `Ofimeo ist eine Office-Suite, die vollständig in Ihrem Browser läuft: Dokumente, Tabellen, Zeichnungen, Diagramme, Präsentationen, Formulare und PDF-Korrektur. Sie ist für die Schule gemacht, für Schülerinnen und Schüler ebenso wie für Lehrkräfte, aber alle können sie nutzen: zu Hause, im Verein oder bei der Arbeit. Sie brauchen kein Konto, und auf keinem Server wird etwas installiert.
+    body: `Ofimeo ist eine Office-Suite, die vollständig in Ihrem Browser läuft: Dokumente, Tabellen, Zeichnungen, Diagramme, Präsentationen, Formulare und PDF-Anmerkungen. Sie ist für die Schule gemacht, für Schülerinnen und Schüler ebenso wie für Lehrkräfte, aber alle können sie nutzen: zu Hause, im Verein oder bei der Arbeit. Sie brauchen kein Konto, und auf keinem Server wird etwas installiert.
 
 ## Die Startseite
-- **Etwas Neues beginnen**: Klicken Sie auf eine Karte, um ein Dokument dieser Art zu erstellen.
-- **Vorlagen**: Schülerarbeiten, Arbeitsblätter, Concept-Maps, Stundenpläne, Präsentationen, Bewertungsraster, Notenbücher und mehr. Ein Klick erstellt Ihre eigene Kopie.
-- **Datei öffnen…**: öffnet Word-, OpenDocument-, Excel-, CSV-, PowerPoint-, draw.io-, Excalidraw- und PDF-Dateien von Ihrem Computer.
-- **Ihre Dokumente**: alles, was Sie in diesem Browser erstellt oder geöffnet haben, mit Suche, Ordnern, Schlagwörtern und Papierkorb (gelöschte Dokumente werden 30 Tage aufbewahrt).
+Sie hat drei Reiter:
+- **Start**: Klicken Sie auf eine Karte, um ein Dokument dieser Art zu erstellen; **Datei öffnen…** öffnet Word-, OpenDocument-, Excel-, CSV-, PowerPoint-, draw.io-, Excalidraw- und PDF-Dateien von Ihrem Computer (**Mehr** bietet weitere Möglichkeiten zum Öffnen). Darunter vier Vorlagen und Ihre zuletzt verwendeten Dokumente.
+- **Vorlagen**: Schülerarbeiten, Arbeitsblätter, Concept-Maps, Stundenpläne, Präsentationen, Bewertungsraster, Notenbücher und mehr, nach App und Inhaltssprache, sowie Ihre eigenen Vorlagen. Ein Klick erstellt Ihre eigene Kopie.
+- **Meine Dokumente**: alles, was Sie in diesem Browser erstellt oder geöffnet haben, mit Suche, Ordnern, Schlagwörtern und Papierkorb (gelöschte Dokumente werden 30 Tage aufbewahrt).
 
 ## Ihr Name
 Geben Sie Ihren Namen oben rechts ein (auf dem Handy oder in einem schmalen Fenster tippen Sie oben rechts auf die Personen-Schaltfläche). Andere sehen ihn neben Ihrem Cursor und in Kommentaren, und er wird beim Abgeben für den Dateinamen verwendet. Ein Vorname oder Initialen genügen.
@@ -222,7 +222,7 @@ Die IT-Abteilung findet die Installationsanleitung in der Projektdokumentation (
 - **Beliebiger Webserver** (nginx, Apache, IIS): Kopieren Sie die erstellten Dateien. Die App hat keinen Serverteil.
 
 ## Die Konfiguration der Schule
-[Hilfe ▸ Für Administratoren…](action:admin) öffnet ein Formular, das ofimeo.config.json erstellt. Es legt fest:
+Auf der Startseite öffnet [Hilfe ▸ Für Administratoren…](action:admin) ein Formular, das ofimeo.config.json erstellt. Es legt fest:
 - Name und Logo der Schule, angezeigt auf der Startseite;
 - die Standardsprache der Oberfläche und die Sprache neuer Dokumente;
 - das Schul-Relay, weitere Relays und ob öffentliche Server verwendet werden dürfen;
@@ -287,6 +287,7 @@ Die Menüs zeigen die Tastenkombination jedes Befehls daneben an.
 - **Leselineal** oder **Fokusmaske**, die dem Zeiger und dem Textcursor folgen.
 - **Vorlesen** (\`Alt+Umschalt+R\`): liest die Auswahl, den Absatz oder das ganze Dokument mit den Stimmen des Browsers.
 - **Diktieren** (\`Alt+Umschalt+D\`): schreibt, was Sie sagen. Braucht eine Verbindung und einen geeigneten Browser (Chrome, Edge).
+- **Schnellschaltflächen**: Aktivieren Sie im Bereich **Schaltfläche zum Vorlesen in den Apps anzeigen** und **Schaltfläche zum Diktieren in den Apps anzeigen**, um 🔊 und 🎤 neben der Schaltfläche für Barrierefreiheit jeder App zu erhalten. Der Bereich behält ihre Einstellungen (Sprache, Geschwindigkeit, Stimme); die Tasten funktionieren mit oder ohne Schaltflächen.
 - **Tastatur**: Alles lässt sich mit der Tastatur bedienen. \`F10\` führt zur Menüleiste, und mit \`Tab\` erscheint ein Link „Zum Inhalt springen“. Siehe [Tastenkombinationen](help:shortcuts).
 
 Die Sprache der Oberfläche ändern Sie auf der Startseite oder im Panel.`,

@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { expect, test, type Page } from '@playwright/test'
 import JSZip from 'jszip'
 import { PDFDict, PDFDocument, PDFName } from 'pdf-lib'
-import { RELAYS, openApp, trackErrors } from './helpers'
+import { RELAYS, openApp, openLibrary, openTemplates, trackErrors } from './helpers'
 import { makeFixturePdf } from './pdf-fixture'
 
 async function importPdf(page: Page): Promise<void> {
@@ -38,6 +38,7 @@ test('home Download builds a PDF without opening it, alone and in a zip', async 
   // A drawing to put in the same zip.
   await openApp(page, 'draw')
   await page.goto(`/${RELAYS}`)
+  await openLibrary(page)
   await expect(pdfRow(page)).toBeVisible()
 
   // One PDF: ⋮ ▸ Download gives the PDF with its (imported) annotations.
@@ -66,8 +67,8 @@ test('content search finds form questions and PDF text and notes', async ({ page
   const errors = trackErrors(page)
   // A form from the review quiz template (Spanish content chosen in the English UI).
   await page.goto(`/${RELAYS}`)
+  await openTemplates(page)
   await page.locator('.tpl-lang-select').selectOption('es')
-  await page.getByRole('button', { name: /Show all templates/ }).click()
   await page.locator('.tpl-filters .chip', { hasText: 'Form' }).first().click()
   await page.locator('.tpl-card', { hasText: 'Cuestionario de repaso' }).click()
   await page.locator('.app-forms').waitFor({ timeout: 60_000 })
@@ -76,6 +77,7 @@ test('content search finds form questions and PDF text and notes', async ({ page
   await page.waitForTimeout(1000)
 
   await page.goto(`/${RELAYS}`)
+  await openLibrary(page)
   const search = page.locator('.home-search')
   const rows = page.locator('a.doc-row')
   await search.fill('capital de Portugal')
@@ -101,17 +103,25 @@ test('a new library shows a light home screen', async ({ page }) => {
   const errors = trackErrors(page)
   await page.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
   await page.goto(`/${RELAYS}`)
+  // Three tabs; Home has the apps, four featured templates and the recent documents.
+  await expect(page.getByRole('tab', { name: 'Home' })).toHaveAttribute('aria-selected', 'true')
+  await expect(page.locator('#home-panel-home .tpl-card')).toHaveCount(4)
+  await expect(page.locator('.home-recent-short .empty')).toBeVisible()
+  await expect(page.locator('.tpl-filters')).toBeHidden()
+  // "Show all templates" opens the Templates tab: filters, language and own templates.
+  await page.getByRole('button', { name: /Show all templates/ }).click()
+  await expect(page.getByRole('tab', { name: 'Templates' })).toHaveAttribute('aria-selected', 'true')
+  await expect(page.locator('.tpl-filters')).toBeVisible()
+  await expect(page.locator('.my-templates')).toBeVisible()
+  // Arrow keys move between the tabs.
+  await page.getByRole('tab', { name: 'Templates' }).focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(page.getByRole('tab', { name: 'My documents' })).toBeFocused()
   // No documents yet: only the empty list, without search, folders or filters.
   await expect(page.locator('.docs-bare .empty')).toBeVisible()
   await expect(page.locator('.home-search')).toBeHidden()
   await expect(page.locator('.lib-side')).toBeHidden()
-  // Four templates; the app filters and "My templates" come with the whole gallery.
-  await expect(page.locator('.home-templates .tpl-card')).toHaveCount(4)
-  await expect(page.locator('.tpl-filters')).toBeHidden()
-  await expect(page.locator('.my-templates')).toBeHidden()
-  await page.getByRole('button', { name: /Show all templates/ }).click()
-  await expect(page.locator('.tpl-filters')).toBeVisible()
-  await expect(page.locator('.my-templates')).toBeVisible()
+  await page.keyboard.press('Home')
   // Other ways to open are in the More menu.
   await page.getByRole('button', { name: 'More', exact: true }).click()
   await expect(page.getByRole('menuitem', { name: 'Import from link…' })).toBeVisible()
@@ -121,6 +131,8 @@ test('a new library shows a light home screen', async ({ page }) => {
   await page.locator('.new-card[href*="app=writer"]').click()
   await page.locator('.ProseMirror').first().waitFor({ timeout: 60_000 })
   await page.goto(`/${RELAYS}`)
+  await expect(page.locator('.recent-row')).toHaveCount(1)
+  await page.getByRole('button', { name: /All my documents/ }).click()
   await expect(page.locator('.home-search')).toBeVisible()
   await expect(page.locator('.docs-bare')).toHaveCount(0)
   expect(errors).toEqual([])
@@ -131,15 +143,15 @@ test('templates have English content for the English interface', async ({ page }
   await page.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
   const create = async (name: string, ready: string) => {
     await page.goto(`/${RELAYS}`)
+    await openTemplates(page)
     await expect(page.locator('.tpl-lang-select')).toHaveValue('en')
-    await page.getByRole('button', { name: /Show all templates/ }).click()
-    await page.locator('.tpl-card', { hasText: name }).first().click()
+    await page.locator('#home-panel-templates .tpl-card', { hasText: name }).first().click()
     await page.locator(ready).first().waitFor({ timeout: 60_000 })
   }
   await page.goto(`/${RELAYS}`)
-  await page.getByRole('button', { name: /Show all templates/ }).click()
+  await openTemplates(page)
   // Every template except the two tied to Spanish regulations.
-  await expect(page.locator('.home-templates .tpl-grid:not(.my-tpl-grid) .tpl-card')).toHaveCount(27)
+  await expect(page.locator('#home-panel-templates .tpl-grid:not(.my-tpl-grid) .tpl-card')).toHaveCount(27)
 
   await create('Student report', '.ProseMirror')
   await expect(page.locator('.ProseMirror').first()).toContainText('Title of the work')

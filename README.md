@@ -17,7 +17,7 @@ where that is not enough.
 | Diagram (`diagram`) | Ofimeo Diagrams / Ofimeo Diagramas | Available |
 | Presentation (`slides`) | Ofimeo Slides / Ofimeo Presentaciones | Available |
 | Forms and quizzes (`forms`) | Ofimeo Forms / Ofimeo Formularios | Available |
-| PDF correction (`pdf`) | Ofimeo PDF / Ofimeo PDF | Available |
+| PDF annotation (`pdf`) | Ofimeo PDF / Ofimeo PDF | Available |
 | Notebook (`notebook`) | Ofimeo Notebook / Ofimeo Cuaderno | Available |
 
 Storage keys and database names use the `ofimeo` prefix (`localStorage`
@@ -666,9 +666,10 @@ Limitations:
   through a template link (`…&copy=1`) does not: export and import an `.oform`
   file to pass it on.
 
-## PDF correction
+## PDF annotation
 
-Ofimeo PDF is for correcting students' PDFs. Open a PDF from the home screen
+Ofimeo PDF annotates PDFs: fill in and sign a worksheet, mark up a reading or
+correct handed-in work. Open a PDF from the home screen
 (Open, drag and drop, Nextcloud), from File ▸ Open… in the app, or from a
 hand-in ZIP (the app lists the PDFs inside). The file is stored once in the
 document (as binary chunks in Yjs) and travels to collaborators with it; above
@@ -789,9 +790,10 @@ Ofimeo Notebook (`src/apps/notebook/`) keeps class notes like OneNote:
 
 ## Templates
 
-The home screen has a **Templates** gallery for schools. It shows four varied
-templates; **Show all templates** opens the whole gallery with the app filters
-and *My templates*. Template content is written in Spanish, Galician, English,
+The home screen has three tabs: **Home** (create a document, open a file, four
+featured templates and the five most recent documents), **Templates** (the whole
+gallery, with app filters, the content language and *My templates*) and **My
+documents** (the library: search, folders, tags, trash). Template content is written in Spanish, Galician, English,
 French and German; the two tied to Spanish regulations (LOMLOE learning
 situation, as a document and as a presentation) exist in Spanish and Galician
 only and are hidden for the other content languages. The content language
@@ -862,6 +864,10 @@ whole suite; nothing changes in the documents themselves.
   word processor, a diagram label, a spreadsheet cell being edited or any text
   field. It uses the browser's speech recognition (Chrome, Edge), which needs an
   internet connection; the panel says when it is unavailable or offline.
+- **Quick buttons**: the panel enables a read aloud button and a dictation
+  button in every app bar (next to the accessibility button; off by default)
+  and keeps their settings. The read button turns into Stop while reading; the
+  dictation button stays pressed while listening. The keys work either way.
 - **Keyboard**: a *Skip to content* link, `F10` (or `Alt+Shift+M`) focuses the
   menu bar; arrow keys, `Enter` and `Escape` work in menus, submenus and toolbar
   pop-ups, and focus returns to the document. Dialogs, menus and toolbar buttons
@@ -1458,7 +1464,7 @@ src/
     charts/          Charts in documents and slides: dialog.ts, embedded.ts (chart + data snapshot),
                      linked.ts (refresh from the source), sheets.ts (spreadsheet data without the sheet app)
     forms/           Forms and quizzes (encrypted responses over the room, grading, results; see Forms)
-    pdf/             PDF correction
+    pdf/             PDF annotation
       viewer.ts      pdf.js viewer (pdfjs.ts loads it): lazy pages, text layer, thumbnails, find
       editor.ts      Annotation tools, selection, keyboard, undo; render.ts: annotations as SVG
       draw.ts        Drawing primitives shared by the screen and the PDF writer
@@ -1696,11 +1702,11 @@ A school can host its own Ofimeo and configure it for everyone
   that show "Set by your school". It is applied before the first render
   (`src/core/school-config.ts`), cached for offline use, and can also come from
   the relay's `/ofimeo/config`.
-- **Help ▸ For administrators…** is a form that writes the file (offline, in the browser).
+- **Help ▸ For administrators…** (home screen) is a form that writes the file (offline, in the browser).
 
 ## Limitations
 
-App-specific limitations are listed with each app above (Forms, PDF correction,
+App-specific limitations are listed with each app above (Forms, PDF annotation,
 Notebook, Chat); these are the general ones.
 
 - Public Nostr relays are community-run with no guarantees; several are used at

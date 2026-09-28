@@ -5,13 +5,13 @@ const articles: Articles = {
   'getting-started': {
     title: 'Primeros pasos',
     keywords: 'empezar inicio comenzar bienvenida pantalla principal nuevo documento abrir plantilla cuenta',
-    body: `Ofimeo es una suite ofimática que funciona entera en tu navegador: documentos, hojas de cálculo, dibujos, diagramas, presentaciones, formularios y corrección de PDF. Está pensada para la educación, tanto para el alumnado como para el profesorado, pero cualquiera puede usarla: en casa, en una asociación o en el trabajo. No necesitas cuenta y no se instala nada en ningún servidor.
+    body: `Ofimeo es una suite ofimática que funciona entera en tu navegador: documentos, hojas de cálculo, dibujos, diagramas, presentaciones, formularios y anotación de PDF. Está pensada para la educación, tanto para el alumnado como para el profesorado, pero cualquiera puede usarla: en casa, en una asociación o en el trabajo. No necesitas cuenta y no se instala nada en ningún servidor.
 
 ## La pantalla principal
-- **Empieza algo nuevo**: haz clic en una tarjeta para crear un documento de ese tipo.
-- **Plantillas**: trabajos, fichas, mapas conceptuales, horarios, presentaciones, rúbricas, cuadernos de notas y más. Haz clic en una para obtener tu propia copia.
-- **Abrir archivo…**: abre archivos de Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw y PDF de tu ordenador.
-- **Tus documentos**: todo lo que has creado o abierto en este navegador, con búsqueda, carpetas, etiquetas y papelera (los documentos eliminados se guardan 30 días).
+Tiene tres pestañas:
+- **Inicio**: haz clic en una tarjeta para crear un documento de ese tipo; **Abrir archivo…** abre archivos de Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw y PDF de tu ordenador (**Más** tiene otras formas de abrir). Debajo, cuatro plantillas y tus documentos más recientes.
+- **Plantillas**: trabajos, fichas, mapas conceptuales, horarios, presentaciones, rúbricas, cuadernos de notas y más, por aplicación e idioma del contenido, y tus propias plantillas. Haz clic en una para obtener tu propia copia.
+- **Mis documentos**: todo lo que has creado o abierto en este navegador, con búsqueda, carpetas, etiquetas y papelera (los documentos eliminados se guardan 30 días).
 
 ## Tu nombre
 Escribe tu nombre en la casilla de arriba a la derecha (en un móvil o en una ventana estrecha, toca el botón de la persona de arriba a la derecha). Los colaboradores lo ven junto a tu cursor y en los comentarios, y se usa en el nombre del archivo cuando entregas un trabajo. Basta con el nombre de pila o las iniciales.
@@ -222,7 +222,7 @@ El departamento de informática encuentra la guía de instalación en la documen
 - **Cualquier servidor web** (nginx, Apache, IIS): copia los archivos compilados. La aplicación no tiene parte de servidor.
 
 ## La configuración del centro
-[Ayuda ▸ Para administradores…](action:admin) abre un formulario que crea ofimeo.config.json. Establece:
+En la pantalla principal, [Ayuda ▸ Para administradores…](action:admin) abre un formulario que crea ofimeo.config.json. Establece:
 - el nombre y el logotipo del centro, que se muestran en la pantalla de inicio;
 - el idioma de la interfaz por defecto y el idioma de los documentos nuevos;
 - el relé del centro, otros relés y si se pueden usar servidores públicos;
@@ -287,6 +287,7 @@ Los menús muestran el atajo de cada orden a su lado.
 - **Regla de lectura** o **máscara de enfoque** que siguen al puntero y al cursor de texto.
 - **Leer en voz alta** (\`Alt+Mayús+R\`): lee la selección, el párrafo o todo el documento con las voces del navegador.
 - **Dictado** (\`Alt+Mayús+D\`): escribe lo que dices. Necesita conexión y un navegador compatible (Chrome, Edge).
+- **Botones rápidos**: marca **Mostrar un botón de lectura en voz alta en las aplicaciones** y **Mostrar un botón de dictado en las aplicaciones** en el panel para tener 🔊 y 🎤 junto al botón de accesibilidad de cada aplicación. El panel guarda sus ajustes (idioma, velocidad, voz); las teclas funcionan con o sin los botones.
 - **Teclado**: todo se puede usar con el teclado. \`F10\` lleva a la barra de menús y al pulsar \`Tab\` aparece un enlace «Saltar al contenido». Consulta [Atajos de teclado](help:shortcuts).
 
 El idioma de la interfaz se cambia en la pantalla principal o en el panel.`,

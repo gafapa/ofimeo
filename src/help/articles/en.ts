@@ -5,13 +5,13 @@ const articles: Articles = {
   'getting-started': {
     title: 'Getting started',
     keywords: 'start begin first welcome home new document open template account login',
-    body: `Ofimeo is an office suite that runs entirely in your browser: documents, spreadsheets, drawings, diagrams, presentations, forms and PDF correction. It is designed for schools, for students and teachers alike, but anyone can use it: at home, in an association or at work. You do not need an account, and nothing is installed on a server.
+    body: `Ofimeo is an office suite that runs entirely in your browser: documents, spreadsheets, drawings, diagrams, presentations, forms and PDF annotation. It is designed for schools, for students and teachers alike, but anyone can use it: at home, in an association or at work. You do not need an account, and nothing is installed on a server.
 
 ## The home screen
-- **Start something new**: click a card to create a document of that kind.
-- **Templates**: reports, worksheets, concept maps, timetables, presentations, rubrics, gradebooks and more. Click one to get your own copy.
-- **Open file…**: opens Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw and PDF files from your computer.
-- **Your documents**: everything you created or opened in this browser, with search, folders, tags and a trash (deleted documents are kept for 30 days).
+It has three tabs:
+- **Home**: click a card to create a document of that kind; **Open file…** opens Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw and PDF files from your computer (**More** has other ways to open). Below, four templates and your most recent documents.
+- **Templates**: reports, worksheets, concept maps, timetables, presentations, rubrics, gradebooks and more, by app and content language, and your own templates. Click one to get your own copy.
+- **My documents**: everything you created or opened in this browser, with search, folders, tags and a trash (deleted documents are kept for 30 days).
 
 ## Your name
 Type your name in the box at the top right (on a phone or in a narrow window, tap the person button at the top right). Collaborators see it next to your cursor and in comments, and it is used for the file name when you hand in work. A first name or initials is enough.
@@ -222,7 +222,7 @@ The IT department finds the installation guide in the project's documentation (d
 - **Any web server** (nginx, Apache, IIS): copy the built files. The app has no server part.
 
 ## The school configuration
-[Help ▸ For administrators…](action:admin) opens a form that writes ofimeo.config.json. It sets:
+On the home screen, [Help ▸ For administrators…](action:admin) opens a form that writes ofimeo.config.json. It sets:
 - the school's name and logo, shown on the home screen;
 - the default interface language and the language of new documents;
 - the school relay, other relays, and whether public servers may be used;
@@ -287,6 +287,7 @@ Menus show the shortcut of each command next to it.
 - **Reading ruler** or **focus mask** that follows the pointer and the text cursor.
 - **Read aloud** (\`Alt+Shift+R\`): reads the selection, the paragraph or the whole document with the browser's voices.
 - **Dictation** (\`Alt+Shift+D\`): writes what you say. It needs a connection and a browser that supports it (Chrome, Edge).
+- **Quick buttons**: tick **Show a read aloud button in the apps** and **Show a dictation button in the apps** in the panel to get 🔊 and 🎤 next to the accessibility button of every app. The panel keeps their settings (language, speed, voice); the keys work with or without the buttons.
 - **Keyboard**: everything can be used with the keyboard. \`F10\` goes to the menu bar and a "Skip to content" link appears with \`Tab\`. See [Keyboard shortcuts](help:shortcuts).
 
 The interface language can be changed on the home screen or in the panel.`,

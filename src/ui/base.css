@@ -257,6 +257,10 @@ dialog.dlg { background: var(--surface); color: var(--text); }
   .title-block { display: contents; }
   .title-row { flex: 1; min-width: 0; order: 1; }
   .appbar-actions { order: 2; }
+  /* With the read aloud and dictation buttons on, the title keeps a readable
+     width and the actions wrap to a second row, aligned to the right. */
+  .appbar-main:has(.a11y-quick:not([hidden])) .title-row { min-width: 150px; }
+  .appbar-main:has(.a11y-quick:not([hidden])) .appbar-actions { margin-left: auto; }
   .menubar { order: 3; flex-basis: 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
   .menubar::-webkit-scrollbar { display: none; }
   .menubar-item { flex: none; padding: 2px 6px; }

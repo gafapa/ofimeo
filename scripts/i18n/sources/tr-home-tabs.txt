@@ -1,0 +1,5 @@
+Home ||| Inicio ||| Inicio
+My documents ||| Mis documentos ||| Os meus documentos
+All my documents ({count}) ||| Todos mis documentos ({count}) ||| Todos os meus documentos ({count})
+Home screen sections ||| Secciones de la pantalla principal ||| Seccións da pantalla principal
+No documents yet. Create one on the Home tab, open a file or open a link someone shared with you. ||| Aún no hay documentos. Crea uno en la pestaña Inicio, abre un archivo o abre un enlace que te hayan compartido. ||| Aínda non hai documentos. Crea un na lapela Inicio, abre un ficheiro ou abre unha ligazón que che compartisen.

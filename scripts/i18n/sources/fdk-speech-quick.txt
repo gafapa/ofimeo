@@ -1,0 +1,6 @@
+Annotate a PDF ||| Annoter un PDF ||| PDF kommentieren
+Show a read aloud button in the apps ||| Afficher un bouton de lecture à voix haute dans les applications ||| Schaltfläche zum Vorlesen in den Apps anzeigen
+Show a dictation button in the apps ||| Afficher un bouton de dictée dans les applications ||| Schaltfläche zum Diktieren in den Apps anzeigen
+Stop reading ||| Arrêter la lecture ||| Vorlesen beenden
+Read aloud (Alt+Shift+R) ||| Lire à voix haute (Alt+Maj+R) ||| Vorlesen (Alt+Umschalt+R)
+Dictation (Alt+Shift+D) ||| Dictée (Alt+Maj+D) ||| Diktat (Alt+Umschalt+D)

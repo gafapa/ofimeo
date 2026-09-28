@@ -1,0 +1,6 @@
+Annotate a PDF ||| Anotar un PDF ||| Anotar un PDF
+Show a read aloud button in the apps ||| Mostrar un botón de lectura en voz alta en las aplicaciones ||| Amosar un botón de lectura en voz alta nas aplicacións
+Show a dictation button in the apps ||| Mostrar un botón de dictado en las aplicaciones ||| Amosar un botón de ditado nas aplicacións
+Stop reading ||| Detener la lectura ||| Deter a lectura
+Read aloud (Alt+Shift+R) ||| Leer en voz alta (Alt+Mayús+R) ||| Ler en voz alta (Alt+Maiús+R)
+Dictation (Alt+Shift+D) ||| Dictado (Alt+Mayús+D) ||| Ditado (Alt+Maiús+D)

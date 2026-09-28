@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { RELAYS, openApp, trackErrors, uniqueDoc } from './helpers'
+import { RELAYS, openApp, openLibrary, trackErrors, uniqueDoc } from './helpers'
 
 // Data saved before the rename (words-online → ofimeo) is moved on start-up.
 test('documents saved under the former name are migrated', async ({ page }) => {
@@ -51,6 +51,9 @@ test('documents saved under the former name are migrated', async ({ page }) => {
   })
 
   await page.goto(`/${RELAYS}`)
+  // Listed on the Home tab (recent) and in the library.
+  await expect(page.locator(`.recent-row[data-id="${id}"]`)).toContainText('Saved before the rename')
+  await openLibrary(page)
   await expect(page.locator(`.doc-row[data-id="${id}"]`)).toContainText('Saved before the rename')
   const names = await page.evaluate(async () => (await indexedDB.databases()).map((d) => d.name))
   expect(names).toContain(`ofimeo:${id}`)

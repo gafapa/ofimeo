@@ -16,7 +16,7 @@ import { helpMenuItems } from '../ui/menus'
 import { openAccountDialog, openFromNextcloud } from '../ui/nextcloud'
 import { registerShortcuts, showShortcuts } from '../ui/shortcuts'
 import { el, icon, showContextMenu, toast, uiZoom } from '../ui/widgets'
-import { CircleHelp, Cloud, GraduationCap, HardDrive } from 'lucide'
+import { ChevronDown, CircleHelp, Cloud, HardDrive } from 'lucide'
 import { hasMoodleAccount } from '../core/moodle-store'
 import { onboardingOff, welcomeSeen } from '../help/prefs'
 import { documentsSection } from './docs'
@@ -54,35 +54,43 @@ export function mountHome(root: HTMLElement): void {
   fileInput.accept = ALL_ACCEPT
   openButton.addEventListener('click', () => fileInput.click())
 
-  // Google Drive / Microsoft 365 share links (src/ui/import-link.ts, loaded on demand).
-  const linkOpen = el('button', { type: 'button', class: 'home-open', textContent: t('Import from link…'), title: t('Import a file shared from Google Drive, OneDrive or SharePoint') })
-  linkOpen.addEventListener('click', () => void import('../ui/import-link').then((m) => m.openImportFromLink()))
+  // Other ways to open: Google Drive / Microsoft 365 share links (src/ui/import-link.ts,
+  // loaded on demand) and Nextcloud (needs a connection).
+  const moreOpen = el('button', { type: 'button', class: 'home-open home-open-more', title: t('More ways to open') }, t('More'), icon(ChevronDown, 16))
+  moreOpen.setAttribute('aria-haspopup', 'menu')
+  moreOpen.addEventListener('click', () => {
+    const rect = moreOpen.getBoundingClientRect()
+    showContextMenu(rect.left, rect.bottom + 4, [
+      { label: t('Import from link…'), run: () => void import('../ui/import-link').then((m) => m.openImportFromLink()) },
+      { label: t('Open from Nextcloud…'), run: () => void openFromNextcloud(), enabled: () => navigator.onLine },
+    ])
+  })
 
-  // Nextcloud: open files from it, account settings (needs a connection).
-  const cloudOpen = el('button', { type: 'button', class: 'home-open', textContent: t('Open from Nextcloud…') })
-  cloudOpen.addEventListener('click', () => void openFromNextcloud())
-  const cloudButton = el('button', { type: 'button', class: 'home-cloud', title: t('Nextcloud account') }, icon(Cloud, 18), el('span', { class: 'btn-label', textContent: 'Nextcloud' }))
-  cloudButton.setAttribute('aria-label', t('Nextcloud account'))
-  cloudButton.addEventListener('click', () => void openAccountDialog())
-  const renderOnline = () => {
-    cloudOpen.disabled = !navigator.onLine
-    cloudOpen.title = navigator.onLine ? t('Open a file from your Nextcloud') : t('You are offline. Nextcloud can be used again when you are connected.')
-  }
-  window.addEventListener('online', renderOnline)
-  window.addEventListener('offline', renderOnline)
-  renderOnline()
-
-  // Moodle: account (header) and the "Moodle tasks" panel (src/ui/moodle.ts, loaded on demand).
-  const moodleButton = el('button', { type: 'button', class: 'home-cloud md-home-button', title: 'Moodle' }, icon(GraduationCap, 18), el('span', { class: 'btn-label', textContent: 'Moodle' }))
-  moodleButton.setAttribute('aria-label', 'Moodle')
-  moodleButton.addEventListener('click', () => void import('../ui/moodle').then((m) => m.openMoodleDialog()))
+  // Moodle: the "Moodle tasks" panel (src/ui/moodle.ts, loaded on demand).
   const moodleSlot = el('div', { class: 'moodle-slot' })
   const loadMoodlePanel = () => {
     if (moodleSlot.childElementCount) return
     void import('../ui/moodle').then((m) => moodleSlot.childElementCount || moodleSlot.append(m.moodleTasksSection()))
   }
   if (hasMoodleAccount() || schoolConfig().moodle?.url) loadMoodlePanel()
-  moodleButton.addEventListener('click', loadMoodlePanel)
+
+  // Nextcloud and Moodle accounts, grouped in one header menu.
+  const accountsButton = el('button', { type: 'button', class: 'home-cloud home-accounts', title: t('Nextcloud and Moodle accounts') }, icon(Cloud, 18), el('span', { class: 'btn-label', textContent: t('Accounts') }))
+  accountsButton.setAttribute('aria-haspopup', 'menu')
+  accountsButton.addEventListener('click', () => {
+    const rect = accountsButton.getBoundingClientRect()
+    const z = uiZoom()
+    showContextMenu(rect.right - 220 * z, rect.bottom + 4, [
+      { label: t('Nextcloud account…'), run: () => void openAccountDialog() },
+      {
+        label: t('Moodle account…'),
+        run: () => {
+          loadMoodlePanel()
+          void import('../ui/moodle').then((m) => m.openMoodleDialog())
+        },
+      },
+    ])
+  })
 
   const newCards = el(
     'div',
@@ -121,8 +129,7 @@ export function mountHome(root: HTMLElement): void {
         schoolBadge(),
         el('span', { class: 'spacer' }),
         offlineControl(),
-        cloudButton,
-        moodleButton,
+        accountsButton,
         storageButton(),
         languageSelect('home-language'),
         helpButton(),
@@ -133,7 +140,7 @@ export function mountHome(root: HTMLElement): void {
       el(
         'section',
         { class: 'home-new' },
-        el('div', { class: 'home-inner' }, el('div', { class: 'home-section-title' }, el('h2', { textContent: t('Start something new') }), el('span', { class: 'home-open-buttons' }, openButton, linkOpen, cloudOpen), fileInput), newCards),
+        el('div', { class: 'home-inner' }, el('div', { class: 'home-section-title' }, el('h2', { textContent: t('Start something new') }), el('span', { class: 'home-open-buttons' }, openButton, moreOpen), fileInput), newCards),
       ),
       moodleSlot,
       reminderSlot,

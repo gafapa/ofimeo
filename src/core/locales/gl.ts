@@ -2789,6 +2789,18 @@ const gl: Record<string, string> = {
 
   'Show': 'Mostrar',
   'Hide': 'Ocultar',
+  'Hand in saves your work as a ZIP file or a PDF for your teacher, or sends it straight to a Nextcloud upload link or to Moodle. If you teach, a copy link gives each student their own worksheet.': 'Entregar garda o teu traballo como ficheiro ZIP ou PDF para o teu profe, ou envíao directamente a unha ligazón de subida de Nextcloud ou a Moodle. Se dás clase, unha ligazón de copia dá a cada alumno a súa propia ficha.',
+  'If nobody who manages the form is online, use “Download my response” and hand the file in.': 'Se ninguén que xestione o formulario está conectado, usa «Descargar a miña resposta» e entrega o ficheiro.',
+  'To review a text, switch the mode from Editing to Suggesting, or select text and press Ctrl+Alt+M to comment. Suggestions you receive can be accepted or rejected one by one.': 'Para revisar un texto, cambia o modo de Edición a Suxestións, ou selecciona texto e preme Ctrl+Alt+M para comentar. As suxestións que recibas pódense aceptar ou rexeitar unha a unha.',
+  'Everything is saved in this browser as you type. Share invites others to write with you; Hand in sends your work to your teacher.': 'Todo se garda neste navegador mentres escribes. Compartir convida a outras persoas a escribir contigo; Entregar envía o teu traballo ao teu profe.',
+  'Send gives the link and a QR code to pass the form around.': 'Enviar dá a ligazón e un código QR para repartir o formulario.',
+  'Share the PDF to annotate it together or to give someone your notes.': 'Comparte o PDF para anotalo en grupo ou para pasarlle as túas anotacións a alguén.',
+  'Write documents, spreadsheets, presentations, diagrams, drawings, forms and notes, and annotate PDFs, on your own or with others. Designed for schools, useful for anyone: at home, in class or at work. No account is needed: everything runs in your browser.': 'Crea documentos, follas de cálculo, presentacións, diagramas, debuxos, formularios e apuntamentos, e anota PDF, en solitario ou con outras persoas. Pensada para a educación, útil para calquera: na casa, na clase ou no traballo. Non precisas conta: todo funciona no teu navegador.',
+  'More ways to open': 'Máis formas de abrir',
+  'Nextcloud and Moodle accounts': 'Contas de Nextcloud e Moodle',
+  'Accounts': 'Contas',
+  'Nothing here yet. Create a document above, open a file or open a link someone shared with you.': 'Aquí aínda non hai nada. Crea un documento arriba, abre un ficheiro ou abre unha ligazón que che compartisen.',
+  'Your documents': 'Os teus documentos',
 }
 
 export default gl

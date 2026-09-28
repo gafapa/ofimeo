@@ -5,11 +5,11 @@ const articles: Articles = {
   'getting-started': {
     title: 'Primeiros pasos',
     keywords: 'comezar inicio empezar benvida pantalla principal novo documento abrir modelo conta',
-    body: `Ofimeo é unha suite ofimática que funciona enteira no teu navegador: documentos, follas de cálculo, debuxos, diagramas, presentacións, formularios e corrección de PDF. Non precisas conta e non se instala nada en ningún servidor.
+    body: `Ofimeo é unha suite ofimática que funciona enteira no teu navegador: documentos, follas de cálculo, debuxos, diagramas, presentacións, formularios e corrección de PDF. Está pensada para a educación, tanto para o alumnado como para o profesorado, pero calquera pode usala: na casa, nunha asociación ou no traballo. Non precisas conta e non se instala nada en ningún servidor.
 
 ## A pantalla principal
 - **Comeza algo novo**: fai clic nunha tarxeta para crear un documento dese tipo.
-- **Modelos**: fichas, rúbricas, cadernos de notas, horarios, mapas conceptuais e máis. Fai clic nun para obter a túa propia copia.
+- **Modelos**: traballos, fichas, mapas conceptuais, horarios, presentacións, rúbricas, cadernos de notas e máis. Fai clic nun para obter a túa propia copia.
 - **Abrir ficheiro…**: abre ficheiros de Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw e PDF do teu ordenador.
 - **Os teus documentos**: todo o que creaches ou abriches neste navegador, con busca, cartafoles, etiquetas e papeleira (os documentos eliminados gárdanse 30 días).
 
@@ -19,17 +19,43 @@ Escribe o teu nome na caixa de arriba á dereita (nun móbil ou nunha xanela est
 ## Importante
 - Os documentos gárdanse **só neste navegador**. Le [Traballar sen conexión e onde se gardan os teus datos](help:offline) e fai [copias de seguranza](help:backup).
 - Para traballar con outras persoas, envía unha [ligazón para compartir](help:sharing).
-- O alumnado entrega os traballos co botón [Entregar](help:handin).
+- Para entregar un traballo, usa o botón [Entregar](help:handin).
+- Como traballan xuntos alumnado e profesorado: [Alumnado e profesorado](help:classroom).
 
 [Ver de novo a visita guiada](action:tour)
 
 ## Importar desde Google Drive ou Microsoft 365
-**Importar desde unha ligazón…** (pantalla de inicio e menú Ficheiro de cada aplicación) abre ficheiros compartidos desde Documentos, Follas de cálculo, Presentacións e Drive de Google, OneDrive ou SharePoint:
+**Importar desde unha ligazón…** (pantalla de inicio ▸ Máis, e menú Ficheiro de cada aplicación) abre ficheiros compartidos desde Documentos, Follas de cálculo, Presentacións e Drive de Google, OneDrive ou SharePoint:
 1. Pega a ligazón para compartir. O ficheiro debe estar compartido con **Calquera persoa coa ligazón**, ou tes que poder abrilo coa túa propia conta.
 2. Preme o botón de descarga: o teu navegador descarga o ficheiro como Word, Excel ou PowerPoint.
 3. Solta o ficheiro descargado na caixa de diálogo (ou escólleo). Ábrese como un documento novo de Ofimeo.
 
 Os navegadores non permiten que as aplicacións web descarguen estes ficheiros directamente, así que o ficheiro pasa polo teu cartafol de Descargas; Ofimeo nunca ve a túa conta de Google ou Microsoft. Se o relé do teu centro o ofrece, **Importar directamente a través do relé do centro** faino nun clic cos ficheiros públicos.`,
+  },
+  classroom: {
+    title: 'Alumnado e profesorado',
+    keywords: 'alumno alumna alumnado estudante profesor profesora profe profesorado docente clase aula grupo traballo en grupo ficha deberes corrección nota rol',
+    body: `Ofimeo é a mesma aplicación para todo o mundo: o que podes facer nun documento depende da ligazón que abriches, non de quen es.
+
+## Se es alumno ou alumna
+- **Abre a ligazón que che pase o teu profe.** Se só podes ler ou comentar, arriba aparece a etiqueta **Só lectura** ou **Pode comentar**; se non, podes editar. Unha ligazón **Fai unha copia** dáche a túa propia copia (por exemplo, unha ficha) que só editas ti.
+- **Volve atopalo** na pantalla principal: todo o que abres queda neste navegador. Usa o mesmo dispositivo e navegador, ou fai unha [copia de seguranza](help:backup).
+- **Traballos en grupo**: unha persoa crea o documento e comparte unha ligazón para editar co grupo. Todos escribides á vez; Revisar ▸ Amosar autoría (en Documentos) amosa quen escribiu que, e o [chat](help:sharing) axúdavos a organizarvos.
+- **O teu nome**: escríbeo arriba á dereita. Veno o teu grupo e o teu profe, e dá nome ao ficheiro que entregas.
+- **Entrega** o teu traballo co botón [Entregar](help:handin), ou directamente en [Moodle](help:moodle).
+- **Correccións**: abre o documento ou PDF corrixido que che devolva o teu profe. En Documentos, as suxestións acéptanse ou rexéitanse unha a unha, e os comentarios pódense responder.
+- **Presentacións**: prepáraas en grupo en [Ofimeo Presentacións](help:slides) e expóñas coa vista do presentador.
+- **Toma apuntamentos** en [Ofimeo Caderno](help:notebook).
+
+## Se dás clase
+- **Reparte traballo** cunha ligazón **Fai unha copia**: cada alumno recibe a súa propia ficha. Usa unha ligazón **Pode ver** para lecturas e presentacións que todos seguen.
+- **Recolle traballos** con Entregar: o alumnado envíache un ZIP ou un PDF, sobe o ficheiro a un cartafol de subida de Nextcloud ou entrégao en Moodle.
+- **Corrixe** en [Documentos](help:writer) con comentarios e suxestións, e en [Ofimeo PDF](help:pdf) con selos, lapis e notas.
+- **Cuestionarios e enquisas** con [Ofimeo Formularios](help:forms).
+- **Presenta** con [Ofimeo Presentacións](help:slides): o alumnado pode seguir as túas diapositivas nos seus dispositivos.
+- Os [modelos](help:getting-started) inclúen fichas, rúbricas, cadernos de notas e unha situación de aprendizaxe.
+
+Lémbralle ao alumnado que use un nome de pía ou as súas iniciais e que faga copias de seguranza: consulta [Privacidade](help:privacy).`,
   },
   sharing: {
     title: 'Compartir e permisos',
@@ -40,9 +66,9 @@ Os navegadores non permiten que as aplicacións web descarguen estes ficheiros d
 - **Pode editar**: poden modificar o documento contigo.
 - **Pode comentar**: poden ler e engadir comentarios, pero non cambiar o texto.
 - **Pode ver**: poden ler o documento e seguir os cambios en directo.
-- **Fai unha copia**: cada persoa que a abre obtén a súa propia copia privada. Úsaa para dar unha ficha a cada alumno.
+- **Fai unha copia**: cada persoa que a abre obtén a súa propia copia privada. Por exemplo, unha ficha que enche cada alumno.
 
-A caixa de diálogo tamén amosa un **código QR**, práctico para tabletas e móbiles na aula.
+A caixa de diálogo tamén amosa un **código QR**, práctico para tabletas e móbiles.
 
 ## Convén saber
 - Unha ligazón é como unha chave: quen a ten obtén o seu acceso. Compártea só con quen a precise.
@@ -55,7 +81,7 @@ A caixa de diálogo tamén amosa un **código QR**, práctico para tabletas e m�
 - O botón do globo xunto ás persoas do documento (ou \`Alt+Shift+C\`) abre o chat. Un número indica as mensaxes sen ler; vólvese vermello cando alguén te menciona.
 - Escribe \`@\` para mencionar a alguén que está aquí. As ligazóns ábrense noutra lapela; o botón da cara sorrinte engade emojis. \`Intro\` envía, \`Maiús+Intro\` comeza unha liña nova e \`Escape\` pecha o chat.
 - Quen ten unha ligazón para editar ou comentar pode escribir; quen ten unha ligazón só de lectura só pode ler.
-- Docentes (ligazón para editar): o botón ⋯ do chat desactívao neste documento ou borra o seu historial para todos.
+- Quen ten unha ligazón para editar (por exemplo, o profe que creou o documento): o botón ⋯ do chat desactívao neste documento ou borra o seu historial para todos.
 - As mensaxes gárdanse co documento neste navegador e nas copias de seguranza, pero non nas versións, nas copias nin nos ficheiros descargados.`,
   },
   offline: {
@@ -97,10 +123,10 @@ A caixa de diálogo tamén amosa un **código QR**, práctico para tabletas e m�
     body: `Se o teu centro ten un servidor Nextcloud, podes abrir ficheiros del e volver gardalos. O teu navegador comunícase directamente con Nextcloud.
 
 ## Conectar a túa conta
-Abre [Conta de Nextcloud](action:nextcloud) (botón Nextcloud da pantalla principal, ou Arquivo ▸ Conta de Nextcloud…). Escribe o enderezo do servidor e escolle **Acceder con Nextcloud**, ou usa un **contrasinal de aplicación** (Nextcloud ▸ Configuración persoal ▸ Seguranza ▸ Crear un novo contrasinal de aplicación). Non escribas nunca o teu contrasinal principal. **Probar a conexión** explica que falla se non funciona.
+Abre [Conta de Nextcloud](action:nextcloud) (pantalla principal ▸ Contas ▸ Conta de Nextcloud…, ou Arquivo ▸ Conta de Nextcloud…). Escribe o enderezo do servidor e escolle **Acceder con Nextcloud**, ou usa un **contrasinal de aplicación** (Nextcloud ▸ Configuración persoal ▸ Seguranza ▸ Crear un novo contrasinal de aplicación). Non escribas nunca o teu contrasinal principal. **Probar a conexión** explica que falla se non funciona.
 
 ## Abrir e gardar
-- **Abrir desde Nextcloud…** (pantalla principal e menú Arquivo) abre un ficheiro como documento novo **vinculado** a el.
+- **Abrir desde Nextcloud…** (pantalla principal ▸ Máis, e menú Arquivo) abre un ficheiro como documento novo **vinculado** a el.
 - **Gardar en Nextcloud** (\`Ctrl+S\`) actualiza o ficheiro vinculado. **Gardar en Nextcloud como…** escolle cartafol, nome e formato.
 - Se mentres tanto o ficheiro cambiou en Nextcloud, escolles entre sobrescribilo, gardar unha copia ou cancelar.
 - Gardado automático opcional cada poucos minutos.
@@ -113,7 +139,8 @@ Abre [Conta de Nextcloud](action:nextcloud) (botón Nextcloud da pantalla princi
   handin: {
     title: 'Entregar traballos',
     keywords: 'entregar entrega deberes tarefa profesor alumno zip pdf subir ligazón de subida enviar',
-    body: `**Para o alumnado.** Fai clic en **Entregar** (xunto a Compartir). Ofimeo descarga un ficheiro ZIP co teu nome e o título, co documento nos seus formatos orixinais (por exemplo .odt e .docx, ou .pptx e imaxes das diapositivas).
+    body: `## Entregar o teu traballo
+Fai clic en **Entregar** (xunto a Compartir). Ofimeo descarga un ficheiro ZIP co teu nome e o título, co documento nos seus formatos orixinais (por exemplo .odt e .docx, ou .pptx e imaxes das diapositivas).
 
 - Se aínda non escribiches o teu nome, pídeseche: vai no nome do ficheiro.
 - Sobe ou envía o ZIP ao teu profesor ou profesora como che indicase (aula virtual, correo…).
@@ -121,7 +148,7 @@ Abre [Conta de Nextcloud](action:nextcloud) (botón Nextcloud da pantalla princi
 - **Subir a unha ligazón compartida de Nextcloud…**: se o teu profesor che deu unha ligazón de subida, o ficheiro vai directamente alí. Non precisas conta de Nextcloud.
 - **Entregar en Moodle…**: se o teu centro usa Moodle, entrega directamente nunha tarefa. Consulta [Moodle](help:moodle).
 
-**Para o profesorado.**
+## Recoller traballos (se dás clase)
 - Dálle a cada alumno a súa propia ficha cunha ligazón **Fai unha copia** (ver [Compartir](help:sharing)).
 - Crea unha ligazón de subida («Só subida») no teu Nextcloud e dálla á clase.
 - Abre os PDF do alumnado, ou os ZIP de entrega, en [Ofimeo PDF](help:pdf) para corrixilos.
@@ -133,7 +160,7 @@ Abre [Conta de Nextcloud](action:nextcloud) (botón Nextcloud da pantalla princi
     body: `Conecta Ofimeo co Moodle do teu centro para ver as túas tarefas na pantalla principal e entregar o teu traballo sen descargar e subir ficheiros.
 
 ## Conectar
-Abre [Moodle](action:moodle) (botón Moodle da pantalla principal, ou Ficheiro ▸ Conta de Moodle…). Escribe o enderezo de Moodle (pode que o teu centro xa o puxese), o teu usuario e o teu contrasinal, e escolle **Conectar**.
+Abre [Moodle](action:moodle) (pantalla principal ▸ Contas ▸ Conta de Moodle…, ou Ficheiro ▸ Conta de Moodle…). Escribe o enderezo de Moodle (pode que o teu centro xa o puxese), o teu usuario e o teu contrasinal, e escolle **Conectar**.
 - O teu contrasinal vai só a Moodle, unha vez. Ofimeo garda neste navegador só unha clave de Moodle e o teu nome. **Desconectar** bórraos.
 - Se no teu centro se entra en Moodle a través dunha páxina web (Google, Microsoft ou un acceso do centro, «inicio de sesión único»), este tipo de acceso aínda non funciona en Ofimeo. Ofimeo avísate cando o detecta. Entrega co [Entregar](help:handin) habitual e sube o ficheiro en Moodle.
 
@@ -223,7 +250,7 @@ A guía paso a paso para o departamento de informática está na documentación 
 - **Nextcloud**: o teu contrasinal só se envía ao teu servidor Nextcloud.
 - **O ditado** usa o recoñecemento de voz do navegador, que pode enviar o audio ao servizo do fabricante do navegador.
 
-## Consellos para a aula
+## Consellos para compartir
 - Usa o nome, as iniciais ou un alcume.
 - Non poñas datos persoais sensibles (saúde, asuntos familiares) en documentos compartidos.
 
@@ -321,10 +348,11 @@ Os ficheiros de Word e OpenDocument gardan a gráfica como unha imaxe coa constr
 - **Referencias** ten citas e bibliografía en estilo APA, MLA ou Chicago.
 - O tamaño de páxina, as marxes e a orientación están en Arquivo ▸ Configurar páxina…
 
-## Revisar (o profesorado corrixindo traballos)
+## Revisar: comentarios e suxestións
 - **Comentarios**: selecciona texto e preme \`Ctrl+Alt+M\` (ou Revisar ▸ Comentario). As persoas con ligazón de comentario tamén poden comentar.
 - **Suxestións**: cambia o modo de **Edición** a **Suxestións**. Os teus cambios quedan marcados e o autor acéptaos ou rexéitaos.
-- Revisar ▸ Amosar autoría colorea o texto segundo quen o escribiu.
+- **Suxestións recibidas** (por exemplo, as correccións do teu profe): fai clic nunha e escolle **Aceptar** ou **Rexeitar**, ou usa Revisar ▸ Aceptar todas as suxestións.
+- Revisar ▸ Amosar autoría colorea o texto segundo quen o escribiu: útil nos traballos en grupo.
 
 ## Gráficos
 **Inserir ▸ Gráfico…** engade un gráfico de columnas, barras, liñas, áreas, circular, de anel ou de dispersión. Colle os datos dunha folla de cálculo da túa biblioteca (escolle a folla e o intervalo) ou escríbeos na pequena táboa. Un gráfico **ligado** a unha folla de cálculo actualízase só cando esa folla cambia neste navegador; **Actualizar desde a orixe** (no gráfico ou no seu menú contextual) faino ao momento. O documento garda unha copia dos datos, así que todos ven o gráfico aínda que non teñan a folla. Arrastra a esquina para cambiar o tamaño; fai dobre clic para modificalo ou engadir un pé de figura. Os ficheiros de Word consérvano como gráfico real.
@@ -360,12 +388,12 @@ A grella debúxase como unha imaxe, así que **Ver ▸ Vista de táboa accesible
 ## Ficheiros
 Abre e descarga Excel (.xlsx), OpenDocument (.ods) e CSV. Os gráficos gárdanse como gráficos reais que Excel e LibreOffice poden editar. Imprime ou garda a folla actual como PDF con Arquivo ▸ Imprimir.
 
-Os modelos de caderno de notas, asistencia e rúbrica da pantalla principal están listos para usar.`,
+A pantalla principal ten modelos de folla de cálculo como un horario, un caderno de notas, un rexistro de asistencia e unha rúbrica con puntuación.`,
   },
   draw: {
     title: 'Ofimeo Debuxo (encerado)',
     keywords: 'debuxo encerado lousa bosquexo debuxar a man alzada excalidraw choiva de ideas taboleiro formas frechas',
-    body: `Un encerado para debuxar a man alzada ou con formas, frechas e texto, só ou coa clase.
+    body: `Un encerado para debuxar a man alzada ou con formas, frechas e texto, en solitario ou con outras persoas: choivas de ideas, bosquexos, murais en grupo.
 
 - Escolle unha ferramenta na barra do lenzo e arrastra para debuxar. As frechas quedan unidas ás formas que conectan.
 - O panel xunto á selección cambia cores, liñas, recheo e fonte.
@@ -397,7 +425,7 @@ A pantalla principal ten modelos de mapas conceptuais, liñas do tempo, diagrama
   slides: {
     title: 'Ofimeo Presentacións',
     keywords: 'presentación diapositivas powerpoint pptx odp presentar proxector presentador notas animación tema disposición seguir',
-    body: `Presentacións para a aula.
+    body: `Presentacións para clases, exposicións e proxectos.
 
 - O **panel de diapositivas** da esquerda amosa as diapositivas. Fai clic co botón dereito nunha miniatura para engadir, duplicar, mover ou eliminar unha diapositiva e para cambiar a súa disposición ou o seu fondo.
 - Escolle un **tema** e unha **disposición** para cada diapositiva. Fai clic nos marcadores para engadir un título e texto.
@@ -415,29 +443,30 @@ Abre PowerPoint (.pptx). Descarga PowerPoint (.pptx), OpenDocument (.odp), PDF e
     keywords: 'formulario cuestionario exame proba enquisa preguntas respostas cualificar nota puntuación autoavaliación',
     body: `Formularios, enquisas e cuestionarios que se corrixen sós.
 
-## Para o profesorado
+## Crear un formulario
+Calquera pode crealo: un cuestionario do profe ou unha enquisa para un proxecto de clase.
 - **Pregunta** engade unha pregunta; escolle o seu tipo: resposta curta, parágrafo, opción múltiple, caixas de verificación, despregable, escala, grella, data, hora ou número. **Sección** crea unha páxina nova.
 - Activa **Cuestionario** para fixar as respostas correctas, os puntos e os comentarios. A corrección é automática; os parágrafos corríxense a man.
-- **Enviar** dá a ligazón e un código QR para o teu alumnado. Só ven o formulario, non as respostas dos demais.
+- **Enviar** dá a ligazón e un código QR. Quen responde só ve o formulario, non as respostas dos demais.
 - As respostas chegan cando o teu navegador (ou o doutro editor) está conectado. Míraas en **Respostas**, con gráficos e estatísticas, e expórtaas a unha folla de cálculo.
 
-## Para o alumnado
+## Responder a un formulario
 - Escribe o teu nome, responde ás preguntas e preme **Enviar**.
 - Se non tes conexión, a resposta envíase cando volva.
-- Se non hai ningún profesor conectado, usa **Descargar a miña resposta** e entrégalle o ficheiro ao teu profesor.
+- Se ninguén que xestione o formulario está conectado, usa **Descargar a miña resposta** e entrega o ficheiro (por exemplo, ao teu profe).
 
 As respostas cífranse no navegador do alumno: só os editores do formulario poden lelas.`,
   },
   pdf: {
-    title: 'Ofimeo PDF (corrixir PDF)',
+    title: 'Ofimeo PDF (anotar PDF)',
     keywords: 'pdf corrixir cualificar anotar resaltar bolígrafo selo sinatura nota acrobat entrega zip',
-    body: `Corrixe e anota ficheiros PDF, por exemplo os traballos que che entregou o teu alumnado.
+    body: `Anota ficheiros PDF: enche e asina unha ficha, subliña unha lectura ou corrixe traballos entregados.
 
 - Abre un PDF desde a pantalla principal, desde Arquivo ▸ Abrir…, ou abre un ZIP de entrega: lístanse os PDF que contén.
 - Ferramentas: resaltar, subliñar e riscar (selecciona texto), bolígrafo e borrador, caixas de texto, formas, **selos** (visto, cruz, «Ben», unha nota…), **notas adhesivas** e a túa **sinatura**.
 - Teclas: \`H\` resaltar, \`P\` bolígrafo, \`T\` caixa de texto, \`N\` nota, \`S\` selo, \`G\` sinatura, \`Esc\` volver a Seleccionar.
 - Teclado: escolle unha ferramenta (por exemplo \`T\`, \`N\`, \`R\` ou \`S\`) e preme \`Intro\` para colocala no centro da páxina que estás a ver. No panel Comentarios, **Engadir comentario** fai o mesmo coas notas adhesivas.
-- Comparte o PDF para corrixilo en equipo ou para que o alumno lea as túas anotacións.
+- Comparte o PDF para anotalo en grupo, ou para que outra persoa lea as túas anotacións (por exemplo, o profe que devolve un traballo corrixido).
 
 ## Páxinas
 O menú **Páxina** (ou o clic dereito nunha miniatura) xira unha páxina á esquerda ou á dereita (\`Ctrl+[\` / \`Ctrl+]\`), sóbea ou báixaa, engade páxinas en branco e elimina páxinas. Arrastra as miniaturas para reordenalas (ou \`Alt+↑\` / \`Alt+↓\` nunha miniatura). As anotacións seguen a súa páxina e Desfacer reverte cada cambio. O PDF descargado respecta a nova orde e o xiro.

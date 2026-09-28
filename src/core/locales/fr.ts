@@ -2789,6 +2789,18 @@ const fr: Record<string, string> = {
   'Source cells: {range}': 'Cellules source : {range}',
   'Show': 'Afficher',
   'Hide': 'Masquer',
+  'Hand in saves your work as a ZIP file or a PDF for your teacher, or sends it straight to a Nextcloud upload link or to Moodle. If you teach, a copy link gives each student their own worksheet.': 'Rendre enregistre votre travail en fichier ZIP ou PDF pour votre enseignant, ou l’envoie directement vers un lien de dépôt Nextcloud ou vers Moodle. Si vous enseignez, un lien de copie donne à chaque élève sa propre fiche.',
+  'If nobody who manages the form is online, use “Download my response” and hand the file in.': 'Si personne qui gère le formulaire n’est en ligne, utilisez « Télécharger ma réponse » et remettez le fichier.',
+  'To review a text, switch the mode from Editing to Suggesting, or select text and press Ctrl+Alt+M to comment. Suggestions you receive can be accepted or rejected one by one.': 'Pour relire un texte, passez du mode Modification au mode Suggestion, ou sélectionnez du texte et appuyez sur Ctrl+Alt+M pour commenter. Les suggestions que vous recevez peuvent être acceptées ou refusées une par une.',
+  'Everything is saved in this browser as you type. Share invites others to write with you; Hand in sends your work to your teacher.': 'Tout est enregistré dans ce navigateur pendant la saisie. Partager invite d’autres personnes à écrire avec vous ; Rendre envoie votre travail à votre enseignant.',
+  'Send gives the link and a QR code to pass the form around.': 'Envoyer donne le lien et un code QR pour diffuser le formulaire.',
+  'Share the PDF to annotate it together or to give someone your notes.': 'Partagez le PDF pour l’annoter à plusieurs ou pour transmettre vos annotations.',
+  'Write documents, spreadsheets, presentations, diagrams, drawings, forms and notes, and annotate PDFs, on your own or with others. Designed for schools, useful for anyone: at home, in class or at work. No account is needed: everything runs in your browser.': 'Rédigez des documents, des feuilles de calcul, des présentations, des diagrammes, des dessins, des formulaires et des notes, et annotez des PDF, seul ou à plusieurs. Conçue pour l’école, utile à tous : à la maison, en classe ou au travail. Aucun compte n’est nécessaire : tout fonctionne dans votre navigateur.',
+  'More ways to open': 'Autres façons d’ouvrir',
+  'Nextcloud and Moodle accounts': 'Comptes Nextcloud et Moodle',
+  'Accounts': 'Comptes',
+  'Nothing here yet. Create a document above, open a file or open a link someone shared with you.': 'Rien ici pour l’instant. Créez un document ci-dessus, ouvrez un fichier ou un lien que l’on vous a partagé.',
+  'Your documents': 'Vos documents',
 }
 
 export default fr

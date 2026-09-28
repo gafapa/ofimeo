@@ -61,7 +61,8 @@ const state = async () => (await (await fetch(`${MOCK}/__state`)).json()) as {
 }
 
 async function connectMoodle(page: Page, site: string): Promise<void> {
-  await page.locator('.md-home-button').click()
+  await page.locator('.home-accounts').click()
+  await page.getByRole('menuitem', { name: 'Moodle account…' }).click()
   const dialog = page.locator('dialog.dlg')
   await dialog.getByLabel('Moodle address').fill(site)
   await dialog.getByLabel('Username').fill('student')
@@ -139,7 +140,8 @@ test('connect, see the tasks, hand in a document as PDF, disconnect', async ({ p
 
   // Disconnect clears the token and the list.
   await page.goto(`/${RELAYS}`)
-  await page.locator('.md-home-button').click()
+  await page.locator('.home-accounts').click()
+  await page.getByRole('menuitem', { name: 'Moodle account…' }).click()
   await page.locator('dialog.dlg').getByRole('button', { name: 'Disconnect' }).click()
   await page.locator('dialog.dlg').last().getByRole('button', { name: 'Disconnect' }).click()
   await expect(page.locator('dialog.dlg').getByLabel('Username')).toBeVisible()
@@ -150,7 +152,8 @@ test('connect, see the tasks, hand in a document as PDF, disconnect', async ({ p
 
 test('single sign-on sites get a clear message', async ({ page }) => {
   await page.goto(`/${RELAYS}`)
-  await page.locator('.md-home-button').click()
+  await page.locator('.home-accounts').click()
+  await page.getByRole('menuitem', { name: 'Moodle account…' }).click()
   const dialog = page.locator('dialog.dlg')
   await dialog.getByLabel('Moodle address').fill(`${MOCK}/sso`)
   await dialog.getByLabel('Username').focus()
@@ -174,9 +177,9 @@ test('390px: task panel and hand-in dialog fit', async ({ page }) => {
   await page.goto(`/${RELAYS}`)
   await connectMoodle(page, `${MOCK}/cors`)
   await page.locator('dialog.dlg').getByRole('button', { name: 'Close' }).click()
-  // Phones: no room for the header button (File → Moodle account… and Hand in offer it).
+  // Phones: the accounts menu stays in the header, as an icon.
   await page.setViewportSize({ width: 390, height: 800 })
-  await expect(page.locator('.md-home-button')).toBeHidden()
+  await expect(page.locator('.home-accounts')).toBeInViewport()
   const panel = page.locator('.home-moodle')
   await expect(panel.locator('.md-task-name').first()).toBeVisible()
   await panel.locator('.md-task', { hasText: 'Essay' }).locator('summary').click()

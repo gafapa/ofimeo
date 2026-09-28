@@ -13,21 +13,23 @@ body:has(.home) { overflow: auto; }
 .home-logo { flex: none; width: 36px; height: 36px; border-radius: var(--radius-l); background: var(--brand); color: var(--brand-fg); display: grid; place-items: center; }
 .home-logo svg { display: block; }
 .home-inner { max-width: 960px; margin: 0 auto; padding: 0 24px; }
-.home-new { background: var(--bg); padding: 20px 0 28px; }
+.home-new { background: var(--bg); padding: 12px 0 20px; }
 .home-section-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 8px 0 14px; }
 .home-section-title h2 { font-size: var(--fs-l); font-weight: 500; margin: 0; }
 .home-open { border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-m); padding: 6px 14px; }
 .home-open:hover { background: var(--hover); }
 
-.new-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+/* Compact creation tiles: every app in one row on a laptop screen. */
+.new-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
 .new-card {
-  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
-  height: 150px; border: 1px solid var(--border); border-radius: var(--radius-l); background: var(--surface);
-  color: var(--text); text-decoration: none; transition: border-color 0.15s, box-shadow 0.15s;
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px;
+  padding: 12px 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-l); background: var(--surface);
+  color: var(--text); text-decoration: none; text-align: center; transition: border-color 0.15s, box-shadow 0.15s;
 }
+.new-card .app-icon.large { width: 40px; height: 40px; border-radius: var(--radius-l); font-size: 22px; }
 .new-card:hover:not(.disabled) { border-color: var(--accent); box-shadow: var(--shadow-s); }
 .new-card.disabled { opacity: 0.55; cursor: default; }
-.new-label { font-weight: 500; }
+.new-label { font-weight: 500; font-size: var(--fs-m); line-height: 1.25; }
 .soon { position: absolute; top: 8px; right: 8px; font-size: var(--fs-xs); color: var(--muted); background: var(--bg); border-radius: var(--radius-pill); padding: 2px 8px; }
 
 .app-icon { display: inline-grid; place-items: center; color: var(--on-app); font-family: var(--font-logo); font-weight: 700; flex: none; }
@@ -177,5 +179,16 @@ body:has(.home) { overflow: auto; }
   .doc-table.list .doc-row .row-check { opacity: 1; }
 }
 .doc-head span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* Moodle account button (src/ui/moodle.ts): no room on phones; File → Moodle account… and Hand in still offer it. */
-@media (max-width: 480px) { .home-bar .md-home-button { display: none; } }
+
+/* A new library shows only the empty list (docs.ts renderBare). */
+.docs-bare .docs-tools, .docs-bare .lib-side, .docs-bare .home-filters { display: none; }
+.docs-bare .lib-layout { grid-template-columns: minmax(0, 1fr); }
+.docs-bare .empty { padding: 28px 16px; border: 1px dashed var(--border); border-radius: var(--radius-l); text-align: center; }
+
+.home-open-more { display: inline-flex; align-items: center; gap: 4px; }
+@media (max-width: 600px) {
+  .new-cards { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  .new-card { padding: 10px 2px 8px; }
+  .new-label { font-size: var(--fs-s); }
+}
+@media (max-width: 380px) { .new-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

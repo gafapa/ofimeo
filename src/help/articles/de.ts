@@ -5,11 +5,11 @@ const articles: Articles = {
   'getting-started': {
     title: 'Erste Schritte',
     keywords: 'anfangen start beginnen willkommen startseite neu dokument öffnen vorlage konto anmelden',
-    body: `Ofimeo ist eine Office-Suite, die vollständig in Ihrem Browser läuft: Dokumente, Tabellen, Zeichnungen, Diagramme, Präsentationen, Formulare und PDF-Korrektur. Sie brauchen kein Konto, und auf keinem Server wird etwas installiert.
+    body: `Ofimeo ist eine Office-Suite, die vollständig in Ihrem Browser läuft: Dokumente, Tabellen, Zeichnungen, Diagramme, Präsentationen, Formulare und PDF-Korrektur. Sie ist für die Schule gemacht, für Schülerinnen und Schüler ebenso wie für Lehrkräfte, aber alle können sie nutzen: zu Hause, im Verein oder bei der Arbeit. Sie brauchen kein Konto, und auf keinem Server wird etwas installiert.
 
 ## Die Startseite
 - **Etwas Neues beginnen**: Klicken Sie auf eine Karte, um ein Dokument dieser Art zu erstellen.
-- **Vorlagen**: Arbeitsblätter, Bewertungsraster, Notenbücher, Stundenpläne, Concept-Maps und mehr. Ein Klick erstellt Ihre eigene Kopie.
+- **Vorlagen**: Schülerarbeiten, Arbeitsblätter, Concept-Maps, Stundenpläne, Präsentationen, Bewertungsraster, Notenbücher und mehr. Ein Klick erstellt Ihre eigene Kopie.
 - **Datei öffnen…**: öffnet Word-, OpenDocument-, Excel-, CSV-, PowerPoint-, draw.io-, Excalidraw- und PDF-Dateien von Ihrem Computer.
 - **Ihre Dokumente**: alles, was Sie in diesem Browser erstellt oder geöffnet haben, mit Suche, Ordnern, Schlagwörtern und Papierkorb (gelöschte Dokumente werden 30 Tage aufbewahrt).
 
@@ -19,17 +19,43 @@ Geben Sie Ihren Namen oben rechts ein (auf dem Handy oder in einem schmalen Fens
 ## Wichtig
 - Dokumente werden **nur in diesem Browser** gespeichert. Lesen Sie [Offline arbeiten und wo Ihre Daten liegen](help:offline) und erstellen Sie [Sicherungen](help:backup).
 - Um mit anderen zu arbeiten, senden Sie einen [Freigabelink](help:sharing).
-- Schülerinnen und Schüler geben Arbeiten mit der Schaltfläche [Abgeben](help:handin) ab.
+- Arbeiten geben Sie mit der Schaltfläche [Abgeben](help:handin) ab.
+- Wie Schülerinnen, Schüler und Lehrkräfte zusammenarbeiten: [Schüler und Lehrkräfte](help:classroom).
 
 [Die Einführung erneut anzeigen](action:tour)
 
 ## Aus Google Drive oder Microsoft 365 importieren
-**Aus Link importieren…** (Startseite und Menü Datei in jeder App) öffnet Dateien, die aus Google Docs, Tabellen, Präsentationen und Drive, OneDrive oder SharePoint geteilt wurden:
+**Aus Link importieren…** (Startseite ▸ Mehr und Menü Datei in jeder App) öffnet Dateien, die aus Google Docs, Tabellen, Präsentationen und Drive, OneDrive oder SharePoint geteilt wurden:
 1. Fügen Sie den Freigabelink ein. Die Datei muss für **Jeder mit dem Link** freigegeben sein, oder Sie müssen sie mit Ihrem eigenen Konto öffnen können.
 2. Klicken Sie auf die Download-Schaltfläche: Ihr Browser lädt die Datei als Word, Excel oder PowerPoint herunter.
 3. Legen Sie die heruntergeladene Datei im Dialog ab (oder wählen Sie sie aus). Sie öffnet sich als neues Ofimeo-Dokument.
 
 Browser erlauben Web-Apps nicht, diese Dateien direkt herunterzuladen. Die Datei geht daher über Ihren Download-Ordner; Ofimeo sieht Ihr Google- oder Microsoft-Konto nie. Wenn das Relay Ihrer Schule es anbietet, erledigt **Direkt über das Schul-Relay importieren** das für öffentliche Dateien mit einem Klick.`,
+  },
+  classroom: {
+    title: 'Schüler und Lehrkräfte',
+    keywords: 'schüler schülerin lehrer lehrerin lehrkraft klasse unterricht gruppe gruppenarbeit arbeitsblatt hausaufgabe korrektur note rolle',
+    body: `Ofimeo ist für alle dieselbe App: Was Sie in einem Dokument tun können, hängt vom geöffneten Link ab, nicht davon, wer Sie sind.
+
+## Wenn Sie Schülerin oder Schüler sind
+- **Öffnen Sie den Link Ihrer Lehrkraft.** Wenn Sie nur lesen oder kommentieren können, zeigt oben die Kennzeichnung **Nur lesen** oder **Kommentieren erlaubt** das an; sonst können Sie bearbeiten. Ein Link **Erstellt eine Kopie** gibt Ihnen eine eigene Kopie (zum Beispiel ein Arbeitsblatt), die nur Sie bearbeiten.
+- **Wiederfinden** auf der Startseite: Alles, was Sie öffnen, bleibt in diesem Browser. Verwenden Sie dasselbe Gerät und denselben Browser, oder erstellen Sie eine [Sicherung](help:backup).
+- **Gruppenarbeit**: Eine Person erstellt das Dokument und teilt einen Bearbeitungslink mit der Gruppe. Alle schreiben gleichzeitig; Überprüfen ▸ Autorschaft anzeigen (in Dokumente) zeigt, wer was geschrieben hat, und der [Chat](help:sharing) hilft beim Organisieren.
+- **Ihr Name**: Tragen Sie ihn oben rechts ein. Ihre Gruppe und Ihre Lehrkraft sehen ihn, und er benennt die abgegebene Datei.
+- **Geben Sie** Ihre Arbeit mit der Schaltfläche [Abgeben](help:handin) ab, oder direkt in [Moodle](help:moodle).
+- **Korrekturen**: Öffnen Sie das korrigierte Dokument oder PDF, das Ihre Lehrkraft zurückgibt. In Dokumente nehmen Sie Vorschläge einzeln an oder lehnen sie ab und beantworten Kommentare.
+- **Präsentationen**: Bereiten Sie sie in der Gruppe in [Ofimeo Präsentationen](help:slides) vor und halten Sie sie mit der Referentenansicht.
+- **Notizen** machen Sie in [Ofimeo Notizbuch](help:notebook).
+
+## Wenn Sie unterrichten
+- **Arbeit verteilen** mit einem Link **Erstellt eine Kopie**: Jede Schülerin und jeder Schüler erhält ein eigenes Arbeitsblatt. Einen Link **Kann ansehen** verwenden Sie für Lesetexte und Präsentationen, denen alle folgen.
+- **Arbeiten einsammeln** mit Abgeben: Die Klasse schickt Ihnen eine ZIP-Datei oder ein PDF, lädt sie in einen Nextcloud-Upload-Ordner hoch oder gibt sie in Moodle ab.
+- **Korrigieren** in [Dokumente](help:writer) mit Kommentaren und Vorschlägen und in [Ofimeo PDF](help:pdf) mit Stempeln, Stift und Notizen.
+- **Quizze und Umfragen** mit [Ofimeo Formulare](help:forms).
+- **Präsentieren** mit [Ofimeo Präsentationen](help:slides): Die Klasse kann Ihren Folien auf ihren Geräten folgen.
+- Die [Vorlagen](help:getting-started) enthalten Arbeitsblätter, Bewertungsraster, Notenbücher und eine Lernsituation.
+
+Erinnern Sie die Klasse daran, einen Vornamen oder Initialen zu verwenden und Sicherungen zu erstellen: siehe [Datenschutz](help:privacy).`,
   },
   sharing: {
     title: 'Teilen und Berechtigungen',
@@ -40,9 +66,9 @@ Browser erlauben Web-Apps nicht, diese Dateien direkt herunterzuladen. Die Datei
 - **Kann bearbeiten**: Andere können das Dokument mit Ihnen ändern.
 - **Kommentieren erlaubt**: Andere können lesen und kommentieren, aber den Text nicht ändern.
 - **Kann ansehen**: Andere können das Dokument lesen und Änderungen live verfolgen.
-- **Erstellt eine Kopie**: Jede Person, die ihn öffnet, erhält eine eigene private Kopie. Damit bekommt jede Schülerin und jeder Schüler ein eigenes Arbeitsblatt.
+- **Erstellt eine Kopie**: Jede Person, die ihn öffnet, erhält eine eigene private Kopie. Zum Beispiel ein Arbeitsblatt, das jede Schülerin und jeder Schüler ausfüllt.
 
-Der Dialog zeigt auch einen **QR-Code**, praktisch für Tablets und Handys im Unterricht.
+Der Dialog zeigt auch einen **QR-Code**, praktisch für Tablets und Handys.
 
 ## Gut zu wissen
 - Ein Link ist wie ein Schlüssel: Wer ihn hat, erhält seinen Zugriff. Teilen Sie ihn nur mit den Personen, die ihn brauchen.
@@ -55,7 +81,7 @@ Der Dialog zeigt auch einen **QR-Code**, praktisch für Tablets und Handys im Un
 - Die Sprechblasen-Schaltfläche neben den Personen im Dokument (oder \`Alt+Shift+C\`) öffnet den Chat. Eine Zahl zeigt ungelesene Nachrichten; sie wird rot, wenn Sie jemand erwähnt.
 - Tippen Sie \`@\`, um eine anwesende Person zu erwähnen. Links öffnen sich in einem neuen Tab; die Smiley-Schaltfläche fügt Emojis ein. \`Eingabe\` sendet, \`Umschalt+Eingabe\` beginnt eine neue Zeile, \`Escape\` schließt den Chat.
 - Wer einen Bearbeitungs- oder Kommentarlink hat, kann schreiben; wer einen Leselink hat, kann nur lesen.
-- Lehrkräfte (Bearbeitungslink): Die Schaltfläche ⋯ im Chat schaltet den Chat für dieses Dokument aus oder löscht den Verlauf für alle.
+- Personen mit Bearbeitungslink (zum Beispiel die Lehrkraft, die das Dokument erstellt hat): Die Schaltfläche ⋯ im Chat schaltet den Chat für dieses Dokument aus oder löscht den Verlauf für alle.
 - Nachrichten werden mit dem Dokument in diesem Browser und in Sicherungen gespeichert, aber nicht in Versionen, Kopien oder heruntergeladenen Dateien.`,
   },
   offline: {
@@ -97,10 +123,10 @@ Der Dialog zeigt auch einen **QR-Code**, praktisch für Tablets und Handys im Un
     body: `Wenn Ihre Schule einen Nextcloud-Server hat, können Sie Dateien daraus öffnen und wieder dort speichern. Ihr Browser spricht direkt mit Nextcloud.
 
 ## Konto verbinden
-Öffnen Sie [Nextcloud-Konto](action:nextcloud) (Nextcloud-Schaltfläche auf der Startseite oder Datei ▸ Nextcloud-Konto…). Geben Sie die Serveradresse ein und wählen Sie **Mit Nextcloud anmelden** oder verwenden Sie ein **App-Passwort** (Nextcloud ▸ Persönliche Einstellungen ▸ Sicherheit ▸ Neues App-Passwort erstellen). Geben Sie nie Ihr Hauptpasswort ein. **Verbindung testen** erklärt, was nicht stimmt, wenn es nicht klappt.
+Öffnen Sie [Nextcloud-Konto](action:nextcloud) (Startseite ▸ Konten ▸ Nextcloud-Konto… oder Datei ▸ Nextcloud-Konto…). Geben Sie die Serveradresse ein und wählen Sie **Mit Nextcloud anmelden** oder verwenden Sie ein **App-Passwort** (Nextcloud ▸ Persönliche Einstellungen ▸ Sicherheit ▸ Neues App-Passwort erstellen). Geben Sie nie Ihr Hauptpasswort ein. **Verbindung testen** erklärt, was nicht stimmt, wenn es nicht klappt.
 
 ## Öffnen und speichern
-- **Aus Nextcloud öffnen…** (Startseite und Menü Datei) öffnet eine Datei als neues Dokument, das mit ihr **verknüpft** ist.
+- **Aus Nextcloud öffnen…** (Startseite ▸ Mehr und Menü Datei) öffnet eine Datei als neues Dokument, das mit ihr **verknüpft** ist.
 - **In Nextcloud speichern** (\`Strg+S\`) aktualisiert die verknüpfte Datei. **In Nextcloud speichern unter…** wählt Ordner, Namen und Format.
 - Wurde die Datei inzwischen in Nextcloud geändert, wählen Sie: überschreiben, als Kopie speichern oder abbrechen.
 - Optional automatisches Speichern alle paar Minuten.
@@ -113,7 +139,8 @@ Der Dialog zeigt auch einen **QR-Code**, praktisch für Tablets und Handys im Un
   handin: {
     title: 'Arbeiten abgeben',
     keywords: 'abgeben einreichen hausaufgabe aufgabe lehrer schüler zip pdf hochladen dateiablage abgabe',
-    body: `**Für Schülerinnen und Schüler.** Klicken Sie auf **Abgeben** (neben Teilen). Ofimeo lädt eine ZIP-Datei mit Ihrem Namen und dem Titel herunter, die das Dokument in seinen ursprünglichen Formaten enthält (zum Beispiel .odt und .docx oder .pptx und Bilder der Folien).
+    body: `## Ihre Arbeit abgeben
+Klicken Sie auf **Abgeben** (neben Teilen). Ofimeo lädt eine ZIP-Datei mit Ihrem Namen und dem Titel herunter, die das Dokument in seinen ursprünglichen Formaten enthält (zum Beispiel .odt und .docx oder .pptx und Bilder der Folien).
 
 - Wenn Sie Ihren Namen noch nicht eingegeben haben, werden Sie danach gefragt: Er kommt in den Dateinamen.
 - Laden Sie die ZIP-Datei hoch oder senden Sie sie Ihrer Lehrkraft, wie vereinbart (Lernplattform, E-Mail…).
@@ -121,7 +148,7 @@ Der Dialog zeigt auch einen **QR-Code**, praktisch für Tablets und Handys im Un
 - **In einen Nextcloud-Freigabelink hochladen…**: Wenn Ihre Lehrkraft Ihnen einen Upload-Link gegeben hat, geht die Datei direkt dorthin. Sie brauchen kein Nextcloud-Konto.
 - **In Moodle abgeben…**: Wenn Ihre Schule Moodle nutzt, geben Sie direkt in einer Aufgabe ab. Siehe [Moodle](help:moodle).
 
-**Für Lehrkräfte.**
+## Arbeiten einsammeln (wenn Sie unterrichten)
 - Geben Sie allen ein eigenes Arbeitsblatt mit einem Link **Erstellt eine Kopie** (siehe [Teilen](help:sharing)).
 - Erstellen Sie in Ihrer Nextcloud einen Upload-Link („Dateiablage“) und geben Sie ihn der Klasse.
 - Öffnen Sie die PDFs der Klasse oder die abgegebenen ZIP-Dateien in [Ofimeo PDF](help:pdf), um sie zu korrigieren.
@@ -133,7 +160,7 @@ Der Dialog zeigt auch einen **QR-Code**, praktisch für Tablets und Handys im Un
     body: `Verbinden Sie Ofimeo mit dem Moodle Ihrer Schule, um Ihre Aufgaben auf dem Startbildschirm zu sehen und Ihre Arbeit abzugeben, ohne Dateien herunter- und wieder hochzuladen.
 
 ## Verbinden
-Öffnen Sie [Moodle](action:moodle) (Moodle-Schaltfläche auf dem Startbildschirm oder Datei ▸ Moodle-Konto…). Geben Sie die Moodle-Adresse (vielleicht hat Ihre Schule sie schon eingetragen), Ihren Benutzernamen und Ihr Passwort ein und wählen Sie **Verbinden**.
+Öffnen Sie [Moodle](action:moodle) (Startseite ▸ Konten ▸ Moodle-Konto… oder Datei ▸ Moodle-Konto…). Geben Sie die Moodle-Adresse (vielleicht hat Ihre Schule sie schon eingetragen), Ihren Benutzernamen und Ihr Passwort ein und wählen Sie **Verbinden**.
 - Ihr Passwort geht nur an Moodle, einmal. Ofimeo speichert in diesem Browser nur einen Moodle-Schlüssel und Ihren Namen. **Trennen** entfernt beides.
 - Wenn Ihre Schule sich über eine Webseite bei Moodle anmeldet (Google, Microsoft oder ein Schulzugang, „Single Sign-on“), funktioniert diese Anmeldung in Ofimeo noch nicht. Ofimeo weist darauf hin, wenn es das erkennt. Geben Sie dann wie gewohnt mit [Abgeben](help:handin) ab und laden Sie die Datei in Moodle hoch.
 
@@ -223,7 +250,7 @@ Die Schritt-für-Schritt-Anleitung für die IT-Abteilung steht in der Projektdok
 - **Nextcloud**: Ihr Passwort wird nur an Ihren Nextcloud-Server gesendet.
 - **Diktieren** verwendet die Spracherkennung des Browsers, die den Ton an den Dienst des Browserherstellers senden kann.
 
-## Tipps für den Unterricht
+## Tipps zum Teilen
 - Verwenden Sie einen Vornamen, Initialen oder einen Spitznamen.
 - Keine sensiblen personenbezogenen Daten (Gesundheit, Familiäres) in geteilte Dokumente schreiben.
 
@@ -321,10 +348,11 @@ Word- und OpenDocument-Dateien speichern den Graphen als Bild mit der Konstrukti
 - **Verweise** bietet Zitate und ein Literaturverzeichnis im Stil APA, MLA oder Chicago.
 - Papierformat, Ränder und Ausrichtung finden Sie unter Datei ▸ Seite einrichten…
 
-## Überprüfen (Lehrkräfte korrigieren Arbeiten)
+## Überprüfen: Kommentare und Vorschläge
 - **Kommentare**: Text markieren und \`Strg+Alt+M\` drücken (oder Überprüfen ▸ Kommentar). Personen mit Kommentarlink können ebenfalls kommentieren.
 - **Vorschläge**: Wechseln Sie den Modus von **Bearbeiten** zu **Vorschlagen**. Ihre Änderungen werden markiert, und die Autorin oder der Autor nimmt sie an oder lehnt sie ab.
-- Überprüfen ▸ Autorschaft anzeigen färbt den Text danach, wer ihn geschrieben hat.
+- **Erhaltene Vorschläge** (zum Beispiel die Korrekturen Ihrer Lehrkraft): Klicken Sie auf einen und wählen Sie **Annehmen** oder **Ablehnen**, oder verwenden Sie Überprüfen ▸ Alle Vorschläge annehmen.
+- Überprüfen ▸ Autorschaft anzeigen färbt den Text danach, wer ihn geschrieben hat: nützlich für Gruppenarbeiten.
 
 ## Diagramme
 **Einfügen ▸ Diagramm…** fügt ein Säulen-, Balken-, Linien-, Flächen-, Kreis-, Ring- oder Punktdiagramm ein. Nehmen Sie die Daten aus einer Tabelle Ihrer Bibliothek (Blatt und Bereich wählen) oder geben Sie sie in die kleine Tabelle ein. Ein mit einer Tabelle **verknüpftes** Diagramm aktualisiert sich selbst, wenn sich diese Tabelle in diesem Browser ändert; **Aus der Quelle aktualisieren** (am Diagramm oder im Kontextmenü) tut es sofort. Das Dokument behält eine Kopie der Daten, sodass alle das Diagramm auch ohne die Tabelle sehen. Ziehen Sie die Ecke, um die Größe zu ändern; ein Doppelklick ändert es oder fügt eine Beschriftung hinzu. Word-Dateien behalten es als echtes Diagramm.
@@ -360,12 +388,12 @@ Das Raster wird als Bild gezeichnet. **Ansicht ▸ Barrierefreie Tabellenansicht
 ## Dateien
 Öffnet und speichert Excel (.xlsx), OpenDocument (.ods) und CSV. Diagramme werden als echte Diagramme gespeichert, die Excel und LibreOffice bearbeiten können. Das aktuelle Blatt drucken oder als PDF speichern mit Datei ▸ Drucken.
 
-Die Vorlagen für Notenbuch, Anwesenheit und Bewertungsraster auf der Startseite sind sofort einsetzbar.`,
+Die Startseite bietet Tabellenvorlagen wie einen Stundenplan, ein Notenbuch, eine Anwesenheitsliste und ein Bewertungsraster mit Punkten.`,
   },
   draw: {
     title: 'Ofimeo Zeichnung (Whiteboard)',
     keywords: 'zeichnung whiteboard skizze zeichnen freihand excalidraw brainstorming tafel formen pfeile',
-    body: `Ein Whiteboard zum Zeichnen von Hand oder mit Formen, Pfeilen und Text, allein oder mit der Klasse.
+    body: `Ein Whiteboard zum Zeichnen von Hand oder mit Formen, Pfeilen und Text, allein oder gemeinsam: Brainstorming, Skizzen, Gruppentafeln.
 
 - Wählen Sie ein Werkzeug in der Werkzeugleiste auf der Zeichenfläche und ziehen Sie, um zu zeichnen. Pfeile bleiben an den Formen haften, die sie verbinden.
 - Das Feld neben der Auswahl ändert Farben, Linien, Füllung und Schrift.
@@ -397,7 +425,7 @@ Die Startseite bietet Vorlagen für Concept-Maps, Zeitleisten, Flussdiagramme un
   slides: {
     title: 'Ofimeo Präsentationen',
     keywords: 'präsentation folien powerpoint pptx odp präsentieren beamer referent notizen animation design layout folgen',
-    body: `Präsentationen für den Unterricht.
+    body: `Präsentationen für Unterricht, Referate und Projekte.
 
 - Der **Folienbereich** links zeigt die Folien. Klicken Sie mit der rechten Maustaste auf eine Miniatur, um eine Folie hinzuzufügen, zu duplizieren, zu verschieben oder zu löschen und ihr Layout oder ihren Hintergrund zu ändern.
 - Wählen Sie für jede Folie ein **Design** und ein **Layout**. Klicken Sie auf die Platzhalter, um Titel und Text hinzuzufügen.
@@ -415,29 +443,30 @@ Die Startseite bietet Vorlagen für Concept-Maps, Zeitleisten, Flussdiagramme un
     keywords: 'formular quiz test prüfung umfrage fragebogen fragen antworten bewerten note punkte selbsteinschätzung',
     body: `Formulare, Umfragen und Quizze, die sich selbst auswerten.
 
-## Für Lehrkräfte
+## Ein Formular erstellen
+Jede und jeder kann eines erstellen: ein Quiz der Lehrkraft oder eine Umfrage für ein Klassenprojekt.
 - **Frage** fügt eine Frage hinzu; wählen Sie ihren Typ: Kurzantwort, Absatz, Multiple Choice, Kontrollkästchen, Dropdown, Skala, Raster, Datum, Uhrzeit oder Zahl. **Abschnitt** erstellt eine neue Seite.
 - Aktivieren Sie **Quiz**, um richtige Antworten, Punkte und Rückmeldungen festzulegen. Die Bewertung erfolgt automatisch; Absätze werden von Hand bewertet.
-- **Senden** liefert den Link und einen QR-Code für die Klasse. Sie sehen nur das Formular, nicht die Antworten der anderen.
+- **Senden** liefert den Link und einen QR-Code. Wer antwortet, sieht nur das Formular, nicht die Antworten der anderen.
 - Antworten kommen an, wenn Ihr Browser (oder der einer anderen bearbeitenden Person) online ist. Sie sehen sie unter **Antworten**, mit Diagrammen und Statistiken, und können sie in eine Tabelle exportieren.
 
-## Für Schülerinnen und Schüler
+## Ein Formular beantworten
 - Namen eingeben, die Fragen beantworten und **Senden** drücken.
 - Ohne Verbindung wird die Antwort gesendet, sobald die Verbindung wieder da ist.
-- Ist keine Lehrkraft online, verwenden Sie **Meine Antwort herunterladen** und geben Sie die Datei Ihrer Lehrkraft.
+- Ist niemand online, der das Formular verwaltet, verwenden Sie **Meine Antwort herunterladen** und geben Sie die Datei ab (zum Beispiel bei Ihrer Lehrkraft).
 
-Antworten werden im Browser der Schülerin oder des Schülers verschlüsselt: Nur die Bearbeitenden des Formulars können sie lesen.`,
+Antworten werden im Browser der antwortenden Person verschlüsselt: Nur die Bearbeitenden des Formulars können sie lesen.`,
   },
   pdf: {
-    title: 'Ofimeo PDF (PDFs korrigieren)',
+    title: 'Ofimeo PDF (PDFs kommentieren)',
     keywords: 'pdf korrigieren bewerten kommentieren anmerken hervorheben stift stempel unterschrift notiz acrobat abgabe zip',
-    body: `Korrigieren und kommentieren Sie PDF-Dateien, zum Beispiel die abgegebenen Arbeiten Ihrer Klasse.
+    body: `Kommentieren Sie PDF-Dateien: Füllen Sie ein Arbeitsblatt aus und unterschreiben Sie es, markieren Sie einen Lesetext oder korrigieren Sie abgegebene Arbeiten.
 
 - Öffnen Sie ein PDF auf der Startseite, über Datei ▸ Öffnen… oder öffnen Sie eine Abgabe-ZIP-Datei: Die enthaltenen PDFs werden aufgelistet.
 - Werkzeuge: hervorheben, unterstreichen und durchstreichen (Text markieren), Stift und Radierer, Textfelder, Formen, **Stempel** (Haken, Kreuz, „Gut“, eine Note…), **Notizen** und Ihre **Unterschrift**.
 - Tasten: \`H\` hervorheben, \`P\` Stift, \`T\` Textfeld, \`N\` Notiz, \`S\` Stempel, \`G\` Unterschrift, \`Esc\` zurück zu Auswählen.
 - Tastatur: Wählen Sie ein Werkzeug (zum Beispiel \`T\`, \`N\`, \`R\` oder \`S\`) und drücken Sie die \`Eingabetaste\`, um es in der Mitte der angezeigten Seite zu platzieren. Im Kommentarbereich macht **Kommentar hinzufügen** dasselbe für Notizen.
-- Teilen Sie das PDF, um gemeinsam zu korrigieren oder damit die Person Ihre Anmerkungen lesen kann.
+- Teilen Sie das PDF, um es gemeinsam zu kommentieren oder damit jemand Ihre Anmerkungen lesen kann (zum Beispiel eine Lehrkraft, die eine korrigierte Arbeit zurückgibt).
 
 ## Seiten
 Das Menü **Seite** (oder ein Rechtsklick auf eine Miniatur) dreht eine Seite nach links oder rechts (\`Strg+[\` / \`Strg+]\`), verschiebt sie nach oben oder unten, fügt leere Seiten ein und löscht Seiten. Ziehen Sie Miniaturen, um sie neu anzuordnen (oder \`Alt+↑\` / \`Alt+↓\` auf einer Miniatur). Anmerkungen bleiben bei ihrer Seite, und Rückgängig macht jede Änderung rückgängig. Das heruntergeladene PDF folgt der neuen Reihenfolge und Drehung.

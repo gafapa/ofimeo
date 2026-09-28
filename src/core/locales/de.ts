@@ -2789,6 +2789,18 @@ const de: Record<string, string> = {
 
   'Show': 'Anzeigen',
   'Hide': 'Ausblenden',
+  'Hand in saves your work as a ZIP file or a PDF for your teacher, or sends it straight to a Nextcloud upload link or to Moodle. If you teach, a copy link gives each student their own worksheet.': 'Abgeben speichert Ihre Arbeit als ZIP-Datei oder PDF für Ihre Lehrkraft oder sendet sie direkt an einen Nextcloud-Upload-Link oder an Moodle. Wenn Sie unterrichten, gibt ein Kopie-Link jedem Schüler ein eigenes Arbeitsblatt.',
+  'If nobody who manages the form is online, use “Download my response” and hand the file in.': 'Wenn niemand, der das Formular verwaltet, online ist, verwenden Sie „Meine Antwort herunterladen“ und geben Sie die Datei ab.',
+  'To review a text, switch the mode from Editing to Suggesting, or select text and press Ctrl+Alt+M to comment. Suggestions you receive can be accepted or rejected one by one.': 'Um einen Text zu überarbeiten, wechseln Sie vom Modus Bearbeiten zu Vorschlagen oder markieren Sie Text und drücken Sie Strg+Alt+M, um zu kommentieren. Erhaltene Vorschläge können Sie einzeln annehmen oder ablehnen.',
+  'Everything is saved in this browser as you type. Share invites others to write with you; Hand in sends your work to your teacher.': 'Alles wird beim Tippen in diesem Browser gespeichert. Teilen lädt andere zum Mitschreiben ein; Abgeben sendet Ihre Arbeit an Ihre Lehrkraft.',
+  'Send gives the link and a QR code to pass the form around.': 'Senden liefert den Link und einen QR-Code, um das Formular zu verteilen.',
+  'Share the PDF to annotate it together or to give someone your notes.': 'Teilen Sie das PDF, um es gemeinsam zu kommentieren oder jemandem Ihre Anmerkungen zu geben.',
+  'Write documents, spreadsheets, presentations, diagrams, drawings, forms and notes, and annotate PDFs, on your own or with others. Designed for schools, useful for anyone: at home, in class or at work. No account is needed: everything runs in your browser.': 'Erstellen Sie Dokumente, Tabellen, Präsentationen, Diagramme, Zeichnungen, Formulare und Notizen und kommentieren Sie PDFs, allein oder gemeinsam. Für die Schule gemacht, für alle nützlich: zu Hause, im Unterricht oder bei der Arbeit. Kein Konto nötig: Alles läuft in Ihrem Browser.',
+  'More ways to open': 'Weitere Möglichkeiten zum Öffnen',
+  'Nextcloud and Moodle accounts': 'Nextcloud- und Moodle-Konten',
+  'Accounts': 'Konten',
+  'Nothing here yet. Create a document above, open a file or open a link someone shared with you.': 'Hier ist noch nichts. Erstellen Sie oben ein Dokument, öffnen Sie eine Datei oder einen Link, den Ihnen jemand geteilt hat.',
+  'Your documents': 'Ihre Dokumente',
 }
 
 export default de

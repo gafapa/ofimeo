@@ -1,19 +1,19 @@
 // Template gallery model. Template content is written in Spanish, Galician,
-// French and German; the templates tied to Spanish school regulations (LOMLOE)
-// only in Spanish and Galician. The gallery chrome uses t().
+// French, German and English; the templates tied to Spanish school regulations
+// (LOMLOE) only in Spanish and Galician. The gallery chrome uses t().
 
 import type { DocType } from '../core/store'
 
-export type Lang = 'es' | 'gl' | 'fr' | 'de'
+export type Lang = 'es' | 'gl' | 'fr' | 'de' | 'en'
 // Content languages of the Spain-only templates.
 export type SpainLang = 'es' | 'gl'
 
-export const LANG_NAMES: Record<Lang, string> = { es: 'Español', gl: 'Galego', fr: 'Français', de: 'Deutsch' }
+export const LANG_NAMES: Record<Lang, string> = { es: 'Español', gl: 'Galego', en: 'English', fr: 'Français', de: 'Deutsch' }
 
 export interface Template {
   id: string
   app: DocType
-  // Languages the content exists in (all four, or Spanish and Galician only).
+  // Languages the content exists in (all five, or Spanish and Galician only).
   langs: Lang[]
   name: Partial<Record<Lang, string>>
   description: Partial<Record<Lang, string>>
@@ -24,6 +24,6 @@ export interface Template {
 }
 
 // Picks the variant of the language.
-export const pick = (lang: Lang) => (es: string, gl: string, fr: string, de: string) => ({ es, gl, fr, de })[lang]
+export const pick = (lang: Lang) => (es: string, gl: string, fr: string, de: string, en: string) => ({ es, gl, fr, de, en })[lang]
 // Picks the Spanish or Galician variant (Spain-only templates).
 export const pickEs = (lang: SpainLang) => (es: string, gl: string) => (lang === 'gl' ? gl : es)

@@ -1,7 +1,8 @@
 # Ofimeo
 
-Ofimeo (formerly "Words Online") is a collaborative office suite for schools
-that runs entirely in the browser, with no server of its own. One static build hosts every app; documents live in each browser
+Ofimeo (formerly "Words Online") is a collaborative office suite that runs
+entirely in the browser, with no server of its own. It is designed for schools
+(students and teachers alike) and useful for anyone, at home or at work. One static build hosts every app; documents live in each browser
 (IndexedDB) and edits travel directly between browsers over WebRTC. Public
 Nostr relays (WebSockets) are only used as a meeting point for browsers to
 find each other. A school can add its own Ofimeo Relay (Nostr, STUN/TURN,
@@ -788,16 +789,18 @@ Ofimeo Notebook (`src/apps/notebook/`) keeps class notes like OneNote:
 
 ## Templates
 
-The home screen has a **Templates** gallery for schools. Template content is
-written in Spanish, Galician, French and German; the two tied to Spanish
-regulations (LOMLOE learning situation, as a document and as a presentation)
-exist in Spanish and Galician only and are hidden for French and German content.
-The content language follows the interface language (with the English interface,
-the browser's languages, else Spanish) and a switch changes it. French and German
-versions keep the 0–10 grade scale with the pass mark at 5, labelled with the
-usual mentions (Insuffisant … Très bien) or school grades (Mangelhaft … Sehr gut),
-and use their own attendance codes (A/J/R, F/E/V). Filter by app, click a card and a new local document is
-created and opened.
+The home screen has a **Templates** gallery for schools. It shows four varied
+templates; **Show all templates** opens the whole gallery with the app filters
+and *My templates*. Template content is written in Spanish, Galician, English,
+French and German; the two tied to Spanish regulations (LOMLOE learning
+situation, as a document and as a presentation) exist in Spanish and Galician
+only and are hidden for the other content languages. The content language
+follows the interface language and a selector changes it. English, French and
+German versions keep the 0–10 grade scale with the pass mark at 5, labelled with
+letter grades (Fail … Excellent, F … A), the usual mentions (Insuffisant … Très
+bien) or school grades (Mangelhaft … Sehr gut), and use their own attendance
+codes (A/E/L, A/J/R, F/E/V). Filter by app, click a card and a new local
+document is created and opened.
 
 | App | Templates |
 | --- | --- |
@@ -1047,7 +1050,7 @@ Nextcloud. Full guide: [docs/nextcloud.md](docs/nextcloud.md).
   maintenance, wrong credentials and a server that blocks this site (CORS),
   and then shows the admin options below. *Sign out* forgets the password (and
   revokes it when it came from the login flow).
-- **Open from Nextcloud…** (home screen and File menu): file browser with
+- **Open from Nextcloud…** (home screen ▸ More, and File menu): file browser with
   breadcrumbs, search in the folder, sorting and icons per app; the file is
   imported with the app's importer into a new local document **linked** to it.
 - **Save to Nextcloud** (Ctrl+S) updates the linked file in its format;
@@ -1309,8 +1312,8 @@ SVG of every page (diagrams), `.pptx` + a PNG of every slide (presentations),
 
 ### Moodle
 
-Students connect to their school's Moodle once (Moodle button on the home
-screen, or **File → Moodle account…**) with their Moodle username and password.
+Students connect to their school's Moodle once (home screen ▸ **Accounts ▸
+Moodle account…**, or **File → Moodle account…**) with their Moodle username and password.
 Ofimeo gets a token from `login/token.php?service=moodle_mobile_app` (the
 Moodle app's web service) and keeps only the token, the site name and the
 person's name in this browser; the password is never stored. **Disconnect**

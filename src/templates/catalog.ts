@@ -6,7 +6,7 @@ import type { DocType } from '../core/store'
 import { THUMBS } from './thumbs'
 import type { Lang, Template } from './types'
 
-type Texts = [es: string, gl: string, fr: string, de: string] | [es: string, gl: string]
+type Texts = [es: string, gl: string, fr: string, de: string, en: string] | [es: string, gl: string]
 type Entry = [id: string, app: DocType, name: Texts, description: Texts]
 
 const ENTRIES: Entry[] = [
@@ -19,68 +19,69 @@ const ENTRIES: Entry[] = [
       'Estrutura LOMLOE: competencias, criterios, saberes básicos, actividades, DUA e avaliación.',
     ],
   ],
-  ['rubric', 'writer', ['Rúbrica', 'Rúbrica', 'Grille d’évaluation', 'Bewertungsraster'], ['Tabla de criterios con cuatro niveles de logro y pesos.', 'Táboa de criterios con catro niveis de logro e pesos.', 'Tableau de critères avec quatre niveaux de maîtrise et leurs poids.', 'Kriterientabelle mit vier Leistungsstufen und Gewichtung.']],
+  ['rubric', 'writer', ['Rúbrica', 'Rúbrica', 'Grille d’évaluation', 'Bewertungsraster', 'Rubric'], ['Tabla de criterios con cuatro niveles de logro y pesos.', 'Táboa de criterios con catro niveis de logro e pesos.', 'Tableau de critères avec quatre niveaux de maîtrise et leurs poids.', 'Kriterientabelle mit vier Leistungsstufen und Gewichtung.', 'Table of criteria with four achievement levels and weights.']],
   [
     'worksheet',
     'writer',
-    ['Ficha de trabajo', 'Ficha de traballo', 'Fiche d’exercices', 'Arbeitsblatt'],
-    ['Cabecera con nombre, curso y fecha, ejercicios variados y autoevaluación.', 'Cabeceira con nome, curso e data, exercicios variados e autoavaliación.', 'En-tête avec nom, classe et date, exercices variés et autoévaluation.', 'Kopfzeile mit Name, Klasse und Datum, abwechslungsreiche Aufgaben und Selbsteinschätzung.'],
+    ['Ficha de trabajo', 'Ficha de traballo', 'Fiche d’exercices', 'Arbeitsblatt', 'Worksheet'],
+    ['Cabecera con nombre, curso y fecha, ejercicios variados y autoevaluación.', 'Cabeceira con nome, curso e data, exercicios variados e autoavaliación.', 'En-tête avec nom, classe et date, exercices variés et autoévaluation.', 'Kopfzeile mit Name, Klasse und Datum, abwechslungsreiche Aufgaben und Selbsteinschätzung.', 'Header with name, class and date, varied exercises and self-assessment.'],
   ],
   [
     'report',
     'writer',
-    ['Trabajo de alumno', 'Traballo de alumno', 'Dossier d’élève', 'Schülerarbeit'],
-    ['Portada, índice, apartados, conclusiones y bibliografía en APA.', 'Portada, índice, epígrafes, conclusións e bibliografía en APA.', 'Page de titre, sommaire, parties, conclusions et bibliographie APA.', 'Deckblatt, Inhaltsverzeichnis, Abschnitte, Fazit und Literaturverzeichnis nach APA.'],
+    ['Trabajo de alumno', 'Traballo de alumno', 'Dossier d’élève', 'Schülerarbeit', 'Student report'],
+    ['Portada, índice, apartados, conclusiones y bibliografía en APA.', 'Portada, índice, epígrafes, conclusións e bibliografía en APA.', 'Page de titre, sommaire, parties, conclusions et bibliographie APA.', 'Deckblatt, Inhaltsverzeichnis, Abschnitte, Fazit und Literaturverzeichnis nach APA.', 'Title page, contents, sections, conclusions and APA bibliography.'],
   ],
   [
     'minutes',
     'writer',
-    ['Acta de reunión', 'Acta de reunión', 'Compte rendu de réunion', 'Sitzungsprotokoll'],
-    ['Claustro, departamento o equipo docente: asistentes, orden del día y acuerdos.', 'Claustro, departamento ou equipo docente: asistentes, orde do día e acordos.', 'Conseil pédagogique ou équipe disciplinaire : présents, ordre du jour et décisions.', 'Lehrer- oder Fachkonferenz: Anwesende, Tagesordnung und Beschlüsse.'],
+    ['Acta de reunión', 'Acta de reunión', 'Compte rendu de réunion', 'Sitzungsprotokoll', 'Meeting minutes'],
+    ['Claustro, departamento o equipo docente: asistentes, orden del día y acuerdos.', 'Claustro, departamento ou equipo docente: asistentes, orde do día e acordos.', 'Conseil pédagogique ou équipe disciplinaire : présents, ordre du jour et décisions.', 'Lehrer- oder Fachkonferenz: Anwesende, Tagesordnung und Beschlüsse.', 'Staff, department or teaching team: attendees, agenda and decisions.'],
   ],
   [
     'family-letter',
     'writer',
-    ['Carta a las familias', 'Carta ás familias', 'Lettre aux familles', 'Elternbrief'],
-    ['Comunicación de una salida didáctica con autorización recortable.', 'Comunicación dunha saída didáctica con autorización recortable.', 'Annonce d’une sortie scolaire avec autorisation à découper.', 'Information zu einem Unterrichtsgang mit Abschnitt zum Abtrennen.'],
+    ['Carta a las familias', 'Carta ás familias', 'Lettre aux familles', 'Elternbrief', 'Letter to families'],
+    ['Comunicación de una salida didáctica con autorización recortable.', 'Comunicación dunha saída didáctica con autorización recortable.', 'Annonce d’une sortie scolaire avec autorisation à découper.', 'Information zu einem Unterrichtsgang mit Abschnitt zum Abtrennen.', 'School trip announcement with a tear-off permission slip.'],
   ],
   [
     'gradebook',
     'sheet',
-    ['Cuaderno de notas', 'Caderno de notas', 'Carnet de notes', 'Notenbuch'],
+    ['Cuaderno de notas', 'Caderno de notas', 'Carnet de notes', 'Notenbuch', 'Gradebook'],
     [
       'Medias ponderadas por evaluación, nota final, calificación y aprobados/suspensos en color.',
       'Medias ponderadas por avaliación, nota final, cualificación e aprobados/suspensos en cor.',
       'Moyennes pondérées par trimestre, note finale, appréciation et réussites/échecs en couleur (sur 10).',
       'Gewichtete Durchschnitte pro Trimester, Endnote, Bewertung und bestanden/nicht bestanden in Farbe (0–10 Punkte).',
+      'Weighted averages per term, final grade, descriptor and pass/fail in colour (out of 10).',
     ],
   ],
-  ['timetable', 'sheet', ['Horario semanal', 'Horario semanal', 'Emploi du temps', 'Stundenplan'], ['Sesiones de lunes a viernes con recreo y lista de materias.', 'Sesións de luns a venres con recreo e lista de materias.', 'Cours du lundi au vendredi avec récréation et liste des matières.', 'Stunden von Montag bis Freitag mit Pause und Fächerliste.']],
+  ['timetable', 'sheet', ['Horario semanal', 'Horario semanal', 'Emploi du temps', 'Stundenplan', 'Weekly timetable'], ['Sesiones de lunes a viernes con recreo y lista de materias.', 'Sesións de luns a venres con recreo e lista de materias.', 'Cours du lundi au vendredi avec récréation et liste des matières.', 'Stunden von Montag bis Freitag mit Pause und Fächerliste.', 'Monday to Friday lessons with a break and a list of subjects.']],
   [
     'attendance',
     'sheet',
-    ['Registro de asistencia', 'Rexistro de asistencia', 'Registre de présence', 'Anwesenheitsliste'],
-    ['Cuadrícula mensual con faltas, justificadas, retrasos y porcentaje de asistencia.', 'Cuadrícula mensual con faltas, xustificadas, atrasos e porcentaxe de asistencia.', 'Grille mensuelle avec absences, absences justifiées, retards et taux de présence.', 'Monatsraster mit Fehltagen, Entschuldigungen, Verspätungen und Anwesenheitsquote.'],
+    ['Registro de asistencia', 'Rexistro de asistencia', 'Registre de présence', 'Anwesenheitsliste', 'Attendance register'],
+    ['Cuadrícula mensual con faltas, justificadas, retrasos y porcentaje de asistencia.', 'Cuadrícula mensual con faltas, xustificadas, atrasos e porcentaxe de asistencia.', 'Grille mensuelle avec absences, absences justifiées, retards et taux de présence.', 'Monatsraster mit Fehltagen, Entschuldigungen, Verspätungen und Anwesenheitsquote.', 'Monthly grid with absences, excused absences, late arrivals and attendance rate.'],
   ],
   [
     'scored-rubric',
     'sheet',
-    ['Rúbrica con puntuación', 'Rúbrica con puntuación', 'Grille avec score', 'Bewertungsraster mit Punkten'],
-    ['Introduce el nivel de cada criterio y obtén la nota automáticamente.', 'Introduce o nivel de cada criterio e obtén a nota automaticamente.', 'Saisissez le niveau de chaque critère et obtenez la note automatiquement.', 'Stufe je Kriterium eingeben, die Note wird automatisch berechnet.'],
+    ['Rúbrica con puntuación', 'Rúbrica con puntuación', 'Grille avec score', 'Bewertungsraster mit Punkten', 'Rubric with scores'],
+    ['Introduce el nivel de cada criterio y obtén la nota automáticamente.', 'Introduce o nivel de cada criterio e obtén a nota automaticamente.', 'Saisissez le niveau de chaque critère et obtenez la note automatiquement.', 'Stufe je Kriterium eingeben, die Note wird automatisch berechnet.', 'Enter the level of each criterion and get the grade automatically.'],
   ],
-  ['concept-map', 'diagram', ['Mapa conceptual', 'Mapa conceptual', 'Carte conceptuelle', 'Concept-Map'], ['Conceptos jerarquizados unidos por palabras de enlace.', 'Conceptos xerarquizados unidos por palabras de ligazón.', 'Notions hiérarchisées reliées par des mots de liaison.', 'Hierarchisch geordnete Begriffe, verbunden durch Verbindungswörter.']],
-  ['timeline', 'diagram', ['Línea del tiempo', 'Liña do tempo', 'Frise chronologique', 'Zeitleiste'], ['Acontecimientos ordenados con fechas y tarjetas.', 'Acontecementos ordenados con datas e tarxetas.', 'Événements ordonnés avec dates et cartes.', 'Geordnete Ereignisse mit Daten und Karten.']],
+  ['concept-map', 'diagram', ['Mapa conceptual', 'Mapa conceptual', 'Carte conceptuelle', 'Concept-Map', 'Concept map'], ['Conceptos jerarquizados unidos por palabras de enlace.', 'Conceptos xerarquizados unidos por palabras de ligazón.', 'Notions hiérarchisées reliées par des mots de liaison.', 'Hierarchisch geordnete Begriffe, verbunden durch Verbindungswörter.', 'Concepts in a hierarchy, joined by linking words.']],
+  ['timeline', 'diagram', ['Línea del tiempo', 'Liña do tempo', 'Frise chronologique', 'Zeitleiste', 'Timeline'], ['Acontecimientos ordenados con fechas y tarjetas.', 'Acontecementos ordenados con datas e tarxetas.', 'Événements ordonnés avec dates et cartes.', 'Geordnete Ereignisse mit Daten und Karten.', 'Events in order with dates and cards.']],
   [
     'flowchart',
     'diagram',
-    ['Diagrama de flujo', 'Diagrama de fluxo', 'Organigramme', 'Flussdiagramm'],
-    ['Pasos y decisiones de un proceso con símbolos estándar.', 'Pasos e decisións dun proceso con símbolos estándar.', 'Étapes et décisions d’un processus avec des symboles standard.', 'Schritte und Entscheidungen eines Ablaufs mit Standardsymbolen.'],
+    ['Diagrama de flujo', 'Diagrama de fluxo', 'Organigramme', 'Flussdiagramm', 'Flowchart'],
+    ['Pasos y decisiones de un proceso con símbolos estándar.', 'Pasos e decisións dun proceso con símbolos estándar.', 'Étapes et décisions d’un processus avec des symboles standard.', 'Schritte und Entscheidungen eines Ablaufs mit Standardsymbolen.', 'Steps and decisions of a process with standard symbols.'],
   ],
   [
     'organizers',
     'diagram',
-    ['Organizadores gráficos', 'Organizadores gráficos', 'Organisateurs graphiques', 'Grafische Strukturierungshilfen'],
-    ['Tabla SQA (KWL), diagrama de Venn y causa-efecto, en tres páginas.', 'Táboa SQA (KWL), diagrama de Venn e causa-efecto, en tres páxinas.', 'Tableau SVA (KWL), diagramme de Venn et cause-effet, sur trois pages.', 'W-W-L-Tabelle (KWL), Venn-Diagramm und Ursache-Wirkung auf drei Seiten.'],
+    ['Organizadores gráficos', 'Organizadores gráficos', 'Organisateurs graphiques', 'Grafische Strukturierungshilfen', 'Graphic organisers'],
+    ['Tabla SQA (KWL), diagrama de Venn y causa-efecto, en tres páginas.', 'Táboa SQA (KWL), diagrama de Venn e causa-efecto, en tres páxinas.', 'Tableau SVA (KWL), diagramme de Venn et cause-effet, sur trois pages.', 'W-W-L-Tabelle (KWL), Venn-Diagramm und Ursache-Wirkung auf drei Seiten.', 'KWL chart, Venn diagram and cause and effect, on three pages.'],
   ],
   [
     'slides-learning-situation',
@@ -91,52 +92,52 @@ const ENTRIES: Entry[] = [
   [
     'oral-presentation',
     'slides',
-    ['Exposición oral del alumnado', 'Exposición oral do alumnado', 'Exposé oral d’élève', 'Schülerreferat'],
-    ['Portada, índice, desarrollo con imagen, conclusiones y fuentes.', 'Portada, índice, desenvolvemento con imaxe, conclusións e fontes.', 'Page de titre, sommaire, développement avec image, conclusions et sources.', 'Titelfolie, Gliederung, Hauptteil mit Bild, Fazit und Quellen.'],
+    ['Exposición oral del alumnado', 'Exposición oral do alumnado', 'Exposé oral d’élève', 'Schülerreferat', 'Student oral presentation'],
+    ['Portada, índice, desarrollo con imagen, conclusiones y fuentes.', 'Portada, índice, desenvolvemento con imaxe, conclusións e fontes.', 'Page de titre, sommaire, développement avec image, conclusions et sources.', 'Titelfolie, Gliederung, Hauptteil mit Bild, Fazit und Quellen.', 'Title page, contents, main body with a picture, conclusions and sources.'],
   ],
   [
     'class-presentation',
     'slides',
-    ['Presentación de clase', 'Presentación de clase', 'Présentation de cours', 'Unterrichtspräsentation'],
-    ['Objetivos del día, concepto clave, ejemplo, actividad por pasos y ticket de salida.', 'Obxectivos do día, concepto clave, exemplo, actividade por pasos e ticket de saída.', 'Objectifs du jour, notion clé, exemple, activité par étapes et ticket de sortie.', 'Tagesziele, Schlüsselbegriff, Beispiel, Aufgabe in Schritten und Exit-Ticket.'],
+    ['Presentación de clase', 'Presentación de clase', 'Présentation de cours', 'Unterrichtspräsentation', 'Lesson presentation'],
+    ['Objetivos del día, concepto clave, ejemplo, actividad por pasos y ticket de salida.', 'Obxectivos do día, concepto clave, exemplo, actividade por pasos e ticket de saída.', 'Objectifs du jour, notion clé, exemple, activité par étapes et ticket de sortie.', 'Tagesziele, Schlüsselbegriff, Beispiel, Aufgabe in Schritten und Exit-Ticket.', 'Today\'s objectives, key concept, example, step-by-step activity and exit ticket.'],
   ],
   [
     'project-report',
     'slides',
-    ['Informe de proyecto', 'Informe de proxecto', 'Compte rendu de projet', 'Projektbericht'],
-    ['Equipo y roles, objetivo, proceso, tabla de resultados y próximos pasos.', 'Equipo e roles, obxectivo, proceso, táboa de resultados e próximos pasos.', 'Équipe et rôles, objectif, démarche, tableau de résultats et prochaines étapes.', 'Team und Rollen, Ziel, Vorgehen, Ergebnistabelle und nächste Schritte.'],
+    ['Informe de proyecto', 'Informe de proxecto', 'Compte rendu de projet', 'Projektbericht', 'Project report'],
+    ['Equipo y roles, objetivo, proceso, tabla de resultados y próximos pasos.', 'Equipo e roles, obxectivo, proceso, táboa de resultados e próximos pasos.', 'Équipe et rôles, objectif, démarche, tableau de résultats et prochaines étapes.', 'Team und Rollen, Ziel, Vorgehen, Ergebnistabelle und nächste Schritte.', 'Team and roles, objective, process, results table and next steps.'],
   ],
   [
     'lesson-plan',
     'slides',
-    ['Plan de la sesión', 'Plan da sesión', 'Plan de séance', 'Stundenentwurf'],
-    ['Para el docente: objetivos, fases con tiempos, materiales, diversidad y evaluación.', 'Para o docente: obxectivos, fases con tempos, materiais, diversidade e avaliación.', 'Pour l’enseignant : objectifs, phases minutées, matériel, différenciation et évaluation.', 'Für die Lehrkraft: Ziele, Phasen mit Zeiten, Material, Differenzierung und Bewertung.'],
+    ['Plan de la sesión', 'Plan da sesión', 'Plan de séance', 'Stundenentwurf', 'Lesson plan'],
+    ['Para el docente: objetivos, fases con tiempos, materiales, diversidad y evaluación.', 'Para o docente: obxectivos, fases con tempos, materiais, diversidade e avaliación.', 'Pour l’enseignant : objectifs, phases minutées, matériel, différenciation et évaluation.', 'Für die Lehrkraft: Ziele, Phasen mit Zeiten, Material, Differenzierung und Bewertung.', 'For the teacher: objectives, timed phases, materials, differentiation and assessment.'],
   ],
   [
     'brainstorm',
     'draw',
-    ['Lluvia de ideas', 'Chuvia de ideas', 'Remue-méninges', 'Brainstorming'],
-    ['Pizarra con tema central y notas de colores para generar ideas.', 'Lousa con tema central e notas de cores para xerar ideas.', 'Tableau avec thème central et notes de couleur pour générer des idées.', 'Tafel mit zentralem Thema und farbigen Notizen zum Sammeln von Ideen.'],
+    ['Lluvia de ideas', 'Chuvia de ideas', 'Remue-méninges', 'Brainstorming', 'Brainstorming'],
+    ['Pizarra con tema central y notas de colores para generar ideas.', 'Lousa con tema central e notas de cores para xerar ideas.', 'Tableau avec thème central et notes de couleur pour générer des idées.', 'Tafel mit zentralem Thema und farbigen Notizen zum Sammeln von Ideen.', 'Board with a central topic and coloured notes to generate ideas.'],
   ],
   [
     'mind-map',
     'draw',
-    ['Mapa mental', 'Mapa mental', 'Carte mentale', 'Mindmap'],
-    ['Idea central con cuatro ramas y detalles para estudiar o planificar.', 'Idea central con catro pólas e detalles para estudar ou planificar.', 'Idée centrale avec quatre branches et des détails pour réviser ou planifier.', 'Zentrale Idee mit vier Zweigen und Details zum Lernen oder Planen.'],
+    ['Mapa mental', 'Mapa mental', 'Carte mentale', 'Mindmap', 'Mind map'],
+    ['Idea central con cuatro ramas y detalles para estudiar o planificar.', 'Idea central con catro pólas e detalles para estudar ou planificar.', 'Idée centrale avec quatre branches et des détails pour réviser ou planifier.', 'Zentrale Idee mit vier Zweigen und Details zum Lernen oder Planen.', 'Central idea with four branches and details, to revise or plan.'],
   ],
   [
     'storyboard',
     'draw',
-    ['Guion gráfico', 'Guión gráfico', 'Storyboard', 'Storyboard'],
-    ['Seis viñetas con acción y diálogo para planificar un vídeo, un cómic o una historia.', 'Seis viñetas con acción e diálogo para planificar un vídeo, un cómic ou unha historia.', 'Six cases avec action et dialogue pour préparer une vidéo, une BD ou un récit.', 'Sechs Felder mit Handlung und Dialog, um ein Video, einen Comic oder eine Geschichte zu planen.'],
+    ['Guion gráfico', 'Guión gráfico', 'Storyboard', 'Storyboard', 'Storyboard'],
+    ['Seis viñetas con acción y diálogo para planificar un vídeo, un cómic o una historia.', 'Seis viñetas con acción e diálogo para planificar un vídeo, un cómic ou unha historia.', 'Six cases avec action et dialogue pour préparer une vidéo, une BD ou un récit.', 'Sechs Felder mit Handlung und Dialog, um ein Video, einen Comic oder eine Geschichte zu planen.', 'Six panels with action and dialogue to plan a video, a comic or a story.'],
   ],
-  ['form-self-assessment', 'forms', ['Autoevaluación', 'Autoavaliación', 'Autoévaluation', 'Selbsteinschätzung'], ['Cuadrícula de frecuencia, escala de aprendizaje y preguntas de reflexión.', 'Cuadrícula de frecuencia, escala de aprendizaxe e preguntas de reflexión.', 'Grille de fréquence, échelle d’apprentissage et questions de réflexion.', 'Häufigkeitsraster, Lernskala und Reflexionsfragen.']],
-  ['form-review-quiz', 'forms', ['Cuestionario de repaso', 'Cuestionario de repaso', 'Quiz de révision', 'Wiederholungsquiz'], ['Autocorregible: respuestas correctas, puntos, retroalimentación y nota automática.', 'Autocorrixible: respostas correctas, puntos, retroalimentación e nota automática.', 'Autocorrigé : bonnes réponses, points, commentaires et note automatique.', 'Selbstkorrigierend: richtige Antworten, Punkte, Rückmeldung und automatische Note.']],
-  ['form-family-survey', 'forms', ['Encuesta a las familias', 'Enquisa ás familias', 'Enquête auprès des familles', 'Elternumfrage'], ['Satisfacción, canales de comunicación, actividades y sugerencias.', 'Satisfacción, canles de comunicación, actividades e suxestións.', 'Satisfaction, moyens de communication, activités et suggestions.', 'Zufriedenheit, Kommunikationswege, Aktivitäten und Anregungen.']],
-  ['form-peer-rubric', 'forms', ['Rúbrica de coevaluación', 'Rúbrica de coavaliación', 'Grille d’évaluation par les pairs', 'Peer-Bewertungsraster'], ['El alumnado evalúa a un compañero con criterios y niveles de logro.', 'O alumnado avalía a un compañeiro con criterios e niveis de logro.', 'Les élèves évaluent un camarade selon des critères et des niveaux.', 'Schüler bewerten eine Mitschülerin oder einen Mitschüler nach Kriterien und Stufen.']],
-  ['nb-class-notes', 'notebook', ['Apuntes de clase', 'Apuntamentos de clase', 'Notes de cours', 'Unterrichtsnotizen'], ['Unidades con objetivos, notas de cada clase, tareas y repaso con etiquetas.', 'Unidades con obxectivos, notas de cada clase, tarefas e repaso con etiquetas.', 'Chapitres avec objectifs, notes de chaque cours, devoirs et révisions avec balises.', 'Einheiten mit Lernzielen, Notizen je Stunde, Hausaufgaben und Wiederholung mit Tags.']],
-  ['nb-lab-notebook', 'notebook', ['Cuaderno de laboratorio', 'Caderno de laboratorio', 'Cahier de laboratoire', 'Laborbuch'], ['Normas de seguridad y prácticas con objetivo, hipótesis, datos y conclusiones.', 'Normas de seguridade e prácticas con obxectivo, hipótese, datos e conclusións.', 'Règles de sécurité et TP avec objectif, hypothèse, données et conclusions.', 'Sicherheitsregeln und Versuche mit Ziel, Hypothese, Messwerten und Ergebnis.']],
-  ['nb-reading-journal', 'notebook', ['Diario de lectura', 'Diario de lectura', 'Journal de lecture', 'Lesetagebuch'], ['Ficha del libro, resumen por capítulos, personajes, citas y vocabulario.', 'Ficha do libro, resumo por capítulos, personaxes, citas e vocabulario.', 'Fiche du livre, résumé par chapitres, personnages, citations et vocabulaire.', 'Steckbrief, Zusammenfassung je Kapitel, Figuren, Zitate und Wortschatz.']],
+  ['form-self-assessment', 'forms', ['Autoevaluación', 'Autoavaliación', 'Autoévaluation', 'Selbsteinschätzung', 'Self-assessment'], ['Cuadrícula de frecuencia, escala de aprendizaje y preguntas de reflexión.', 'Cuadrícula de frecuencia, escala de aprendizaxe e preguntas de reflexión.', 'Grille de fréquence, échelle d’apprentissage et questions de réflexion.', 'Häufigkeitsraster, Lernskala und Reflexionsfragen.', 'Frequency grid, learning scale and reflection questions.']],
+  ['form-review-quiz', 'forms', ['Cuestionario de repaso', 'Cuestionario de repaso', 'Quiz de révision', 'Wiederholungsquiz', 'Review quiz'], ['Autocorregible: respuestas correctas, puntos, retroalimentación y nota automática.', 'Autocorrixible: respostas correctas, puntos, retroalimentación e nota automática.', 'Autocorrigé : bonnes réponses, points, commentaires et note automatique.', 'Selbstkorrigierend: richtige Antworten, Punkte, Rückmeldung und automatische Note.', 'Self-grading: correct answers, points, feedback and automatic grade.']],
+  ['form-family-survey', 'forms', ['Encuesta a las familias', 'Enquisa ás familias', 'Enquête auprès des familles', 'Elternumfrage', 'Family survey'], ['Satisfacción, canales de comunicación, actividades y sugerencias.', 'Satisfacción, canles de comunicación, actividades e suxestións.', 'Satisfaction, moyens de communication, activités et suggestions.', 'Zufriedenheit, Kommunikationswege, Aktivitäten und Anregungen.', 'Satisfaction, ways of communication, activities and suggestions.']],
+  ['form-peer-rubric', 'forms', ['Rúbrica de coevaluación', 'Rúbrica de coavaliación', 'Grille d’évaluation par les pairs', 'Peer-Bewertungsraster', 'Peer assessment rubric'], ['El alumnado evalúa a un compañero con criterios y niveles de logro.', 'O alumnado avalía a un compañeiro con criterios e niveis de logro.', 'Les élèves évaluent un camarade selon des critères et des niveaux.', 'Schüler bewerten eine Mitschülerin oder einen Mitschüler nach Kriterien und Stufen.', 'Students assess a classmate against criteria and levels.']],
+  ['nb-class-notes', 'notebook', ['Apuntes de clase', 'Apuntamentos de clase', 'Notes de cours', 'Unterrichtsnotizen', 'Class notes'], ['Unidades con objetivos, notas de cada clase, tareas y repaso con etiquetas.', 'Unidades con obxectivos, notas de cada clase, tarefas e repaso con etiquetas.', 'Chapitres avec objectifs, notes de chaque cours, devoirs et révisions avec balises.', 'Einheiten mit Lernzielen, Notizen je Stunde, Hausaufgaben und Wiederholung mit Tags.', 'Units with objectives, notes for each lesson, homework and revision with tags.']],
+  ['nb-lab-notebook', 'notebook', ['Cuaderno de laboratorio', 'Caderno de laboratorio', 'Cahier de laboratoire', 'Laborbuch', 'Lab notebook'], ['Normas de seguridad y prácticas con objetivo, hipótesis, datos y conclusiones.', 'Normas de seguridade e prácticas con obxectivo, hipótese, datos e conclusións.', 'Règles de sécurité et TP avec objectif, hypothèse, données et conclusions.', 'Sicherheitsregeln und Versuche mit Ziel, Hypothese, Messwerten und Ergebnis.', 'Safety rules and experiments with objective, hypothesis, data and conclusions.']],
+  ['nb-reading-journal', 'notebook', ['Diario de lectura', 'Diario de lectura', 'Journal de lecture', 'Lesetagebuch', 'Reading journal'], ['Ficha del libro, resumen por capítulos, personajes, citas y vocabulario.', 'Ficha do libro, resumo por capítulos, personaxes, citas e vocabulario.', 'Fiche du livre, résumé par chapitres, personnages, citations et vocabulaire.', 'Steckbrief, Zusammenfassung je Kapitel, Figuren, Zitate und Wortschatz.', 'Book record, summary by chapters, characters, quotes and vocabulary.']],
 ]
 
 async function create(id: string, app: DocType, lang: Lang, name: string): Promise<string> {
@@ -160,7 +161,7 @@ async function create(id: string, app: DocType, lang: Lang, name: string): Promi
   }
 }
 
-const LANGS: Lang[] = ['es', 'gl', 'fr', 'de']
+const LANGS: Lang[] = ['es', 'gl', 'fr', 'de', 'en']
 const byLang = (texts: Texts) => Object.fromEntries(texts.map((text, i) => [LANGS[i], text])) as Partial<Record<Lang, string>>
 
 export const TEMPLATES: Template[] = ENTRIES.map(([id, app, name, description]) => ({

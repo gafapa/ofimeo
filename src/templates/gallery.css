@@ -3,10 +3,8 @@
 .home-templates { padding: 16px 0 12px; border-bottom: 1px solid var(--border); }
 .tpl-lang-wrap { display: flex; align-items: center; gap: 8px; }
 .tpl-lang-label { color: var(--muted); font-size: 13px; }
-.tpl-lang { display: inline-flex; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-.tpl-lang button { border: 0; background: var(--surface); color: var(--text); padding: 4px 12px; font-size: 13px; }
-.tpl-lang button + button { border-left: 1px solid var(--border); }
-.tpl-lang button.active { background: var(--active); color: var(--active-fg); }
+.tpl-lang-select { padding: 4px 6px; border: 1px solid var(--border); border-radius: var(--radius-m); background: var(--surface); color: var(--text); font-size: 13px; }
+.tpl-filters[hidden], .my-templates[hidden] { display: none; }
 
 .tpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
 .tpl-card {

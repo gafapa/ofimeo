@@ -9,7 +9,7 @@
 //   [text](action:name) runs an action: storage, nextcloud, connection, shortcuts, accessibility, tour, admin, moodle
 //   [text](legal:name)  opens a legal page (privacy, schools…) in a new tab
 
-export const BASIC_ARTICLES = ['getting-started', 'sharing', 'offline', 'backup', 'nextcloud', 'handin', 'moodle', 'network', 'school-setup', 'privacy', 'shortcuts', 'accessibility', 'spelling', 'math-graph'] as const
+export const BASIC_ARTICLES = ['getting-started', 'classroom', 'sharing', 'offline', 'backup', 'nextcloud', 'handin', 'moodle', 'network', 'school-setup', 'privacy', 'shortcuts', 'accessibility', 'spelling', 'math-graph'] as const
 // One per app, named after the app's DocType.
 export const APP_ARTICLES = ['writer', 'sheet', 'draw', 'diagram', 'slides', 'forms', 'pdf', 'notebook'] as const
 

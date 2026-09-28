@@ -5,11 +5,11 @@ const articles: Articles = {
   'getting-started': {
     title: 'Getting started',
     keywords: 'start begin first welcome home new document open template account login',
-    body: `Ofimeo is an office suite that runs entirely in your browser: documents, spreadsheets, drawings, diagrams, presentations, forms and PDF correction. You do not need an account, and nothing is installed on a server.
+    body: `Ofimeo is an office suite that runs entirely in your browser: documents, spreadsheets, drawings, diagrams, presentations, forms and PDF correction. It is designed for schools, for students and teachers alike, but anyone can use it: at home, in an association or at work. You do not need an account, and nothing is installed on a server.
 
 ## The home screen
 - **Start something new**: click a card to create a document of that kind.
-- **Templates**: worksheets, rubrics, gradebooks, timetables, concept maps and more. Click one to get your own copy.
+- **Templates**: reports, worksheets, concept maps, timetables, presentations, rubrics, gradebooks and more. Click one to get your own copy.
 - **Open file…**: opens Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw and PDF files from your computer.
 - **Your documents**: everything you created or opened in this browser, with search, folders, tags and a trash (deleted documents are kept for 30 days).
 
@@ -19,17 +19,43 @@ Type your name in the box at the top right (on a phone or in a narrow window, ta
 ## Important to know
 - Documents are stored **in this browser** only. Read [Working offline and where your data is stored](help:offline) and make [backups](help:backup).
 - To work with others, send a [sharing link](help:sharing).
-- Students hand in work with the [Hand in](help:handin) button.
+- To hand in work, use the [Hand in](help:handin) button.
+- How students and teachers work together: [Students and teachers](help:classroom).
 
 [Show the welcome tour again](action:tour)
 
 ## Import from Google Drive or Microsoft 365
-**Import from link…** (home screen, and File menu in every app) opens files shared from Google Docs, Sheets, Slides and Drive, OneDrive or SharePoint:
+**Import from link…** (home screen ▸ More, and File menu in every app) opens files shared from Google Docs, Sheets, Slides and Drive, OneDrive or SharePoint:
 1. Paste the share link. The file must be shared as **Anyone with the link**, or you must be able to open it with your own account.
 2. Click the download button: your browser downloads the file as Word, Excel or PowerPoint.
 3. Drop the downloaded file on the dialog (or choose it). It opens as a new Ofimeo document.
 
 Browsers do not let web apps download these files directly, so the file goes through your Downloads folder; Ofimeo never sees your Google or Microsoft account. If your school relay offers it, **Import directly through the school relay** does it in one click for public files.`,
+  },
+  classroom: {
+    title: 'Students and teachers',
+    keywords: 'student pupil teacher class classroom group project worksheet homework correction feedback grade role',
+    body: `Ofimeo is the same app for everyone: what you can do in a document depends on the link you opened, not on who you are.
+
+## If you are a student
+- **Open the link your teacher gives you.** If you can only read it or comment on it, a **View only** or **Can comment** label at the top says so; otherwise you can edit. A **Makes a copy** link gives you your own copy (a worksheet, for example) that only you edit.
+- **Find it again** on the home screen: everything you open stays in this browser. Use the same device and browser, or make a [backup](help:backup).
+- **Group work**: one person creates the document and shares an edit link with the group. Everyone writes at the same time; Review ▸ Show authorship (in Docs) shows who wrote what, and the [chat](help:sharing) helps you organise.
+- **Your name**: type it at the top right. Your group and your teacher see it, and it names the file you hand in.
+- **Hand in** your work with the [Hand in](help:handin) button, or straight to [Moodle](help:moodle).
+- **Corrections**: open the corrected document or PDF your teacher sends back. In Docs, suggestions can be accepted or rejected one by one, and comments can be answered.
+- **Presentations**: prepare them in [Ofimeo Slides](help:slides) with your group and present with the presenter view.
+- **Take notes** in [Ofimeo Notebook](help:notebook).
+
+## If you teach
+- **Hand out work** with a **Makes a copy** link: each student gets their own worksheet. Use a **Can view** link for readings and presentations everyone follows.
+- **Collect work** with Hand in: students send you a ZIP or a PDF, upload it to a Nextcloud file drop, or hand in to Moodle.
+- **Correct** in [Docs](help:writer) with comments and suggestions, and in [Ofimeo PDF](help:pdf) with stamps, pen and notes.
+- **Quizzes and surveys** with [Ofimeo Forms](help:forms).
+- **Present** with [Ofimeo Slides](help:slides): students can follow your slides on their devices.
+- The [templates](help:getting-started) include worksheets, rubrics, gradebooks and a learning situation.
+
+Tell your students to use a first name or initials and to make backups: see [Privacy](help:privacy).`,
   },
   sharing: {
     title: 'Sharing and permissions',
@@ -40,9 +66,9 @@ Browsers do not let web apps download these files directly, so the file goes thr
 - **Can edit**: people can change the document with you.
 - **Can comment**: people can read and add comments, but not change the text.
 - **Can view**: people can read the document and follow changes live.
-- **Makes a copy**: everyone who opens it gets their own private copy. Use it to give each student a worksheet.
+- **Makes a copy**: everyone who opens it gets their own private copy, for example a worksheet that each student fills in.
 
-The dialog also shows a **QR code**, handy for tablets and phones in class.
+The dialog also shows a **QR code**, handy for tablets and phones.
 
 ## Good to know
 - A link is like a key: anyone who has it gets its access. Share it only with the people who need it.
@@ -55,7 +81,7 @@ The dialog also shows a **QR code**, handy for tablets and phones in class.
 - The speech-bubble button next to the people in the document (or \`Alt+Shift+C\`) opens the chat. A number shows unread messages; it turns red when someone mentions you.
 - Type \`@\` to mention someone who is here. Links open in a new tab; the smiley button adds emoji. \`Enter\` sends, \`Shift+Enter\` starts a new line, \`Escape\` closes the chat.
 - People with an edit or comment link can write; people with a view link can only read.
-- Teachers (edit link): the ⋯ button in the chat turns the chat off for this document or clears its history for everyone.
+- People with an edit link (for example, the teacher who made the document): the ⋯ button in the chat turns the chat off for this document or clears its history for everyone.
 - Messages are kept with the document in this browser and in backups, but not in versions, copies or downloaded files.`,
   },
   offline: {
@@ -97,10 +123,10 @@ The dialog also shows a **QR code**, handy for tablets and phones in class.
     body: `If your school has a Nextcloud server, you can open files from it and save them back. Your browser talks to Nextcloud directly.
 
 ## Connect your account
-Open [Nextcloud account](action:nextcloud) (Nextcloud button on the home screen, or File ▸ Nextcloud account…). Enter the server address and choose **Log in with Nextcloud**, or use an **app password** (Nextcloud ▸ Personal settings ▸ Security ▸ Create new app password). Never type your main password. **Test connection** explains what is wrong if it fails.
+Open [Nextcloud account](action:nextcloud) (home screen ▸ Accounts ▸ Nextcloud account…, or File ▸ Nextcloud account…). Enter the server address and choose **Log in with Nextcloud**, or use an **app password** (Nextcloud ▸ Personal settings ▸ Security ▸ Create new app password). Never type your main password. **Test connection** explains what is wrong if it fails.
 
 ## Open and save
-- **Open from Nextcloud…** (home screen and File menu) opens a file as a new document **linked** to it.
+- **Open from Nextcloud…** (home screen ▸ More, and File menu) opens a file as a new document **linked** to it.
 - **Save to Nextcloud** (\`Ctrl+S\`) updates the linked file. **Save to Nextcloud as…** chooses the folder, name and format.
 - If the file was changed in Nextcloud meanwhile, you choose to overwrite it, save a copy or cancel.
 - Optional autosave every few minutes.
@@ -113,7 +139,8 @@ Open [Nextcloud account](action:nextcloud) (Nextcloud button on the home screen,
   handin: {
     title: 'Handing in work',
     keywords: 'hand in submit homework assignment teacher student zip pdf upload file drop deliver',
-    body: `**For students.** Click **Hand in** (next to Share). Ofimeo downloads a ZIP file named with your name and the title, with the document in its original formats (for example .odt and .docx, or .pptx and pictures of the slides).
+    body: `## Handing in your work
+Click **Hand in** (next to Share). Ofimeo downloads a ZIP file named with your name and the title, with the document in its original formats (for example .odt and .docx, or .pptx and pictures of the slides).
 
 - If you have not typed your name yet, you are asked for it: it goes into the file name.
 - Upload or send the ZIP to your teacher the way they asked (virtual classroom, email…).
@@ -121,7 +148,7 @@ Open [Nextcloud account](action:nextcloud) (Nextcloud button on the home screen,
 - **Upload to a Nextcloud share link…**: if your teacher gave you an upload link, the file goes straight there. You do not need a Nextcloud account.
 - **Hand in to Moodle…**: if your school uses Moodle, hand in straight to an assignment. See [Moodle](help:moodle).
 
-**For teachers.**
+## Collecting work (if you teach)
 - Give each student their own worksheet with a **Makes a copy** link (see [Sharing](help:sharing)).
 - Create an upload link ("File drop") in your Nextcloud and give it to the class.
 - Open the students' PDFs, or hand-in ZIPs, in [Ofimeo PDF](help:pdf) to correct them.
@@ -133,7 +160,7 @@ Open [Nextcloud account](action:nextcloud) (Nextcloud button on the home screen,
     body: `Connect Ofimeo to your school's Moodle to see your assignments on the home screen and hand in your work without downloading and uploading files.
 
 ## Connect
-Open [Moodle](action:moodle) (Moodle button on the home screen, or File ▸ Moodle account…). Enter the Moodle address (your school may have filled it in), your username and your password, and choose **Connect**.
+Open [Moodle](action:moodle) (home screen ▸ Accounts ▸ Moodle account…, or File ▸ Moodle account…). Enter the Moodle address (your school may have filled it in), your username and your password, and choose **Connect**.
 - Your password goes only to Moodle, once. Ofimeo keeps only a Moodle key and your name in this browser. **Disconnect** removes them.
 - If your school signs in to Moodle through a web page (Google, Microsoft or a school login, "single sign-on"), this kind of sign-in does not work in Ofimeo yet. Ofimeo tells you when it detects it. Hand in with the usual [Hand in](help:handin) and upload the file in Moodle.
 
@@ -223,7 +250,7 @@ The step-by-step guide for the IT department is in the project's documentation (
 - **Nextcloud**: your password is only sent to your Nextcloud server.
 - **Dictation** uses the browser's speech recognition, which may send the audio to the browser maker's service.
 
-## Tips for class
+## Tips for sharing
 - Use a first name, initials or a nickname.
 - Do not put sensitive personal data (health, family matters) in shared documents.
 
@@ -321,10 +348,11 @@ Word and OpenDocument files keep the graph as a picture with the construction in
 - **References** has citations and a bibliography in APA, MLA or Chicago style.
 - Page size, margins and orientation are in File ▸ Page setup…
 
-## Reviewing (teachers correcting work)
+## Reviewing: comments and suggestions
 - **Comments**: select text and press \`Ctrl+Alt+M\` (or Review ▸ Comment). People with a comment link can comment too.
 - **Suggestions**: switch the mode from **Editing** to **Suggesting**. Your changes are marked, and the author accepts or rejects them.
-- Review ▸ Show authorship colors the text by who wrote it.
+- **Received suggestions** (for example, your teacher's corrections): click one and choose **Accept** or **Reject**, or use Review ▸ Accept all suggestions.
+- Review ▸ Show authorship colors the text by who wrote it: useful for group work.
 
 ## Charts
 **Insert ▸ Chart…** adds a column, bar, line, area, pie, doughnut or scatter chart. Take the data from a spreadsheet of your library (choose the sheet and the range) or type it into the small table. A chart **linked** to a spreadsheet updates by itself when that spreadsheet changes in this browser; **Update from source** (on the chart or in its right-click menu) does it at once. The document keeps a copy of the data, so everyone sees the chart even without the spreadsheet. Drag the corner to resize it; double-click to change it or add a caption. Word files keep it as a real chart.
@@ -360,12 +388,12 @@ The grid is drawn as a picture, so **View ▸ Accessible table view** (\`Alt+Shi
 ## Files
 Opens and downloads Excel (.xlsx), OpenDocument (.ods) and CSV. Charts are saved as real charts that Excel and LibreOffice can edit. Print or save the current sheet as PDF with File ▸ Print.
 
-The gradebook, attendance and rubric templates on the home screen are ready to use.`,
+The home screen has spreadsheet templates such as a timetable, a gradebook, an attendance register and a rubric with scores.`,
   },
   draw: {
     title: 'Ofimeo Drawing (whiteboard)',
     keywords: 'drawing whiteboard sketch draw freehand excalidraw brainstorm board shapes arrows',
-    body: `A whiteboard to draw freehand or with shapes, arrows and text, alone or with the class.
+    body: `A whiteboard to draw freehand or with shapes, arrows and text, alone or with others: brainstorming, sketches, group boards.
 
 - Choose a tool in the tool bar on the canvas and drag to draw. Arrows stick to the shapes they connect.
 - The panel next to the selection changes colors, lines, fill and font.
@@ -397,7 +425,7 @@ The home screen has templates for concept maps, timelines, flowcharts and graphi
   slides: {
     title: 'Ofimeo Slides (presentations)',
     keywords: 'presentation slides powerpoint pptx odp present projector presenter notes animation theme layout follow',
-    body: `Presentations for the classroom.
+    body: `Presentations for lessons, class talks and projects.
 
 - The **slide panel** on the left shows the slides. Right-click a thumbnail to add, duplicate, move or delete a slide and to change its layout or background.
 - Choose a **theme** and a **layout** for each slide. Click the placeholders to add a title and text.
@@ -415,29 +443,30 @@ Opens PowerPoint (.pptx). Downloads PowerPoint (.pptx), OpenDocument (.odp), PDF
     keywords: 'form quiz test exam survey questionnaire questions answers responses grade score self-assessment',
     body: `Forms, surveys and quizzes that grade themselves.
 
-## For teachers
+## Making a form
+Anyone can make one: a teacher's quiz, or a survey for a class project.
 - **Question** adds a question; choose its type: short answer, paragraph, multiple choice, checkboxes, dropdown, scale, grid, date, time or number. **Section** makes a new page.
 - Turn on **Quiz** to set the correct answers, points and feedback. Grading is automatic; paragraphs are graded by hand.
-- **Send** gives the link and a QR code for your students. They only see the form, not the answers of others.
+- **Send** gives the link and a QR code. People who answer only see the form, not the answers of others.
 - Responses arrive when your browser (or another editor's) is online. See them in **Responses**, with charts and statistics, and export them to a spreadsheet.
 
-## For students
+## Answering a form
 - Type your name, answer the questions and press **Submit**.
 - If you are offline, the response is sent when the connection returns.
-- If no teacher is online, use **Download my response** and hand the file to your teacher.
+- If nobody who manages the form is online, use **Download my response** and hand the file in (for example, to your teacher).
 
-Answers are encrypted in the student's browser: only the form's editors can read them.`,
+Answers are encrypted in the browser of the person who answers: only the form's editors can read them.`,
   },
   pdf: {
-    title: 'Ofimeo PDF (correcting PDFs)',
+    title: 'Ofimeo PDF (annotating PDFs)',
     keywords: 'pdf correct mark grade annotate highlight pen stamp signature note acrobat hand-in zip',
-    body: `Correct and annotate PDF files, for example the work your students handed in.
+    body: `Annotate PDF files: fill in and sign a worksheet, mark up a reading, or correct work that was handed in.
 
 - Open a PDF from the home screen, from File ▸ Open…, or open a hand-in ZIP: the PDFs inside are listed.
 - Tools: highlight, underline and strikeout (select text), pen and eraser, text boxes, shapes, **stamps** (check, cross, "Good", a grade…), **sticky notes** and your **signature**.
 - Keys: \`H\` highlight, \`P\` pen, \`T\` text box, \`N\` note, \`S\` stamp, \`G\` signature, \`Esc\` back to Select.
 - Keyboard: choose a tool (for example \`T\`, \`N\`, \`R\` or \`S\`) and press \`Enter\` to place it in the middle of the page you are looking at. In the Comments panel, **Add comment** does the same for sticky notes.
-- Share the PDF to correct it together or to let the student read your notes.
+- Share the PDF to annotate it together, or to let someone read your notes (for example, a teacher returning corrected work).
 
 ## Pages
 The **Page** menu (or right-click a thumbnail) rotates a page left or right (\`Ctrl+[\` / \`Ctrl+]\`), moves it up or down, adds blank pages and deletes pages. Drag thumbnails to reorder them (or \`Alt+↑\` / \`Alt+↓\` on a thumbnail). Annotations stay with their page, and Undo reverts every change. The downloaded PDF follows the new order and rotation.

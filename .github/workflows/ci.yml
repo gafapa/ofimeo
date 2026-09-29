@@ -27,7 +27,7 @@ jobs:
       - name: Dependency security audit
         run: npm audit --audit-level=high
       # The pinned draw.io release the shape libraries are generated from.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: node_modules/.cache/draw-*.war
           key: drawio-war-${{ hashFiles('scripts/drawio.json') }}

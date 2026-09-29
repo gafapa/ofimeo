@@ -4,7 +4,7 @@ go 1.26.6
 
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4
-	github.com/coder/websocket v1.8.14
+	github.com/coder/websocket v1.8.15
 	github.com/kardianos/service v1.2.4
 	github.com/pion/logging v0.2.4
 	github.com/pion/turn/v4 v4.1.4

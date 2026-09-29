@@ -1,7 +1,8 @@
+import { fileURLToPath } from 'node:url'
 import { expect, test } from '@playwright/test'
 import { RELAYS } from './helpers'
 
-const fixture = (name: string) => new URL(`../fixtures/${name}`, import.meta.url).pathname
+const fixture = (name: string) => fileURLToPath(new URL(`../fixtures/${name}`, import.meta.url))
 
 test('a .drawio file opens from the home screen', async ({ page }) => {
   await page.goto(`/${RELAYS}`)

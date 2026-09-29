@@ -68,7 +68,7 @@ async function pdfPages(doc: Y.Doc): Promise<string[]> {
     }
     return pages
   } finally {
-    void pdf.destroy()
+    void pdf.loadingTask.destroy()
   }
 }
 

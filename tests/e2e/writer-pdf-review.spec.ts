@@ -6,6 +6,7 @@ import { randomBytes } from 'node:crypto'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { expect, test, type Page } from '@playwright/test'
 import { PDFDocument } from 'pdf-lib'
 import { APP_READY, RELAYS, trackErrors, uniqueDoc } from './helpers'
@@ -13,7 +14,7 @@ import { makeFixturePdf } from './pdf-fixture'
 
 const ENGLISH = () => localStorage.setItem('ofimeo:language', 'en')
 const b64 = (n: number) => randomBytes(n).toString('base64url')
-const fixturePath = (name: string) => new URL(`../fixtures/${name}`, import.meta.url).pathname
+const fixturePath = (name: string) => fileURLToPath(new URL(`../fixtures/${name}`, import.meta.url))
 
 async function menu(page: Page, ...path: string[]) {
   await page.locator('#menubar').getByText(path[0], { exact: true }).click()
@@ -36,7 +37,11 @@ async function pdfFixture(name: string): Promise<string> {
 // Text of every page of a PDF (pdf.js in Node).
 async function pdfText(bytes: Uint8Array): Promise<string> {
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
-  const doc = await pdfjs.getDocument({ data: bytes, useSystemFonts: false }).promise
+  const doc = await pdfjs.getDocument({
+    data: bytes,
+    useSystemFonts: false,
+    standardFontDataUrl: fileURLToPath(new URL('../../node_modules/pdfjs-dist/standard_fonts/', import.meta.url)).replaceAll('\\', '/'),
+  }).promise
   let out = ''
   for (let i = 1; i <= doc.numPages; i++) {
     const page = await doc.getPage(i)
@@ -45,7 +50,7 @@ async function pdfText(bytes: Uint8Array): Promise<string> {
     // Text of annotations (editable export): their contents.
     for (const a of await page.getAnnotations()) if (a.contentsObj?.str) out += `${a.contentsObj.str}\n`
   }
-  await doc.destroy()
+  await doc.loadingTask.destroy()
   return out
 }
 

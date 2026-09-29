@@ -209,6 +209,12 @@ func TestMoodleForwarding(t *testing.T) {
 		m.srv.URL + "/moodle/admin/index.php",
 		m.srv.URL + "/other/webservice/pluginfile.php/1/x.pdf",
 		m.srv.URL + "/moodle/webservice/pluginfile.php/../../admin/x",
+		m.srv.URL + "/moodle/webservice/pluginfile.php/%2e%2e/%2e%2e/admin/x",
+		m.srv.URL + "/moodle/webservice/pluginfile.php/%252e%252e/admin/x",
+		m.srv.URL + "/moodle/webservice/pluginfile.php/x/%2e%2e",
+		m.srv.URL + "/moodle/webservice/pluginfile.php/x/..",
+		m.srv.URL + "/moodle/webservice/pluginfile.php/x/%2e",
+		m.srv.URL + "/moodle/webservice/pluginfile.php/x%5c..%5cadmin",
 	} {
 		rec = post(h, "/ofimeo/moodle/file?site="+site, form, strings.NewReader(url.Values{"url": {bad}, "token": {"t"}}.Encode()))
 		if rec.Code != http.StatusForbidden {

@@ -54,7 +54,7 @@ export async function checkPdf(bytes: Uint8Array): Promise<boolean> {
   const { openPdf, askPdfPassword, PasswordCancelled } = await import('./pdfjs')
   try {
     const pdf = await openPdf(bytes, { askPassword: askPdfPassword })
-    void pdf.destroy()
+    void pdf.loadingTask.destroy()
     return true
   } catch (err) {
     if (err instanceof PasswordCancelled) return false
@@ -110,7 +110,7 @@ async function exportStored(session: Session, mode: 'annotations' | 'flatten'): 
   try {
     return await exportPdf(input, mode)
   } finally {
-    opened.pdf?.then((pdf) => pdf.destroy()).catch(() => undefined)
+    opened.pdf?.then((pdf) => pdf.loadingTask.destroy()).catch(() => undefined)
   }
 }
 

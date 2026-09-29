@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"net/netip"
@@ -9,6 +12,23 @@ import (
 	"strings"
 	"testing"
 )
+
+func TestImportProxyNoSecretsInLog(t *testing.T) {
+	var logs bytes.Buffer
+	p := &ImportProxy{log: slog.New(slog.NewTextHandler(&logs, nil))}
+	p.logf("import failed", "docs.google.com", &url.Error{
+		Op: "Get", URL: "https://docs.google.com/private-share?token=secret-token",
+		Err: errors.New("connection refused"),
+	})
+	for _, secret := range []string{"private-share", "secret-token", "https://"} {
+		if strings.Contains(logs.String(), secret) {
+			t.Fatalf("log contains private URL: %s", logs.String())
+		}
+	}
+	if !strings.Contains(logs.String(), "connection refused") {
+		t.Fatal("log must preserve the failure reason")
+	}
+}
 
 func TestImportHostAllowed(t *testing.T) {
 	for _, h := range []string{"docs.google.com", "drive.google.com", "doc-0s-8c-docs.googleusercontent.com", "contoso.sharepoint.com", "contoso-my.sharepoint.com", "1drv.ms", "api.onedrive.com", "public.bn1304.files.1drv.com", "my.microsoftpersonalcontent.com", "DOCS.GOOGLE.COM."} {

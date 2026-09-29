@@ -34,13 +34,13 @@ export async function exportInFrame(data: DocumentData, split: FrameJob['split']
   frame.setAttribute('aria-hidden', 'true')
   frame.tabIndex = -1
   frame.style.cssText = 'position:fixed;left:-20000px;top:0;width:1200px;height:900px;border:0;opacity:0;pointer-events:none'
+  let onMessage: ((e: MessageEvent<FrameReply>) => void) | undefined
   try {
     return await new Promise<Blob>((resolve, reject) => {
       const timer = setTimeout(() => reject(new Error(t('The PDF took too long to prepare'))), TIMEOUT_MS)
-      const onMessage = (e: MessageEvent<FrameReply>) => {
-        if (e.source !== frame.contentWindow || e.data?.ofimeoMergeExport !== job.id) return
+      onMessage = (e: MessageEvent<FrameReply>) => {
+        if (e.origin !== location.origin || e.source !== frame.contentWindow || e.data?.ofimeoMergeExport !== job.id) return
         clearTimeout(timer)
-        window.removeEventListener('message', onMessage)
         if (e.data.blob) resolve(e.data.blob)
         else reject(new Error(e.data.error || t('The PDF could not be created')))
       }
@@ -49,6 +49,7 @@ export async function exportInFrame(data: DocumentData, split: FrameJob['split']
       document.body.append(frame)
     })
   } finally {
+    if (onMessage) window.removeEventListener('message', onMessage)
     frame.remove()
     if (docId) await deleteDoc(docId).catch(() => undefined)
   }

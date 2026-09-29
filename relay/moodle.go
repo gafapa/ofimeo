@@ -365,10 +365,28 @@ func (p *MoodleProxy) fileURL(raw string) (*url.URL, bool) {
 	if !strings.EqualFold(u.Scheme, base.Scheme) || !strings.EqualFold(u.Host, base.Host) {
 		return nil, false
 	}
-	path := u.EscapedPath()
-	if strings.Contains(path, "/../") || strings.Contains(path, "/./") {
-		return nil, false
+	// Inspect decoded segments too: upstream servers normalize encoded dot
+	// segments and backslashes before routing the request.
+	decoded := u.Path
+	for depth := 0; ; depth++ {
+		if depth >= 8 {
+			return nil, false
+		}
+		if strings.Contains(decoded, "\\") {
+			return nil, false
+		}
+		for _, segment := range strings.Split(decoded, "/") {
+			if segment == "." || segment == ".." {
+				return nil, false
+			}
+		}
+		next, err := url.PathUnescape(decoded)
+		if err != nil || next == decoded {
+			break
+		}
+		decoded = next
 	}
+	path := u.EscapedPath()
 	for _, prefix := range []string{"/webservice/pluginfile.php/", "/pluginfile.php/", "/tokenpluginfile.php/"} {
 		if strings.HasPrefix(path, base.EscapedPath()+prefix) {
 			return u, true

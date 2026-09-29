@@ -64,18 +64,18 @@
     "dictionary-es-us": "^2.0.0",
     "dictionary-fr": "^3.0.0",
     "dictionary-gl": "^3.0.0",
-    "docx": "^9.7.2",
+    "docx": "9.8.1",
     "echarts": "^6.1.0",
     "exceljs": "^4.4.0",
     "harper.js": "^2.10.0",
     "jszip": "^3.10.2",
     "katex": "^0.18.9",
-    "lib0": "^0.2.117",
-    "lucide": "^1.48.0",
+    "lib0": "0.2.119",
+    "lucide": "1.49.0",
     "marked": "^16.4.2",
     "mathlive": "^0.110.0",
     "pdf-lib": "^1.17.1",
-    "pdfjs-dist": "^5.7.284",
+    "pdfjs-dist": "6.3.289",
     "pptxgenjs": "^4.0.1",
     "qrcode": "^1.5.4",
     "react": "^18.3.1",
@@ -98,5 +98,20 @@
     "workbox-build": "^7.4.1",
     "workbox-window": "^7.4.1",
     "ws": "^8.21.3"
+  },
+  "overrides": {
+    "lodash-es": "4.18.1",
+    "@excalidraw/excalidraw": {
+      "nanoid": "3.3.19"
+    },
+    "@excalidraw/mermaid-to-excalidraw": {
+      "nanoid": "5.1.16"
+    },
+    "pptxgenjs": {
+      "image-size": "2.0.4"
+    },
+    "exceljs": {
+      "uuid": "11.1.1"
+    }
   }
 }

@@ -6,6 +6,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -21,6 +24,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Dependency security audit
+        run: npm audit --audit-level=high
       # The pinned draw.io release the shape libraries are generated from.
       - uses: actions/cache@v4
         with:
@@ -63,6 +68,8 @@ jobs:
           cache-dependency-path: relay/go.sum
       - run: go vet ./...
       - run: go test ./...
+      - name: Reachable Go vulnerabilities
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.8.0 ./...
 
   docker:
     name: Docker image

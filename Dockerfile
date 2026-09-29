@@ -18,7 +18,7 @@ COPY . .
 RUN npm run build
 
 # ---------- 2. Relay (cross-compiled, static) ----------
-FROM --platform=$BUILDPLATFORM golang:1.24-bookworm AS relay
+FROM --platform=$BUILDPLATFORM golang:1.26.6-bookworm AS relay
 ARG TARGETOS=linux
 ARG TARGETARCH=amd64
 ARG TARGETVARIANT=

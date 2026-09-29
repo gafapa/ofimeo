@@ -274,6 +274,11 @@ func (p *ImportProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (p *ImportProxy) logf(msg, host string, err error) {
 	if p.log != nil {
+		// net/http wraps failures with the full URL, which may contain share tokens.
+		var ue *url.Error
+		if errors.As(err, &ue) {
+			err = ue.Err
+		}
 		p.log.Info(msg, "host", host, "error", err)
 	}
 }

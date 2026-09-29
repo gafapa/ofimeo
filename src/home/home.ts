@@ -1,11 +1,11 @@
-// Home screen, in three tabs: Home (create, featured templates, recent
-// documents), Templates (the whole gallery) and My documents (the library of
-// the documents stored in this browser).
+// Home screen, in three tabs: Home (create a document, open a file),
+// Templates (the whole gallery) and My documents (the library of the
+// documents stored in this browser).
 
 import { ALL_ACCEPT, appForFile, appInfo, offeredApps, SUITE, type AppInfo } from '../apps/registry'
-import { docPath, newDocPath } from '../core/router'
+import { newDocPath } from '../core/router'
 import { isOfflineCapable, whenOfflineReady } from '../core/offline'
-import { languageSelect, locale, t, tn } from '../core/i18n'
+import { languageSelect, t, tn } from '../core/i18n'
 import * as store from '../core/store'
 import { legalFooter } from '../legal/links'
 import { accessibilityButton } from '../ui/accessibility'
@@ -110,23 +110,17 @@ export function mountHome(root: HTMLElement): void {
   )
 
   const docs = documentsSection()
-  const recent = recentSection(() => tabs.select('docs'))
   setChangeListener(() => {
     docs.refresh()
-    recent.refresh()
     renderReminder()
   })
   const reminderSlot = el('div', { class: 'home-inner reminder-slot' })
   const renderReminder = () => reminderSlot.replaceChildren(...[backupReminder()].filter((x): x is HTMLElement => !!x))
   renderReminder()
 
-  // Templates are a separate chunk (src/templates), shared by the Home and Templates tabs.
-  const featured = templatesPart((m, node) => m.mountFeaturedTemplates(node, () => tabs.select('templates')))
+  // The template gallery is a separate chunk (src/templates).
   const gallery = templatesPart((m, node) => m.mountTemplates(node))
-  const tabs = homeTabs((id) => {
-    if (id === 'home') featured.refresh()
-    if (id === 'templates') gallery.refresh()
-  })
+  const tabs = homeTabs((id) => id === 'templates' && gallery.refresh())
 
   root.replaceChildren(
     el(
@@ -158,8 +152,6 @@ export function mountHome(root: HTMLElement): void {
         ),
         moodleSlot,
         reminderSlot,
-        el('section', { class: 'home-templates home-featured' }, featured.element),
-        recent.element,
       ),
       tabs.panel('templates', el('section', { class: 'home-templates' }, gallery.element)),
       tabs.panel(
@@ -192,7 +184,6 @@ export function mountHome(root: HTMLElement): void {
   window.addEventListener('storage', (e) => {
     if (e.key !== null && !e.key.startsWith('ofimeo:')) return
     docs.refresh()
-    recent.refresh()
   })
 }
 
@@ -293,41 +284,6 @@ function homeTabs(onSelect: (id: TabId) => void): { bar: HTMLElement; panel: (id
     return node
   }
   return { bar: el('nav', { class: 'home-tabs' }, el('div', { class: 'home-inner' }, list)), panel, select }
-}
-
-const RECENT_COUNT = 5
-
-// Home tab: the last documents opened or changed in this browser, and a link to the library.
-function recentSection(showAll: () => void): { element: HTMLElement; refresh: () => void } {
-  const list = el('div', { class: 'recent-list', role: 'list' })
-  const all = el('button', { type: 'button', class: 'tpl-more' })
-  all.addEventListener('click', showAll)
-  const refresh = () => {
-    const docs = store.listDocs().filter((d) => !d.trashed)
-    all.textContent = t('All my documents ({count})', { count: docs.length })
-    all.hidden = !docs.length
-    if (!docs.length) {
-      list.replaceChildren(el('p', { class: 'empty', textContent: t('Nothing here yet. Create a document above, open a file or open a link someone shared with you.') }))
-      return
-    }
-    list.replaceChildren(
-      ...docs.slice(0, RECENT_COUNT).map((d) => {
-        const app = appInfo(d.type)
-        const row = el(
-          'a',
-          { class: 'recent-row', href: docPath(d.type, d.id, d.key), role: 'listitem' },
-          appIcon(app, 'small'),
-          el('span', { class: 'recent-title', textContent: d.title || app.untitled }),
-          el('span', { class: 'recent-date', textContent: new Date(d.updated).toLocaleDateString(locale, { day: 'numeric', month: 'short' }) }),
-        )
-        row.dataset.id = d.id
-        return row
-      }),
-    )
-  }
-  refresh()
-  const element = el('section', { class: 'home-recent-short' }, el('div', { class: 'home-inner' }, el('div', { class: 'home-section-title' }, el('h2', { textContent: t('Recent documents') }), all), list))
-  return { element, refresh }
 }
 
 function appIcon(app: AppInfo, size: 'small' | 'large'): HTMLElement {

@@ -41,7 +41,7 @@ test('school configuration: default language locked, app hidden, templates chose
   await expect(page.locator('.new-card[href*="app=draw"]')).toHaveCount(0)
   await expect(page.locator('.new-card[href*="app=writer"]')).toHaveCount(1)
   // Only the chosen templates.
-  await expect(page.locator('#home-panel-home .tpl-card')).toHaveCount(2)
+  await expect(page.locator('#home-panel-templates .tpl-card')).toHaveCount(2)
 
   // Works again without the network: the copy from the last visit applies.
   await page.unroute('**/ofimeo.config.json')

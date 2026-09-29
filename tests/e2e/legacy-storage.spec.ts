@@ -51,8 +51,6 @@ test('documents saved under the former name are migrated', async ({ page }) => {
   })
 
   await page.goto(`/${RELAYS}`)
-  // Listed on the Home tab (recent) and in the library.
-  await expect(page.locator(`.recent-row[data-id="${id}"]`)).toContainText('Saved before the rename')
   await openLibrary(page)
   await expect(page.locator(`.doc-row[data-id="${id}"]`)).toContainText('Saved before the rename')
   const names = await page.evaluate(async () => (await indexedDB.databases()).map((d) => d.name))

@@ -9,7 +9,7 @@ const articles: Articles = {
 
 ## La pantalla principal
 Tiene tres pestañas:
-- **Inicio**: haz clic en una tarjeta para crear un documento de ese tipo; **Abrir archivo…** abre archivos de Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw y PDF de tu ordenador (**Más** tiene otras formas de abrir). Debajo, cuatro plantillas y tus documentos más recientes.
+- **Inicio**: haz clic en una tarjeta para crear un documento de ese tipo; **Abrir archivo…** abre archivos de Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw y PDF de tu ordenador (**Más** tiene otras formas de abrir).
 - **Plantillas**: trabajos, fichas, mapas conceptuales, horarios, presentaciones, rúbricas, cuadernos de notas y más, por aplicación e idioma del contenido, y tus propias plantillas. Haz clic en una para obtener tu propia copia.
 - **Mis documentos**: todo lo que has creado o abierto en este navegador, con búsqueda, carpetas, etiquetas y papelera (los documentos eliminados se guardan 30 días).
 

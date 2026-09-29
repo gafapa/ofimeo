@@ -103,14 +103,13 @@ test('a new library shows a light home screen', async ({ page }) => {
   const errors = trackErrors(page)
   await page.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
   await page.goto(`/${RELAYS}`)
-  // Three tabs; Home has the apps, four featured templates and the recent documents.
+  // Three tabs; Home only creates and opens documents.
   await expect(page.getByRole('tab', { name: 'Home' })).toHaveAttribute('aria-selected', 'true')
-  await expect(page.locator('#home-panel-home .tpl-card')).toHaveCount(4)
-  await expect(page.locator('.home-recent-short .empty')).toBeVisible()
+  await expect(page.locator('#home-panel-home .new-card').first()).toBeVisible()
+  await expect(page.locator('#home-panel-home .tpl-card')).toHaveCount(0)
   await expect(page.locator('.tpl-filters')).toBeHidden()
-  // "Show all templates" opens the Templates tab: filters, language and own templates.
-  await page.getByRole('button', { name: /Show all templates/ }).click()
-  await expect(page.getByRole('tab', { name: 'Templates' })).toHaveAttribute('aria-selected', 'true')
+  // The Templates tab: filters, language and own templates.
+  await page.getByRole('tab', { name: 'Templates' }).click()
   await expect(page.locator('.tpl-filters')).toBeVisible()
   await expect(page.locator('.my-templates')).toBeVisible()
   // Arrow keys move between the tabs.
@@ -131,8 +130,7 @@ test('a new library shows a light home screen', async ({ page }) => {
   await page.locator('.new-card[href*="app=writer"]').click()
   await page.locator('.ProseMirror').first().waitFor({ timeout: 60_000 })
   await page.goto(`/${RELAYS}`)
-  await expect(page.locator('.recent-row')).toHaveCount(1)
-  await page.getByRole('button', { name: /All my documents/ }).click()
+  await openLibrary(page)
   await expect(page.locator('.home-search')).toBeVisible()
   await expect(page.locator('.docs-bare')).toHaveCount(0)
   expect(errors).toEqual([])

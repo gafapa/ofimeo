@@ -9,7 +9,7 @@ const articles: Articles = {
 
 ## Die Startseite
 Sie hat drei Reiter:
-- **Start**: Klicken Sie auf eine Karte, um ein Dokument dieser Art zu erstellen; **Datei öffnen…** öffnet Word-, OpenDocument-, Excel-, CSV-, PowerPoint-, draw.io-, Excalidraw- und PDF-Dateien von Ihrem Computer (**Mehr** bietet weitere Möglichkeiten zum Öffnen). Darunter vier Vorlagen und Ihre zuletzt verwendeten Dokumente.
+- **Start**: Klicken Sie auf eine Karte, um ein Dokument dieser Art zu erstellen; **Datei öffnen…** öffnet Word-, OpenDocument-, Excel-, CSV-, PowerPoint-, draw.io-, Excalidraw- und PDF-Dateien von Ihrem Computer (**Mehr** bietet weitere Möglichkeiten zum Öffnen).
 - **Vorlagen**: Schülerarbeiten, Arbeitsblätter, Concept-Maps, Stundenpläne, Präsentationen, Bewertungsraster, Notenbücher und mehr, nach App und Inhaltssprache, sowie Ihre eigenen Vorlagen. Ein Klick erstellt Ihre eigene Kopie.
 - **Meine Dokumente**: alles, was Sie in diesem Browser erstellt oder geöffnet haben, mit Suche, Ordnern, Schlagwörtern und Papierkorb (gelöschte Dokumente werden 30 Tage aufbewahrt).
 

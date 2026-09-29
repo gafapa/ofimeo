@@ -9,7 +9,7 @@ const articles: Articles = {
 
 ## The home screen
 It has three tabs:
-- **Home**: click a card to create a document of that kind; **Open file…** opens Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw and PDF files from your computer (**More** has other ways to open). Below, four templates and your most recent documents.
+- **Home**: click a card to create a document of that kind; **Open file…** opens Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw and PDF files from your computer (**More** has other ways to open).
 - **Templates**: reports, worksheets, concept maps, timetables, presentations, rubrics, gradebooks and more, by app and content language, and your own templates. Click one to get your own copy.
 - **My documents**: everything you created or opened in this browser, with search, folders, tags and a trash (deleted documents are kept for 30 days).
 

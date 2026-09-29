@@ -1,9 +1,8 @@
-// Template gallery on the home screen, in two forms: four featured templates
-// on the Home tab, and the whole gallery on the Templates tab (filter by app,
-// pick the content language: Spanish, Galician, English, French, German; own
-// templates). Click a card to create and open the document. Templates tied to
-// Spanish regulations exist in Spanish and Galician only and are hidden for
-// the other content languages.
+// Template gallery (Templates tab of the home screen): filter by app, pick the
+// content language (Spanish, Galician, English, French, German), own templates.
+// Click a card to create and open the document. Templates tied to Spanish
+// regulations exist in Spanish and Galician only and are hidden for the other
+// content languages.
 
 import { appInfo } from '../apps/registry'
 import { language, t } from '../core/i18n'
@@ -19,7 +18,6 @@ import './gallery.css'
 const TEMPLATES = CATALOG.filter((tpl) => templateAllowed(tpl.id) && !appHidden(tpl.app))
 
 const LANG_KEY = 'wo-template-lang'
-const FEATURED_COUNT = 4
 // Shown first: a varied set (a report, a presentation, a spreadsheet, a diagram).
 const FEATURED = ['report', 'oral-presentation', 'timetable', 'concept-map']
 const featuredFirst = (list: Template[]) => [...list].sort((a, b) => rank(a) - rank(b))
@@ -88,24 +86,6 @@ function card(tpl: Template, lang: Lang): HTMLElement {
 export interface Gallery {
   // Renders again (the content language may have changed on another tab).
   refresh: () => void
-}
-
-// Home tab: four featured templates in the content language, and a link to the whole gallery.
-export function mountFeaturedTemplates(container: HTMLElement, showAll: () => void): Gallery {
-  const grid = el('div', { class: 'tpl-grid', role: 'list' })
-  grid.setAttribute('aria-label', t('Templates'))
-  const all = el('button', { type: 'button', class: 'tpl-more tpl-all' })
-  all.addEventListener('click', showAll)
-  const render = () => {
-    const lang = currentLang()
-    const list = featuredFirst(TEMPLATES.filter((tpl) => tpl.langs.includes(lang)))
-    grid.replaceChildren(...list.slice(0, FEATURED_COUNT).map((tpl) => card(tpl, lang)))
-    all.textContent = t('Show all templates ({count})', { count: list.length })
-    container.hidden = !list.length
-  }
-  container.replaceChildren(el('div', { class: 'home-section-title' }, el('h2', { textContent: t('Templates') }), all), grid)
-  render()
-  return { refresh: render }
 }
 
 // Templates tab: every template, filtered by app, in the chosen content language, and own templates.

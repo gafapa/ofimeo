@@ -204,15 +204,3 @@ body:has(.home) { overflow: auto; }
 .home-tab[aria-selected='true'] { color: var(--accent); border-bottom-color: var(--accent); }
 .home-panel[hidden] { display: none; }
 .home-panel .home-new { padding-top: 4px; }
-.home-featured { border-bottom: 0; }
-.home-section-title .tpl-more { margin: 0; }
-
-/* Recent documents on the Home tab. */
-.home-recent-short { padding: 8px 0 28px; }
-.recent-list { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--radius-l); background: var(--surface); overflow: hidden; }
-.recent-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 14px; color: var(--text); text-decoration: none; }
-.recent-row + .recent-row { border-top: 1px solid var(--divider); }
-.recent-row:hover, .recent-row:focus-visible { background: var(--hover); }
-.recent-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
-.recent-date { color: var(--muted); font-size: var(--fs-m); }
-.recent-list .empty { margin: 0; text-align: center; }

@@ -9,7 +9,7 @@ const articles: Articles = {
 
 ## A pantalla principal
 Ten tres lapelas:
-- **Inicio**: fai clic nunha tarxeta para crear un documento dese tipo; **Abrir ficheiro…** abre ficheiros de Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw e PDF do teu ordenador (**Máis** ten outras formas de abrir). Debaixo, catro modelos e os teus documentos máis recentes.
+- **Inicio**: fai clic nunha tarxeta para crear un documento dese tipo; **Abrir ficheiro…** abre ficheiros de Word, OpenDocument, Excel, CSV, PowerPoint, draw.io, Excalidraw e PDF do teu ordenador (**Máis** ten outras formas de abrir).
 - **Modelos**: traballos, fichas, mapas conceptuais, horarios, presentacións, rúbricas, cadernos de notas e máis, por aplicación e idioma do contido, e os teus propios modelos. Fai clic nun para obter a túa propia copia.
 - **Os meus documentos**: todo o que creaches ou abriches neste navegador, con busca, cartafoles, etiquetas e papeleira (os documentos eliminados gárdanse 30 días).
 

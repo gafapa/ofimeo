@@ -8,7 +8,7 @@
 #   docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t ofimeo .
 
 # ---------- 1. Web app (same for every architecture) ----------
-FROM --platform=$BUILDPLATFORM node:22-bookworm-slim AS web
+FROM --platform=$BUILDPLATFORM node:26-bookworm-slim AS web
 WORKDIR /src
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund

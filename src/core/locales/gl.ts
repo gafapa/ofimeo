@@ -2812,6 +2812,12 @@ const gl: Record<string, string> = {
   'All my documents ({count})': 'Todos os meus documentos ({count})',
   'Home screen sections': 'Seccións da pantalla principal',
   'No documents yet. Create one on the Home tab, open a file or open a link someone shared with you.': 'Aínda non hai documentos. Crea un na lapela Inicio, abre un ficheiro ou abre unha ligazón que che compartisen.',
+  'Remember this connection on this device': 'Lembrar esta conexión neste dispositivo',
+  'Add account': 'Engadir conta',
+  'Update available': 'Actualización dispoñible',
+  'A new version of Ofimeo is ready. Update from the home screen when you have finished editing.': 'Hai unha nova versión de Ofimeo. Actualiza desde o inicio cando remates de editar.',
+  'Update now': 'Actualizar agora',
+  'Later': 'Máis tarde',
 }
 
 export default gl

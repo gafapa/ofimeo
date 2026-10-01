@@ -2,7 +2,7 @@
 
 ## Setup
 
-Requirements: Node 22.13 or later, npm; Go 1.26.6 or later for the relay; Chromium for e2e tests
+Requirements: Node 24 or later, npm; Go 1.27.1 or later for the relay; Chromium for e2e tests
 (`npx playwright install chromium` on a fresh machine).
 
 ```bash

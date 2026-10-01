@@ -10,6 +10,7 @@
 import { t } from './i18n'
 
 const ACCOUNTS_KEY = 'ofimeo:nextcloud'
+const ACTIVE_KEY = 'ofimeo:nextcloud-active'
 
 export interface NcAccount {
   id: string
@@ -25,17 +26,33 @@ export interface NcAccount {
   viaLoginFlow?: boolean
   // Minutes between automatic saves of linked documents; 0 = off.
   autosave?: number
+  remember?: boolean
 }
 
 // ---------- Accounts (this browser only) ----------
 
-export function listAccounts(): NcAccount[] {
+let memoryAccounts: NcAccount[] | undefined
+
+function readAccounts(persistent: boolean): NcAccount[] {
   try {
-    const list = JSON.parse(localStorage.getItem(ACCOUNTS_KEY) || '[]') as NcAccount[]
-    return Array.isArray(list) ? list : []
+    const storage = persistent ? localStorage : sessionStorage
+    const value: unknown = JSON.parse(storage.getItem(ACCOUNTS_KEY) || '[]')
+    return Array.isArray(value) ? value.filter((a): a is NcAccount => !!a && typeof a.id === 'string' && typeof a.server === 'string' && typeof a.appPassword === 'string') : []
   } catch {
     return []
   }
+}
+
+export function listAccounts(): NcAccount[] {
+  if (memoryAccounts) return memoryAccounts
+  let active: string | null = null
+  try {
+    active = sessionStorage.getItem(ACTIVE_KEY)
+  } catch {
+    // Account selection is optional when storage is unavailable.
+  }
+  const accounts = new Map([...readAccounts(true), ...readAccounts(false)].map((a) => [a.id, a]))
+  return [...accounts.values()].sort((a, b) => Number(b.id === active) - Number(a.id === active))
 }
 
 export const getAccount = (id?: string): NcAccount | undefined => listAccounts().find((a) => a.id === id)
@@ -43,16 +60,23 @@ export const currentAccount = (): NcAccount | undefined => listAccounts()[0]
 
 export function saveAccount(account: NcAccount): void {
   const others = listAccounts().filter((a) => a.id !== account.id)
+  memoryAccounts = [account, ...others]
   try {
-    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify([account, ...others]))
+    sessionStorage.setItem(ACTIVE_KEY, account.id)
+    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(memoryAccounts.filter((a) => a.remember !== false)))
+    sessionStorage.setItem(ACCOUNTS_KEY, JSON.stringify(memoryAccounts.filter((a) => a.remember === false)))
+    memoryAccounts = undefined
   } catch {
     // Storage unavailable (private mode): the account lasts for this page only.
   }
 }
 
 export function removeAccount(id: string): void {
+  memoryAccounts = listAccounts().filter((a) => a.id !== id)
   try {
-    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(listAccounts().filter((a) => a.id !== id)))
+    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(memoryAccounts.filter((a) => a.remember !== false)))
+    sessionStorage.setItem(ACCOUNTS_KEY, JSON.stringify(memoryAccounts.filter((a) => a.remember === false)))
+    memoryAccounts = undefined
   } catch {
     // ignore
   }

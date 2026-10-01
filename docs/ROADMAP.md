@@ -1,6 +1,6 @@
 # Roadmap
 
-State as of September 2026 and the path forward. Decisions behind the current
+State as of October 2026 and the path forward. Decisions behind the current
 design are in [DECISIONS.md](DECISIONS.md); feature limits are in README ›
 Limitations.
 
@@ -10,19 +10,23 @@ Eight apps (writer, sheet, draw, diagram, slides, forms, PDF, notebook) on a
 shared frame, UI in en/es/gl/fr/de, P2P collaboration with signed permission
 links, store-and-forward sync, Nextcloud, Moodle, WebMCP, school config and
 Docker deployment. CI: type check, spelling rule tests, i18n key check, build,
-~80 Playwright tests, relay Go tests, Docker image build.
+87 Playwright tests, permission/storage regressions, relay Go tests, Docker image build.
 
 ## Owner actions (not code)
 
-- [ ] Merge the open pull request to `main`.
-- [ ] Enable GitHub Pages (*Settings → Pages → Source: GitHub Actions*).
-- [ ] Choose a project licence and add `LICENSE` (none yet; README, legal
-      pages and notices assume one will be chosen).
+- [x] Publish the reviewed application on `main`.
+- [x] Enable GitHub Pages (*Settings → Pages → Source: GitHub Actions*).
+- [x] Choose Apache-2.0 and add `LICENSE` and `NOTICE`.
 - [ ] Legal review of `docs/legal/` and `legal.config.json`.
 - [ ] Tag `relay-v*` to publish relay binaries.
-- [ ] Optionally rename the GitHub repository to `ofimeo`.
+- [x] Rename the GitHub repository to `ofimeo`.
 
-## Verify with real services (only mocks were used)
+## Verify with real services
+
+Read-only server checks confirmed Moodle Aula and Nextcloud are healthy.
+Moodle login and REST endpoints allow CORS. Nextcloud WebDAV still needs the
+prepared origin-restricted Apache configuration. Authenticated workflows below
+remain unverified; see [the October review](PROJECT_REVIEW_2026-10-02.md).
 
 - [ ] Nextcloud: sign-in, open/save, share-link upload, store-forward folder.
 - [ ] Moodle: direct CORS on `login/token.php` and `webservice/rest/server.php`
@@ -41,7 +45,7 @@ Docker deployment. CI: type check, spelling rule tests, i18n key check, build,
    covers it for now. Decide whether a lighter "copy for each student + inbox"
    is still wanted for schools without Moodle.
 3. **PDF**: CJK/emoji fonts in export (currently "?"), fillable PDF form
-   fields, fix `standardFontDataUrl` warning from pdf.js.
+   fields. Standard PDF fonts and CMaps now load from the app origin.
 4. **Sheet**: right-click spelling suggestions in the cell editor; accessible
    view support for merged cells and hidden rows; "warn before editing" ranges
    and linked chart ranges should follow row/column inserts.
@@ -49,10 +53,10 @@ Docker deployment. CI: type check, spelling rule tests, i18n key check, build,
 6. **Math graphs**: in Draw; intersections of general curves; animation in
    documents.
 7. **Notebook**: ink anchored to text; OneNote import.
-8. **Store-and-forward**: clean up local sync state when a document is
-   deleted; guidance for schools exposing the relay publicly.
-9. **Nextcloud**: several accounts per browser (the list is stored, but only
-   the first is used).
+8. **Store-and-forward**: local sync state is now removed on permanent
+   deletion. Public TURN destination restrictions are documented in the relay guide.
+9. **Nextcloud**: account selection and session-only connections are implemented;
+   verify them against real school deployments.
 10. **Performance**: sheet bundle size, cold-start time on low-end
    Chromebooks.
 
@@ -69,3 +73,8 @@ Read [CONTRIBUTING.md](../CONTRIBUTING.md) for setup, tests and the i18n
 workflow. The September 2026 review reports in
 [design/review-2026-09/](design/review-2026-09/) list every finding and its
 fix; use them as a checklist for regressions.
+
+## October maintenance
+
+See [PROJECT_REVIEW_2026-10-02.md](PROJECT_REVIEW_2026-10-02.md) for coordinated
+dependency upgrades, security fixes, regression coverage and remaining limits.

@@ -207,6 +207,7 @@ export async function openMoodleDialog(): Promise<MoodleAccount | null> {
     site.readOnly = school.locked
     const user = el('input', { class: 'field', autocomplete: 'username', autocapitalize: 'none', spellcheck: false })
     const password = el('input', { class: 'field', type: 'password', autocomplete: 'current-password' })
+    const remember = el('input', { type: 'checkbox', checked: false })
     const status = attrs(el('div', { class: 'md-status' }), { role: 'status', 'aria-live': 'polite' })
     const ssoNote = el('p', { class: 'md-sso', hidden: true, textContent: ssoText() })
     const connect = el('button', { type: 'submit', class: 'md-btn primary', textContent: t('Connect') })
@@ -217,6 +218,7 @@ export async function openMoodleDialog(): Promise<MoodleAccount | null> {
       ssoNote,
       el('label', { class: 'field-label' }, t('Username'), user),
       el('label', { class: 'field-label' }, t('Password'), password),
+      el('label', {}, remember, ' ', t('Remember this connection on this device')),
       el('p', { class: 'hint', textContent: t('Your password is sent only to Moodle, once, to get a key for this browser. It is not saved.') }),
       el('div', { class: 'md-row-buttons' }, connect),
       status,
@@ -244,7 +246,7 @@ export async function openMoodleDialog(): Promise<MoodleAccount | null> {
       connect.disabled = true
       status.textContent = t('Connecting…')
       try {
-        const account = await md.connect(site.value, user.value, password.value, { confirmRelay })
+        const account = await md.connect(site.value, user.value, password.value, { confirmRelay, remember: remember.checked })
         md.writeLocal('ofimeo:moodle-site', account.site)
         password.value = ''
         toast(t('Connected to Moodle as {name}', { name: account.fullName }))

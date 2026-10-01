@@ -24,7 +24,7 @@ export default defineConfig({
     // Installable web app that works offline. The suite and every app are
     // precached; CJK handwriting fonts are cached the first time they are used.
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       injectRegister: false,
       manifest: {
         name: 'Ofimeo',
@@ -79,7 +79,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,woff,woff2,svg,png,ico,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,woff,woff2,svg,png,ico,webmanifest}', 'pdfjs/standard_fonts/*'],
         globIgnores: ['excalidraw/fonts/Xiaolai/**', 'diagram-libs/**'],
         additionalManifestEntries: libsRevision ? [{ url: 'diagram-libs/catalog.json', revision: libsRevision }] : [],
         // The spreadsheet engine is a single large chunk.
@@ -88,8 +88,13 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         // Take control right away, so the first visit already works offline afterwards.
         clientsClaim: true,
-        skipWaiting: true,
+        skipWaiting: false,
         runtimeCaching: [
+          {
+            urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.includes('/pdfjs/cmaps/'),
+            handler: 'CacheFirst',
+            options: { cacheName: 'pdf-cmaps', cacheableResponse: { statuses: [200] }, expiration: { maxEntries: 32 } },
+          },
           {
             // School configuration (src/core/school-config.ts) and its files (logo): replaced
             // on the server after the build, so not precached; the last copy is used offline.

@@ -8,7 +8,7 @@ import { createHash } from 'node:crypto'
 import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs'
 import { createServer, type Server } from 'node:http'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 
 const RELAY_PORT = Number(process.env.SYNC_RELAY_PORT || 7791)
 const RELAY = `https://127.0.0.1:${RELAY_PORT}`
@@ -64,7 +64,7 @@ test.describe('store-and-forward through Ofimeo Relay', () => {
     test.skip(!hasGo(), 'Go is not installed')
     const work = mkdtempSync(join(tmpdir(), 'ofimeo-sync-'))
     dataDir = join(work, 'data')
-    const bin = join(work, 'ofimeo-relay')
+    const bin = join(work, process.platform === 'win32' ? 'ofimeo-relay.exe' : 'ofimeo-relay')
     execFileSync('go', ['build', '-o', bin, '.'], { cwd: join(process.cwd(), 'relay'), stdio: 'inherit' })
     relay = spawn(bin, ['run', '--data', dataDir, '--https-port', String(RELAY_PORT), '--http-port', '-1', '--turn-port', String(RELAY_PORT + 10000), '--turn-tls-port', '-1', '--store-default-on'], { stdio: 'ignore' })
     for (let i = 0; i < 100; i++) {
@@ -78,9 +78,17 @@ test.describe('store-and-forward through Ofimeo Relay', () => {
     throw new Error('relay did not start')
   })
 
-  test.afterAll(() => {
-    relay?.kill()
-    if (dataDir) rmSync(join(dataDir, '..'), { recursive: true, force: true })
+  test.afterAll(async () => {
+    if (relay && relay.exitCode === null && relay.signalCode === null) {
+      const closed = new Promise<void>((resolve) => relay!.once('close', () => resolve()))
+      relay.kill()
+      await closed
+    }
+    if (dataDir) {
+      const target = resolve(dataDir, '..')
+      if (!target.startsWith(resolve(tmpdir(), 'ofimeo-sync-'))) throw new Error('Unexpected sync test directory')
+      rmSync(target, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })
+    }
   })
 
   test('people never online together converge; view links read but cannot write', async ({ browser }) => {

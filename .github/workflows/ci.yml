@@ -18,16 +18,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
       - run: npm ci
       - name: Dependency security audit
         run: npm audit --audit-level=high
       # The pinned draw.io release the shape libraries are generated from.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: node_modules/.cache/draw-*.war
           key: drawio-war-${{ hashFiles('scripts/drawio.json') }}
@@ -36,7 +36,7 @@ jobs:
         run: node scripts/third-party-notices.mjs --check
       - name: Type check
         run: npm run typecheck
-      - name: Unit tests (grammar rules)
+      - name: Unit tests (grammar, permissions and storage)
         run: npm run test:unit
       - name: Build
         run: npm run build
@@ -44,7 +44,7 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: End-to-end tests
         run: npm run test:e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-report
@@ -61,8 +61,8 @@ jobs:
       run:
         working-directory: relay
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: relay/go.mod
           cache-dependency-path: relay/go.sum
@@ -76,7 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # Built only (never pushed), to catch breakage of the Dockerfile.
       - name: Build the image
         run: docker build --build-arg VERSION=ci -t ofimeo:ci .

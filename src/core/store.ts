@@ -1,7 +1,7 @@
 // Local, per-browser bookkeeping: document index and user identity.
 
 import { clearDocument } from 'y-indexeddb'
-import { kvDelete } from './idb'
+import { kvDelete, kvDeleteMatching } from './idb'
 import type { Access, LinkKeys } from './keys'
 import { t } from './i18n'
 
@@ -140,6 +140,7 @@ export async function deleteDoc(id: string): Promise<void> {
   if (entry) await clearDocument(privateDbName(entry.type, id))
   await kvDelete(signedLogKey(id, 'yjs'))
   await kvDelete(signedLogKey(id, 'cmt'))
+  await kvDeleteMatching((key) => key.startsWith('sf:') && (key.endsWith(`:${id}:yjs`) || key.endsWith(`:${id}:cmt`)))
   await import('./library-search').then((m) => m.forgetText(id)).catch(() => undefined)
 }
 

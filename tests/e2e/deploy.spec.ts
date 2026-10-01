@@ -140,6 +140,13 @@ test('the recommended security headers do not break the app', async ({ page, bas
     await page.waitForTimeout(1500)
     expect(await violations(), app).toEqual([])
   }
+  await page.goto('/legal/')
+  await expect(page).toHaveURL(/\/legal\/en\/index\.html$/)
+  await expect(page.getByRole('heading', { name: 'Legal information' }).first()).toBeVisible()
+  expect(await violations()).toEqual([])
+  await page.goto('/legal/licenses.html')
+  await expect(page.getByRole('heading', { name: 'Third-party notices' }).first()).toBeVisible()
+  expect(await violations()).toEqual([])
   expect(errors).toEqual([])
 })
 

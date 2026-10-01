@@ -203,7 +203,7 @@ What matters:
   paths to `index.html` (routes are in the `#` part of the address); a missing
   `ofimeo.config.json` must be a real 404 (or the default file of the build).
 - **Content-Security-Policy** (tested by the end-to-end tests):
-  `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' data: blob: https: wss: ws:; worker-src 'self' blob:; media-src 'self' data: blob:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'`.
+  `default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' data: blob: https: wss: ws:; worker-src 'self' blob:; media-src 'self' data: blob:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'`.
   `connect-src` must allow the Nostr relays, the school relay and Nextcloud;
   narrow `https: wss:` to your own servers when `features.publicRelays` is false.
 - **No COOP/COEP**: cross-origin isolation is not needed and would break

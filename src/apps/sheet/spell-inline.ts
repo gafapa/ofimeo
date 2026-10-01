@@ -88,7 +88,7 @@ export function sheetInlineSpelling(univer: Univer, language: DocLanguage): void
     const paragraphs: Paragraph[] = lines.map((line) => ({ text: line, lang: v.lang, variant: v.tag, context: 'table' }))
     const id = ++version
     const results = await checkParagraphs(paragraphs, { spelling: s.spelling, grammar: s.grammar, optionalStyle: s.optionalStyle })
-    if (id !== version) return
+    if (id !== version || !editing()) return
     if (editorText() !== text) return schedule(150)
     found = []
     let offset = 0
@@ -100,8 +100,10 @@ export function sheetInlineSpelling(univer: Univer, language: DocLanguage): void
       }
       offset += lines[i].length + 1
     })
-    lastText = text
+    // Pending dictionary results must never be cached as a completed check.
+    lastText = results.some((r) => r.pending) ? '' : text
     paint()
+    if (results.some((r) => r.pending)) schedule(500)
   }
 
   const schedule = (delay = 300) => {

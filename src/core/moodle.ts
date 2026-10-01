@@ -147,6 +147,7 @@ interface Target {
 }
 
 interface CallOptions {
+  remember?: boolean
   confirmRelay?: ConfirmRelay
   // File downloads: the pluginfile URL.
   fileUrl?: string
@@ -349,6 +350,7 @@ export async function connect(siteInput: string, username: string, password: str
     transport: target.transport ?? 'direct',
     maxUpload: info.usermaxuploadfilesize && info.usermaxuploadfilesize > 0 ? info.usermaxuploadfilesize : undefined,
     connectedAt: Date.now(),
+    remember: options.remember,
   }
   saveMoodleAccount(account)
   return account

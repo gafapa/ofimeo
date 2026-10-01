@@ -15,6 +15,7 @@ export interface MoodleAccount {
   // The person's upload limit (bytes), from the site information.
   maxUpload?: number
   connectedAt: number
+  remember?: boolean
 }
 
 export interface MoodleTaskFile {
@@ -70,6 +71,14 @@ export interface TaskCache {
 const ACCOUNT_KEY = 'ofimeo:moodle'
 const TASKS_KEY = 'ofimeo:moodle-tasks'
 
+function readSession(key: string): string | null {
+  try {
+    return sessionStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
 export function readLocal(key: string): string | null {
   try {
     return localStorage.getItem(key)
@@ -92,7 +101,7 @@ let memoryAccount: MoodleAccount | null | undefined
 export function loadMoodleAccount(): MoodleAccount | null {
   if (memoryAccount !== undefined) return memoryAccount
   try {
-    const value = JSON.parse(readLocal(ACCOUNT_KEY) || 'null') as MoodleAccount | null
+    const value = JSON.parse(readSession(ACCOUNT_KEY) || readLocal(ACCOUNT_KEY) || 'null') as MoodleAccount | null
     return value?.site && value.token ? value : null
   } catch {
     return null
@@ -100,14 +109,25 @@ export function loadMoodleAccount(): MoodleAccount | null {
 }
 
 export function saveMoodleAccount(account: MoodleAccount): void {
-  writeLocal(ACCOUNT_KEY, JSON.stringify(account))
-  memoryAccount = readLocal(ACCOUNT_KEY) ? undefined : account
+  memoryAccount = account
+  writeLocal(ACCOUNT_KEY, account.remember === false ? null : JSON.stringify(account))
+  try {
+    if (account.remember === false) sessionStorage.setItem(ACCOUNT_KEY, JSON.stringify(account))
+    else sessionStorage.removeItem(ACCOUNT_KEY)
+  } catch {
+    // Storage unavailable: keep the connection for this page only.
+  }
   notify()
 }
 
 export function clearMoodleAccount(): void {
   writeLocal(ACCOUNT_KEY, null)
-  memoryAccount = undefined
+  try {
+    sessionStorage.removeItem(ACCOUNT_KEY)
+  } catch {
+    // Storage unavailable.
+  }
+  memoryAccount = null
   notify()
 }
 
@@ -115,7 +135,7 @@ export const hasMoodleAccount = (): boolean => !!loadMoodleAccount()
 
 export function loadTaskCache(): TaskCache | null {
   try {
-    const cache = JSON.parse(readLocal(TASKS_KEY) || 'null') as TaskCache | null
+    const cache = JSON.parse(readSession(TASKS_KEY) || readLocal(TASKS_KEY) || 'null') as TaskCache | null
     const account = loadMoodleAccount()
     return cache && account && cache.site === account.site && cache.userId === account.userId && Array.isArray(cache.tasks) ? cache : null
   } catch {
@@ -124,7 +144,15 @@ export function loadTaskCache(): TaskCache | null {
 }
 
 export function saveTaskCache(cache: TaskCache | null): void {
-  writeLocal(TASKS_KEY, cache ? JSON.stringify(cache) : null)
+  const value = cache ? JSON.stringify(cache) : null
+  const temporary = loadMoodleAccount()?.remember === false
+  writeLocal(TASKS_KEY, temporary ? null : value)
+  try {
+    if (temporary && value) sessionStorage.setItem(TASKS_KEY, value)
+    else sessionStorage.removeItem(TASKS_KEY)
+  } catch {
+    // Task caching is optional.
+  }
   notify()
 }
 

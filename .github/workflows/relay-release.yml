@@ -15,18 +15,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: relay/go.mod
           cache-dependency-path: relay/go.sum
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
       - run: npm ci
       # The pinned draw.io release the shape libraries are generated from.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: node_modules/.cache/draw-*.war
           key: drawio-war-${{ hashFiles('scripts/drawio.json') }}
@@ -44,7 +44,7 @@ jobs:
           VERSION="$VERSION" FULL=1 ./build.sh
           cp webapp.zip dist/ofimeo-app.zip
           cd dist && sha256sum * > SHA256SUMS.txt
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ofimeo-relay
           path: relay/dist/

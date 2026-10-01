@@ -257,5 +257,11 @@ export function showQuickStart(session: Session, focus = true): void {
   // Phones: stack above the storage notice of a first document (both sit at the bottom).
   const notice = document.querySelector<HTMLElement>('.persist-notice')
   if (notice && innerWidth <= 600) node.style.bottom = `${notice.offsetHeight + 28}px`
-  if (focus) ok.focus()
+  if (focus) {
+    ok.focus()
+    // The canvas editor may restore its focus after a menu command finishes.
+    requestAnimationFrame(() => {
+      if (node.isConnected && !document.querySelector('dialog[open]')) ok.focus()
+    })
+  }
 }

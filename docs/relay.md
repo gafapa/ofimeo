@@ -369,9 +369,13 @@ See [moodle.md](moodle.md).
   convention (username `<expiry>:ofimeo`, password HMAC-SHA1 with the secret),
   expire after `credential_ttl`, and are handed out only by `/ofimeo/config`,
   to devices allowed to use the relay.
-- **What TURN may reach**: relayed traffic may only go to devices on the local
-  network (or anywhere with `--public`), never to the relay machine's loopback
-  addresses.
+- **What TURN may reach**: local mode permits local network peers. Public mode
+  blocks private network destinations by default. Set `allow_private_peers: true`
+  in `ofimeo-relay.json` only when public clients must reach LAN peers. Link-local
+  addresses (including cloud metadata), unspecified addresses, multicast and
+  loopback are blocked. The relay's own advertised address remains allowed for
+  connections between its TURN allocations. Apply firewall rules to restrict
+  relay traffic to the configured UDP allocation ports.
 - **Limits**: maximum browsers, subscriptions per browser, event size, events
   per minute per browser, and TURN allocations in total and per device.
 - **Nothing readable is stored**: signaling messages are checked (id and

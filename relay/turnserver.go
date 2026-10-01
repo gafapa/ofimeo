@@ -95,14 +95,19 @@ func (t *TURNServer) clientAllowed(src net.Addr) bool {
 }
 
 // permit decides which peers an allocation may send to: devices on the local
-// network (and this relay's own address), or anyone in public mode. Loopback
-// and other special addresses are never allowed, so the relay cannot be used
-// to reach services on this machine.
+// network (and this relay's own address), or Internet peers in public mode.
+// Public relays require explicit permission to reach private networks.
 func (t *TURNServer) permit(_ net.Addr, peer net.IP) bool {
+	if peer == nil {
+		return false
+	}
 	if peer.Equal(t.relayIP) {
 		return true
 	}
-	if peer.IsLoopback() || peer.IsUnspecified() || peer.IsMulticast() || peer.IsLinkLocalMulticast() {
+	if peer.IsLoopback() || peer.IsUnspecified() || peer.IsMulticast() || peer.IsLinkLocalUnicast() {
+		return false
+	}
+	if t.cfg.Public && peer.IsPrivate() && !t.cfg.AllowPrivatePeers {
 		return false
 	}
 	return t.cfg.Public || isLocalIP(peer)

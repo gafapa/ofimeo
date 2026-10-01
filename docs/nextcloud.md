@@ -7,6 +7,12 @@ Nextcloud (WebDAV and a few OCS / login endpoints).
 
 ## For users
 
+New connections last for the browser tab's session by default. Select **Remember
+this connection on this device** only on a trusted personal device to keep the
+app password across browser sessions. Existing saved accounts remain available.
+The account dialog offers **Accounts** and **Add account** to switch between
+connections. Linked documents continue to use the account they were saved with.
+
 - **Connect**: home screen → **Nextcloud**, or *File → Nextcloud account…* in
   any app. Enter the address you open Nextcloud with (e.g.
   `https://cloud.school.org`), then either
@@ -65,9 +71,18 @@ shared with the people you work with. Nextcloud only sees encrypted data. See
 
 ## For administrators: allowing the browser to connect (CORS)
 
+The Apache image used at `drive.gallego.top` can use
+[nextcloud-apache-cors.conf](../deploy/nextcloud-apache-cors.conf). The example
+allows only `https://ofimeo.com` and `https://gafapa.github.io`; change those
+exact origins for another deployment. Mount the file read-only at
+`/etc/apache2/conf-enabled/ofimeo-cors.conf`, verify it with `apache2ctl -t`,
+then recreate only the Nextcloud application container. It covers WebDAV,
+file-drop uploads, app-password revocation and Login Flow v2, including error
+responses and OPTIONS preflight. It does not enable cookie credentials.
+
 Browsers only let a page talk to another site when that site allows it
-(CORS). Nextcloud does not allow other sites by default, so unless Words
-Online is served from the same address as Nextcloud, connecting fails and the
+(CORS). Nextcloud does not allow other sites by default, so unless Ofimeo
+is served from the same address as Nextcloud, connecting fails and the
 connection test shows *"Your Nextcloud does not allow this site to connect to
 it (CORS)"* with these options. (The test tells this apart from a wrong
 address, a server that cannot be reached, a page on https talking to plain

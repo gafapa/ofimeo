@@ -1761,6 +1761,10 @@ Notebook, Chat); these are the general ones.
 
 ## Credits
 
+Ofimeo's original code is licensed under [Apache-2.0](LICENSE).
+Third-party components retain their own licenses and notices; see
+[NOTICE](NOTICE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
 - The "More shapes" libraries are draw.io's (JGraph Ltd / draw.io AG): the
   code and palettes are Apache-2.0; the stencils and icons carry an extra
   restriction (they may not be used in, or distributed for, Atlassian products

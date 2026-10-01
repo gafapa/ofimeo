@@ -8,7 +8,7 @@
 #   docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t ofimeo .
 
 # ---------- 1. Web app (same for every architecture) ----------
-FROM --platform=$BUILDPLATFORM node:22-bookworm-slim AS web
+FROM --platform=$BUILDPLATFORM node:24-bookworm-slim AS web
 WORKDIR /src
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
@@ -18,7 +18,7 @@ COPY . .
 RUN npm run build
 
 # ---------- 2. Relay (cross-compiled, static) ----------
-FROM --platform=$BUILDPLATFORM golang:1.26.6-bookworm AS relay
+FROM --platform=$BUILDPLATFORM golang:1.27.1-bookworm AS relay
 ARG TARGETOS=linux
 ARG TARGETARCH=amd64
 ARG TARGETVARIANT=

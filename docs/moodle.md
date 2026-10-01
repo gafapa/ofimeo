@@ -7,8 +7,14 @@ not a closed workflow: teachers keep using Moodle as usual (creating
 assignments, grading, feedback), and nothing changes in how submissions look to
 them.
 
-Ofimeo uses the same web services as the official Moodle app, so it works
-with any Moodle where the Moodle app works.
+Ofimeo uses the same web services as the official Moodle app. Browser access
+also requires CORS or a configured school relay; native-app SSO callbacks are
+not implemented in Ofimeo.
+
+New connections and their task caches last for the browser tab's session by
+default. Select **Remember this connection on this device** to persist the
+token on a trusted personal device. Disconnect removes both persistent and
+session credentials and the task cache; the password is never saved.
 
 ## 1. Turn on the Moodle app's web services
 

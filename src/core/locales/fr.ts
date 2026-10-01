@@ -2812,6 +2812,12 @@ const fr: Record<string, string> = {
   'All my documents ({count})': 'Tous mes documents ({count})',
   'Home screen sections': 'Sections de l’écran d’accueil',
   'No documents yet. Create one on the Home tab, open a file or open a link someone shared with you.': 'Aucun document pour l’instant. Créez-en un dans l’onglet Accueil, ouvrez un fichier ou un lien que l’on vous a partagé.',
+  'Remember this connection on this device': 'Mémoriser cette connexion sur cet appareil',
+  'Add account': 'Ajouter un compte',
+  'Update available': 'Mise à jour disponible',
+  'A new version of Ofimeo is ready. Update from the home screen when you have finished editing.': 'Une nouvelle version d’Ofimeo est prête. Effectuez la mise à jour depuis l’accueil après avoir terminé vos modifications.',
+  'Update now': 'Mettre à jour maintenant',
+  'Later': 'Plus tard',
 }
 
 export default fr

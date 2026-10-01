@@ -5,7 +5,7 @@ import { execFileSync, spawn, type ChildProcess } from 'node:child_process'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { connect } from 'node:net'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { expect, test, type Page } from '@playwright/test'
 import { APP_READY, RELAYS, uniqueDoc } from './helpers'
 
@@ -60,13 +60,14 @@ const state = async () => (await (await fetch(`${MOCK}/__state`)).json()) as {
   submissions: Record<string, { status: string }>
 }
 
-async function connectMoodle(page: Page, site: string): Promise<void> {
+async function connectMoodle(page: Page, site: string, remember = false): Promise<void> {
   await page.locator('.home-accounts').click()
   await page.getByRole('menuitem', { name: 'Moodle account…' }).click()
   const dialog = page.locator('dialog.dlg')
   await dialog.getByLabel('Moodle address').fill(site)
   await dialog.getByLabel('Username').fill('student')
   await dialog.getByLabel('Password').fill('Secret-1')
+  if (remember) await dialog.getByLabel('Remember this connection on this device').check()
   await dialog.getByRole('button', { name: 'Connect', exact: true }).click()
 }
 
@@ -78,10 +79,11 @@ test('connect, see the tasks, hand in a document as PDF, disconnect', async ({ p
   const dialog = page.locator('dialog.dlg')
   await expect(dialog.locator('.md-who')).toContainText('Ana García')
   // Only the token and site information are kept, never the password.
-  const saved = await page.evaluate(() => JSON.stringify({ ...localStorage }))
+  const saved = await page.evaluate(() => JSON.stringify({ ...sessionStorage }))
   expect(saved).toContain('tok-cors')
   expect(saved).not.toContain('Secret-1')
-  expect(JSON.parse(await page.evaluate(() => localStorage.getItem('ofimeo:moodle') ?? '{}')).site).toBe(`${MOCK}/cors`)
+  expect(await page.evaluate(() => localStorage.getItem('ofimeo:moodle'))).toBeNull()
+  expect(JSON.parse(await page.evaluate(() => sessionStorage.getItem('ofimeo:moodle') ?? '{}')).site).toBe(`${MOCK}/cors`)
   await dialog.getByRole('button', { name: 'Close' }).click()
 
   // Task list: pending ones first (by due date), then handed in / graded.
@@ -145,9 +147,19 @@ test('connect, see the tasks, hand in a document as PDF, disconnect', async ({ p
   await page.locator('dialog.dlg').getByRole('button', { name: 'Disconnect' }).click()
   await page.locator('dialog.dlg').last().getByRole('button', { name: 'Disconnect' }).click()
   await expect(page.locator('dialog.dlg').getByLabel('Username')).toBeVisible()
-  const after = await page.evaluate(() => JSON.stringify({ ...localStorage }))
+  const after = await page.evaluate(() => JSON.stringify({ local: { ...localStorage }, session: { ...sessionStorage } }))
   expect(after).not.toContain('tok-cors')
   expect(errors).toEqual([])
+})
+
+test('Moodle remembers a connection only when requested', async ({ page }) => {
+  await page.goto(`/${RELAYS}`)
+  await connectMoodle(page, `${MOCK}/cors`, true)
+  await expect(page.locator('.md-who')).toContainText('Ana García')
+  expect(await page.evaluate(() => localStorage.getItem('ofimeo:moodle'))).toContain('tok-cors')
+  expect(await page.evaluate(() => sessionStorage.getItem('ofimeo:moodle'))).toBeNull()
+  await page.reload()
+  await expect(page.locator('.home-moodle .md-task-name').first()).toBeVisible()
 })
 
 test('single sign-on sites get a clear message', async ({ page }) => {
@@ -212,15 +224,23 @@ test.describe('through Ofimeo Relay', () => {
       return
     }
     dir = mkdtempSync(join(tmpdir(), 'ofimeo-relay-e2e-'))
-    const bin = join(dir, 'ofimeo-relay')
+    const bin = join(dir, process.platform === 'win32' ? 'ofimeo-relay.exe' : 'ofimeo-relay')
     execFileSync('go', ['build', '-o', bin, '.'], { cwd: 'relay', stdio: 'ignore', timeout: 200_000 })
     relay = spawn(bin, ['run', '--data', join(dir, 'data'), '--host', '127.0.0.1', '--https-port', String(RELAY_HTTPS), '--http-port', '-1', '--turn-port', String(RELAY_HTTPS + 1), '--turn-tls-port', '-1', '--relay-ports', '50200-50210', '--moodle-url', `${MOCK}/nocors`], { stdio: 'ignore' })
     await waitForPort(RELAY_HTTPS, 30_000)
   })
 
-  test.afterAll(() => {
-    relay?.kill()
-    if (dir) rmSync(dir, { recursive: true, force: true })
+  test.afterAll(async () => {
+    if (relay && relay.exitCode === null && relay.signalCode === null) {
+      const closed = new Promise<void>((resolve) => relay!.once('close', () => resolve()))
+      relay.kill()
+      await closed
+    }
+    if (dir) {
+      const target = resolve(dir)
+      if (!target.startsWith(resolve(tmpdir(), 'ofimeo-relay-e2e-'))) throw new Error('Unexpected relay test directory')
+      rmSync(target, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })
+    }
   })
 
   test('connects through the relay after asking, and refuses other sites', async ({ page, request }) => {

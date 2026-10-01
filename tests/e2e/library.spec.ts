@@ -98,6 +98,22 @@ test('deleted documents go to the trash until it is emptied', async ({ page }) =
   await openLibrary(page)
   const row = page.locator('.doc-table .doc-row').first()
   const id = await row.getAttribute('data-id')
+  const syncKeys = [`sf:test:${id}:yjs`, `sf:test:${id}:cmt`, 'sf:test:another-document:yjs']
+  await page.evaluate(async (keys) => {
+    const request = indexedDB.open('ofimeo-kv', 1)
+    request.onupgradeneeded = () => request.result.createObjectStore('kv')
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+    const transaction = database.transaction('kv', 'readwrite')
+    for (const key of keys) transaction.objectStore('kv').put({ cursor: 'test' }, key)
+    await new Promise<void>((resolve, reject) => {
+      transaction.oncomplete = () => resolve()
+      transaction.onerror = () => reject(transaction.error)
+    })
+    database.close()
+  }, syncKeys)
   const count = await page.locator('.doc-table .doc-row').count()
 
   await row.locator('.row-more').click()
@@ -121,5 +137,16 @@ test('deleted documents go to the trash until it is emptied', async ({ page }) =
   await page.locator('dialog.dlg .dlg-actions button.primary').click()
   await expect(page.locator('.doc-table .empty')).toBeVisible()
   await expect.poll(hasDb).toBe(false)
+  const remaining = await page.evaluate(async () => {
+    const request = indexedDB.open('ofimeo-kv', 1)
+    const database = await new Promise<IDBDatabase>((resolve) => { request.onsuccess = () => resolve(request.result) })
+    const keys = database.transaction('kv', 'readonly').objectStore('kv').getAllKeys()
+    const result = await new Promise<IDBValidKey[]>((resolve) => { keys.onsuccess = () => resolve(keys.result) })
+    database.close()
+    return result
+  })
+  expect(remaining).not.toContain(syncKeys[0])
+  expect(remaining).not.toContain(syncKeys[1])
+  expect(remaining).toContain(syncKeys[2])
   expect(errors).toEqual([])
 })

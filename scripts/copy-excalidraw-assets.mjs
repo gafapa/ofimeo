@@ -13,3 +13,8 @@ if (!existsSync(source)) throw new Error('Excalidraw fonts not found; run npm in
 rmSync(target, { recursive: true, force: true })
 cpSync(source, target, { recursive: true })
 console.log('Copied Excalidraw fonts into public/excalidraw')
+
+// PDF.js standard fonts and CMaps stay on our origin and work offline.
+for (const directory of ['standard_fonts', 'cmaps']) {
+  cpSync(join(root, 'node_modules', 'pdfjs-dist', directory), join(root, 'public', 'pdfjs', directory), { recursive: true })
+}

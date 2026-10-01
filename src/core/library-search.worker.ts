@@ -57,7 +57,7 @@ async function pdfPages(doc: Y.Doc): Promise<string[]> {
     offset += c.length
   }
   const lib = await loadPdfJs()
-  const pdf = await lib.getDocument({ data: bytes, useSystemFonts: false }).promise
+  const pdf = await lib.getDocument({ data: bytes, useSystemFonts: false, standardFontDataUrl: new URL('../pdfjs/standard_fonts/', import.meta.url).href, cMapUrl: new URL('../pdfjs/cmaps/', import.meta.url).href, cMapPacked: true }).promise
   try {
     const pages: string[] = []
     for (let i = 1; i <= pdf.numPages; i++) {

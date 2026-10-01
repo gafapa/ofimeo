@@ -45,6 +45,9 @@ type Config struct {
 	AppURL string `json:"app_url"`
 	// Public accepts clients from any address (default: local network only).
 	Public bool `json:"public"`
+	// AllowPrivatePeers permits TURN to reach private networks in public mode.
+	// Keep disabled on Internet-facing relays unless LAN peer access is required.
+	AllowPrivatePeers bool `json:"allow_private_peers"`
 	// AllowNetworks: extra address ranges (CIDR) treated as the local network.
 	AllowNetworks []string `json:"allow_networks"`
 	// CredentialTTL is how long TURN credentials handed out by /ofimeo/config last.

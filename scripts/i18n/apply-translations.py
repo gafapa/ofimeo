@@ -8,7 +8,11 @@
 # Relative paths are resolved against scripts/i18n/sources/ first, then the
 # current directory. French text gets non-breaking spaces before : ; ! ? and
 # inside « ». Runs are serialized with a file lock.
-import fcntl, os, re, sys
+import os, re, sys
+if os.name == 'nt':
+  import msvcrt
+else:
+  import fcntl
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 SOURCES = os.path.join(ROOT, 'scripts', 'i18n', 'sources')
@@ -40,7 +44,13 @@ def read(name):
 
 if len(sys.argv) != 3: sys.exit(__doc__ or 'usage: apply-translations.py <es-gl file> <fr-de file>')
 lock = open(os.path.join(ROOT, 'node_modules', '.i18n.lock') if os.path.isdir(os.path.join(ROOT, 'node_modules')) else os.path.join(SOURCES, '.lock'), 'w')
-fcntl.flock(lock, fcntl.LOCK_EX)
+if os.name == 'nt':
+  lock.write('0')
+  lock.flush()
+  lock.seek(0)
+  msvcrt.locking(lock.fileno(), msvcrt.LK_LOCK, 1)
+else:
+  fcntl.flock(lock, fcntl.LOCK_EX)
 for name, langs in ((sys.argv[1], ('es', 'gl')), (sys.argv[2], ('fr', 'de'))):
   rows = read(name)
   for i, lang in enumerate(langs):

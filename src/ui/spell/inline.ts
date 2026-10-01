@@ -267,6 +267,7 @@ export function attachSpellcheck(element: HTMLElement, lang?: () => string | nul
     clear()
     const caret = caretOffset(now.segments)
     const typing = Date.now() - lastInput < 1500
+    let deferred = false
     found = []
     results.forEach((r, i) => {
       for (const issue of r.issues) {
@@ -274,8 +275,11 @@ export function attachSpellcheck(element: HTMLElement, lang?: () => string | nul
         const to = starts[i] + issue.to
         const word = text.slice(from, to)
         if (ignored.has(issue.rule === 'spelling' ? `spelling:${v.lang}:${word}` : issue.rule) || (issue.rule === 'spelling' && isPersonal(v.lang, word))) continue
-        // The word being typed is underlined once the caret leaves it.
-        if (typing && issue.rule === 'spelling' && caret !== null && caret >= from && caret <= to) continue
+        // Delay the current word until typing stops or the caret leaves it.
+        if (typing && issue.rule === 'spelling' && caret !== null && caret >= from && caret <= to) {
+          deferred = true
+          continue
+        }
         const range = field ? null : rangeFor(now.segments, from, to)
         if (!field && !range) continue
         found.push({ issue, lang: v.lang, dict: dictOf({ lang: v.lang, variant: v.tag }), text: word, from, to, range })
@@ -284,6 +288,7 @@ export function attachSpellcheck(element: HTMLElement, lang?: () => string | nul
     })
     element.dataset.spellIssues = String(found.length)
     paint()
+    if (deferred) schedule(Math.max(0, 1500 - (Date.now() - lastInput)))
   }
 
   const caretOffset = (segments: Segment[]): number | null => {
@@ -300,6 +305,7 @@ export function attachSpellcheck(element: HTMLElement, lang?: () => string | nul
   }
 
   const onInput = () => {
+    version++
     lastInput = Date.now()
     // Underlines on changed text are stale until the next check.
     clear()

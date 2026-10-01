@@ -308,6 +308,15 @@ export async function openAccountDialog(): Promise<NcAccount | undefined> {
       render()
     }, 'nc-btn danger')
     const autosave = el('select', { class: 'field nc-autosave' })
+    const accounts = el('select', { class: 'field' })
+    accounts.setAttribute('aria-label', t('Accounts'))
+    for (const saved of nc.listAccounts()) accounts.append(new Option(`${saved.displayName ?? saved.user} — ${saved.server}`, saved.id, false, saved.id === account.id))
+    accounts.addEventListener('change', () => {
+      const selected = nc.getAccount(accounts.value)
+      if (selected) nc.saveAccount(selected)
+      render()
+    })
+    const add = button(t('Add account'), () => body.replaceChildren(signInView()))
     for (const [value, label] of [
       [0, t('Off')],
       [2, t('Every 2 minutes')],
@@ -320,6 +329,7 @@ export async function openAccountDialog(): Promise<NcAccount | undefined> {
     return el(
       'div',
       { class: 'nc-connected' },
+      el('label', { class: 'field-label' }, t('Accounts'), accounts),
       el(
         'div',
         { class: 'nc-who' },
@@ -333,7 +343,7 @@ export async function openAccountDialog(): Promise<NcAccount | undefined> {
       ),
       el('label', { class: 'field-label' }, t('Save linked documents to Nextcloud automatically'), autosave),
       el('p', { class: 'hint', textContent: t('Documents opened from Nextcloud or saved there stay linked to their file: File → Save to Nextcloud (Ctrl+S) updates it. Collaboration still happens directly between browsers; only you save to your Nextcloud.') }),
-      el('div', { class: 'nc-row-buttons' }, test, signOut),
+      el('div', { class: 'nc-row-buttons' }, test, add, signOut),
       result,
       privacyNote(),
     )
@@ -345,12 +355,13 @@ export async function openAccountDialog(): Promise<NcAccount | undefined> {
     const presets = schoolNextcloud(server)
     const user = el('input', { class: 'field', autocomplete: 'username' })
     const password = el('input', { class: 'field', type: 'password', autocomplete: 'off' })
+    const remember = el('input', { type: 'checkbox', checked: false })
     const result = el('div', { class: 'nc-result-area' })
     const busy = (on: boolean) => body.querySelectorAll<HTMLButtonElement>('.nc-btn').forEach((b) => (b.disabled = on))
 
     const finish = async (serverUrl: string, loginName: string, appPassword: string, viaLoginFlow: boolean, known?: { user: string; displayName?: string }) => {
       const who = known ?? (await nc.whoAmI(serverUrl, loginName, appPassword))
-      const account: NcAccount = { id: nc.accountId(serverUrl, who.user), server: serverUrl, user: who.user, loginName, appPassword, displayName: who.displayName, viaLoginFlow, autosave: 0 }
+      const account: NcAccount = { id: nc.accountId(serverUrl, who.user), server: serverUrl, user: who.user, loginName, appPassword, displayName: who.displayName, viaLoginFlow, autosave: 0, remember: remember.checked }
       nc.saveAccount(account)
       writeLocal(SERVER_KEY, serverUrl)
       toast(t('Connected to Nextcloud'))
@@ -432,6 +443,7 @@ export async function openAccountDialog(): Promise<NcAccount | undefined> {
       el('p', { textContent: t('Open and save documents in your Nextcloud (for example your school’s). The browser talks directly to your Nextcloud.') }),
       presets.chooser,
       el('label', { class: 'field-label' }, t('Nextcloud address'), server, presets.note),
+      el('label', {}, remember, ' ', t('Remember this connection on this device')),
       el('div', { class: 'nc-flow' }, button(t('Log in with Nextcloud'), () => void loginFlow(), 'nc-btn primary', LogIn), el('span', { class: 'hint', textContent: t('Opens Nextcloud in a new tab, where you approve access.') })),
       el(
         'details',

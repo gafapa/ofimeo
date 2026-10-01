@@ -96,12 +96,20 @@ export async function openPdf(bytes: Uint8Array, options: OpenOptions = {}): Pro
   let password = passwords.get(key)
   let wrong = false
   for (;;) {
+    const loadingTask = lib.getDocument({
+      data: bytes.slice(),
+      standardFontDataUrl: new URL('pdfjs/standard_fonts/', document.baseURI).href,
+      cMapUrl: new URL('pdfjs/cmaps/', document.baseURI).href,
+      cMapPacked: true,
+      ...(password !== undefined ? { password } : {}),
+    })
     try {
       // pdf.js takes ownership of the buffer it is given: pass a copy.
-      const doc = await lib.getDocument({ data: bytes.slice(), ...(password !== undefined ? { password } : {}) }).promise
+      const doc = await loadingTask.promise
       if (password !== undefined) passwords.set(key, password)
       return doc
     } catch (err) {
+      await loadingTask.destroy().catch(() => undefined)
       if ((err as Error)?.name !== 'PasswordException') throw readableError(err)
       if (password !== undefined) wrong = true
       passwords.delete(key)

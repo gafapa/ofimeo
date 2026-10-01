@@ -163,7 +163,8 @@ function markdown(source, ctx) {
 
 const BRAND = '<svg viewBox="0 0 512 512" width="28" height="28" aria-hidden="true"><circle cx="256" cy="256" r="138" fill="none" stroke="currentColor" stroke-width="76"/></svg>'
 // Theme and text size from the suite's accessibility preferences (same origin).
-const THEME = `<script>try{var p=JSON.parse(localStorage.getItem('ofimeo:a11y')||localStorage.getItem('words-online:a11y')||'{}'),t=p.theme==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):p.theme,r=document.documentElement;if(t&&t!=='light')r.setAttribute('data-a11y-theme',t);if(p.zoom)r.style.setProperty('--a11y-ui-zoom',p.zoom/100)}catch(e){}</script>`
+writeFileSync(join(out, 'theme.js'), "try{var p=JSON.parse(localStorage.getItem('ofimeo:a11y')||localStorage.getItem('words-online:a11y')||'{}'),t=p.theme==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):p.theme,r=document.documentElement;if(t&&t!=='light')r.setAttribute('data-a11y-theme',t);if(p.zoom)r.style.setProperty('--a11y-ui-zoom',p.zoom/100)}catch(e){}")
+const THEME = (prefix) => `<script src="${prefix}theme.js"></script>`
 const site = get('siteName') || 'Ofimeo'
 const fill = (s, vars) => s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m))
 
@@ -189,7 +190,7 @@ function frame({ lang, page, title, body, nav, draft, updated, css = '../' }) {
 <link rel="icon" href="${css}../icons/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="${css}tokens.css">
 <link rel="stylesheet" href="${css}legal.css">
-${nav && page !== 'index' ? LANGS.map((l) => `<link rel="alternate" hreflang="${l}" href="../${l}/${page}.html">`).join('\n') + '\n' : ''}${THEME}
+${nav && page !== 'index' ? LANGS.map((l) => `<link rel="alternate" hreflang="${l}" href="../${l}/${page}.html">`).join('\n') + '\n' : ''}${THEME(css)}
 </head>
 <body>
 <a class="skip" href="#content">${ui.skip}</a>
@@ -267,6 +268,7 @@ for (const lang of LANGS) {
 }
 
 // legal/index.html: the index in the interface language (same rule as src/core/i18n.ts).
+writeFileSync(join(out, 'redirect.js'), `(function(){var L=${JSON.stringify(LANGS)},l=null;try{l=localStorage.getItem('ofimeo:language')||localStorage.getItem('words-online:language')}catch(e){}if(L.indexOf(l)<0){l='en';var n=navigator.languages||[navigator.language||'en'];for(var i=0;i<n.length;i++){var c=String(n[i]).toLowerCase().split(/[-_]/)[0];if(c==='gl'){l='gl';break}if(['es','ca','eu','ast','an'].indexOf(c)>=0){l='es';break}if(['fr','de','en'].indexOf(c)>=0){l=c;break}}}location.replace(l+'/index.html'+location.hash)})()`)
 writeFileSync(
   join(out, 'index.html'),
   `<!doctype html>
@@ -275,7 +277,7 @@ writeFileSync(
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(site)} · ${UI.es.legal}</title>
-<script>(function(){var L=${JSON.stringify(LANGS)},l=null;try{l=localStorage.getItem('ofimeo:language')||localStorage.getItem('words-online:language')}catch(e){}if(L.indexOf(l)<0){l='en';var n=navigator.languages||[navigator.language||'en'];for(var i=0;i<n.length;i++){var c=String(n[i]).toLowerCase().split(/[-_]/)[0];if(c==='gl'){l='gl';break}if(['es','ca','eu','ast','an'].indexOf(c)>=0){l='es';break}if(['fr','de','en'].indexOf(c)>=0){l=c;break}}}location.replace(l+'/index.html'+location.hash)})()</script>
+<script src="redirect.js"></script>
 </head>
 <body>
 <ul>${LANGS.map((l) => `<li><a href="${l}/index.html" hreflang="${l}" lang="${l}">${UI[l].legal} (${UI[l].name})</a></li>`).join('')}</ul>

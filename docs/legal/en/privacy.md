@@ -34,7 +34,7 @@ When a school, an education authority or another organisation publishes its own 
 
 ## 4. Data stored on your device
 
-The application stores the information it needs to work in your browser's storage (IndexedDB, localStorage and the service worker cache). This information is not sent to the owner. Details are given in the [Cookies and local storage policy](cookies.md).
+The application stores the information it needs to work in your browser's storage (IndexedDB, sessionStorage, localStorage and the service worker cache). This information is not sent to the owner. Details are given in the [Cookies and local storage policy](cookies.md).
 
 | Information | Content | Who can see it |
 | --- | --- | --- |

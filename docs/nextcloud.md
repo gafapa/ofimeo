@@ -226,8 +226,9 @@ curl -i -X OPTIONS https://cloud.school.org/remote.php/dav/files/alice/ \
 ## Security notes
 
 - Credentials: the Nextcloud address, user id, login name and **app password**
-  are stored in this browser's `localStorage` (`ofimeo:nextcloud`),
-  like the rest of the local data; they are sent only to that Nextcloud, in the
+  are stored in this browser's `sessionStorage` by default (`ofimeo:nextcloud`).
+  Checking **Remember this connection on this device** uses `localStorage`;
+  existing remembered connections remain available. They are sent only to that Nextcloud, in the
   `Authorization` header. Anyone with access to this browser profile (or a
   script running on the same origin) could read them. That is why only app
   passwords are accepted: they can be revoked individually (*Personal settings

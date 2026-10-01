@@ -34,7 +34,7 @@ Cuando un centro educativo, una Administración educativa u otra entidad publica
 
 ## 4. Datos que se guardan en tu dispositivo
 
-La aplicación guarda en el almacenamiento de tu navegador (IndexedDB, localStorage y la caché del service worker) la información necesaria para funcionar. Esta información no se envía al titular. El detalle figura en la [Política de cookies y almacenamiento local](cookies.md).
+La aplicación guarda en el almacenamiento de tu navegador (IndexedDB, sessionStorage, localStorage y la caché del service worker) la información necesaria para funcionar. Esta información no se envía al titular. El detalle figura en la [Política de cookies y almacenamiento local](cookies.md).
 
 | Información | Contenido | Quién puede verla |
 | --- | --- | --- |

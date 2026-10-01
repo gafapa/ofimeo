@@ -34,7 +34,7 @@ Cando un centro educativo, unha Administración educativa ou outra entidade publ
 
 ## 4. Datos que se gardan no teu dispositivo
 
-A aplicación garda no almacenamento do teu navegador (IndexedDB, localStorage e a caché do service worker) a información necesaria para funcionar. Esta información non se envía ao titular. O detalle figura na [Política de cookies e almacenamento local](cookies.md).
+A aplicación garda no almacenamento do teu navegador (IndexedDB, sessionStorage, localStorage e a caché do service worker) a información necesaria para funcionar. Esta información non se envía ao titular. O detalle figura na [Política de cookies e almacenamento local](cookies.md).
 
 | Información | Contido | Quen pode vela |
 | --- | --- | --- |

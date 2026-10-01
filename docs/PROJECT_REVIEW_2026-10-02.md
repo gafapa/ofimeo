@@ -39,6 +39,8 @@
 - Delete local store-and-forward cursor/shadow records on permanent document
   deletion while preserving other documents and remote mailboxes.
 - Make the translation update script work on Windows as well as Unix.
+- Enable repository vulnerability alerts and automated Dependabot security
+  updates. Align storage documentation with session-only connection defaults.
 - Apply the owner's selected Apache-2.0 project license, add NOTICE and retain
   third-party component licensing separately.
 - Add 13 fast core regressions covering permission derivation, unrelated key

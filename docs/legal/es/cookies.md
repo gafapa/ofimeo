@@ -21,7 +21,7 @@ Todo el almacenamiento es propio (no hay almacenamiento de terceros), se guarda 
 | Identidad | localStorage `ofimeo:user`, `ofimeo:writer-user-id` | Nombre y color que ven tus colaboradores; identificador técnico para la autoría |
 | Preferencias | localStorage `ofimeo:language`, `ofimeo:a11y`, `ofimeo:spelling`, `ofimeo:spelling-dictionary:<idioma>`, `ofimeo:zoom`, `ofimeo:home-view`, `wo-template-lang`, `diagram-libraries` | Idioma, accesibilidad, ortografía y diccionario personal, zoom, idioma de las plantillas y bibliotecas de formas elegidas |
 | Asistentes de IA (solo si lo activas) | localStorage `ofimeo:webmcp` | Que has permitido a los asistentes de IA usar los documentos abiertos en este navegador (WebMCP; desactivado por defecto). Ver la [Nota sobre inteligencia artificial](ai.md) |
-| Nextcloud (solo si lo configuras) | localStorage `ofimeo:nextcloud`, `ofimeo:nextcloud-server`, `ofimeo:nextcloud-folder`, `ofimeo:nextcloud-format`, `ofimeo:nextcloud-share` | Servidor, usuario y contraseña de aplicación, última carpeta y formato usados |
+| Nextcloud (solo si lo configuras) | sessionStorage/localStorage `ofimeo:nextcloud`; localStorage `ofimeo:nextcloud-server`, `ofimeo:nextcloud-folder`, `ofimeo:nextcloud-format`, `ofimeo:nextcloud-share` | Servidor, usuario y contraseña de aplicación, última carpeta y formato usados |
 | Funcionamiento sin conexión | Service worker y Cache Storage `workbox-precache-*`, `excalidraw-fonts`, `spelling`, `diagram-libs-*` | Archivos de la aplicación, tipos de letra, diccionarios y formas para usarla sin conexión |
 
 Los nombres técnicos pueden cambiar entre versiones; las categorías y finalidades se mantienen. Las claves `ofimeo` provienen del nombre técnico del proyecto.

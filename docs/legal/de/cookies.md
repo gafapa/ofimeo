@@ -21,7 +21,7 @@ Die gesamte Speicherung ist eigene Speicherung (keine Speicherung Dritter), lieg
 | Identität | localStorage `ofimeo:user`, `ofimeo:writer-user-id` | Name und Farbe, die Ihre Mitwirkenden sehen; technische Kennung für die Urheberschaft |
 | Einstellungen | localStorage `ofimeo:language`, `ofimeo:a11y`, `ofimeo:spelling`, `ofimeo:spelling-dictionary:<Sprache>`, `ofimeo:zoom`, `ofimeo:home-view`, `wo-template-lang`, `diagram-libraries` | Sprache, Barrierefreiheit, Rechtschreibung und persönliches Wörterbuch, Zoom, Sprache der Vorlagen und gewählte Formenbibliotheken |
 | KI-Assistenten (nur wenn Sie es einschalten) | localStorage `ofimeo:webmcp` | Dass Sie KI-Assistenten erlaubt haben, die in diesem Browser geöffneten Dokumente zu verwenden (WebMCP; standardmäßig aus). Siehe den [Hinweis zu künstlicher Intelligenz](ai.md) |
-| Nextcloud (nur wenn eingerichtet) | localStorage `ofimeo:nextcloud`, `ofimeo:nextcloud-server`, `ofimeo:nextcloud-folder`, `ofimeo:nextcloud-format`, `ofimeo:nextcloud-share` | Server, Benutzername und App-Passwort, zuletzt verwendeter Ordner und Format |
+| Nextcloud (nur wenn eingerichtet) | sessionStorage/localStorage `ofimeo:nextcloud`; localStorage `ofimeo:nextcloud-server`, `ofimeo:nextcloud-folder`, `ofimeo:nextcloud-format`, `ofimeo:nextcloud-share` | Server, Benutzername und App-Passwort, zuletzt verwendeter Ordner und Format |
 | Offline-Betrieb | Service Worker und Cache Storage `workbox-precache-*`, `excalidraw-fonts`, `spelling`, `diagram-libs-*` | Dateien der Anwendung, Schriftarten, Wörterbücher und Formen für die Offline-Nutzung |
 
 Technische Namen können sich zwischen Versionen ändern; Kategorien und Zwecke bleiben gleich. Die Schlüssel `ofimeo` stammen vom technischen Namen des Projekts.

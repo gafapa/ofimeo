@@ -34,7 +34,7 @@ Lorsqu’un établissement scolaire, une administration de l’éducation ou un 
 
 ## 4. Données enregistrées sur votre appareil
 
-L’application enregistre dans le stockage de votre navigateur (IndexedDB, localStorage et cache du service worker) les informations nécessaires à son fonctionnement. Ces informations ne sont pas envoyées au titulaire. Le détail figure dans la [Politique relative aux cookies et au stockage local](cookies.md).
+L’application enregistre dans le stockage de votre navigateur (IndexedDB, sessionStorage, localStorage et cache du service worker) les informations nécessaires à son fonctionnement. Ces informations ne sont pas envoyées au titulaire. Le détail figure dans la [Politique relative aux cookies et au stockage local](cookies.md).
 
 | Information | Contenu | Qui peut la voir |
 | --- | --- | --- |

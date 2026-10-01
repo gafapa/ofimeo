@@ -145,9 +145,10 @@ connect.
 - The password goes only to Moodle (or through the school relay), once, to get
   a token. It is never stored.
 - The token, the Moodle site name, the student's name and user id, and the last
-  task list are stored in that browser (localStorage). **Disconnect** removes
-  them. Anyone using the same browser profile can use the token until then:
-  on shared computers, students should disconnect (or use a private window).
+  task list are stored in `sessionStorage` by default. Checking **Remember this
+  connection on this device** stores them in `localStorage` instead. Existing
+  remembered connections remain available. **Disconnect** clears both stores.
+  On shared computers, students should disconnect (or use a private window).
   Moodle administrators can revoke tokens in **Site administration → Server →
   Web services → Manage tokens**, and users in their preferences (**Security
   keys**).

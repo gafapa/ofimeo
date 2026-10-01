@@ -1160,7 +1160,8 @@ if ($wo_preflight) {
 ```
 
 Credentials (server, user and app password) are stored in this browser's
-`localStorage` and sent only to that Nextcloud; see *Security notes* in
+`sessionStorage` by default. **Remember this connection on this device** opts
+into `localStorage`. Credentials are sent only to that Nextcloud; see *Security notes* in
 [docs/nextcloud.md](docs/nextcloud.md).
 
 ## How collaboration works
@@ -1322,7 +1323,8 @@ Students connect to their school's Moodle once (home screen ▸ **Accounts ▸
 Moodle account…**, or **File → Moodle account…**) with their Moodle username and password.
 Ofimeo gets a token from `login/token.php?service=moodle_mobile_app` (the
 Moodle app's web service) and keeps only the token, the site name and the
-person's name in this browser; the password is never stored. **Disconnect**
+person's name in this browser's `sessionStorage` by default. **Remember this
+connection on this device** opts into `localStorage`; the password is never stored. **Disconnect**
 removes them.
 
 - **Moodle tasks** (home screen, informational): the assignments of every

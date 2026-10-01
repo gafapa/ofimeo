@@ -34,7 +34,7 @@ Wenn eine Schule, eine Bildungsbehörde oder eine andere Einrichtung eine eigene
 
 ## 4. Auf Ihrem Gerät gespeicherte Daten
 
-Die Anwendung speichert die für ihren Betrieb nötigen Informationen im Speicher Ihres Browsers (IndexedDB, localStorage und Cache des Service Workers). Diese Informationen werden nicht an den Inhaber gesendet. Einzelheiten finden Sie in der [Richtlinie zu Cookies und lokaler Speicherung](cookies.md).
+Die Anwendung speichert die für ihren Betrieb nötigen Informationen im Speicher Ihres Browsers (IndexedDB, sessionStorage, localStorage und Cache des Service Workers). Diese Informationen werden nicht an den Inhaber gesendet. Einzelheiten finden Sie in der [Richtlinie zu Cookies und lokaler Speicherung](cookies.md).
 
 | Information | Inhalt | Wer sie sehen kann |
 | --- | --- | --- |

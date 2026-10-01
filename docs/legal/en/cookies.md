@@ -21,7 +21,7 @@ All storage is first-party (there is no third-party storage), is kept only in yo
 | Identity | localStorage `ofimeo:user`, `ofimeo:writer-user-id` | Name and colour your collaborators see; technical identifier for authorship |
 | Preferences | localStorage `ofimeo:language`, `ofimeo:a11y`, `ofimeo:spelling`, `ofimeo:spelling-dictionary:<language>`, `ofimeo:zoom`, `ofimeo:home-view`, `wo-template-lang`, `diagram-libraries` | Language, accessibility, spelling and personal dictionary, zoom, template language and chosen shape libraries |
 | AI assistants (only if you turn it on) | localStorage `ofimeo:webmcp` | That you allowed AI assistants to use the documents open in this browser (WebMCP; off by default). See the [Note on artificial intelligence](ai.md) |
-| Nextcloud (only if you set it up) | localStorage `ofimeo:nextcloud`, `ofimeo:nextcloud-server`, `ofimeo:nextcloud-folder`, `ofimeo:nextcloud-format`, `ofimeo:nextcloud-share` | Server, user name and app password, last folder and format used |
+| Nextcloud (only if you set it up) | sessionStorage/localStorage `ofimeo:nextcloud`; localStorage `ofimeo:nextcloud-server`, `ofimeo:nextcloud-folder`, `ofimeo:nextcloud-format`, `ofimeo:nextcloud-share` | Server, user name and app password, last folder and format used |
 | Offline use | Service worker and Cache Storage `workbox-precache-*`, `excalidraw-fonts`, `spelling`, `diagram-libs-*` | Application files, fonts, dictionaries and shapes for offline use |
 
 Technical names may change between versions; categories and purposes remain the same. The `ofimeo` keys come from the project's technical name.

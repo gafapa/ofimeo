@@ -393,7 +393,8 @@ async function extractPalettes() {
         hasAttribute: function (k) { return this.attrs[k] != null }, cloneNode: function () { var c = mxUtils.createXmlDocument().createElement(n); for (var k in this.attrs) c.attrs[k] = this.attrs[k]; return c } }
     } } }
     var Graph = { decompress: function (d) { return __decompress(d) }, zapGremlins: function (s) { return s }, sanitizeHtml: function (s) { return s },
-      createSvgImage: function () { return { src: '' } }, cellStyles: [] }
+      createSvgImage: function () { return { src: '' } }, cellStyles: [],
+      encodeChildLayout: function (list) { return encodeURIComponent(JSON.stringify(list)) } }
     var Editor = { defaultTextStyle: 'text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;',
       currentTheme: '', isDarkMode: function () { return false }, prototype: {} }
     var EditorUi = function () {}
@@ -406,6 +407,12 @@ async function extractPalettes() {
         if (shapes && fn) for (var i = 0; i < shapes.length; i++) fn(shapes[i].pkg, shapes[i].name, shapes[i].name, shapes[i].w, shapes[i].h)
       } }
   `, 'shim.js')
+  // Read the pinned release's layout definitions used by advanced templates.
+  const menus = await text('js/diagramly/Menus.js')
+  const layoutStart = menus.indexOf('Menus.flowModelOrder =')
+  const layoutEnd = menus.indexOf('Menus.prototype.createHelpLink', layoutStart)
+  if (layoutStart < 0 || layoutEnd < 0) throw new Error('Missing draw.io layout container definitions')
+  run(menus.slice(layoutStart, layoutEnd), 'Menus-layouts.js')
   run(await text('js/grapheditor/Sidebar.js'), 'Sidebar.js')
   run(await text('js/diagramly/sidebar/Sidebar.js'), 'diagramly/Sidebar.js')
   for (const name of src.files.filter((n) => /^js\/diagramly\/sidebar\/Sidebar-.*\.js$/.test(n)).sort()) run(await text(name), name)

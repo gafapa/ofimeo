@@ -163,7 +163,6 @@ function markdown(source, ctx) {
 
 const BRAND = '<svg viewBox="0 0 512 512" width="28" height="28" aria-hidden="true"><circle cx="256" cy="256" r="138" fill="none" stroke="currentColor" stroke-width="76"/></svg>'
 // Theme and text size from the suite's accessibility preferences (same origin).
-writeFileSync(join(out, 'theme.js'), "try{var p=JSON.parse(localStorage.getItem('ofimeo:a11y')||localStorage.getItem('words-online:a11y')||'{}'),t=p.theme==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):p.theme,r=document.documentElement;if(t&&t!=='light')r.setAttribute('data-a11y-theme',t);if(p.zoom)r.style.setProperty('--a11y-ui-zoom',p.zoom/100)}catch(e){}")
 const THEME = (prefix) => `<script src="${prefix}theme.js"></script>`
 const site = get('siteName') || 'Ofimeo'
 const fill = (s, vars) => s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m))
@@ -236,6 +235,7 @@ function context(lang, page) {
 
 rmSync(out, { recursive: true, force: true })
 mkdirSync(out, { recursive: true })
+writeFileSync(join(out, 'theme.js'), "try{var p=JSON.parse(localStorage.getItem('ofimeo:a11y')||localStorage.getItem('words-online:a11y')||'{}'),t=p.theme==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):p.theme,r=document.documentElement;if(t&&t!=='light')r.setAttribute('data-a11y-theme',t);if(p.zoom)r.style.setProperty('--a11y-ui-zoom',p.zoom/100)}catch(e){}")
 copyFileSync(join(root, 'src/ui/tokens.css'), join(out, 'tokens.css'))
 copyFileSync(join(root, 'src/legal/pages.css'), join(out, 'legal.css'))
 

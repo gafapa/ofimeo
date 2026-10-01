@@ -28,6 +28,10 @@
   connections between TURN allocations. Document the policy and firewall need.
 - Extract legal-page scripts into same-origin files and remove script
   `unsafe-inline` from the recommended Apache and nginx CSP.
+- Generate the legal theme script after recreating its output directory so
+  clean checkouts work. Load the pinned draw.io layout definitions when
+  extracting advanced templates; all 13,968 palette items now generate with
+  no failed items.
 - Replace automatic PWA activation with a user-controlled update offered on
   the home screen. Keep the full suite precached for offline use.
 - Supply PDF.js standard fonts and CMaps from the application origin. Precache

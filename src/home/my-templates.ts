@@ -124,7 +124,12 @@ export function mountMyTemplates(container: HTMLElement): void {
   const render = async () => {
     const list = await tpls.listOwnTemplates()
     grid.replaceChildren(...list.map(card))
-    if (!list.length) grid.replaceChildren(el('p', { class: 'hint my-tpl-empty', textContent: t('Save any document as a template with File ▸ Save as template…, or import a template file.') }))
+    // A list only while it has items (the hint is not one).
+    if (list.length) grid.setAttribute('role', 'list')
+    else {
+      grid.removeAttribute('role')
+      grid.replaceChildren(el('p', { class: 'hint my-tpl-empty', textContent: t('Save any document as a template with File ▸ Save as template…, or import a template file.') }))
+    }
   }
 
   container.replaceChildren(

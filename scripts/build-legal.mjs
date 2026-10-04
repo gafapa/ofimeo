@@ -18,6 +18,10 @@ const root = fileURLToPath(new URL('..', import.meta.url))
 const src = join(root, 'docs/legal')
 const out = join(root, 'public/legal')
 const strict = process.env.LEGAL_STRICT === '1'
+// The script directives of the recommended Content-Security-Policy
+// (deploy/nginx), also in the pages for hosts that send no headers.
+const CSP_META = /Content-Security-Policy "([^"]+)"/.exec(readFileSync(join(root, 'deploy/nginx/ofimeo-headers.inc'), 'utf8'))[1]
+  .split(';').map((d) => d.trim()).filter((d) => /^(script-src|object-src|base-uri) /.test(d)).join('; ')
 const config = JSON.parse(readFileSync(join(root, 'legal.config.json'), 'utf8'))
 
 export const LANGS = ['es', 'gl', 'en', 'fr', 'de']
@@ -183,6 +187,7 @@ function frame({ lang, page, title, body, nav, draft, updated, css = '../' }) {
 <html lang="${lang}">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="${CSP_META}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title.replace(/<[^>]+>/g, ''))} · ${esc(site)}</title>
 <meta name="robots" content="index, follow">
@@ -275,6 +280,7 @@ writeFileSync(
 <html lang="es">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="${CSP_META}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(site)} · ${UI.es.legal}</title>
 <script src="redirect.js"></script>

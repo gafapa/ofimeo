@@ -201,6 +201,6 @@ body:has(.home) { overflow: auto; }
   padding: 10px 14px 8px; font: inherit; font-weight: 500;
 }
 .home-tab:hover { color: var(--text); background: var(--hover); }
-.home-tab[aria-selected='true'] { color: var(--accent); border-bottom-color: var(--accent); }
+.home-tab[aria-selected='true'] { color: var(--text); border-bottom-color: var(--accent); }
 .home-panel[hidden] { display: none; }
 .home-panel .home-new { padding-top: 4px; }

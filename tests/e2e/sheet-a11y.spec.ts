@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { expect, test, type Page } from '@playwright/test'
 import { RELAYS, trackErrors } from './helpers'
@@ -34,7 +35,8 @@ const cell = (page: Page, ref: string) => {
 const live = (page: Page) => page.locator('.app > [role=status][aria-live]')
 
 async function seriousViolations(page: Page) {
-  await page.addScriptTag({ path: AXE })
+  // Through the test channel: the page's CSP blocks inline scripts.
+  await page.evaluate(readFileSync(AXE, 'utf8'))
   return page.evaluate(async () => {
     const axe = (window as unknown as { axe: { run: (ctx: unknown, opts: unknown) => Promise<{ violations: { id: string; impact: string; nodes: { target: string[] }[] }[] }> } }).axe
     // The accessible view and the app frame around it (Univer's canvas grid is hidden and inert meanwhile).

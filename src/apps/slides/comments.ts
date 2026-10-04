@@ -157,7 +157,8 @@ export class CommentsPane {
     const cell = this.host.graph.getDataModel().getCell(cellId)
     if (!cell) return t('(deleted object)')
     const html = String(cell.getValue() ?? '')
-    const box = document.createElement('div')
+    // An inert document: shared labels never load images or run handlers here.
+    const box = document.implementation.createHTMLDocument('').createElement('div')
     box.innerHTML = html
     const text = (box.textContent ?? '').trim()
     return text ? (text.length > 30 ? `${text.slice(0, 30)}…` : text) : t('Object')

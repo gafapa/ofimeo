@@ -12,6 +12,8 @@
   border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text);
   overflow: hidden; cursor: pointer; font: inherit; transition: border-color 0.15s, box-shadow 0.15s;
 }
+.tpl-item { display: flex; }
+.tpl-item > .tpl-card { flex: 1; min-width: 0; }
 .tpl-card:hover, .tpl-card:focus-visible { border-color: var(--accent); box-shadow: var(--shadow-s); }
 .tpl-card.busy { opacity: 0.6; cursor: progress; }
 .tpl-thumb { display: block; aspect-ratio: 16 / 10; border-bottom: 1px solid var(--border); background: var(--surface-alt); }

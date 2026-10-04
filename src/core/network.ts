@@ -318,11 +318,15 @@ export class Channel {
     await this.ready
     const id = toBase64Url(envelope.signature)
     if (this.seen.has(id)) return
-    this.seen.add(id)
+    // Marked as seen only once verified: a forged copy carrying a genuine
+    // signature (relayed first by another peer) must not hide the real change.
     if (!(await verify(this.security!.verifier, envelope.signature, this.signedBytes(envelope.kind, envelope.update)))) {
       console.warn('Rejected a change with an invalid signature')
       return
     }
+    // Another valid copy may have been verified meanwhile.
+    if (this.seen.has(id)) return
+    this.seen.add(id)
     Y.applyUpdate(this.doc, envelope.update, peer)
     this.log?.add(data, envelope)
     this.broadcast(data, peer)

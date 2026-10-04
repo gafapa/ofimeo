@@ -11,6 +11,14 @@ const libsCatalog = 'public/diagram-libs/catalog.json'
 const libsBuild = existsSync('public/diagram-libs/.version') ? readFileSync('public/diagram-libs/.version', 'utf8').trim() : 'none'
 const libsRevision = existsSync(libsCatalog) ? createHash('sha256').update(readFileSync(libsCatalog)).digest('hex').slice(0, 16) : null
 
+// The script directives of the recommended Content-Security-Policy
+// (deploy/nginx) also travel in the built page, for hosts that send no headers
+// (GitHub Pages, a plain web server): no inline scripts or event handlers from
+// shared content. Network and image rules stay with the server's header, where
+// a school adapts them (its own http servers, for example).
+const cspHeader = /Content-Security-Policy "([^"]+)"/.exec(readFileSync('deploy/nginx/ofimeo-headers.inc', 'utf8'))![1]
+const cspMeta = cspHeader.split(';').map((d) => d.trim()).filter((d) => /^(script-src|object-src|base-uri) /.test(d)).join('; ')
+
 // Relative base so the build can be served from any static host or subpath.
 export default defineConfig({
   base: './',
@@ -19,6 +27,12 @@ export default defineConfig({
   // Harper finds its WebAssembly file next to its module (new URL(…, import.meta.url)).
   optimizeDeps: { exclude: ['harper.js'] },
   plugins: [
+    // Production pages carry the CSP (the dev server needs inline scripts).
+    {
+      name: 'csp-meta',
+      apply: 'build',
+      transformIndexHtml: (html: string) => html.replace(/<meta charset="UTF-8" \/>/i, (m) => `${m}\n    <meta http-equiv="Content-Security-Policy" content="${cspMeta}" />`),
+    },
     // Spelling dictionaries as separate files, cached the first time a language is used.
     spellDictionaries(),
     // Installable web app that works offline. The suite and every app are

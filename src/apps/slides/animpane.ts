@@ -311,7 +311,8 @@ export class AnimationPane {
 
 function htmlText(html: string): string {
   if (!/[<&]/.test(html)) return html
-  const box = document.createElement('div')
+  // An inert document: shared labels never load images or run handlers here.
+  const box = document.implementation.createHTMLDocument('').createElement('div')
   box.innerHTML = html
   return box.textContent ?? ''
 }

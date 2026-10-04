@@ -282,6 +282,8 @@ export function mountNotebook(session: Session, root: HTMLElement): NotebookCont
       ],
       editable: canEdit,
       editorProps: {
+        // Screen readers announce the editing area by name.
+        attributes: { 'aria-label': t('Page') },
         handlePaste: (_view, event) => insertFiles(event.clipboardData?.files),
         handleDrop: (view, event) => {
           const files = (event as DragEvent).dataTransfer?.files

@@ -64,7 +64,6 @@ function card(tpl: Template, lang: Lang): HTMLElement {
     badge,
   )
   button.lang = lang
-  button.setAttribute('role', 'listitem')
   button.addEventListener('click', async () => {
     if (busy) return
     busy = true
@@ -80,7 +79,10 @@ function card(tpl: Template, lang: Lang): HTMLElement {
       busy = false
     }
   })
-  return button
+  // The list item wraps the button, which keeps its button role.
+  const item = el('div', { class: 'tpl-item' }, button)
+  item.setAttribute('role', 'listitem')
+  return item
 }
 
 export interface Gallery {

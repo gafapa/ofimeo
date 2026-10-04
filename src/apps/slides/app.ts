@@ -1062,13 +1062,15 @@ function parseData(cell: Cell): Record<string, unknown> {
 
 // "<ul><li>a</li><li>b</li></ul>" → "a<br>b" and back.
 function listToLines(html: string): string {
-  const box = document.createElement('div')
+  // An inert document: shared labels never load images or run handlers here.
+  const box = document.implementation.createHTMLDocument('').createElement('div')
   box.innerHTML = html
   return [...box.querySelectorAll('li')].map((li) => li.innerHTML).join('<br>')
 }
 
 function linesToList(html: string, tag: 'ul' | 'ol'): string {
-  const box = document.createElement('div')
+  // An inert document: shared labels never load images or run handlers here.
+  const box = document.implementation.createHTMLDocument('').createElement('div')
   box.innerHTML = html
   // Lines separated by <br> or block elements.
   const lines: string[] = []

@@ -206,6 +206,12 @@ What matters:
   `default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' data: blob: https: wss: ws:; worker-src 'self' blob:; media-src 'self' data: blob:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'`.
   `connect-src` must allow the Nostr relays, the school relay and Nextcloud;
   narrow `https: wss:` to your own servers when `features.publicRelays` is false.
+  The built pages (`index.html`, legal pages) also carry its script directives
+  (`script-src`, `object-src`, `base-uri`) in a `<meta>` tag, so hosts that send
+  no headers (GitHub Pages, a plain web server) still block inline scripts and
+  event handlers. The network rules stay with your header. Do not add
+  `'unsafe-inline'` to `script-src`: it would re-enable event handlers in shared
+  content.
 - **No COOP/COEP**: cross-origin isolation is not needed and would break
   images and files from Nextcloud.
 

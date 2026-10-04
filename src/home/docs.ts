@@ -544,6 +544,8 @@ export function documentsSection(): DocsSection {
                 ? t('No documents have this tag.')
                 : t('No documents yet. Create one on the Home tab, open a file or open a link someone shared with you.')
       listHead.replaceChildren()
+      // A list only while it has rows (the message is not one).
+      list.removeAttribute('role')
       list.replaceChildren(el('p', { class: 'empty', textContent: text }))
     } else {
       const head =

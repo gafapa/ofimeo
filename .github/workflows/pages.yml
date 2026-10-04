@@ -39,5 +39,7 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
+          # /.well-known/security.txt (excluded by default since v5).
+          include-hidden-files: true
       - id: deployment
         uses: actions/deploy-pages@v5

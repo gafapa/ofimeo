@@ -104,11 +104,12 @@ export function inkSvg(strokes: Stroke[], crop = true): string | null {
   if (!box) return null
   const vb = crop ? `${round(box.x)} ${round(box.y)} ${round(box.width)} ${round(box.height)}` : `0 0 ${round(box.x + box.width)} ${round(box.y + box.height)}`
   const [, , w, h] = vb.split(' ')
+  // Strokes come from the shared document: only numbers and escaped colors reach the markup.
   const body = strokes
     .map((s) =>
       s.tool === 'highlighter'
-        ? `<path d="${linePath(s.points)}" fill="none" stroke="${escapeAttr(s.color)}" stroke-width="${s.width}" stroke-linecap="round" stroke-linejoin="round" opacity="${HIGHLIGHT_OPACITY}"/>`
-        : `<path d="${penPath(s.points, s.width)}" fill="${escapeAttr(s.color)}"/>`,
+        ? `<path d="${linePath(s.points)}" fill="none" stroke="${escapeAttr(String(s.color))}" stroke-width="${round(Number(s.width) || 1)}" stroke-linecap="round" stroke-linejoin="round" opacity="${HIGHLIGHT_OPACITY}"/>`
+        : `<path d="${penPath(s.points, Number(s.width) || 1)}" fill="${escapeAttr(String(s.color))}"/>`,
     )
     .join('')
   return `<svg xmlns="${SVG_NS}" viewBox="${vb}" width="${w}" height="${h}">${body}</svg>`

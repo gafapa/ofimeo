@@ -135,6 +135,26 @@ function placeholderLabels(graph: Graph): void {
   }
 }
 
+// HTML labels come from shared documents and imported files: maxGraph inserts
+// them as HTML, so they are sanitized when drawn (scripts, event handlers and
+// javascript: URLs removed). Labels repeat on every redraw: results are cached.
+const sanitized = new Map<string, string>()
+function sanitizedLabels(graph: Graph): void {
+  const renderer = graph.cellRenderer
+  const getLabelValue = renderer.getLabelValue.bind(renderer)
+  renderer.getLabelValue = (state: CellState) => {
+    const value = getLabelValue(state)
+    if (!value || !graph.isHtmlLabel(state.cell) || !/<|&/.test(value)) return value
+    let clean = sanitized.get(value)
+    if (clean === undefined) {
+      clean = sanitizeHtml(value)
+      if (sanitized.size > 2000) sanitized.clear()
+      sanitized.set(value, clean)
+    }
+    return clean
+  }
+}
+
 // Rendering like draw.io: its stylesheet, HTML labels only with html=1, theme colors.
 export function applyLook(graph: Graph): void {
   configureDrawioStylesheet(graph.getStylesheet())
@@ -145,6 +165,7 @@ export function applyLook(graph: Graph): void {
   graph.isHtmlLabel = (cell: Cell) => String((cell.getStyle() as Record<string, unknown>)?.html ?? '') === '1'
   labelAndTerminalTweaks(graph)
   placeholderLabels(graph)
+  sanitizedLabels(graph)
   const getCellStyle = graph.getCellStyle.bind(graph)
   graph.getCellStyle = (cell: Cell) => resolveColors(graph, cell, getCellStyle(cell))
   // draw.io's label spacing (maxGraph uses 0).
@@ -356,7 +377,7 @@ function richTextEditing(graph: Graph): void {
 export function sanitizeHtml(html: string): string {
   if (!/<|&/.test(html)) return html
   const doc = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html')
-  doc.body.querySelectorAll('script, style, iframe, object, embed, link, meta').forEach((n) => n.remove())
+  doc.body.querySelectorAll('script, style, iframe, frame, object, embed, link, meta, base').forEach((n) => n.remove())
   for (const node of doc.body.querySelectorAll('*')) {
     for (const attr of [...node.attributes]) {
       if (/^on/i.test(attr.name) || /^\s*javascript:/i.test(attr.value)) node.removeAttribute(attr.name)

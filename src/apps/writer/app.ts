@@ -222,6 +222,8 @@ export function mountWriter(session: Session, root: HTMLElement): WriterContext 
     ],
     editable,
     editorProps: {
+      // Screen readers announce the editing area by name.
+      attributes: { 'aria-label': t('Document') },
       // spellcheck and lang come from the spelling extension.
       handlePaste: (_view, event) => insertImageFiles(event.clipboardData?.files),
       handleDrop: (_view, event) => insertImageFiles((event as DragEvent).dataTransfer?.files),

@@ -3,6 +3,8 @@ import { accessOf, keysForAccess, mergeKeys, newLinkKeys, resolveKeys, sign, ver
 import { isParsed, parseShareLink } from '../../src/core/import-link'
 import { listAccounts, saveAccount, removeAccount, type NcAccount } from '../../src/core/nextcloud'
 import { clearMoodleAccount, loadMoodleAccount, saveMoodleAccount, type MoodleAccount } from '../../src/core/moodle-store'
+import * as Y from 'yjs'
+import { Channel, type RoomProvider } from '../../src/core/network'
 
 class TestStorage {
   values = new Map<string, string>()
@@ -100,6 +102,31 @@ export async function runTests(): Promise<void> {
     assert.equal(loadMoodleAccount()?.token, moodle.token)
     clearMoodleAccount()
     assert.equal(loadMoodleAccount(), null)
+  })
+  await check('a forged copy with a genuine signature does not hide the real change', async () => {
+    Object.assign(globalThis, { window: globalThis })
+    // A room with one remote peer; nothing is sent anywhere.
+    const peers = new Map<string, { id: string }>()
+    const provider = { peers, peerCount: 0, peer: (id: string) => peers.get(id) ?? peers.set(id, { id }).get(id)! } as unknown as RoomProvider
+    const action = () => ({ send: async () => {}, onMessage: (() => {}) as (data: Uint8Array, meta: { peerId: string }) => void })
+    const context = 'doc:main'
+    const writerDoc = new Y.Doc()
+    const writer = new Channel(provider, action() as never, writerDoc, { verifier: editor.editVerifier!, signer: editor.editSigner!, context })
+    writerDoc.getText('t').insert(0, 'genuine change')
+    const genuine = await writer.sealForStore(Y.encodeStateAsUpdate(writerDoc))
+    writer.destroy()
+    // Same signature, altered payload: one byte of the update flipped.
+    const forged = genuine.slice()
+    forged[6] ^= 0xff
+    const viewerDoc = new Y.Doc()
+    const viewerAction = action()
+    const reader = new Channel(provider, viewerAction as never, viewerDoc, { verifier: editor.editVerifier!, context })
+    viewerAction.onMessage(forged, { peerId: 'attacker' })
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    viewerAction.onMessage(genuine, { peerId: 'editor' })
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    assert.equal(viewerDoc.getText('t').toString(), 'genuine change')
+    reader.destroy()
   })
   console.log(`${count}/${count} core tests passed`)
 }

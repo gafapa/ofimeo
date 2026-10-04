@@ -143,31 +143,36 @@ export function mountHome(root: HTMLElement): void {
         nameButton(nameInput),
       ),
       tabs.bar,
-      tabs.panel(
-        'home',
-        el(
-          'section',
-          { class: 'home-new' },
-          el('div', { class: 'home-inner' }, el('div', { class: 'home-section-title' }, el('h2', { textContent: t('Start something new') }), el('span', { class: 'home-open-buttons' }, openButton, moreOpen), fileInput), newCards),
-        ),
-        moodleSlot,
-        reminderSlot,
-      ),
-      tabs.panel('templates', el('section', { class: 'home-templates' }, gallery.element)),
-      tabs.panel(
-        'docs',
-        el(
-          'section',
-          { class: 'home-recent' },
-          docs.element,
+      // The tab panels are the page's main content (screen reader landmark).
+      el(
+        'main',
+        { class: 'home-main', id: 'home-main' },
+        tabs.panel(
+          'home',
           el(
-            'div',
-            { class: 'home-inner' },
-            el('p', {
-              class: 'hint',
-              textContent:
-                t('Documents are stored in this browser. Share a document to edit it with others in real time; edits travel directly between browsers.'),
-            }),
+            'section',
+            { class: 'home-new' },
+            el('div', { class: 'home-inner' }, el('div', { class: 'home-section-title' }, el('h2', { textContent: t('Start something new') }), el('span', { class: 'home-open-buttons' }, openButton, moreOpen), fileInput), newCards),
+          ),
+          moodleSlot,
+          reminderSlot,
+        ),
+        tabs.panel('templates', el('section', { class: 'home-templates' }, gallery.element)),
+        tabs.panel(
+          'docs',
+          el(
+            'section',
+            { class: 'home-recent' },
+            docs.element,
+            el(
+              'div',
+              { class: 'home-inner' },
+              el('p', {
+                class: 'hint',
+                textContent:
+                  t('Documents are stored in this browser. Share a document to edit it with others in real time; edits travel directly between browsers.'),
+              }),
+            ),
           ),
         ),
       ),

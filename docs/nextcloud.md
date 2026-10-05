@@ -79,7 +79,11 @@ exact origins for another deployment. Mount the file read-only at
 then recreate only the Nextcloud application container. It covers WebDAV,
 file-drop uploads, app-password revocation and Login Flow v2 (as Ofimeo calls
 it, `/index.php/login/v2` and `/index.php/login/v2/poll`), including error
-responses and OPTIONS preflight. It does not enable cookie credentials.
+responses and OPTIONS preflight. It does not enable cookie credentials. The
+preflight rule sits inside the `<LocationMatch>`: rewrite rules at server level
+are not inherited by the image's `<VirtualHost>`, so the preflight would reach
+Nextcloud and get 401. Checked on the Nextcloud 33 Apache image: preflight 204
+with the CORS headers for the two origins, nothing for other origins.
 
 Browsers only let a page talk to another site when that site allows it
 (CORS). Nextcloud does not allow other sites by default, so unless Ofimeo

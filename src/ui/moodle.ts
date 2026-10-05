@@ -5,7 +5,7 @@
 
 import { BookOpenCheck, ExternalLink, GraduationCap, Paperclip, RefreshCw } from 'lucide'
 import { appForFile } from '../apps/registry'
-import { safeFileName } from '../core/handin'
+import { downloadBlob, safeFileName } from '../core/handin'
 import { locale, t, tn } from '../core/i18n'
 import * as md from '../core/moodle'
 import type { MoodleAccount, MoodleTask } from '../core/moodle'
@@ -142,9 +142,16 @@ export function sanitizeHtml(html: string): DocumentFragment {
       if (tag === 'a') {
         const href = src.getAttribute('href') ?? ''
         if (/^https?:\/\//i.test(href)) {
-          copy.setAttribute('href', /\/(webservice\/)?pluginfile\.php\//.test(href) ? md.fileLink(href.replace('/pluginfile.php/', '/webservice/pluginfile.php/').replace('/webservice/webservice/', '/webservice/')) : href)
+          // Moodle files: downloaded with the token in the request, never in an
+          // address the browser keeps (history, downloads list).
+          const file = moodleFile(href)
+          copy.setAttribute('href', file ? browserUrl(href) : href)
           copy.setAttribute('target', '_blank')
           copy.setAttribute('rel', 'noopener noreferrer')
+          if (file) copy.addEventListener('click', (e) => {
+            e.preventDefault()
+            void saveTaskFile({ name: file, url: tokenUrl(href) })
+          })
         }
       } else if (tag === 'img') {
         const url = src.getAttribute('src') ?? ''
@@ -395,7 +402,12 @@ function taskDetails(task: MoodleTask): HTMLElement {
         'ul',
         { class: 'md-files' },
         ...task.files.map((f) => {
-          const link = el('a', { href: md.fileLink(f.url), target: '_blank', rel: 'noopener noreferrer', download: f.name }, icon(Paperclip, 14), el('span', { textContent: f.name }))
+          // The token travels in the request, not in an address the browser keeps.
+          const link = el('a', { href: browserUrl(f.url), target: '_blank', rel: 'noopener noreferrer' }, icon(Paperclip, 14), el('span', { textContent: f.name }))
+          link.addEventListener('click', (e) => {
+            e.preventDefault()
+            void saveTaskFile(f)
+          })
           const open = el('button', { type: 'button', class: 'md-btn small', textContent: t('Open in Ofimeo') })
           open.addEventListener('click', () => void openInOfimeo(f, open))
           return el('li', {}, link, f.size ? el('span', { class: 'md-size', textContent: sizeText(f.size) }) : null, open)
@@ -408,6 +420,38 @@ function taskDetails(task: MoodleTask): HTMLElement {
   if (!task.fileSubmission && !md.taskDone(task)) box.append(el('p', { class: 'hint', textContent: task.onlineText ? t('This assignment is answered as text in Moodle.') : t('This assignment is not handed in as a file.') }))
   box.append(el('p', {}, el('a', { href: task.link, target: '_blank', rel: 'noopener noreferrer', class: 'md-open-link' }, icon(ExternalLink, 14), el('span', { textContent: t('Open in Moodle') }))))
   return box
+}
+
+// Moodle file addresses: the web service form (needs the token) and the
+// browser form (works with a Moodle session in this browser).
+const PLUGINFILE = /\/(webservice\/)?pluginfile\.php\//
+const tokenUrl = (url: string) => url.replace(/\/(webservice\/)?pluginfile\.php\//, '/webservice/pluginfile.php/')
+function browserUrl(url: string): string {
+  const u = new URL(url.replace('/webservice/pluginfile.php/', '/pluginfile.php/'))
+  u.searchParams.delete('token')
+  return u.href
+}
+// The file name of a Moodle file link of the connected site (null: another link).
+function moodleFile(url: string): string | null {
+  if (!PLUGINFILE.test(url)) return null
+  const account = md.loadMoodleAccount()
+  try {
+    const u = new URL(url)
+    if (!account || u.origin !== new URL(account.site).origin) return null
+    return decodeURIComponent(u.pathname.split('/').pop() || '') || null
+  } catch {
+    return null
+  }
+}
+
+// Saves an attachment to the computer.
+async function saveTaskFile(file: { name: string; url: string; mimetype?: string }): Promise<void> {
+  try {
+    toast(t('Downloading…'))
+    downloadBlob(await md.downloadFile(file, { confirmRelay }), file.name)
+  } catch (err) {
+    toast(errorText(err))
+  }
 }
 
 // Imports an attachment as a new Ofimeo document (a plain copy, not linked).

@@ -15,6 +15,13 @@ New connections and their task caches last for the browser tab's session by
 default. Select **Remember this connection on this device** to persist the
 token on a trusted personal device. Disconnect removes both persistent and
 session credentials and the task cache; the password is never saved.
+Attachments of assignments are downloaded with the token in the request, never
+in a link, so it does not stay in the browser's history or downloads list (the
+link itself points to the normal Moodle address, which works with a Moodle
+session in this browser). Images in descriptions still load with the token,
+like in the Moodle app. Detecting single sign-on reads the public configuration
+(`lib/ajax/service-nologin.php`), which Moodle does not open to other origins:
+without a relay, Ofimeo cannot tell and the password sign-in reports the error.
 
 ## 1. Turn on the Moodle app's web services
 

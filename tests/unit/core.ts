@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { accessOf, keysForAccess, mergeKeys, newLinkKeys, resolveKeys, sign, verify } from '../../src/core/keys'
 import { isParsed, parseShareLink } from '../../src/core/import-link'
-import { listAccounts, saveAccount, removeAccount, type NcAccount } from '../../src/core/nextcloud'
+import { listAccounts, saveAccount, removeAccount, startLoginFlow, type NcAccount } from '../../src/core/nextcloud'
 import { clearMoodleAccount, loadMoodleAccount, saveMoodleAccount, type MoodleAccount } from '../../src/core/moodle-store'
 import * as Y from 'yjs'
 import { Channel, type RoomProvider } from '../../src/core/network'
@@ -102,6 +102,19 @@ export async function runTests(): Promise<void> {
     assert.equal(loadMoodleAccount()?.token, moodle.token)
     clearMoodleAccount()
     assert.equal(loadMoodleAccount(), null)
+  })
+  await check('the Nextcloud login flow only opens web addresses', async () => {
+    Object.defineProperty(globalThis, 'navigator', { value: { onLine: true }, configurable: true })
+    const realFetch = globalThis.fetch
+    const answer = (login: string) => (globalThis.fetch = (async () => new Response(JSON.stringify({ login, poll: { token: 't', endpoint: 'x' } }), { status: 200 })) as typeof fetch)
+    try {
+      answer('javascript:alert(document.domain)')
+      await assert.rejects(startLoginFlow('https://cloud.example'))
+      answer('https://cloud.example/login/v2/flow/abc')
+      assert.equal((await startLoginFlow('https://cloud.example')).login, 'https://cloud.example/login/v2/flow/abc')
+    } finally {
+      globalThis.fetch = realFetch
+    }
   })
   await check('a forged copy with a genuine signature does not hide the real change', async () => {
     Object.assign(globalThis, { window: globalThis })

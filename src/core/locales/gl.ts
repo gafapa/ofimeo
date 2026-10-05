@@ -2818,6 +2818,7 @@ const gl: Record<string, string> = {
   'A new version of Ofimeo is ready. Update from the home screen when you have finished editing.': 'Hai unha nova versión de Ofimeo. Actualiza desde o inicio cando remates de editar.',
   'Update now': 'Actualizar agora',
   'Later': 'Máis tarde',
+  'Downloading…': 'Descargando…',
 }
 
 export default gl

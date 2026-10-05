@@ -2818,6 +2818,7 @@ const de: Record<string, string> = {
   'A new version of Ofimeo is ready. Update from the home screen when you have finished editing.': 'Eine neue Version von Ofimeo ist bereit. Aktualisieren Sie auf der Startseite, wenn Sie die Bearbeitung beendet haben.',
   'Update now': 'Jetzt aktualisieren',
   'Later': 'Später',
+  'Downloading…': 'Wird heruntergeladen…',
 }
 
 export default de

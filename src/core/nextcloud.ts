@@ -489,8 +489,16 @@ export interface LoginFlow {
 export async function startLoginFlow(server: string): Promise<LoginFlow> {
   const res = await send(`${server}/index.php/login/v2`, 'POST', null)
   if (!res.ok) throw statusError(res)
-  const json = (await res.json()) as { login: string; poll: { token: string; endpoint: string } }
-  return { login: json.login, token: json.poll.token }
+  const json = (await res.json()) as { login?: unknown; poll?: { token?: unknown } }
+  // The login page is opened from this app: only a web address the server gave.
+  let login: URL
+  try {
+    login = new URL(String(json.login))
+  } catch {
+    throw new NcError('not-nextcloud')
+  }
+  if (!/^https?:$/.test(login.protocol) || typeof json.poll?.token !== 'string') throw new NcError('not-nextcloud')
+  return { login: login.href, token: json.poll.token }
 }
 
 // Waits until the user grants access in the other tab; returns the app password.

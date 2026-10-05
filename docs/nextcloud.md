@@ -77,7 +77,8 @@ allows only `https://ofimeo.com` and `https://gafapa.github.io`; change those
 exact origins for another deployment. Mount the file read-only at
 `/etc/apache2/conf-enabled/ofimeo-cors.conf`, verify it with `apache2ctl -t`,
 then recreate only the Nextcloud application container. It covers WebDAV,
-file-drop uploads, app-password revocation and Login Flow v2, including error
+file-drop uploads, app-password revocation and Login Flow v2 (as Ofimeo calls
+it, `/index.php/login/v2` and `/index.php/login/v2/poll`), including error
 responses and OPTIONS preflight. It does not enable cookie credentials.
 
 Browsers only let a page talk to another site when that site allows it

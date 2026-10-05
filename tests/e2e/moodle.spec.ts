@@ -2,7 +2,7 @@
 // (src/core/moodle.ts, src/ui/moodle.ts, relay/moodle.go), against the mock
 // Moodle in tests/moodle-mock.mjs, started here.
 import { execFileSync, spawn, type ChildProcess } from 'node:child_process'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { connect } from 'node:net'
 import { join, resolve } from 'node:path'
@@ -96,12 +96,17 @@ test('connect, see the tasks, hand in a document as PDF, disconnect', async ({ p
   await expect(done.locator('.md-chip').first()).toHaveText('Graded: 8,00 / 10,00')
   await expect(panel.locator('.md-updated')).toContainText('Last updated')
 
-  // Details: sanitized description, attachment link with the token, feedback.
+  // Details: sanitized description, attachment (the token never in a link), feedback.
   const essay = pending.locator('.md-task', { hasText: 'Essay: My town' })
   await essay.locator('summary').click()
   await expect(essay.locator('.md-intro')).toContainText('300 words')
   expect(await essay.locator('.md-intro script, .md-intro [onerror], .md-intro a[href^="javascript"]').count()).toBe(0)
-  await expect(essay.locator('.md-files a')).toHaveAttribute('href', /pluginfile\.php\/5\/mod_assign\/introattachment\/0\/rubric\.pdf\?token=tok-cors/)
+  const attachment = essay.locator('.md-files a')
+  await expect(attachment).toHaveAttribute('href', `${MOCK}/cors/pluginfile.php/5/mod_assign/introattachment/0/rubric.pdf`)
+  // Clicking downloads it with the token in the request only.
+  const [attached] = await Promise.all([page.waitForEvent('download'), attachment.click()])
+  expect(attached.suggestedFilename()).toBe('rubric.pdf')
+  expect(readFileSync(await attached.path(), 'latin1')).toContain('%PDF-1.4')
   await expect(essay.locator('.md-open-link')).toHaveAttribute('href', `${MOCK}/cors/mod/assign/view.php?id=101`)
   const poem = done.locator('.md-task')
   await poem.locator('summary').click()

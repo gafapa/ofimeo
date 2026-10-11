@@ -610,7 +610,7 @@ Each dictionary is served as a separate data file next to its license (dictionar
 | lodash.union | 4.6.0 | MIT | https://github.com/lodash/lodash |
 | lodash.uniq | 4.5.0 | MIT | https://github.com/lodash/lodash |
 | long | 5.3.2 | Apache-2.0 | https://github.com/dcodeIO/long.js |
-| lucide | 1.49.0 | ISC | https://github.com/lucide-icons/lucide |
+| lucide | 1.50.0 | ISC | https://github.com/lucide-icons/lucide |
 | marked | 16.4.2 | MIT | https://github.com/markedjs/marked |
 | marked | 18.0.14 | MIT | https://github.com/markedjs/marked |
 | mathlive | 0.111.0 | MIT | https://github.com/arnog/mathlive |
@@ -7710,9 +7710,9 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ````
 
-### lucide 1.49.0
+### lucide 1.50.0
 
-Applies to: lucide 1.49.0 (LICENSE)
+Applies to: lucide 1.50.0 (LICENSE)
 
 ````text
 ISC License

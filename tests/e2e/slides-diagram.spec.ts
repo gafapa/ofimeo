@@ -116,3 +116,39 @@ test('Tab walks through the objects of the canvas', async ({ page }) => {
   await page.keyboard.press('Tab')
   await expect(canvas).not.toBeFocused()
 })
+
+test('diagram pages are a tab list: arrow keys move between the tabs, Enter shows the page', async ({ page }) => {
+  const errors = trackErrors(page)
+  await openApp(page, 'diagram')
+  await page.locator('.page-add').click()
+  const list = page.getByRole('tablist', { name: 'Pages' })
+  const tabs = list.getByRole('tab')
+  await expect(tabs).toHaveCount(2)
+  await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true')
+  // The New page button is not inside the tab list.
+  await expect(list.locator('.page-add')).toHaveCount(0)
+  await tabs.nth(1).focus()
+  await page.keyboard.press('ArrowLeft')
+  await expect(tabs.nth(0)).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true')
+  await expect(tabs.nth(0)).toBeFocused()
+  expect(errors).toEqual([])
+})
+
+test('a container shows its collapse box', async ({ page }) => {
+  const missing: string[] = []
+  page.on('response', (r) => r.status() >= 400 && missing.push(r.url()))
+  await openApp(page, 'diagram')
+  const xml =
+    '<mxfile><diagram name="Page-1" id="p1"><mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/>' +
+    '<mxCell id="lane" value="Lane" style="swimlane;" vertex="1" parent="1"><mxGeometry x="40" y="40" width="200" height="160" as="geometry"/></mxCell>' +
+    '<mxCell id="box" value="Box" style="rounded=0;" vertex="1" parent="lane"><mxGeometry x="20" y="40" width="80" height="40" as="geometry"/></mxCell>' +
+    '</root></mxGraphModel></diagram></mxfile>'
+  await page.locator('input[type=file][accept*=".drawio"]').first().setInputFiles({ name: 'lane.drawio', mimeType: 'application/xml', buffer: Buffer.from(xml) })
+  await expect(page).toHaveURL(/doc=(?!diagram-)/, { timeout: 30_000 })
+  await page.locator('.diagram-canvas svg').first().waitFor()
+  await expect.poll(() => canvasText(page)).toContain('Lane')
+  await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('.diagram-canvas image')].filter((i) => (i.getAttribute('href') ?? i.getAttribute('xlink:href') ?? '').startsWith('data:image/svg+xml')).length)).toBe(1)
+  expect(missing.filter((url) => !url.startsWith('ws'))).toEqual([])
+})

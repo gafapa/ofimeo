@@ -742,9 +742,12 @@ export function createDiagramEditor(session: Session, options: EditorOptions) {
       if (tabSelect(e.shiftKey)) e.preventDefault()
       return
     }
-    if (options.onKey?.(e)) return
     const modKey = e.ctrlKey || e.metaKey
     const key = e.key.toLowerCase()
+    // On a button, link or tab outside the canvas, Enter and the arrow keys are that control's.
+    const onControl = e.target instanceof Element && !canvas.contains(e.target) && !!e.target.closest('button, a[href], [role="button"], [role="tab"]')
+    if (onControl && !modKey && (key === 'enter' || key.startsWith('arrow'))) return
+    if (options.onKey?.(e)) return
     let handled = true
     // Ctrl+O/S/P/F, Ctrl+/ and the zoom keys come from the app frame (src/ui/shortcuts.ts).
     if (modKey && key === 'h' && e.shiftKey) fit()

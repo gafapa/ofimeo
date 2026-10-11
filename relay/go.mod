@@ -1,6 +1,6 @@
 module ofimeo-relay
 
-go 1.27.1
+go 1.27.2
 
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.5.0
@@ -21,7 +21,7 @@ require (
 	github.com/pion/stun/v3 v3.1.5 // indirect
 	github.com/pion/transport/v4 v4.0.2 // indirect
 	github.com/wlynxg/anet v0.0.5 // indirect
-	golang.org/x/net v0.58.0 // indirect
+	golang.org/x/net v0.60.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect
 	golang.org/x/text v0.42.0 // indirect
 )

@@ -34,15 +34,16 @@ const cell = (page: Page, ref: string) => {
 }
 const live = (page: Page) => page.locator('.app > [role=status][aria-live]')
 
-async function seriousViolations(page: Page) {
+// By default the accessible view and the app frame around it (Univer's canvas
+// grid is hidden and inert meanwhile); with univer, Univer's toolbar and sheet bar too.
+async function seriousViolations(page: Page, univer = false) {
   // Through the test channel: the page's CSP blocks inline scripts.
   await page.evaluate(readFileSync(AXE, 'utf8'))
-  return page.evaluate(async () => {
+  return page.evaluate(async (univer) => {
     const axe = (window as unknown as { axe: { run: (ctx: unknown, opts: unknown) => Promise<{ violations: { id: string; impact: string; nodes: { target: string[] }[] }[] }> } }).axe
-    // The accessible view and the app frame around it (Univer's canvas grid is hidden and inert meanwhile).
-    const result = await axe.run({ include: [['.app']], exclude: [['.sheet-host']] }, { resultTypes: ['violations'] })
+    const result = await axe.run({ include: [['.app']], exclude: univer ? [] : [['.sheet-host']] }, { resultTypes: ['violations'] })
     return result.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)
-  })
+  }, univer)
 }
 
 test('the accessible table view edits with the keyboard, syncs to a second browser and passes axe', async ({ browser }) => {
@@ -208,4 +209,14 @@ test('a view link gets a read-only table view', async ({ browser }) => {
   await expect(cell(viewer, 'A1')).toHaveText('Kept')
   expect(await seriousViolations(viewer)).toEqual([])
   expect(errors).toEqual([])
+})
+
+test("Univer's toolbar and sheet bar give every control a name", async ({ page }) => {
+  await page.addInitScript(english)
+  await open(page, newDoc())
+  await expect(page.getByRole('group', { name: 'Font size' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'New sheet' })).toBeVisible()
+  // Univer's own names stay.
+  await expect(page.getByRole('button', { name: 'Merge cells' })).toBeVisible()
+  await expect.poll(() => seriousViolations(page, true)).toEqual([])
 })

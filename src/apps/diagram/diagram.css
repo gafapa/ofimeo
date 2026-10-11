@@ -100,6 +100,7 @@
 
 /* Page tabs in the status bar */
 .page-tabs { display: flex; align-items: center; gap: 2px; min-width: 0; overflow-x: auto; }
+.page-tab-list { display: flex; align-items: center; gap: 2px; }
 .page-tab {
   display: flex; align-items: center; gap: 4px; border: 1px solid transparent; border-radius: 4px; background: none;
   padding: 2px 10px; color: var(--muted); white-space: nowrap; font-size: var(--fs-s);

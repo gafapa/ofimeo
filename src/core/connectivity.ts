@@ -259,7 +259,21 @@ function schoolNostrRelays(r: SchoolRelay): string[] {
   return r.config?.relays.length ? r.config.relays : [`${r.address.replace(/^http/, 'ws')}/nostr`]
 }
 
-// Trystero's default public relays for this app (the same selection it makes).
+// Default relays that no longer accept connections (bad certificate or no
+// answer, checked 2026-10-11): skipped, so rooms use five that answer. The
+// order is kept, so the working ones stay those of earlier versions and peers
+// of both still meet.
+const DEAD_RELAYS = new Set([
+  'wss://chorus.pjv.me',
+  'wss://koru.bitcointxoko.org',
+  'wss://nostr.tegila.com.br',
+  'wss://nostr.vulpem.com',
+  'wss://relay.agorist.space',
+  'wss://relay.artio.inf.unibe.ch',
+  'wss://relay.mostr.pub',
+])
+
+// Trystero's default public relays for this app (the same order it uses), without dead ones.
 export function publicRelays(): string[] {
   let seed = [...APP_ID].reduce((a, c) => a + c.charCodeAt(0), 0) % Number.MAX_SAFE_INTEGER
   const list = [...defaultRelayUrls]
@@ -271,7 +285,7 @@ export function publicRelays(): string[] {
     const j = Math.floor(rand() * i--)
     ;[list[i], list[j]] = [list[j], list[i]]
   }
-  return list.slice(0, 5)
+  return list.filter((url) => !DEAD_RELAYS.has(url)).slice(0, 5)
 }
 
 // Custom relays from the URL (?relays=wss://a,wss://b), used instead of the public ones.
@@ -281,19 +295,20 @@ export function urlRelays(): string[] | undefined {
 }
 
 // Nostr relays for rooms: explicit ones win; a school relay is used with the
-// public ones (or alone); undefined keeps Trystero's defaults.
-export function nostrRelays(explicit?: string[]): string[] | undefined {
+// public ones (or alone).
+export function nostrRelays(explicit?: string[]): string[] {
   if (explicit?.length) return explicit
   // Nostr relays of the school configuration, with the school relay's.
   const extra = school.nostr?.relays ?? []
-  if (!relay) return extra.length ? (forcedOnly ? extra : [...extra, ...publicRelays()]) : undefined
+  if (!relay) return forcedOnly ? extra : [...extra, ...publicRelays()]
   const own = [...new Set([...schoolNostrRelays(relay), ...extra])]
   return relay.only ? own : [...own, ...publicRelays()]
 }
 
 // Every relay the app would use, for the connection test.
 export function effectiveRelays(): string[] {
-  return nostrRelays(urlRelays()) ?? publicRelays()
+  const list = nostrRelays(urlRelays())
+  return list.length ? list : publicRelays()
 }
 
 // Trystero's default STUN servers (used unless only the school relay is used).

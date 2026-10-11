@@ -486,7 +486,7 @@ Un **PDF protegido con contraseña** la pide al abrirlo. El documento guarda el 
 - **Añadir sección** y **Añadir página** están en el panel de la izquierda. Arrastra páginas y secciones para ordenarlas, o suelta una página sobre la pestaña de otra sección para moverla allí. Con el teclado: \`Alt+↑\` / \`Alt+↓\`.
 - El botón **⋯** de una página (o el clic derecho) la convierte en subpágina, la mueve a otra sección, la exporta, la imprime o la elimina.
 - **Buscar en el cuaderno** (\`Ctrl+F\`) busca en los títulos y el texto de todas las páginas.
-- En el móvil, el botón **Secciones y páginas** de la parte superior las abre como un panel.
+- En una tableta o en el móvil, el botón **Secciones y páginas** de la parte superior las abre como un panel.
 
 ## Escribir
 - Cada página tiene un título, la fecha en que se creó y texto libre con títulos, listas, listas de comprobación, tablas, imágenes, enlaces, ecuaciones y código.

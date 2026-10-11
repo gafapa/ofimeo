@@ -743,11 +743,11 @@ Limitations:
 Ofimeo Notebook (`src/apps/notebook/`) keeps class notes like OneNote:
 **sections** (coloured tabs) hold **pages** with **subpages** (two levels).
 
-- **Panel**: sections and pages side by side (a drawer on phones, opened from
-  the "Sections and pages" button at the top of the page). Drag and drop
-  reorders pages and sections and moves a page to another section (drop it on
-  the tab); `Alt+↑`/`Alt+↓` on a focused item does the same. **Search
-  notebook** (`Ctrl+F`) searches titles and text of all pages.
+- **Panel**: sections and pages side by side (a drawer on tablets and phones,
+  opened from the "Sections and pages" button at the top of the page). Drag
+  and drop reorders pages and sections and moves a page to another section
+  (drop it on the tab); `Alt+↑`/`Alt+↓` on a focused item does the same.
+  **Search notebook** (`Ctrl+F`) searches titles and text of all pages.
 - **Pages**: a title, the creation date and flowing rich text with the
   writer's editor schema (headings, lists, checklists, tables, pictures, links,
   equations, code). Pasted or dropped pictures are stored in the document
@@ -1597,7 +1597,8 @@ not decided yet (options in [docs/legal/README.md](docs/legal/README.md)).
 ## Development
 
 `npm run dev` and `npm run build` first run `npm run prepare:assets`, which
-copies Excalidraw's fonts into `public/excalidraw` and builds draw.io's shape
+copies Excalidraw's fonts into `public/excalidraw` (the build also points
+Excalidraw's CDN fallback for fonts there) and builds draw.io's shape
 libraries into `public/diagram-libs` (both generated, not committed). The
 libraries come from the draw.io release pinned in `scripts/drawio.json`
 (downloaded once into `node_modules/.cache`, checked against its SHA-256);
@@ -1711,8 +1712,9 @@ A school can host its own Ofimeo and configure it for everyone
 App-specific limitations are listed with each app above (Forms, PDF annotation,
 Notebook, Chat); these are the general ones.
 
-- Public Nostr relays are community-run with no guarantees; several are used at
-  once.
+- Public Nostr relays are community-run with no guarantees; five are used at
+  once, and Trystero's default relays known to be down are skipped
+  (`DEAD_RELAYS` in `src/core/connectivity.ts`).
 - Without a school's Ofimeo Relay there is no TURN server, so networks that
   block direct WebRTC connections (strict firewalls, Wi-Fi client isolation)
   leave people unable to sync live; the relay's TURN (see *School networks*)

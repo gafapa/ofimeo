@@ -10,7 +10,8 @@
 .fm-tabs > .fm-tab:last-child { margin-right: auto; }
 .fm-tab { border: 0; background: none; padding: 10px 16px; border-bottom: 3px solid transparent; color: var(--muted); font-weight: 500; white-space: nowrap; }
 .fm-tab:hover { color: var(--text); background: var(--hover); }
-.fm-tab.active { color: var(--app-color); border-bottom-color: var(--app-color); }
+/* The text keeps the theme's colour: the app colour is too dark on dark themes. */
+.fm-tab.active { color: var(--text); border-bottom-color: var(--app-color); }
 .fm-subtabs { display: flex; gap: var(--space-1); flex-wrap: wrap; }
 .fm-subtab { border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-pill); padding: 5px 14px; }
 .fm-subtab.active { background: var(--active); color: var(--active-fg); border-color: var(--active); }

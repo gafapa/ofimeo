@@ -27,7 +27,9 @@ import { provideWebMcpTools } from '../../core/webmcp'
 export const DRAW_ACCEPT = '.excalidraw'
 
 // Fonts are served from our own origin (copied by scripts/copy-excalidraw-assets.mjs).
-;(window as any).EXCALIDRAW_ASSET_PATH = `${import.meta.env.BASE_URL}excalidraw/`
+// An absolute address: Excalidraw resolves a relative one against the origin,
+// which misses the folder of a suite served from a subpath.
+;(window as any).EXCALIDRAW_ASSET_PATH = new URL('excalidraw/', document.baseURI).href
 
 // Excalidraw API of each open session (for hand in).
 export const drawApis = new WeakMap<Session, any>()

@@ -1,4 +1,6 @@
 import { randomBytes } from 'node:crypto'
+import { readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { expect, test, type Page } from '@playwright/test'
 import { RELAYS, trackErrors } from './helpers'
 
@@ -166,4 +168,28 @@ test('quiz: two students answer (one offline), the teacher receives encrypted re
   await sheet.locator('.app-sheet canvas').first().waitFor({ timeout: 60_000 })
   await expect(sheet).toHaveTitle(/Repaso de ciencias - Responses/)
   expect(errors).toEqual([])
+})
+
+test('the form editor keeps readable contrast in the light and dark themes', async ({ browser }) => {
+  const axe = readFileSync(createRequire(import.meta.url).resolve('axe-core/axe.min.js'), 'utf8')
+  for (const theme of ['light', 'dark']) {
+    const context = await browser.newContext()
+    const page = await context.newPage()
+    await page.addInitScript((theme) => {
+      localStorage.setItem('ofimeo:language', 'en')
+      localStorage.setItem('ofimeo:a11y', JSON.stringify({ theme }))
+    }, theme)
+    await page.goto(`/${RELAYS}#new=forms`)
+    await page.locator('.fm-tab.active').waitFor({ timeout: 60_000 })
+    await page.locator('.persist-notice button').first().click({ timeout: 3000 }).catch(() => {})
+    // Through the test channel: the page's CSP blocks inline scripts.
+    await page.evaluate(axe)
+    const low = await page.evaluate(async () => {
+      const run = (window as unknown as { axe: { run: (ctx: unknown, opts: unknown) => Promise<{ violations: { nodes: { target: string[] }[] }[] }> } }).axe.run
+      const result = await run({ include: [['.app']] }, { runOnly: ['color-contrast'] })
+      return result.violations.flatMap((v) => v.nodes.map((n) => n.target.join(' ')))
+    })
+    expect(low, theme).toEqual([])
+    await context.close()
+  }
 })

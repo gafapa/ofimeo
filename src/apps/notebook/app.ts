@@ -93,6 +93,8 @@ const IMAGE_MAX_SIDE = 1600
 const FILE_MAX = 5 * 1024 * 1024
 const ZOOMS = [0.5, 0.75, 0.9, 1, 1.25, 1.5, 2]
 const LAST_PAGE_KEY = 'ofimeo:notebook-page:'
+// Up to this window width the sections and pages panel is a drawer (notebook.css).
+const DRAWER_MAX = 1024
 const PEN_COLORS = ['#1a237e', '#000000', '#c62828', '#2e7d32', '#1565c0', '#6a1b9a', '#ef6c00']
 const HIGHLIGHT_COLORS = ['#ffeb3b', '#76ff03', '#18ffff', '#ff4081', '#ffab40']
 const WIDTHS: [number, string][] = [
@@ -695,7 +697,7 @@ export function mountNotebook(session: Session, root: HTMLElement): NotebookCont
       view: {
         label: t('View'),
         items: [
-          { label: t('Sections and pages'), run: () => toggleDrawer(), active: () => !layout.classList.contains('nav-hidden') && (window.innerWidth > BREAKPOINTS.narrow || layout.classList.contains('drawer-open')) },
+          { label: t('Sections and pages'), run: () => toggleDrawer(), active: () => !layout.classList.contains('nav-hidden') && (!narrow() || layout.classList.contains('drawer-open')) },
           { label: t('Tag summary…'), run: () => void tagSummary(ctx) },
           { label: t('Show resolved comments'), run: () => { if (review) { review.showResolved = !review.showResolved; review.refresh() } }, active: () => !!review?.showResolved },
           '-',
@@ -931,9 +933,9 @@ export function mountNotebook(session: Session, root: HTMLElement): NotebookCont
   tb.group({ keep: true }, tb.button(MessageSquarePlus, t('Comment'), comment, { enabled: () => session.canComment && !!editor, shortcut: commentKey }))
   if (!canEdit) tb.element.classList.add('readonly')
 
-  // ---------- Drawer (phones) ----------
+  // ---------- Drawer (tablets and phones) ----------
 
-  const narrow = () => window.innerWidth <= BREAKPOINTS.narrow
+  const narrow = () => window.innerWidth <= DRAWER_MAX
   const closeDrawer = () => {
     layout.classList.remove('drawer-open')
     scrim.hidden = true

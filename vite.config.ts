@@ -33,6 +33,22 @@ export default defineConfig({
       apply: 'build',
       transformIndexHtml: (html: string) => html.replace(/<meta charset="UTF-8" \/>/i, (m) => `${m}\n    <meta http-equiv="Content-Security-Policy" content="${cspMeta}" />`),
     },
+    // Excalidraw falls back to a CDN (esm.sh) for every font it cannot load;
+    // the fallback becomes our own copy (public/excalidraw), so a drawing never
+    // contacts a third party.
+    {
+      name: 'excalidraw-fonts-no-cdn',
+      apply: 'build',
+      transform: {
+        filter: { id: /@excalidraw/, code: 'https://esm.sh/' },
+        handler(code: string, id: string) {
+          const own = 'new URL("excalidraw/", globalThis.document?.baseURI ?? globalThis.location.href).href'
+          const replaced = code.replace(/`https:\/\/esm\.sh\/.*?\/dist\/prod\/`/g, own)
+          if (replaced.includes('https://esm.sh/')) throw new Error(`Excalidraw CDN fallback left in ${id}`)
+          return { code: replaced, map: null }
+        },
+      },
+    },
     // Spelling dictionaries as separate files, cached the first time a language is used.
     spellDictionaries(),
     // Installable web app that works offline. The suite and every app are

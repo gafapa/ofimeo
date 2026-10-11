@@ -486,7 +486,7 @@ A **password-protected PDF** asks for its password when you open it. The documen
 - **Add section** and **Add page** are in the panel on the left. Drag pages and sections to reorder them, or drop a page on a section tab to move it there. With the keyboard: \`Alt+↑\` / \`Alt+↓\`.
 - The **⋯** button of a page (or a right-click) makes it a subpage, moves it to another section, exports, prints or deletes it.
 - **Search notebook** (\`Ctrl+F\`) looks in the titles and text of every page.
-- On a phone, the **Sections and pages** button at the top of the page opens them as a panel.
+- On a tablet or a phone, the **Sections and pages** button at the top of the page opens them as a panel.
 
 ## Writing
 - A page has a title, the date it was created and free text with headings, lists, checklists, tables, pictures, links, equations and code.

@@ -486,7 +486,7 @@ Un **PDF protexido cun contrasinal** pídeo ao abrilo. O documento garda o fiche
 - **Engadir sección** e **Engadir páxina** están no panel da esquerda. Arrastra páxinas e seccións para ordenalas, ou solta unha páxina sobre a lapela doutra sección para movela alí. Co teclado: \`Alt+↑\` / \`Alt+↓\`.
 - O botón **⋯** dunha páxina (ou o clic dereito) convértea en subpáxina, móvea a outra sección, expórtaa, imprímea ou elimínaa.
 - **Buscar no caderno** (\`Ctrl+F\`) busca nos títulos e no texto de todas as páxinas.
-- No móbil, o botón **Seccións e páxinas** da parte superior ábreas coma un panel.
+- Nunha tableta ou no móbil, o botón **Seccións e páxinas** da parte superior ábreas coma un panel.
 
 ## Escribir
 - Cada páxina ten un título, a data en que se creou e texto libre con títulos, listas, listas de comprobación, táboas, imaxes, ligazóns, ecuacións e código.

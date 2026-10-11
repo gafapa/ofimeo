@@ -237,3 +237,36 @@ test('notebook: export a page to Word and the notebook as a ZIP of Markdown that
   await expect(page.locator('.nb-ink path')).toHaveCount(1)
   expect(errors).toEqual([])
 })
+
+test('notebook: the Tools menu still opens after the last section is deleted', async ({ page }) => {
+  const errors = trackErrors(page)
+  await newNotebook(page)
+  await page.locator('.nb-section').first().click({ button: 'right' })
+  await page.locator('.menu-panel .menu-row', { hasText: 'Delete section' }).click()
+  await page.locator('dialog[open]').getByRole('button', { name: 'Delete' }).click()
+  await expect(page.locator('.nb-section')).toHaveCount(0)
+  // Without a page there is nothing to check.
+  await page.locator('#menubar').getByText('Tools', { exact: true }).click()
+  await expect(page.locator('.menu-panel .menu-row', { hasText: 'Spelling and grammar' })).toBeDisabled()
+  await page.locator('.menu-panel .menu-row', { hasText: 'Check spelling as you type' }).click()
+  await page.keyboard.press('F7')
+  await expect(page.locator('.spell-dialog')).toHaveCount(0)
+  expect(errors).toEqual([])
+})
+
+test('notebook: on a tablet the sections and pages are a drawer and the page keeps its size', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 768, height: 1024 }, isMobile: true, hasTouch: true })
+  const page = await context.newPage()
+  await page.addInitScript(() => localStorage.setItem('ofimeo:language', 'en'))
+  const errors = trackErrors(page)
+  await newNotebook(page)
+  await expect(page.locator('.nb-nav')).not.toBeInViewport()
+  // Beside a 400px panel the page would be drawn at less than half its size.
+  expect((await page.locator('.nb-sheet').boundingBox())!.width).toBeGreaterThan(816 * 0.85)
+  await page.locator('.nb-nav-toggle').click()
+  await expect(page.locator('.nb-nav')).toBeInViewport()
+  await page.locator('.nb-pages .nb-add').click()
+  await expect(page.locator('.nb-nav')).not.toBeInViewport()
+  expect(errors).toEqual([])
+  await context.close()
+})

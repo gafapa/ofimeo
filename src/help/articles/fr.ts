@@ -488,7 +488,7 @@ Un **PDF protégé par mot de passe** le demande à l’ouverture. Le document g
 - **Ajouter une section** et **Ajouter une page** se trouvent dans le panneau de gauche. Fais glisser les pages et les sections pour les réordonner, ou dépose une page sur l’onglet d’une autre section pour l’y déplacer. Au clavier : \`Alt+↑\` / \`Alt+↓\`.
 - Le bouton **⋯** d’une page (ou un clic droit) en fait une sous-page, la déplace dans une autre section, l’exporte, l’imprime ou la supprime.
 - **Rechercher dans le bloc-notes** (\`Ctrl+F\`) cherche dans les titres et le texte de toutes les pages.
-- Sur un téléphone, le bouton **Sections et pages** en haut de la page les ouvre dans un panneau.
+- Sur une tablette ou un téléphone, le bouton **Sections et pages** en haut de la page les ouvre dans un panneau.
 
 ## Écrire
 - Une page a un titre, sa date de création et du texte libre avec titres, listes, listes de contrôle, tableaux, images, liens, équations et code.

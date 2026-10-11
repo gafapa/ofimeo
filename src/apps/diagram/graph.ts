@@ -12,6 +12,7 @@ import {
   Geometry,
   Graph,
   HandleConfig,
+  ImageBox,
   InternalEvent,
   PanningHandler,
   Point,
@@ -158,6 +159,8 @@ function sanitizedLabels(graph: Graph): void {
 // Rendering like draw.io: its stylesheet, HTML labels only with html=1, theme colors.
 export function applyLook(graph: Graph): void {
   configureDrawioStylesheet(graph.getStylesheet())
+  // Pictures of cells (thumbnails, slides) show no collapse boxes; the editor turns folding on.
+  graph.options.foldingEnabled = false
   // Hand-drawn shapes (sketch=1), like draw.io.
   installSketch()
   StyleDefaultsConfig.shadowOpacity = 0.25
@@ -227,6 +230,13 @@ export interface EditorGraph extends Graph {
   pageId?: string
 }
 
+// A 9×9 box with a plus (collapsed) or minus (expanded), like draw.io's.
+function foldIcon(collapsed: boolean): ImageBox {
+  const bar = collapsed ? 'M2 4.5h5M4.5 2v5' : 'M2 4.5h5'
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="9" height="9"><rect x=".5" y=".5" width="8" height="8" fill="#fff" stroke="#666"/><path d="${bar}" stroke="#333"/></svg>`
+  return new ImageBox(`data:image/svg+xml,${encodeURIComponent(svg)}`, 9, 9)
+}
+
 export function createGraph(container: HTMLElement): EditorGraph {
   VertexHandlerConfig.rotationEnabled = true
   VertexHandlerConfig.selectionColor = SELECTION_COLOR
@@ -263,6 +273,10 @@ export function createGraph(container: HTMLElement): EditorGraph {
   graph.useScrollbarsForPanning = false
   graph.setCellsEditable(true)
   graph.options.foldingEnabled = true
+  // Collapse and expand boxes of containers, drawn here: maxGraph's default
+  // images are files the suite does not ship.
+  graph.options.collapsedImage = foldIcon(true)
+  graph.options.expandedImage = foldIcon(false)
 
   // Containers: swimlanes and anything with container=1 accept dropped children.
   graph.isValidDropTarget = (cell: Cell | null) => {

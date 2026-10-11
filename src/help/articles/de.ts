@@ -486,7 +486,7 @@ Ein **passwortgeschütztes PDF** fragt beim Öffnen nach dem Passwort. Das Dokum
 - **Abschnitt hinzufügen** und **Seite hinzufügen** findest du im linken Bereich. Ziehe Seiten und Abschnitte, um sie umzusortieren, oder lege eine Seite auf dem Register eines anderen Abschnitts ab, um sie dorthin zu verschieben. Mit der Tastatur: \`Alt+↑\` / \`Alt+↓\`.
 - Die Schaltfläche **⋯** einer Seite (oder ein Rechtsklick) macht sie zur Unterseite, verschiebt sie in einen anderen Abschnitt, exportiert, druckt oder löscht sie.
 - **Notizbuch durchsuchen** (\`Strg+F\`) sucht in den Titeln und im Text aller Seiten.
-- Auf dem Handy öffnet die Schaltfläche **Abschnitte und Seiten** oben auf der Seite diese als Bereich.
+- Auf dem Tablet oder Handy öffnet die Schaltfläche **Abschnitte und Seiten** oben auf der Seite diese als Bereich.
 
 ## Schreiben
 - Eine Seite hat einen Titel, ihr Erstellungsdatum und freien Text mit Überschriften, Listen, Checklisten, Tabellen, Bildern, Links, Formeln und Code.

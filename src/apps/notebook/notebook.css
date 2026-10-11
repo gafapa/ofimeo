@@ -129,25 +129,30 @@
 /* PDF export: laid out off screen. */
 .nb-pdf-host { position: fixed; left: -100000px; top: 0; width: 1200px; }
 
-/* ---------- Phones: sections and pages in a drawer ---------- */
+/* ---------- Tablets and phones: sections and pages in a drawer ---------- */
 
-@media (max-width: 760px) {
+/* Beside the panel the page would shrink to unreadable text (DRAWER_MAX in app.ts). */
+@media (max-width: 1024px) {
   .nb-nav {
-    position: fixed; top: 0; bottom: 0; left: 0; z-index: var(--z-panel); width: min(88vw, 360px);
+    position: fixed; top: 0; bottom: 0; left: 0; z-index: var(--z-panel); width: min(88vw, 400px);
     transform: translateX(-105%); transition: transform 0.2s ease; box-shadow: var(--shadow);
   }
   .nav-hidden .nb-nav { display: flex; }
   .drawer-open .nb-nav { transform: none; }
-  .nb-columns { flex-direction: column; }
-  .nb-sections { width: auto; max-height: 38%; border-right: 0; border-bottom: 1px solid var(--divider); }
   .nb-more { opacity: 1; }
   .nb-scrim { position: fixed; inset: 0; background: var(--overlay); z-index: calc(var(--z-panel) - 1); }
-  .nb-canvas { padding: 8px 4px 40px; }
   .nb-nav-toggle {
     display: flex; align-items: center; gap: 8px; position: sticky; top: 0; left: 0; z-index: 5; margin: 0 4px 8px; max-width: calc(100% - 8px);
     border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: var(--radius-pill); padding: 6px 12px; font-size: var(--fs-m);
   }
   .nb-nav-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+@media (max-width: 760px) {
+  .nb-nav { width: min(88vw, 360px); }
+  .nb-columns { flex-direction: column; }
+  .nb-sections { width: auto; max-height: 38%; border-right: 0; border-bottom: 1px solid var(--divider); }
+  .nb-canvas { padding: 8px 4px 40px; }
 }
 
 /* ---------- Print (a page or a section, see print.ts) ---------- */

@@ -107,7 +107,8 @@ export const APPS: AppInfo[] = [
     newLabel: t('New form'),
     untitled: t('Untitled form'),
     letter: 'F',
-    color: '#00897b',
+    // Dark enough for white text (send button, logo): 5.3:1.
+    color: '#00796b',
     accept: '.oform',
     comments: false,
     load: () => import('./forms'),

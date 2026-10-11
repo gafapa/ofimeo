@@ -16,11 +16,13 @@ export function openSpellDialog(spell: SpellController): void {
 }
 
 export function toolsMenu(spell: SpellController): { label: string; items: MenuEntry[] } {
-  const editable = () => spell.editor.isEditable
+  // A notebook without pages has no editor.
+  const hasEditor = () => !!spell.editor && !spell.editor.isDestroyed
+  const editable = () => hasEditor() && spell.editor.isEditable
   return {
     label: t('Tools'),
     items: [
-      { label: t('Spelling and grammar…'), shortcut: 'F7', run: () => openSpellDialog(spell) },
+      { label: t('Spelling and grammar…'), shortcut: 'F7', run: () => openSpellDialog(spell), enabled: hasEditor },
       '-',
       { label: t('Check spelling as you type'), run: () => spell.update({ spelling: !spell.settings.spelling }), active: () => spell.settings.spelling },
       { label: t('Check grammar as you type'), run: () => spell.update({ grammar: !spell.settings.grammar }), active: () => spell.settings.grammar },

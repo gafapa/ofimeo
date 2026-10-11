@@ -120,8 +120,19 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
 
   // ---------- Pages ----------
 
-  const pageTabs = el('div', { class: 'page-tabs', role: 'tablist' })
-  pageTabs.setAttribute('aria-label', t('Pages'))
+  // The page tabs and, after their tab list, the New page button.
+  const pageTabs = el('div', { class: 'page-tabs' })
+  const pageTabList = el('div', { class: 'page-tab-list', role: 'tablist' })
+  pageTabList.setAttribute('aria-label', t('Pages'))
+  // Arrow keys, Home and End move between the tabs; Enter or Space shows the page.
+  pageTabList.addEventListener('keydown', (e) => {
+    const tabs = [...pageTabList.querySelectorAll<HTMLElement>('.page-tab')]
+    const i = tabs.indexOf(document.activeElement as HTMLElement)
+    const next = e.key === 'ArrowRight' ? i + 1 : e.key === 'ArrowLeft' ? i - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : null
+    if (i < 0 || next === null) return
+    e.preventDefault()
+    tabs[(next + tabs.length) % tabs.length].focus()
+  })
   // New pages get a translated name; the first page of a new document keeps the
   // fixed name "Page-1" so collaborators who create it at the same time agree.
   const addPage = () => {
@@ -152,11 +163,15 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
   }
   const renderTabs = () => {
     const peers = editor.presence()?.pagesOfPeers() ?? new Map()
-    pageTabs.replaceChildren()
+    const hadFocus = pageTabList.contains(document.activeElement)
+    pageTabList.replaceChildren()
+    pageTabs.replaceChildren(pageTabList)
     for (const page of sync.pageList()) {
       const tab = el('button', { type: 'button', class: 'page-tab', textContent: pageDisplayName(page.name) || t('Untitled page'), role: 'tab' })
       tab.classList.toggle('active', page.id === sync.page)
       tab.setAttribute('aria-selected', String(page.id === sync.page))
+      // One stop in the tab order: the current page's tab.
+      tab.tabIndex = page.id === sync.page ? 0 : -1
       for (const user of peers.get(page.id) ?? []) {
         const dot = el('span', { class: 'page-peer', title: user.name })
         dot.style.background = user.color
@@ -169,8 +184,9 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
         if (page.id !== sync.page) sync.showPage(page.id)
         showContextMenu(e.clientX, e.clientY, pageMenu())
       })
-      pageTabs.append(tab)
+      pageTabList.append(tab)
     }
+    if (hadFocus) pageTabList.querySelector<HTMLElement>('.page-tab.active')?.focus()
     if (readOnly) return
     const add = el('button', { type: 'button', class: 'page-add', title: t('New page') }, icon(Plus, 16))
     add.setAttribute('aria-label', t('New page'))

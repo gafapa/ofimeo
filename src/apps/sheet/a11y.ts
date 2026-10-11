@@ -103,15 +103,59 @@ export function setupSheetA11y(o: SheetA11yOptions): SheetA11y {
     set(bar, 'role', 'group')
     set(bar, 'aria-label', t('Formula bar'))
     set(o.host.querySelector('[data-u-comp="formula-bar"] [data-u-comp="render-canvas"]'), 'aria-label', t('Formula bar'))
+    // Univer puts its canvases first in the Tab order (tabindex 1); they keep their place in the page.
+    for (const canvas of o.host.querySelectorAll<HTMLElement>('canvas[tabindex]')) if (canvas.tabIndex > 0) canvas.tabIndex = 0
     for (const canvas of o.host.querySelectorAll('canvas[data-u-unit-id]')) {
       set(canvas, 'role', 'img')
       set(canvas, 'aria-label', t('Spreadsheet grid'))
       set(canvas, 'aria-describedby', hint.id)
     }
-    // Univer keeps the keyboard focus in a hidden editor while the grid is used.
+    // Univer keeps the keyboard focus in a hidden editor while the grid is used
+    // (a contenteditable box, which browsers already present as a text box).
     const editor = document.getElementById('__editor___INTERNAL_EDITOR__DOCS_NORMAL')
+    set(editor, 'role', 'textbox')
     set(editor, 'aria-label', t('Spreadsheet grid'))
     set(editor, 'aria-describedby', hint.id)
+    // Univer's toolbar and sheet bar: some dropdown triggers are plain elements
+    // with button attributes and no name, like the font boxes and a few icon
+    // buttons. Roles and names Univer gives are kept.
+    for (const trigger of o.host.querySelectorAll('[data-slot="dropdown-menu-trigger"]:not(button):not([role]), [data-slot="popover-trigger"]:not(button):not([role])')) {
+      // A trigger around a box or a button is a group; the box or button inside is the control.
+      const inner = trigger.querySelector('input, button')
+      trigger.setAttribute('role', inner ? 'group' : 'button')
+      // A visible text (the number format's "General") stays the name.
+      const name = controlName(trigger.closest('[data-u-command]') ?? trigger.querySelector('[data-u-command]') ?? trigger)
+      if (name && !trigger.hasAttribute('aria-label') && (inner || !trigger.textContent?.trim())) trigger.setAttribute('aria-label', name)
+    }
+    for (const input of o.host.querySelectorAll('[data-u-command] input:not([aria-label])')) {
+      const name = controlName(input.closest('[data-u-command]'))
+      if (name) input.setAttribute('aria-label', name)
+    }
+    for (const button of o.host.querySelectorAll('button:not([aria-label]):not([title])')) {
+      if (button.textContent?.trim()) continue
+      const icon = button.querySelector('svg')?.getAttribute('class') ?? ''
+      const name = icon.includes('more-vertical') ? t('More tools') : icon.includes('increase') ? t('New sheet') : icon.includes('convert') ? t('Sheets') : null
+      if (name) set(button, 'aria-label', name)
+    }
+  }
+  // Names of Univer's unnamed toolbar controls, by command.
+  const controlNames: Record<string, string> = {
+    'defined-name': t('Named ranges…'),
+    'sheet.command.set-range-font-family': t('Font'),
+    'sheet.command.set-range-fontsize': t('Font size'),
+    'sheet.command.set-range-text-color': t('Text color'),
+    'sheet.command.set-background-color': t('Fill color'),
+    'sheet.command.set-border-basic': t('Borders'),
+    'sheet.operation.open.numfmt.panel': t('Number format…'),
+    'data-validation.command.insert-quick-rule': t('Data validation'),
+    'sheet.menu.quick-date': t('Data validation'),
+    'sheet.command.add-data-bar-conditional-rule': t('Conditional formatting'),
+    'sheet.command.add-icon-set-conditional-rule': t('Conditional formatting'),
+    'sheet.command.smart-toggle-filter': t('Filter'),
+  }
+  const controlName = (node: Element | null): string | null => {
+    const command = node?.getAttribute('data-u-command') ?? (node?.closest('[data-u-comp="defined-name"]') ? 'defined-name' : '')
+    return controlNames[command] ?? null
   }
   const hint = el('span', { class: 'sr-only', id: 'sheet-a11y-hint', textContent: t('Alt+Shift+T switches to the accessible table view, made for screen readers. F10 opens the menu bar.') })
   o.appElement.append(hint)

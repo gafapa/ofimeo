@@ -578,7 +578,7 @@ Each dictionary is served as a separate data file next to its license (dictionar
 | jotai | 2.11.0 | MIT | https://github.com/pmndrs/jotai |
 | jotai-scope | 0.7.2 | MIT | https://github.com/jotaijs/jotai-scope |
 | jszip | 3.10.2 | (MIT OR GPL-3.0-or-later) | https://github.com/Stuk/jszip |
-| katex | 0.16.47 | MIT | https://github.com/KaTeX/KaTeX |
+| katex | 0.18.2 | MIT | https://github.com/KaTeX/KaTeX |
 | katex | 0.19.0 | MIT | https://github.com/KaTeX/KaTeX |
 | kdbush | 4.1.0 | ISC | https://github.com/mourner/kdbush |
 | khroma | 2.1.0 | MIT | https://github.com/fabiospampinato/khroma |
@@ -704,7 +704,7 @@ Each dictionary is served as a separate data file next to its license (dictionar
 | shebang-regex | 3.0.0 | MIT | https://github.com/sindresorhus/shebang-regex |
 | sliced | 1.0.1 | MIT | https://github.com/aheckmann/sliced |
 | sonner | 2.0.8 | MIT | https://github.com/emilkowalski/sonner |
-| source-map-js | 1.2.1 | BSD-3-Clause | https://github.com/7rulnik/source-map-js |
+| source-map-js | 1.2.2 | BSD-3-Clause | https://github.com/7rulnik/source-map-js |
 | strictdom | 1.0.1 | MIT | https://github.com/wilsonpage/strictdom |
 | string_decoder | 1.1.1 | MIT | https://github.com/nodejs/string_decoder |
 | string-width | 4.2.3 | MIT | https://github.com/sindresorhus/string-width |
@@ -1167,7 +1167,7 @@ The following 301 packages are licensed under the MIT License with the standard 
 - isomorphic.js 0.2.5: Copyright (c) 2020 Kevin Jahns \<kevin.jahns@protonmail.com\>.
 - jotai 2.11.0: Copyright (c) 2020-2023 Poimandres
 - jotai-scope 0.7.2: Copyright (c) 2023 Daishi Kato
-- katex 0.16.47: Copyright (c) 2013-2020 Khan Academy and other contributors
+- katex 0.18.2: Copyright (c) 2013-2020 Khan Academy and other contributors
 - katex 0.19.0: Copyright (c) 2013-2020 Khan Academy and other contributors
 - khroma 2.1.0: Copyright (c) 2019-present Fabio Spampinato, Andrew Maney
 - langium 3.3.1: Copyright 2021 TypeFox GmbH
@@ -10231,9 +10231,9 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ````
 
-### source-map-js 1.2.1
+### source-map-js 1.2.2
 
-Applies to: source-map-js 1.2.1 (LICENSE)
+Applies to: source-map-js 1.2.2 (LICENSE)
 
 ````text
 Copyright (c) 2009-2011, Mozilla Foundation and contributors

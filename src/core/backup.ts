@@ -102,8 +102,9 @@ export async function onFirstDocument(): Promise<void> {
     return
   }
   const granted = await requestPersistence()
-  const { showPersistenceNotice } = await import('../home/storage')
-  showPersistenceNotice(granted)
+  // The notice is optional: a load the browser cancels (the page is changing) skips it.
+  const notice = await import('../home/storage').catch(() => null)
+  notice?.showPersistenceNotice(granted)
 }
 
 // Documents that exist only in this browser (not linked to a Nextcloud file).

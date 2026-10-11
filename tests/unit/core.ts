@@ -4,7 +4,8 @@ import { isParsed, parseShareLink } from '../../src/core/import-link'
 import { listAccounts, saveAccount, removeAccount, startLoginFlow, type NcAccount } from '../../src/core/nextcloud'
 import { clearMoodleAccount, loadMoodleAccount, saveMoodleAccount, type MoodleAccount } from '../../src/core/moodle-store'
 import * as Y from 'yjs'
-import { Channel, type RoomProvider } from '../../src/core/network'
+import { Channel, RoomProvider } from '../../src/core/network'
+import { Awareness } from 'y-protocols/awareness'
 
 class TestStorage {
   values = new Map<string, string>()
@@ -55,6 +56,30 @@ export async function runTests(): Promise<void> {
     assert.equal(await verify(editor.editVerifier!, signature, new TextEncoder().encode('changed update')), false)
     const other = await resolveKeys(newLinkKeys())
     assert.equal(await verify(other.editVerifier!, signature, payload), false)
+  })
+  await check('Ed25519 fallback interoperates with native signatures without losing permissions', async () => {
+    const originalImport = crypto.subtle.importKey.bind(crypto.subtle)
+    crypto.subtle.importKey = ((...args: Parameters<typeof crypto.subtle.importKey>) => {
+      const algorithm = args[2]
+      if (algorithm === 'Ed25519' || (typeof algorithm === 'object' && algorithm.name === 'Ed25519')) throw new DOMException('Synthetic unsupported algorithm', 'NotSupportedError')
+      return originalImport(...args)
+    }) as typeof crypto.subtle.importKey
+    try {
+      const fallback = await resolveKeys({ edit: editor.link.edit })
+      assert.equal(fallback.link.verify, editor.link.verify)
+      assert.equal(fallback.link.cverify, editor.link.cverify)
+      assert.equal(fallback.access, 'edit')
+      const payload = new TextEncoder().encode('synthetic compatibility check')
+      const signature = await sign(fallback.editSigner!, payload)
+      assert.equal(await verify(editor.editVerifier!, signature, payload), true)
+      const nativeSignature = await sign(editor.editSigner!, payload)
+      assert.equal(await verify(fallback.editVerifier!, nativeSignature, payload), true)
+      assert.equal(await verify(fallback.editVerifier!, nativeSignature, new Uint8Array([1])), false)
+      const view = await resolveKeys(keysForAccess(fallback.link, 'view'))
+      assert.equal(view.access, 'view')
+      assert.equal(view.editSigner, undefined)
+      await assert.rejects(sign(view.editVerifier!, payload))
+    } finally { crypto.subtle.importKey = originalImport }
   })
   await check('untrusted hosts and executable URLs cannot become imports', () => {
     for (const url of ['https://docs.google.com.evil.example/document/d/1234567890/edit', 'javascript://docs.google.com/document/d/1234567890', 'data:text/html,<script>evil()</script>']) assert.equal(isParsed(parseShareLink(url)), false)
@@ -140,6 +165,20 @@ export async function runTests(): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, 50))
     assert.equal(viewerDoc.getText('t').toString(), 'genuine change')
     reader.destroy()
+  })
+  await check('missing WebRTC preserves local documents without claiming peers', async () => {
+    const doc = new Y.Doc()
+    const awareness = new Awareness(doc)
+    const room = new RoomProvider(doc, awareness, { roomId: 'synthetic-local', password: 'synthetic-key' })
+    try {
+      await room.whenReady()
+      assert.equal(room.realtimeAvailable, false)
+      assert.equal(room.peerCount, 0)
+      assert.deepEqual(room.connections(), {})
+      doc.getText('t').insert(0, 'synthetic local edit')
+      assert.equal(doc.getText('t').toString(), 'synthetic local edit')
+      await room.makeAction('synthetic').send(new Uint8Array([1]))
+    } finally { await room.destroy(); awareness.destroy(); doc.destroy() }
   })
   console.log(`${count}/${count} core tests passed`)
 }

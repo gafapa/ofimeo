@@ -949,19 +949,35 @@ the suite takes care of keeping them safe:
 - **Back up all documents** downloads one `.ofimeo-backup` file: a zip with the
   document index (titles, keys and access, folders and tags), each document's Yjs
   state (its version history is part of it), its comments document, the signed
-  update logs of protected documents and the own templates. With a password, the
+  update logs of protected documents and the own templates. Version 2 also
+  includes editor-only form data (answer keys, responses, grades and private
+  versions), and preserves private template state. With a password, the
   zip is encrypted with AES-GCM (256-bit key from PBKDF2-SHA-256, 310 000
   iterations). The file contains the keys to edit the documents, hence the password.
 - **Restore backup** merges: documents that are already here receive the backup's
   Yjs updates (nothing is lost on either side, stronger keys are adopted), missing
   ones are added; a report lists what was added, merged with changes and already
-  up to date.
+  up to date. The complete archive is validated before any changes, and a
+  conflicting document type, room key or signing identity blocks restoration.
+  Each database write must commit before success is reported. An interrupted
+  document restore retains a local recovery record: retry the same archive to
+  complete its idempotent merges. Restoration is recoverable per document,
+  rather than one atomic transaction across all browser databases. Version 1
+  archives remain readable; they cannot recover form records they never saved.
 - **Reminder.** When documents exist only in this browser (not linked to
   Nextcloud) and there has been no backup for N days (7 by default, configurable,
   or never), the home screen shows a dismissable warning.
 - **Automatic backup to Nextcloud** (off by default): with a linked account, a
   backup is uploaded every N days to a folder (`/Ofimeo/Backups`), optionally
-  encrypted; it runs when the home screen opens and it is due.
+  encrypted; it runs when the home screen opens and it is due. Only a successful
+  upload advances the backup reminder timestamp.
+
+Storage failures leave a persistent, accessible warning so unsaved edits can
+be exported before closing the page. Archives larger than 128 MiB compressed
+or 512 MiB declared expanded data are rejected. Use selected-document backups
+for larger collections. `npm run measure:install` measures precached build
+bytes and writes `dist/installation-metrics.json`; it does not change the
+guarantee that all editors are available offline after installation.
 
 The home screen organizes the documents of this browser. All of this is local
 (never shared with collaborators):
@@ -1183,6 +1199,9 @@ into `localStorage`. Credentials are sent only to that Nextcloud; see *Security 
 - Signaling goes through [Trystero](https://github.com/dmotz/trystero) over
   several public Nostr relays at once. Offers are encrypted with the document
   key, so only people with the link can connect.
+- Browsers without WebRTC can still edit local documents and use backups.
+  Their connection status shows **Local only**; real-time collaboration requires
+  WebRTC support.
 - Document data travels over WebRTC data channels (DTLS-encrypted). Every peer
   relays updates to its other peers, so everyone converges even if one pair of
   browsers cannot connect directly.
@@ -1250,7 +1269,8 @@ model: [docs/store-forward.md](docs/store-forward.md).
 Permissions are enforced with signatures, not only in the interface
 (`src/core/keys.ts`, `src/core/network.ts`):
 
-- Every new document has an Ed25519 *edit key* (WebCrypto); the *comment key*
+- Every new document has an Ed25519 *edit key* (native WebCrypto, or a bundled
+  local Noble fallback where the browser lacks Ed25519); the *comment key*
   is derived from it. The edit link carries the edit key; the comment link the
   comment key plus the public edit key; the view link only the two public
   keys. All links also carry the room key, needed to connect.

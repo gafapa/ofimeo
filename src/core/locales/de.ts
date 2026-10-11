@@ -2819,6 +2819,10 @@ const de: Record<string, string> = {
   'Update now': 'Jetzt aktualisieren',
   'Later': 'Später',
   'Downloading…': 'Wird heruntergeladen…',
+  "Your changes could not be saved. Check browser storage and available space, then make a backup.": "Ihre Änderungen konnten nicht gespeichert werden. Prüfen Sie den Browserspeicher und den verfügbaren Platz und erstellen Sie eine Sicherung.",
+  "This older backup does not include private form answers, responses or grades.": "Diese ältere Sicherung enthält keine privaten Lösungsschlüssel, Antworten oder Noten von Formularen.",
+  "Local only": "Nur lokal",
+  "This browser cannot connect to other users in real time. Local editing and backups still work.": "Dieser Browser kann sich nicht in Echtzeit mit anderen Nutzern verbinden. Lokale Bearbeitung und Sicherungen funktionieren weiterhin.",
 }
 
 export default de

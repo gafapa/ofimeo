@@ -33,3 +33,14 @@ test('the UI follows the browser language', async ({ browser }) => {
     await context.close()
   }
 })
+
+test('a browser without WebRTC can edit a local document with an honest connection status', async ({ page }) => {
+  const errors = trackErrors(page)
+  await page.addInitScript(() => Object.defineProperty(window, 'RTCPeerConnection', { configurable: true, value: undefined }))
+  await openApp(page, 'writer')
+  await page.locator('.ProseMirror').fill('Synthetic local document')
+  await expect(page.locator('.ProseMirror')).toContainText('Synthetic local document')
+  await expect(page.locator('#peer-status')).toHaveText('Local only')
+  await expect(page.locator('#peer-status')).toHaveAttribute('title', /Local editing and backups still work/)
+  expect(errors).toEqual([])
+})

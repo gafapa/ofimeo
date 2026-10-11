@@ -10,7 +10,7 @@ const directory = mkdtempSync(join(tmpdir(), 'ofimeo-core-tests-'))
 try {
   const file = join(directory, 'tests.mjs')
   await build({
-    input: join(root, 'tests/unit/core.ts'), platform: 'node', output: { file, format: 'esm' }, logLevel: 'silent',
+    input: join(root, 'tests/unit/core.ts'), platform: 'node', output: { file, format: 'esm', codeSplitting: false }, logLevel: 'silent',
     plugins: [{
       name: 'test-stubs',
       resolveId(source) {

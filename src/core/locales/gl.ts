@@ -2819,6 +2819,10 @@ const gl: Record<string, string> = {
   'Update now': 'Actualizar agora',
   'Later': 'Máis tarde',
   'Downloading…': 'Descargando…',
+  "Your changes could not be saved. Check browser storage and available space, then make a backup.": "Non se puideron gardar os cambios. Revisa o almacenamento do navegador e o espazo dispoñible, e fai unha copia de seguridade.",
+  "This older backup does not include private form answers, responses or grades.": "Esta copia antiga non inclúe claves de corrección, respostas nin notas privadas de formularios.",
+  "Local only": "Só local",
+  "This browser cannot connect to other users in real time. Local editing and backups still work.": "Este navegador non pode conectarse con outros usuarios en tempo real. A edición local e as copias de seguridade seguen funcionando.",
 }
 
 export default gl

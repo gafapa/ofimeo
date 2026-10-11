@@ -4,6 +4,7 @@ import { clearDocument } from 'y-indexeddb'
 import { kvDelete, kvDeleteMatching } from './idb'
 import type { Access, LinkKeys } from './keys'
 import { t } from './i18n'
+import { reportStorageError } from './storage-error'
 
 const DOCS_KEY = 'ofimeo:docs'
 const USER_KEY = 'ofimeo:user'
@@ -86,8 +87,9 @@ export function saveDoc(entry: Omit<DocEntry, 'updated'>): void {
   docs.push({ ...previous, ...entry, updated: Date.now() })
   write(DOCS_KEY, docs)
   // The first document of this browser that one can edit (not a form to answer
-  // or a view link): ask for persistent storage (backup.ts, asks only once).
-  if (!previous && (entry.access ?? 'edit') === 'edit' && !all.some((d) => (d.access ?? 'edit') === 'edit')) void import('./backup').then((m) => m.onFirstDocument())
+  // or a view link): ask for persistent storage (backup.ts, asks only once);
+  // a load the browser cancels because the page is changing skips it.
+  if (!previous && (entry.access ?? 'edit') === 'edit' && !all.some((d) => (d.access ?? 'edit') === 'edit')) void import('./backup').then((m) => m.onFirstDocument(), () => {})
 }
 
 // Changes organization fields (folder, tags, trash) without touching `updated`.
@@ -162,8 +164,11 @@ export function saveUser(user: User): void {
 function read<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key)
-    return raw ? (JSON.parse(raw) as T) : fallback
-  } catch {
+    const value = raw ? JSON.parse(raw) : fallback
+    if (key === DOCS_KEY && (!Array.isArray(value) || value.some((entry) => !entry || typeof entry.id !== 'string' || typeof entry.key !== 'string' || typeof entry.title !== 'string' || !Number.isFinite(entry.updated)))) throw new Error('Invalid document index')
+    return value as T
+  } catch (error) {
+    if (key === DOCS_KEY) throw reportStorageError(error)
     return fallback
   }
 }
@@ -171,7 +176,7 @@ function read<T>(key: string, fallback: T): T {
 function write(key: string, value: unknown): void {
   try {
     localStorage.setItem(key, JSON.stringify(value))
-  } catch {
-    // Storage may be unavailable (private mode); ignore.
+  } catch (error) {
+    throw reportStorageError(error)
   }
 }

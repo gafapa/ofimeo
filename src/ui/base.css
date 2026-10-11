@@ -282,6 +282,12 @@ dialog.dlg { background: var(--surface); color: var(--text); }
 
 /* ---------- Print ---------- */
 
+#storage-failure {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 10000;
+  padding: 12px 20px; background: #8b1a1a; color: #ffffff;
+  font-size: 1rem; line-height: 1.5; text-align: center;
+}
+
 @media print {
   html, body, .app { height: auto; overflow: visible; background: var(--paper); }
   .appbar, .statusbar, .toast, dialog { display: none !important; }

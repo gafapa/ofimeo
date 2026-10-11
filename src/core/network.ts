@@ -38,6 +38,7 @@ import * as decoding from 'lib0/decoding'
 import { joinRoom, type MessageAction, type Room } from '@trystero-p2p/nostr'
 import { APP_ID, nostrRelays, rtcConfig } from './connectivity'
 import { kvGet, kvSet } from './idb'
+import { reportStorageError } from './storage-error'
 import { sign, toBase64Url, verify } from './keys'
 
 const MSG_SYNC = 0
@@ -87,7 +88,7 @@ export interface RoomOptions {
 export const openRooms = new Set<RoomProvider>()
 
 export class RoomProvider {
-  private readonly room: Room
+  private readonly room: Room | null
   readonly peers = new Map<string, RemotePeer>()
   private readonly channels: Channel[] = []
   private listeners: ((count: number) => void)[] = []
@@ -100,7 +101,7 @@ export class RoomProvider {
   ) {
     const relays = nostrRelays(options.relays)
     const rtc = rtcConfig()
-    this.room = joinRoom(
+    this.room = typeof RTCPeerConnection === 'undefined' ? null : joinRoom(
       {
         appId: APP_ID,
         password: options.password,
@@ -111,6 +112,10 @@ export class RoomProvider {
     )
     openRooms.add(this)
     this.main = this.addChannel('yjs', doc, options.security, awareness)
+
+    // Some browser/platform builds have no WebRTC. Local documents and encrypted
+    // store-and-forward must still work, without claiming a peer connection.
+    if (!this.room) return
 
     this.room.onPeerJoin = (peerId) => {
       this.peers.set(peerId, new RemotePeer(peerId))
@@ -133,7 +138,7 @@ export class RoomProvider {
   // Syncs another document in the same room (e.g. comments). `name` is the
   // Trystero action name (at most 12 bytes).
   addChannel(name: string, doc: Y.Doc, security?: ChannelSecurity, awareness?: awarenessProtocol.Awareness): Channel {
-    const channel = new Channel(this, this.room.makeAction<Uint8Array>(name), doc, security, awareness)
+    const channel = new Channel(this, this.makeAction(name), doc, security, awareness)
     this.channels.push(channel)
     return channel
   }
@@ -141,7 +146,7 @@ export class RoomProvider {
   // Raw message action for app protocols that are not a Yjs document (e.g. form
   // responses, forms/transport.ts). `name` is the Trystero action name (at most 12 bytes).
   makeAction(name: string): MessageAction<Uint8Array> {
-    return this.room.makeAction<Uint8Array>(name)
+    return this.room?.makeAction<Uint8Array>(name) ?? { send: async () => {}, onMessage: null, onReceiveProgress: null }
   }
 
   // Resolves when signed logs are loaded (call before relying on relaying).
@@ -153,9 +158,11 @@ export class RoomProvider {
     return this.peers.size
   }
 
+  get realtimeAvailable(): boolean { return this.room !== null }
+
   // WebRTC connections to the peers in this room, by peer id.
   connections(): Record<string, RTCPeerConnection> {
-    return this.room.getPeers()
+    return this.room?.getPeers() ?? {}
   }
 
   onPeersChange(listener: (count: number) => void): void {
@@ -165,7 +172,7 @@ export class RoomProvider {
   async destroy(): Promise<void> {
     openRooms.delete(this)
     this.channels.forEach((c) => c.destroy())
-    await this.room.leave()
+    await this.room?.leave()
   }
 
   peer(peerId: string): RemotePeer {
@@ -476,7 +483,7 @@ class SignedLog {
   private save(): void {
     if (!this.key) return
     clearTimeout(this.saveTimer)
-    this.saveTimer = window.setTimeout(() => void kvSet(this.key!, this.entries), 1000)
+    this.saveTimer = window.setTimeout(() => void kvSet(this.key!, this.entries).catch(reportStorageError), 1000)
   }
 }
 

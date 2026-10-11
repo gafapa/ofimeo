@@ -7,6 +7,8 @@
 //   IndexedDB    'ofimeo-library'   stores 'texts' {id, text, indexed} and 'templates' (OwnTemplate)
 
 import * as store from './store'
+import { committedRequest } from './idb-transaction'
+import { reportStorageError } from './storage-error'
 
 const LIBRARY_KEY = 'ofimeo:library'
 
@@ -36,17 +38,18 @@ const newId = () => crypto.getRandomValues(new Uint32Array(2)).join('').slice(0,
 function read(): Library {
   try {
     const data = JSON.parse(localStorage.getItem(LIBRARY_KEY) || '{}') as Partial<Library>
+    if (!data || (data.folders !== undefined && !Array.isArray(data.folders)) || (data.tags !== undefined && !Array.isArray(data.tags))) throw new Error('Invalid document library')
     return { folders: Array.isArray(data.folders) ? data.folders : [], tags: Array.isArray(data.tags) ? data.tags : [] }
-  } catch {
-    return { folders: [], tags: [] }
+  } catch (error) {
+    throw reportStorageError(error)
   }
 }
 
 function write(library: Library): void {
   try {
     localStorage.setItem(LIBRARY_KEY, JSON.stringify(library))
-  } catch {
-    // Storage unavailable (private mode): lasts for this page only.
+  } catch (error) {
+    throw reportStorageError(error)
   }
 }
 
@@ -215,23 +218,16 @@ function db(): Promise<IDBDatabase> {
       }
       resolve(req.result)
     }
-    req.onerror = () => reject(req.error)
+    req.onerror = () => { dbPromise = null; reject(req.error) }
   })
   return dbPromise
 }
 
 function run<T>(name: LibraryStore, mode: IDBTransactionMode, op: (s: IDBObjectStore) => IDBRequest): Promise<T> {
-  return db().then(
-    (d) =>
-      new Promise<T>((resolve, reject) => {
-        const req = op(d.transaction(name, mode).objectStore(name))
-        req.onsuccess = () => resolve(req.result as T)
-        req.onerror = () => reject(req.error)
-      }),
-  )
+  return db().then((database) => committedRequest<T>(database, name, mode, op))
 }
 
-export const dbAll = <T>(name: LibraryStore) => run<T[]>(name, 'readonly', (s) => s.getAll()).catch(() => [] as T[])
-export const dbGet = <T>(name: LibraryStore, id: string) => run<T | undefined>(name, 'readonly', (s) => s.get(id)).catch(() => undefined)
+export const dbAll = <T>(name: LibraryStore) => run<T[]>(name, 'readonly', (s) => s.getAll())
+export const dbGet = <T>(name: LibraryStore, id: string) => run<T | undefined>(name, 'readonly', (s) => s.get(id))
 export const dbPut = (name: LibraryStore, value: unknown) => run<void>(name, 'readwrite', (s) => s.put(value))
-export const dbDelete = (name: LibraryStore, id: string) => run<void>(name, 'readwrite', (s) => s.delete(id)).catch(() => undefined)
+export const dbDelete = (name: LibraryStore, id: string) => run<void>(name, 'readwrite', (s) => s.delete(id))

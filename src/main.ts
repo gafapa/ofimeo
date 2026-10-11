@@ -16,6 +16,16 @@ registerServiceWorker()
 await migrateLegacyDatabases()
 
 const root = document.getElementById('root')!
+window.addEventListener('ofimeo-storage-error', (event) => {
+  let warning = document.getElementById('storage-failure')
+  if (!warning) {
+    warning = document.createElement('div')
+    warning.id = 'storage-failure'
+    warning.setAttribute('role', 'alert')
+    document.body.append(warning)
+  }
+  warning.textContent = (event as CustomEvent<string>).detail
+})
 // "#new=<app>" (the installed app's shortcuts): a new document of that app.
 const fresh = new URLSearchParams(location.hash.replace(/^#/, '')).get('new') as DocType | null
 if (fresh && DOC_TYPES.includes(fresh)) history.replaceState(null, '', newDocPath(fresh))

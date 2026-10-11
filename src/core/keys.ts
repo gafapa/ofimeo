@@ -43,6 +43,15 @@ export const KEY_PARAMS = ['edit', 'comment', 'verify', 'cverify'] as const
 const PKCS8_PREFIX = new Uint8Array([0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 0x04, 0x20])
 const ALGO = { name: 'Ed25519' }
 
+// Opaque signature handles on browsers without native Ed25519 (e.g. Windows WebKit).
+// Secret bytes remain in this module, and all callers use sign/verify below.
+const fallbackKeys = new WeakMap<CryptoKey, { seed?: Uint8Array; publicKey: Uint8Array }>()
+function fallbackHandle(publicKey: Uint8Array, seed?: Uint8Array): CryptoKey {
+  const handle = Object.freeze({ type: seed ? 'private' : 'public', algorithm: ALGO, extractable: false, usages: seed ? ['sign'] : ['verify'] }) as CryptoKey
+  fallbackKeys.set(handle, { publicKey: publicKey.slice(), seed: seed?.slice() })
+  return handle
+}
+
 // WebCrypto only exists on secure origins (https, localhost).
 export const cryptoAvailable = () => typeof crypto !== 'undefined' && !!crypto.subtle
 
@@ -138,13 +147,28 @@ export async function signerFromSeed(seed: Uint8Array): Promise<{ key: CryptoKey
   pkcs8.set(PKCS8_PREFIX)
   pkcs8.set(seed, PKCS8_PREFIX.length)
   // Extractable only to read the public half (JWK "x"); the key never leaves this module.
-  const key = await crypto.subtle.importKey('pkcs8', pkcs8, ALGO, true, ['sign'])
-  const jwk = await crypto.subtle.exportKey('jwk', key)
-  return { key, pub: jwk.x! }
+  try {
+    const key = await crypto.subtle.importKey('pkcs8', pkcs8, ALGO, true, ['sign'])
+    const jwk = await crypto.subtle.exportKey('jwk', key)
+    return { key, pub: jwk.x! }
+  } catch (error) {
+    if ((error as DOMException | null)?.name !== 'NotSupportedError') throw error
+    const { getPublicKeyAsync } = await import('@noble/ed25519')
+    const publicKey = await getPublicKeyAsync(seed)
+    return { key: fallbackHandle(publicKey, seed), pub: toBase64Url(publicKey) }
+  }
 }
 
-function importVerifier(pub: string): Promise<CryptoKey> {
-  return crypto.subtle.importKey('raw', fromBase64Url(pub) as BufferSource, ALGO, false, ['verify'])
+async function importVerifier(pub: string): Promise<CryptoKey> {
+  const publicKey = fromBase64Url(pub)
+  if (publicKey.length !== 32) throw new Error(t('Invalid key'))
+  try { return await crypto.subtle.importKey('raw', publicKey as BufferSource, ALGO, false, ['verify']) }
+  catch (error) {
+    if ((error as DOMException | null)?.name !== 'NotSupportedError') throw error
+    const { Point } = await import('@noble/ed25519')
+    Point.fromBytes(publicKey, false)
+    return fallbackHandle(publicKey)
+  }
 }
 
 async function deriveCommentSeed(editSeed: Uint8Array): Promise<Uint8Array> {
@@ -157,11 +181,22 @@ async function deriveCommentSeed(editSeed: Uint8Array): Promise<Uint8Array> {
 }
 
 export async function sign(key: CryptoKey, data: Uint8Array): Promise<Uint8Array> {
+  const fallback = fallbackKeys.get(key)
+  if (fallback) {
+    if (!fallback.seed) throw new Error('This key cannot sign')
+    const { signAsync } = await import('@noble/ed25519')
+    return signAsync(data, fallback.seed)
+  }
   return new Uint8Array(await crypto.subtle.sign(ALGO, key, data as BufferSource))
 }
 
 export async function verify(key: CryptoKey, signature: Uint8Array, data: Uint8Array): Promise<boolean> {
   try {
+    const fallback = fallbackKeys.get(key)
+    if (fallback) {
+      const { verifyAsync } = await import('@noble/ed25519')
+      return await verifyAsync(signature, data, fallback.publicKey, { zip215: false })
+    }
     return await crypto.subtle.verify(ALGO, key, signature as BufferSource, data as BufferSource)
   } catch {
     return false

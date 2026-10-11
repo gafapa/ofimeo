@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
   pages: write
   id-token: write
@@ -24,10 +25,24 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v7
+      - name: Require successful CI for this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$TARGET_SHA&per_page=100" > ci-runs.json
+          node --input-type=module -e '
+            import { readFileSync } from "node:fs";
+            const runs = JSON.parse(readFileSync("ci-runs.json", "utf8")).workflow_runs
+              .filter(run => run.head_sha === process.env.TARGET_SHA && run.head_repository.full_name === process.env.GITHUB_REPOSITORY && ["push", "workflow_dispatch"].includes(run.event))
+              .sort((a, b) => b.id - a.id || b.run_attempt - a.run_attempt);
+            if (runs[0]?.conclusion !== "success") throw new Error("The latest CI run for this commit must succeed before publication");
+          '
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          persist-credentials: false
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 24
           cache: npm
@@ -36,10 +51,10 @@ jobs:
       - run: npm run build
         env:
           LEGAL_STRICT: '1'
-      - uses: actions/upload-pages-artifact@v5
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:
           path: dist
           # /.well-known/security.txt (excluded by default since v5).
           include-hidden-files: true
       - id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5

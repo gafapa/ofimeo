@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { expect, test } from '@playwright/test'
-import { trackErrors } from './helpers'
+import { RELAYS, trackErrors } from './helpers'
 
 // A diagram whose HTML label carries an event handler, as a shared document
 // or an imported file could.
@@ -32,8 +32,21 @@ test('the built pages carry the script directives of the recommended CSP', async
   const expected = header.split(';').map((d) => d.trim()).filter((d) => /^(script-src|object-src|base-uri) /.test(d)).join('; ')
   expect(expected).toContain("script-src 'self'")
   expect(expected).not.toContain('unsafe-inline')
+  expect(expected).not.toContain("'unsafe-eval'")
   for (const path of ['/', '/legal/es/privacy.html']) {
     const html = await (await page.request.get(path)).text()
     expect(/<meta http-equiv="Content-Security-Policy" content="([^"]+)"/.exec(html)?.[1], path).toBe(expected)
   }
+})
+
+test('trusted advanced shape scripts load under CSP without dynamic evaluation', async ({ page }) => {
+  const errors = trackErrors(page)
+  await page.goto(`/${RELAYS}`)
+  const xml = '<mxfile><diagram id="d1" name="Page-1"><mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/><mxCell id="2" value="Advanced shape" style="shape=mxgraph.bpmn.shape;html=1;" vertex="1" parent="1"><mxGeometry x="40" y="40" width="160" height="80" as="geometry"/></mxCell></root></mxGraphModel></diagram></mxfile>'
+  const script = page.waitForResponse((response) => response.url().includes('/diagram-libs/shapes/bpmn/mxBpmnShape2.js') && response.ok())
+  const [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.locator('.home-open').first().click()])
+  await chooser.setFiles({ name: 'advanced.drawio', mimeType: 'application/xml', buffer: Buffer.from(xml) })
+  await script
+  await expect(page.locator('.diagram-canvas')).toContainText('Advanced shape')
+  expect(errors).toEqual([])
 })

@@ -1,12 +1,15 @@
 // Bundled draw.io stencil sets (XML shape descriptions) registered under
 // draw.io's names, e.g. "mxgraph.flowchart.multi-document".
-import { StencilShape, StencilShapeRegistry } from '@maxgraph/core'
+import { StencilShape, StencilShapeConfig, StencilShapeRegistry } from '@maxgraph/core'
 import type { AbstractCanvas2D, Rectangle, Shape } from '@maxgraph/core'
 import basicXml from './stencils/basic.xml?raw'
 import flowchartXml from './stencils/flowchart.xml?raw'
 import { deflateRawSync, inflateRawSync } from '../formats/deflate'
 
 export const STENCIL_SETS = [basicXml, flowchartXml]
+
+// Imported stencil text must never become executable JavaScript.
+StencilShapeConfig.allowEval = false
 
 const COLOR = /^(#|rgb|hsl)/i
 

@@ -120,7 +120,8 @@ export async function openSession(type: store.DocType, docId: string, docKey: st
   const meta = doc.getMap<unknown>('meta')
   const saveEntry = () => store.saveDoc({ id: docId, key: docKey, type, title: String(meta.get('title') ?? ''), keys: keys.link, access })
   saveEntry()
-  doc.on('update', saveEntry)
+  // The storage error event leaves a persistent warning; editing remains recoverable.
+  doc.on('update', () => { try { saveEntry() } catch { /* Already reported by the store. */ } })
 
   // Optional custom relays for private deployments: ?relays=wss://a,wss://b
   const relays = new URLSearchParams(location.search).get('relays')?.split(',').filter(Boolean)

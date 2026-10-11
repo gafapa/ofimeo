@@ -180,6 +180,7 @@ export async function backupFlow(ids?: string[]): Promise<boolean> {
   try {
     const blob = await backup.buildBackup({ ids, password: password.value || undefined })
     downloadBlob(blob, backup.backupFileName())
+    if (!ids) backup.recordBackupSuccess()
     toast(t('Backup saved'))
     onChanged()
     return true
@@ -237,9 +238,13 @@ export async function restoreFlow(file?: File | null): Promise<void> {
   )
   if (!ok) return
   toast(t('Restoring…'))
-  const report = await backup.restoreBackup(opened)
-  onChanged()
-  await showReport(report)
+  try {
+    const report = await backup.restoreBackup(opened)
+    onChanged()
+    await showReport(report)
+  } catch (error) {
+    await showDialog(t('Restore backup'), el('p', { role: 'alert', textContent: (error as Error).message }), [{ label: t('OK'), value: 'ok', primary: true }])
+  }
 }
 
 async function askPassword(retry: boolean): Promise<string | null> {
@@ -281,6 +286,7 @@ async function showReport(report: backup.RestoreReport): Promise<void> {
     group(t('Merged with changes'), report.updated),
     group(t('Already up to date'), report.unchanged),
     report.templates ? el('p', { textContent: tn(report.templates, '{n} template added', '{n} templates added') }) : '',
+    ...report.warnings.map((warning) => el('p', { class: 'storage-error', textContent: warning })),
     report.failed.length
       ? el('div', { class: 'storage-error' }, el('p', { textContent: t('Could not be restored:') }), el('ul', {}, ...report.failed.map((f) => el('li', { textContent: `${title(f.entry)}: ${f.error}` }))))
       : '',

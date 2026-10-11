@@ -12,7 +12,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host",
     "typecheck": "tsc --noEmit",
-    "test:unit": "node scripts/test-spell.mjs && node scripts/test-core.mjs && node scripts/i18n/check-keys.mjs",
+    "test:unit": "node scripts/test-spell.mjs && node scripts/test-core.mjs && node scripts/test-workflows.mjs && node scripts/i18n/check-keys.mjs",
+    "measure:install": "node scripts/measure-install.mjs",
     "test:e2e": "playwright test",
     "test": "npm run test:unit && npm run test:e2e",
     "i18n:check": "node scripts/i18n/check-keys.mjs"
@@ -24,6 +25,7 @@
     "@fontsource/opendyslexic": "5.3.0",
     "@maxgraph/core": "0.24.0",
     "@mcp-b/global": "5.1.0",
+    "@noble/ed25519": "3.2.0",
     "@tiptap/core": "3.31.4",
     "@tiptap/extension-collaboration": "3.31.4",
     "@tiptap/extension-collaboration-caret": "3.31.4",

@@ -84,7 +84,11 @@ export function setupChrome(session: Session, untitled: string): void {
   const status = document.getElementById('peer-status')!
   const renderStatus = () => {
     const peers = room.peerCount
-    if (!navigator.onLine && peers === 0) {
+    if (!room.realtimeAvailable) {
+      status.textContent = t('Local only')
+      status.className = 'status offline'
+      status.title = t('This browser cannot connect to other users in real time. Local editing and backups still work.')
+    } else if (!navigator.onLine && peers === 0) {
       status.textContent = t('Offline')
       status.className = 'status offline'
       status.title = t('Changes are saved in this browser and synced when others are reachable')

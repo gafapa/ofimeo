@@ -2,8 +2,9 @@
 
 ## Setup
 
-Requirements: Node 24 or later, npm; Go 1.27.1 or later for the relay; Chromium for e2e tests
-(`npx playwright install chromium` on a fresh machine).
+Requirements: Node 24 or later, npm; Go 1.27.2 or later for the relay;
+Playwright Chromium, Firefox and WebKit for browser tests.
+(`npx playwright install chromium firefox webkit` on a fresh machine).
 
 ```bash
 npm install
@@ -24,13 +25,17 @@ Relay: `cd relay && go build -o ofimeo-relay . && ./ofimeo-relay --help`
 
 ```bash
 npm run typecheck
-npm run test:unit      # spelling rule tests + i18n key check
+npm run test:unit      # spelling, permissions, crypto, workflow gates and i18n
 npm run build
 npm run test:e2e       # Playwright against dist/ + tests/relay.mjs on 7790
 cd relay && go vet ./... && go test ./...
 ```
 
 - Run one spec: `npx playwright test tests/e2e/writer-toc-pdf.spec.ts`.
+- Chromium runs every spec; Firefox and WebKit run smoke, library, security
+  and storage-integrity checks. Use `--project=chromium` for a focused engine run.
+- After building, `npm run measure:install` writes offline installation metrics
+  into `dist/installation-metrics.json` without changing the caching policy.
 - Parallel runs on other ports: copy `playwright.config.ts` to
   `playwright.<name>.config.ts` (git-ignored), change the ports, and set
   `E2E_RELAY_PORT` / `E2E_RELAYS`.

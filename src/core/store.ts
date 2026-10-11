@@ -4,6 +4,7 @@ import { clearDocument } from 'y-indexeddb'
 import { kvDelete, kvDeleteMatching } from './idb'
 import type { Access, LinkKeys } from './keys'
 import { t } from './i18n'
+import { reportStorageError } from './storage-error'
 
 const DOCS_KEY = 'ofimeo:docs'
 const USER_KEY = 'ofimeo:user'
@@ -162,8 +163,11 @@ export function saveUser(user: User): void {
 function read<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key)
-    return raw ? (JSON.parse(raw) as T) : fallback
-  } catch {
+    const value = raw ? JSON.parse(raw) : fallback
+    if (key === DOCS_KEY && (!Array.isArray(value) || value.some((entry) => !entry || typeof entry.id !== 'string' || typeof entry.key !== 'string' || typeof entry.title !== 'string' || !Number.isFinite(entry.updated)))) throw new Error('Invalid document index')
+    return value as T
+  } catch (error) {
+    if (key === DOCS_KEY) throw reportStorageError(error)
     return fallback
   }
 }
@@ -171,7 +175,7 @@ function read<T>(key: string, fallback: T): T {
 function write(key: string, value: unknown): void {
   try {
     localStorage.setItem(key, JSON.stringify(value))
-  } catch {
-    // Storage may be unavailable (private mode); ignore.
+  } catch (error) {
+    throw reportStorageError(error)
   }
 }

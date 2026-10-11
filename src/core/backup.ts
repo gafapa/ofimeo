@@ -8,24 +8,24 @@
 //   docs/<id>/doc.yjs          Y.encodeStateAsUpdate of the document (version history included)
 //   docs/<id>/comments.yjs     the same for its comments document
 //   docs/<id>/signed-<ch>.json signed update logs of protected documents (base64), when present
-//   templates.json             own templates (library-templates.ts), state in base64
+//   docs/<id>/private.yjs      editor-only state (version 2, never respondent/view backups)
+//   templates.json             own templates, state and privateState in base64
 // With a password, the zip above is encrypted (AES-GCM, key from PBKDF2-SHA-256)
 // and stored as payload.bin next to an ofimeo-backup.json that describes the cipher.
 // Restoring merges: documents already here receive the backup's Yjs updates
 // (nothing is lost on either side), missing ones are added.
 
 import JSZip from 'jszip'
-import * as Y from 'yjs'
-import { IndexeddbPersistence } from 'y-indexeddb'
 import { t } from './i18n'
-import { kvGet, kvSet } from './idb'
-import { accessRank } from './keys'
+import { kvDelete, kvGet, kvSet } from './idb'
+import { accessRank, resolveKeys } from './keys'
+import { mergeState, readState, validateUpdate } from './y-storage'
 import { dbAll, dbGet, dbPut, exportLibrary, mergeLibrary } from './library'
 import * as store from './store'
 
 export const BACKUP_EXT = '.ofimeo-backup'
 const FORMAT = 'ofimeo-backup'
-const VERSION = 1
+const VERSION = 2
 const ITERATIONS = 310000
 const SETTINGS_KEY = 'ofimeo:backup'
 const DAY = 86400000
@@ -123,6 +123,7 @@ export function reminderDue(now = Date.now()): boolean {
 export interface TemplateRecord {
   id: string
   state: Uint8Array
+  privateState?: Uint8Array
   [field: string]: unknown
 }
 
@@ -138,34 +139,6 @@ const toBase64 = (bytes: Uint8Array) => {
 }
 const fromBase64 = (text: string) => Uint8Array.from(atob(text), (c) => c.charCodeAt(0))
 export const base64 = { encode: toBase64, decode: fromBase64 }
-
-// Full state of a y-indexeddb database.
-async function readState(name: string): Promise<Uint8Array> {
-  const doc = new Y.Doc()
-  const persistence = new IndexeddbPersistence(name, doc)
-  await persistence.whenSynced
-  const state = Y.encodeStateAsUpdate(doc)
-  await persistence.destroy()
-  doc.destroy()
-  return state
-}
-
-// Applies an update to a y-indexeddb database; true when it changed anything.
-async function mergeState(name: string, update: Uint8Array): Promise<boolean> {
-  const doc = new Y.Doc()
-  const persistence = new IndexeddbPersistence(name, doc)
-  await persistence.whenSynced
-  const before = Y.encodeStateAsUpdate(doc)
-  Y.applyUpdate(doc, update)
-  const after = Y.encodeStateAsUpdate(doc)
-  await persistence.destroy()
-  doc.destroy()
-  // A read on a new connection is ordered after the pending write.
-  const check = new IndexeddbPersistence(name, new Y.Doc())
-  await check.whenSynced
-  await check.destroy()
-  return before.length !== after.length || before.some((b, i) => b !== after[i])
-}
 
 export interface BackupOptions {
   // Only these documents (default: every document, the trash included).
@@ -187,16 +160,17 @@ export async function buildBackup(options: BackupOptions = {}): Promise<Blob> {
     const dir = zip.folder(`docs/${d.id}`)!
     dir.file('doc.yjs', await readState(store.dbName(d.id)))
     dir.file('comments.yjs', await readState(store.commentsDbName(d.id)))
+    const keys = await resolveKeys(d.keys ?? {})
+    if (keys.access === 'edit') dir.file('private.yjs', await readState(store.privateDbName(d.type, d.id)))
     for (const channel of ['yjs', 'cmt']) {
       const log = await kvGet<Uint8Array[]>(store.signedLogKey(d.id, channel))
       if (log?.length) dir.file(`signed-${channel}.json`, JSON.stringify(log.map(toBase64)))
     }
   }
   options.onProgress?.(done, docs.length)
-  if (templates.length) zip.file('templates.json', JSON.stringify(templates.map((tpl) => ({ ...tpl, state: toBase64(tpl.state) }))))
+  if (templates.length) zip.file('templates.json', JSON.stringify(templates.map((tpl) => ({ ...tpl, state: toBase64(tpl.state), ...(tpl.privateState ? { privateState: toBase64(tpl.privateState) } : {}) }))))
   const inner = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE', compressionOptions: { level: 6 } })
   if (!options.password) {
-    if (!options.ids) saveSettings({ lastBackup: Date.now(), dismissedAt: undefined })
     return new Blob([inner as BlobPart], { type: 'application/zip' })
   }
   const salt = crypto.getRandomValues(new Uint8Array(16))
@@ -210,7 +184,6 @@ export async function buildBackup(options: BackupOptions = {}): Promise<Blob> {
   )
   outer.file('payload.bin', payload)
   const blob = await outer.generateAsync({ type: 'blob', compression: 'STORE', mimeType: 'application/zip' })
-  if (!options.ids) saveSettings({ lastBackup: Date.now(), dismissedAt: undefined })
   return blob
 }
 
@@ -240,13 +213,16 @@ interface Manifest {
   format?: string
   version?: number
   created?: number
-  encrypted?: { iterations: number; salt: string; iv: string }
+  documents?: number
+  templates?: number
+  encrypted?: { cipher: string; kdf: string; iterations: number; salt: string; iv: string }
 }
 
 export interface OpenedBackup {
   created?: number
   zip: JSZip
   index: BackupIndex
+  version?: number
 }
 
 // True when the file needs a password.
@@ -256,7 +232,10 @@ export async function backupNeedsPassword(file: Blob): Promise<boolean> {
 
 async function loadZip(file: Blob | Uint8Array): Promise<JSZip> {
   try {
-    return await JSZip.loadAsync(file)
+    if ((file instanceof Uint8Array ? file.byteLength : file.size) > 128 * 1024 * 1024) throw new Error('Backup too large')
+    const zip = await JSZip.loadAsync(file)
+    checkArchiveSize(zip)
+    return zip
   } catch {
     throw new BackupError('format', t('This file is not an Ofimeo backup.'))
   }
@@ -264,9 +243,11 @@ async function loadZip(file: Blob | Uint8Array): Promise<JSZip> {
 
 async function manifestOf(zip: JSZip): Promise<Manifest> {
   const raw = await zip.file('ofimeo-backup.json')?.async('string')
-  const manifest = raw ? (JSON.parse(raw) as Manifest) : null
+  let manifest: Manifest | null = null
+  try { manifest = raw ? JSON.parse(raw) as Manifest : null } catch { /* Invalid manifest. */ }
   if (manifest?.format !== FORMAT) throw new BackupError('format', t('This file is not an Ofimeo backup.'))
   if ((manifest.version ?? 0) > VERSION) throw new BackupError('format', t('This backup was made with a newer version of Ofimeo.'))
+  if (!Number.isInteger(manifest.version) || manifest.version! < 1) throw formatError()
   return manifest
 }
 
@@ -276,6 +257,7 @@ export async function openBackup(file: Blob, password?: string): Promise<OpenedB
   if (manifest.encrypted) {
     if (!password) throw new BackupError('password', t('This backup is protected with a password.'))
     const { iterations, salt, iv } = manifest.encrypted
+    if (manifest.encrypted.cipher !== 'AES-GCM' || manifest.encrypted.kdf !== 'PBKDF2-SHA-256' || !Number.isInteger(iterations) || iterations < 100000 || iterations > 1000000 || typeof salt !== 'string' || typeof iv !== 'string' || fromBase64(salt).length !== 16 || fromBase64(iv).length !== 12 || !zip.file('payload.bin')) throw formatError()
     const key = await deriveKey(password, fromBase64(salt), iterations)
     const payload = await zip.file('payload.bin')!.async('uint8array')
     let inner: ArrayBuffer
@@ -287,8 +269,27 @@ export async function openBackup(file: Blob, password?: string): Promise<OpenedB
     zip = await loadZip(new Uint8Array(inner))
     manifest = await manifestOf(zip)
   }
-  const index = JSON.parse((await zip.file('index.json')?.async('string')) ?? '{"docs":[]}') as BackupIndex
-  return { created: manifest.created, zip, index }
+  let index: BackupIndex
+  try { index = JSON.parse((await zip.file('index.json')?.async('string')) ?? '') as BackupIndex } catch { throw formatError() }
+  if (!index || !Array.isArray(index.docs)) throw formatError()
+  if (manifest.documents !== index.docs.length || !Number.isInteger(manifest.templates) || manifest.templates! < 0 || (manifest.templates! > 0 && !zip.file('templates.json'))) throw formatError()
+  return { created: manifest.created, zip, index, version: manifest.version }
+}
+
+function checkArchiveSize(zip: JSZip): void {
+  let total = 0
+  // Check the central directory before inflating even the manifest or index.
+  for (const file of Object.values(zip.files)) {
+    const size = (file as unknown as { _data?: { uncompressedSize?: number } })._data?.uncompressedSize ?? 0
+    if (size > 128 * 1024 * 1024 || (total += size) > 512 * 1024 * 1024) throw formatError()
+  }
+}
+
+function formatError(): BackupError { return new BackupError('format', t('This file is not an Ofimeo backup.')) }
+
+// Archive generation alone is not evidence of a delivered recovery artifact.
+export function recordBackupSuccess(): void {
+  saveSettings({ lastBackup: Date.now(), dismissedAt: undefined })
 }
 
 export interface RestoreReport {
@@ -297,39 +298,166 @@ export interface RestoreReport {
   unchanged: store.DocEntry[]
   failed: { entry: store.DocEntry; error: string }[]
   templates: number
+  warnings: string[]
+}
+
+interface PreparedDocument {
+  entry: store.DocEntry
+  state: Uint8Array
+  comments: Uint8Array
+  privateState?: Uint8Array
+  logs: Record<string, Uint8Array[]>
+}
+
+const validId = (value: unknown): value is string => typeof value === 'string' && /^[A-Za-z0-9_-]{1,200}$/.test(value)
+
+function decodeTemplateState(value: unknown): Uint8Array {
+  if (typeof value === 'string') return fromBase64(value)
+  // Version 1 serialized private Uint8Arrays as objects with numeric keys.
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw formatError()
+  const entries = Object.entries(value)
+  if (!entries.length || entries.some(([key, byte], index) => key !== String(index) || !Number.isInteger(byte) || Number(byte) < 0 || Number(byte) > 255)) throw formatError()
+  return new Uint8Array(entries.map(([, byte]) => Number(byte)))
+}
+
+async function checkIdentity(entry: store.DocEntry): Promise<void> {
+  const existing = store.getDoc(entry.id)
+  if (!existing) return
+  const left = await resolveKeys(existing.keys ?? {})
+  const right = await resolveKeys(entry.keys ?? {})
+  if (existing.type !== entry.type || existing.key !== entry.key || left.signed !== right.signed || left.link.verify !== right.link.verify || left.link.cverify !== right.link.cverify) {
+    throw new Error('The backup conflicts with the identity of an existing document')
+  }
+}
+
+async function checkPendingRestore(prepared: PreparedDocument): Promise<void> {
+  const pending = await kvGet<PreparedDocument>(`restore:${prepared.entry.id}`)
+  if (!pending) return
+  const entry = prepared.entry
+  if (pending.entry.key !== entry.key || pending.entry.type !== entry.type || JSON.stringify(pending.entry.keys) !== JSON.stringify(entry.keys)) throw new Error('An unfinished restore has a different document identity')
+  const encodedPrivate = (value?: Uint8Array) => value ? toBase64(value) : ''
+  if (toBase64(pending.state) !== toBase64(prepared.state) || toBase64(pending.comments) !== toBase64(prepared.comments) || encodedPrivate(pending.privateState) !== encodedPrivate(prepared.privateState) || JSON.stringify(pending.logs) !== JSON.stringify(prepared.logs)) throw new Error('Retry the unfinished backup before restoring a different archive')
+}
+
+async function prepareRestore(backup: OpenedBackup): Promise<{ documents: PreparedDocument[]; templates: TemplateRecord[] }> {
+  if (!backup.index || !Array.isArray(backup.index.docs)) throw formatError()
+  checkArchiveSize(backup.zip)
+  const ids = new Set<string>()
+  const documents: PreparedDocument[] = []
+  for (const original of backup.index.docs) {
+    if (!original || !validId(original.id) || ids.has(original.id) || !store.DOC_TYPES.includes(original.type) || typeof original.key !== 'string' || !original.key || typeof original.title !== 'string' || !Number.isFinite(original.updated)) throw formatError()
+    if (original.tags && (!Array.isArray(original.tags) || original.tags.some((id) => !validId(id)))) throw formatError()
+    if (original.folder && !validId(original.folder)) throw formatError()
+    if (original.keys && (typeof original.keys !== 'object' || Object.values(original.keys).some((key) => typeof key !== 'string'))) throw formatError()
+    ids.add(original.id)
+    const keys = await resolveKeys(original.keys ?? {})
+    const entry = { ...original, keys: keys.link, access: keys.access }
+    await checkIdentity(entry)
+    const dir = `docs/${entry.id}/`
+    const readUpdate = async (name: string, required: boolean) => {
+      const file = backup.zip.file(dir + name)
+      if (!file) { if (required) throw formatError(); return undefined }
+      const update = await file.async('uint8array')
+      validateUpdate(update)
+      return update
+    }
+    const state = (await readUpdate('doc.yjs', true))!
+    const comments = (await readUpdate('comments.yjs', true))!
+    const privateState = await readUpdate('private.yjs', (backup.version ?? 1) >= 2 && keys.access === 'edit')
+    if (privateState && keys.access !== 'edit') throw new Error('Private document data requires an editor key')
+    const logs: Record<string, Uint8Array[]> = {}
+    for (const channel of ['yjs', 'cmt']) {
+      const raw = await backup.zip.file(`${dir}signed-${channel}.json`)?.async('string')
+      if (!raw) continue
+      const entries: unknown = JSON.parse(raw)
+      if (!Array.isArray(entries) || entries.some((value) => typeof value !== 'string')) throw formatError()
+      logs[channel] = entries.map(fromBase64)
+    }
+    const prepared = { entry, state, comments, privateState, logs }
+    await checkPendingRestore(prepared)
+    documents.push(prepared)
+  }
+  const library = backup.index.library
+  if (library) {
+    if (!Array.isArray(library.folders) || !Array.isArray(library.tags)) throw formatError()
+    for (const items of [library.folders, library.tags]) {
+      const seen = new Set<string>()
+      for (const item of items) {
+        if (!item || !validId(item.id) || seen.has(item.id) || typeof item.name !== 'string') throw formatError()
+        seen.add(item.id)
+      }
+    }
+    for (const folder of library.folders) {
+      const seen = new Set([folder.id])
+      let parent = folder.parent
+      while (parent) {
+        if (!validId(parent) || seen.has(parent)) throw formatError()
+        seen.add(parent)
+        parent = library.folders.find((item) => item.id === parent)?.parent
+      }
+    }
+    if (library.tags.some((tag) => typeof tag.color !== 'string')) throw formatError()
+  }
+  const raw = await backup.zip.file('templates.json')?.async('string')
+  const records: unknown = raw ? JSON.parse(raw) : []
+  if (!Array.isArray(records)) throw formatError()
+  const templates: TemplateRecord[] = []
+  const templateIds = new Set<string>()
+  for (const record of records) {
+    if (!record || !validId(record.id) || templateIds.has(record.id) || !store.DOC_TYPES.includes(record.app) || typeof record.name !== 'string' || typeof record.description !== 'string' || typeof record.thumb !== 'string' || !Number.isFinite(record.created)) throw formatError()
+    templateIds.add(record.id)
+    const state = decodeTemplateState(record.state)
+    const privateState = record.privateState === undefined ? undefined : decodeTemplateState(record.privateState)
+    validateUpdate(state)
+    if (privateState) validateUpdate(privateState)
+    templates.push({ ...record, state, privateState })
+  }
+  return { documents, templates }
 }
 
 export async function restoreBackup(backup: OpenedBackup, onProgress?: (done: number, total: number) => void): Promise<RestoreReport> {
-  const report: RestoreReport = { added: [], updated: [], unchanged: [], failed: [], templates: 0 }
-  const docs = backup.index.docs.filter((d) => d && typeof d.id === 'string' && store.DOC_TYPES.includes(d.type))
+  const restore = () => restorePreparedBackup(backup, onProgress)
+  return navigator.locks ? navigator.locks.request('ofimeo:backup-restore', restore) : restore()
+}
+
+async function restorePreparedBackup(backup: OpenedBackup, onProgress?: (done: number, total: number) => void): Promise<RestoreReport> {
+  // Validate every payload and identity before any local mutation.
+  const { documents, templates } = await prepareRestore(backup)
+  const report: RestoreReport = { added: [], updated: [], unchanged: [], failed: [], templates: 0, warnings: [] }
+  if ((backup.version ?? 1) === 1 && documents.some(({ entry }) => entry.type === 'forms')) report.warnings.push(t('This older backup does not include private form answers, responses or grades.'))
   mergeLibrary(backup.index.library ?? {})
   let done = 0
-  for (const entry of docs) {
-    onProgress?.(done++, docs.length)
+  for (const prepared of documents) {
+    const { entry, state, comments, privateState, logs } = prepared
+    onProgress?.(done++, documents.length)
     try {
-      const dir = `docs/${entry.id}/`
-      const state = await backup.zip.file(`${dir}doc.yjs`)?.async('uint8array')
-      const comments = await backup.zip.file(`${dir}comments.yjs`)?.async('uint8array')
+      await checkIdentity(entry)
+      // Keep a committed recovery record until all databases and the index succeed.
+      // Yjs merges are idempotent: retrying the archive completes interrupted work.
+      const journalKey = `restore:${entry.id}`
+      await checkPendingRestore(prepared)
+      await kvSet(journalKey, prepared)
       const existing = store.getDoc(entry.id)
       let changed = false
-      if (state) changed = (await mergeState(store.dbName(entry.id), state)) || changed
-      if (comments) changed = (await mergeState(store.commentsDbName(entry.id), comments)) || changed
+      changed = (await mergeState(store.dbName(entry.id), state)) || changed
+      changed = (await mergeState(store.commentsDbName(entry.id), comments)) || changed
+      if (privateState) changed = (await mergeState(store.privateDbName(entry.type, entry.id), privateState)) || changed
       for (const channel of ['yjs', 'cmt']) {
-        const raw = await backup.zip.file(`${dir}signed-${channel}.json`)?.async('string')
-        if (!raw) continue
+        if (!logs[channel]) continue
         const key = store.signedLogKey(entry.id, channel)
         const current = ((await kvGet<Uint8Array[]>(key)) ?? []).map(toBase64)
-        const merged = [...new Set([...current, ...(JSON.parse(raw) as string[])])]
+        const merged = [...new Set([...current, ...logs[channel].map(toBase64)])]
         if (merged.length !== current.length) await kvSet(key, merged.map(fromBase64))
       }
       if (!existing) {
         store.putDoc(entry)
+        await kvDelete(journalKey)
         report.added.push(entry)
         continue
       }
       // Keep this browser's entry; take the backup's keys when they grant more.
       const next = { ...existing }
-      if (accessRank(entry.access ?? 'edit') > accessRank(existing.access ?? 'edit')) {
+      if (accessRank(entry.access ?? 'edit') > accessRank((await resolveKeys(existing.keys ?? {})).access)) {
         next.keys = entry.keys
         next.access = entry.access
         changed = true
@@ -339,17 +467,17 @@ export async function restoreBackup(backup: OpenedBackup, onProgress?: (done: nu
       if (!next.remote && entry.remote) next.remote = entry.remote
       if (changed) next.updated = Math.max(existing.updated, entry.updated, Date.now())
       store.putDoc(next)
+      await kvDelete(journalKey)
       ;(changed ? report.updated : report.unchanged).push(next)
     } catch (err) {
       report.failed.push({ entry, error: (err as Error).message })
     }
   }
-  onProgress?.(done, docs.length)
-  const templates = await backup.zip.file('templates.json')?.async('string')
-  if (templates) {
-    for (const tpl of JSON.parse(templates) as { id: string; state: string }[]) {
+  onProgress?.(done, documents.length)
+  if (templates.length) {
+    for (const tpl of templates) {
       if (await dbGet('templates', tpl.id)) continue
-      await dbPut('templates', { ...tpl, state: fromBase64(tpl.state) })
+      await dbPut('templates', tpl)
       report.templates++
     }
   }
@@ -377,6 +505,7 @@ export async function runAutoBackup(force = false): Promise<string | null> {
     }
     const target = nc.joinPath(auto.folder, backupFileName())
     await nc.upload(account, target, await buildBackup({ password: auto.password || undefined }), { contentType: 'application/zip' })
+    recordBackupSuccess()
     saveSettings({ auto: { ...auto, lastRun: Date.now(), lastError: undefined } })
     return target
   } catch (err) {

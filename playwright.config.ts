@@ -17,7 +17,12 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1366, height: 820 } } }],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1366, height: 820 } } },
+    // Core portability checks in the other engines; Chromium runs the complete suite.
+    { name: 'firefox', testMatch: /(?:smoke|library|security|storage-integrity)\.spec\.ts/, use: { ...devices['Desktop Firefox'], viewport: { width: 1366, height: 820 } } },
+    { name: 'webkit', testMatch: /(?:smoke|library|security|storage-integrity)\.spec\.ts/, use: { ...devices['Desktop Safari'], viewport: { width: 1366, height: 820 } } },
+  ],
   webServer: [
     { command: 'npx vite preview --host 127.0.0.1 --port 4173 --strictPort', url: 'http://127.0.0.1:4173', reuseExistingServer: !process.env.CI, timeout: 60_000 },
     { command: `node tests/relay.mjs ${RELAY_PORT}`, port: RELAY_PORT, reuseExistingServer: !process.env.CI, timeout: 30_000 },

@@ -21,6 +21,7 @@
 import * as Y from 'yjs'
 import { t } from '../i18n'
 import { kvGet, kvSet } from '../idb'
+import { reportStorageError } from '../storage-error'
 import * as nc from '../nextcloud'
 import { schoolRelay } from '../connectivity'
 import { schoolConfig } from '../school-config'
@@ -184,7 +185,7 @@ class Link {
   }
 
   save(): void {
-    void kvSet(this.stateKey, { cursor: this.cursor, shadow: Y.encodeStateAsUpdate(this.shadow) })
+    void kvSet(this.stateKey, { cursor: this.cursor, shadow: Y.encodeStateAsUpdate(this.shadow) }).catch(reportStorageError)
   }
 
   async pull(): Promise<{ count: number; cursor: string }> {

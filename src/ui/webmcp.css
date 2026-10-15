@@ -33,3 +33,48 @@
 .webmcp-activity-list li.failed .webmcp-activity-status { color: var(--danger-text); }
 .webmcp-ask-action, .webmcp-ask-question { font-weight: 600; overflow-wrap: anywhere; white-space: pre-wrap; }
 .webmcp-ask textarea { width: 100%; }
+.webmcp-badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--radius-pill); background: var(--accent); color: var(--on-accent); font-size: var(--fs-xs); line-height: 18px; text-align: center; }
+.webmcp-badge[hidden] { display: none; }
+.webmcp-review { margin: 8px 0 12px; }
+.webmcp-review .hint { margin: 4px 0 0 26px; }
+
+/* Proposals panel (src/ui/webmcp-proposals.ts). */
+.webmcp-proposals {
+  position: fixed;
+  top: 64px;
+  right: 16px;
+  bottom: 48px;
+  z-index: var(--z-panel);
+  width: min(380px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow);
+}
+.webmcp-proposals[hidden] { display: none; }
+.webmcp-proposals-head { display: flex; align-items: center; gap: 8px; }
+.webmcp-proposals-head h2 { flex: 1; margin: 0; font-size: var(--fs-m); }
+.webmcp-proposal-count { color: var(--muted); font-size: var(--fs-s); white-space: nowrap; }
+.webmcp-proposals .hint { margin: 0; }
+.webmcp-proposals-actions { display: flex; gap: 8px; }
+.webmcp-proposal-list { flex: 1; overflow-y: auto; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.webmcp-proposal { padding: 8px; border: 1px solid var(--border); border-radius: var(--radius-m); }
+.webmcp-proposal.pending { border-color: var(--info-border); background: var(--info-bg); color: var(--info-fg); }
+.webmcp-proposal-summary { margin: 0 0 4px; overflow-wrap: anywhere; }
+.webmcp-proposal-meta, .webmcp-proposal-status { display: block; color: var(--muted); font-size: var(--fs-xs); }
+.webmcp-proposal.pending .webmcp-proposal-meta { color: inherit; }
+.webmcp-proposal.failed .webmcp-proposal-status { color: var(--danger-text); }
+.webmcp-proposal-buttons { display: flex; gap: 8px; margin-top: 6px; }
+@media (max-width: 600px) {
+  .webmcp-proposals { top: auto; left: 16px; right: 16px; bottom: 16px; width: auto; max-height: 60vh; }
+}
+.webmcp-close { display: inline-grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: var(--radius-s); background: transparent; color: inherit; cursor: pointer; }
+.webmcp-close:hover { background: var(--hover); }
+.webmcp-close:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.webmcp-proposals button:not(.primary):not(.webmcp-close) { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: var(--radius-m); padding: 6px 14px; }
+.webmcp-proposals button:not(.primary):not(.webmcp-close):hover:not(:disabled) { background: var(--hover); }

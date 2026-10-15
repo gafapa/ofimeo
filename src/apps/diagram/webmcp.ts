@@ -7,6 +7,7 @@
 //   provideWebMcpTools(session, () => import('./webmcp').then((m) => m.diagramTools(session, editor)))
 
 import { Cell, Geometry } from '@maxgraph/core'
+import { t } from '../../core/i18n'
 import type { Session } from '../../core/session'
 import { htmlToText, num, optNum, optStr, str, textToHtml, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
 import { serializeDrawio } from './formats/drawio'
@@ -50,14 +51,120 @@ const EDGE_STYLES: Record<string, string> = {
 
 export const pageArg = { page: { type: 'integer', minimum: 1, description: 'Page number (1 = first; default: the page shown).' } }
 
+// Shows a page. Inside apply_batch the model update is open (groupGraph):
+// it is closed first so the changes are saved to the page they belong to,
+// and opened again for the next ones.
+export function showPageSafely(editor: GraphEditor, id: string): void {
+  if (id === editor.sync.page) return
+  const model = editor.graph.getDataModel()
+  const level = model.updateLevel
+  for (let i = 0; i < level; i++) model.endUpdate()
+  editor.sync.showPage(id)
+  for (let i = 0; i < level; i++) model.beginUpdate()
+}
+
+// apply_batch: the changes to a page are one step of its undo history.
+export async function groupGraph<T>(editor: GraphEditor, fn: () => Promise<T>): Promise<T> {
+  const model = editor.graph.getDataModel()
+  model.beginUpdate()
+  try {
+    return await fn()
+  } finally {
+    model.endUpdate()
+  }
+}
+
+// Page `n` (1-based) of the diagram or presentation.
+export function pageAt(editor: GraphEditor, args: ToolArgs, key = 'page') {
+  const list = editor.sync.pageList()
+  const n = optNum(args, key)
+  const index = n === undefined ? list.findIndex((p) => p.id === editor.sync.page) : Math.round(n) - 1
+  const page = list[index]
+  if (!page) throw new Error(`There is no ${key} ${n} (there are ${list.length})`)
+  return { page, n: index + 1 }
+}
+
 // Shows page `n` (1-based) when given; returns its id.
 export function goToPage(editor: GraphEditor, args: ToolArgs, key = 'page'): string {
-  const n = optNum(args, key)
-  if (n === undefined) return editor.sync.page
-  const page = editor.sync.pageList()[Math.round(n) - 1]
-  if (!page) throw new Error(`There is no ${key} ${n} (there are ${editor.sync.pageList().length})`)
-  if (page.id !== editor.sync.page) editor.sync.showPage(page.id)
+  if (optNum(args, key) === undefined) return editor.sync.page
+  const { page } = pageAt(editor, args, key)
+  showPageSafely(editor, page.id)
   return page.id
+}
+
+// Moves page `id` so that it becomes number `to` (1-based).
+export function movePageTo(editor: GraphEditor, id: string, to: number): number {
+  const others = editor.sync.pageList().filter((p) => p.id !== id)
+  const index = Math.max(0, Math.min(others.length, Math.round(to) - 1))
+  editor.sync.movePage(id, others[index]?.id ?? null)
+  return editor.sync.pageList().findIndex((p) => p.id === id) + 1
+}
+
+const idList = (args: ToolArgs, key = 'ids'): string[] => {
+  const v = args[key]
+  const list = Array.isArray(v) ? v.map(String) : typeof v === 'string' ? [v] : []
+  if (!list.length) throw new Error(`Give "${key}": the ids of the objects`)
+  return list
+}
+
+// Deletes objects of the page shown (connectors attached to deleted shapes too).
+export function deleteCells(editor: GraphEditor, ids: string[]): number {
+  const cells = ids.map((id) => cellById(editor, id))
+  let removed = 0
+  editor.inBatch(() => (removed = editor.graph.removeCells(cells, true).length))
+  return removed
+}
+
+// Moves and/or resizes an object of the page shown.
+export function setBounds(editor: GraphEditor, id: string, bounds: { x?: number; y?: number; width?: number; height?: number }) {
+  const cell = cellById(editor, id)
+  const geo = cell.getGeometry()
+  if (!geo || cell.isEdge()) throw new Error('Connectors cannot be moved or resized this way')
+  const next = geo.clone()
+  if (bounds.x !== undefined) next.x = bounds.x
+  if (bounds.y !== undefined) next.y = bounds.y
+  if (bounds.width !== undefined) next.width = Math.max(1, bounds.width)
+  if (bounds.height !== undefined) next.height = Math.max(1, bounds.height)
+  editor.inBatch(() => editor.graph.getDataModel().setGeometry(cell, next))
+  return { id, x: Math.round(next.x), y: Math.round(next.y), width: Math.round(next.width), height: Math.round(next.height) }
+}
+
+// Tools shared by diagrams and presentations to move, resize and delete objects.
+export function objectTools(editor: GraphEditor, editable: () => void, pageKey: 'page' | 'slide'): OfimeoTool[] {
+  const where = { [pageKey]: { type: 'integer', minimum: 1, description: `${pageKey === 'page' ? 'Page' : 'Slide'} number (default: the one shown).` } }
+  return [
+    {
+      name: 'delete_objects',
+      description: `Deletes shapes or connectors (ids from ${pageKey === 'page' ? 'get_diagram' : 'get_slide'}) of a ${pageKey}; connectors attached to deleted shapes go too. The user confirms it.`,
+      inputSchema: { type: 'object', properties: { ids: { type: 'array', items: { type: 'string' } }, ...where }, required: ['ids'] },
+      access: 'edit',
+      changesDocument: true,
+      destructive: true,
+      summary: (args) => t('Delete {n} objects', { n: Array.isArray(args.ids) ? args.ids.length : 1 }),
+      execute: (args) => {
+        editable()
+        goToPage(editor, args, pageKey)
+        return { deleted: deleteCells(editor, idList(args)) }
+      },
+    },
+    {
+      name: 'move_object',
+      description: 'Moves and/or resizes a shape: new x, y (top left corner) and/or width, height. One undo step.',
+      inputSchema: {
+        type: 'object',
+        properties: { id: { type: 'string' }, x: { type: 'number' }, y: { type: 'number' }, width: { type: 'number' }, height: { type: 'number' }, ...where },
+        required: ['id'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      summary: () => t('Move or resize an object'),
+      execute: (args) => {
+        editable()
+        goToPage(editor, args, pageKey)
+        return setBounds(editor, str(args, 'id'), { x: optNum(args, 'x'), y: optNum(args, 'y'), width: optNum(args, 'width'), height: optNum(args, 'height') })
+      },
+    },
+  ]
 }
 
 export function cellById(editor: GraphEditor, id: string): Cell {
@@ -179,6 +286,7 @@ export function diagramTools(session: Session, editor: GraphEditor): AppTools {
       },
       access: 'edit',
       changesDocument: true,
+      summary: (args) => t('Add the shape “{label}”', { label: String(args.label ?? '') }),
       execute: (args) => {
         editable()
         goToPage(editor, args)
@@ -214,6 +322,7 @@ export function diagramTools(session: Session, editor: GraphEditor): AppTools {
       },
       access: 'edit',
       changesDocument: true,
+      summary: (args) => t('Connect two shapes{label}', { label: args.label ? ` (“${String(args.label)}”)` : '' }),
       execute: (args) => {
         editable()
         const source = cellById(editor, str(args, 'source_id'))
@@ -227,12 +336,75 @@ export function diagramTools(session: Session, editor: GraphEditor): AppTools {
         return { id: edge.getId() }
       },
     },
+    ...objectTools(editor, editable, 'page'),
+    {
+      name: 'add_page',
+      description: 'Adds an empty page (optionally named) after the last one and shows it.',
+      inputSchema: { type: 'object', properties: { name: { type: 'string' } } },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Add the page {name}', { name: optStr(args, 'name') ?? '' }),
+      execute: (args) => {
+        editable()
+        const id = sync.addPage(optStr(args, 'name')?.trim() || `Page ${sync.pageList().length + 1}`)
+        showPageSafely(editor, id)
+        return { page: sync.pageList().findIndex((p) => p.id === id) + 1 }
+      },
+    },
+    {
+      name: 'rename_page',
+      description: 'Renames a page (default: the page shown).',
+      inputSchema: { type: 'object', properties: { ...pageArg, name: { type: 'string' } }, required: ['name'] },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Rename a page to {name}', { name: String(args.name ?? '') }),
+      execute: (args) => {
+        editable()
+        const { page, n } = pageAt(editor, args)
+        sync.renamePage(page.id, str(args, 'name').trim() || page.name)
+        return { page: n, name: str(args, 'name') }
+      },
+    },
+    {
+      name: 'move_page',
+      description: 'Moves a page (default: the page shown) so that it becomes page number "to".',
+      inputSchema: { type: 'object', properties: { ...pageArg, to: { type: 'integer', minimum: 1 } }, required: ['to'] },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Move a page to position {n}', { n: String(args.to) }),
+      execute: (args) => {
+        editable()
+        const { page } = pageAt(editor, args)
+        return { page: movePageTo(editor, page.id, num(args, 'to')) }
+      },
+    },
+    {
+      name: 'delete_page',
+      description: 'Deletes a page with everything on it (not the last page). The user confirms it.',
+      inputSchema: { type: 'object', properties: { ...pageArg }, required: ['page'] },
+      access: 'edit',
+      changesDocument: true,
+      destructive: true,
+      summary: (args) => t('Delete page {n} and everything on it', { n: String(args.page) }),
+      execute: (args) => {
+        editable()
+        if (sync.pageList().length <= 1) throw new Error('The last page cannot be deleted')
+        const { page } = pageAt(editor, args)
+        const model = graph.getDataModel()
+        const level = model.updateLevel
+        for (let i = 0; i < level; i++) model.endUpdate()
+        sync.deletePage(page.id)
+        for (let i = 0; i < level; i++) model.beginUpdate()
+        return { deleted: page.name, pages: sync.pageList().length }
+      },
+    },
     {
       name: 'set_label',
       description: 'Changes the label of a shape or connector of the page shown (by id from get_diagram).',
       inputSchema: { type: 'object', properties: { id: { type: 'string' }, label: { type: 'string' } }, required: ['id', 'label'] },
       access: 'edit',
       changesDocument: true,
+      summary: (args) => t('Change a label to “{label}”', { label: String(args.label ?? '') }),
       execute: (args) => {
         editable()
         setLabel(editor, cellById(editor, str(args, 'id')), str(args, 'label', ''))
@@ -248,6 +420,7 @@ export function diagramTools(session: Session, editor: GraphEditor): AppTools {
       const page = sync.pageList().findIndex((p) => p.id === sync.page) + 1
       return cells.length ? { kind: 'shapes', page, cells } : { kind: 'none', page }
     },
+    group: (fn) => groupGraph(editor, fn),
     show: (args) => showCell(editor, args),
     showSchema: { ...pageArg, id: { type: 'string', description: 'Object to select (id from get_diagram).' } },
     undo: editor.undo,

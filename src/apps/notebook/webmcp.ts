@@ -8,11 +8,13 @@ import type { JSONContent } from '@tiptap/core'
 import { getSchema } from '@tiptap/core'
 import { prosemirrorJSONToYXmlFragment } from '@tiptap/y-tiptap'
 import { yUndoPluginKey } from '@tiptap/y-tiptap'
+import { t } from '../../core/i18n'
+import { groupYUndo } from '../../core/webmcp/undo'
 import { optNum, optStr, str, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
 import type { NotebookContext } from './app'
 import { notebookExtensions } from './extensions'
 import { pageContent } from './export'
-import { addPage, addSection, allPages, collectTags, inkArray, NB_ORIGIN, pageTitle, readPages, readSections, type Page } from './model'
+import { addPage, addSection, allPages, collectTags, deletePage, inkArray, movePage, NB_ORIGIN, pageTitle, readPages, readSections, updatePage, type Page } from './model'
 
 const MAX_TEXT = 100_000
 
@@ -91,6 +93,7 @@ export function notebookTools(ctx: NotebookContext): AppTools {
       },
       access: 'edit',
       changesDocument: true,
+      summary: (args) => t('Add the page {name}', { name: String(args.title ?? '') }),
       execute: async (args) => {
         requireEdit()
         const title = str(args, 'title')
@@ -115,11 +118,73 @@ export function notebookTools(ctx: NotebookContext): AppTools {
       },
     },
     {
+      name: 'rename_page',
+      description: 'Renames a page ("page": id or title; default: the open page).',
+      inputSchema: { type: 'object', properties: { page: { type: 'string' }, title: { type: 'string' } }, required: ['title'] },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Rename a page to {name}', { name: String(args.title ?? '') }),
+      execute: (args) => {
+        requireEdit()
+        const page = findPage(args)
+        const title = str(args, 'title').trim()
+        if (!title) throw new Error('Empty title')
+        doc.transact(() => updatePage(doc, page.id, { title }), NB_ORIGIN)
+        return { id: page.id, title }
+      },
+    },
+    {
+      name: 'move_page',
+      description: 'Moves a page ("page": id or title) before or after another page ("target", with "place"), or to the end of a section ("section": name or id).',
+      inputSchema: {
+        type: 'object',
+        properties: { page: { type: 'string' }, target: { type: 'string' }, place: { type: 'string', enum: ['before', 'after'] }, section: { type: 'string' } },
+        required: ['page'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Move the page {name}', { name: String(args.page ?? '') }),
+      execute: (args) => {
+        requireEdit()
+        const page = findPage(args)
+        const section = optStr(args, 'section')?.trim()
+        const target = optStr(args, 'target')
+        if (section) {
+          const s = readSections(doc).find((x) => x.id === section) ?? readSections(doc).find((x) => x.name.toLowerCase() === section.toLowerCase())
+          if (!s) throw new Error(`No section "${section}"`)
+          doc.transact(() => movePage(doc, page.id, { section: s.id }), NB_ORIGIN)
+        } else if (target) {
+          const other = findPage({ page: target })
+          doc.transact(() => movePage(doc, page.id, { page: other.id, place: optStr(args, 'place') === 'before' ? 'before' : 'after' }), NB_ORIGIN)
+        } else throw new Error('Give "target" (a page) or "section"')
+        const moved = allPages(doc).find((p) => p.id === page.id)!
+        return { id: page.id, section: sections().get(moved.section)?.name ?? '' }
+      },
+    },
+    {
+      name: 'delete_page',
+      description: 'Deletes a page ("page": id or title) with its text and ink. The user confirms it.',
+      inputSchema: { type: 'object', properties: { page: { type: 'string' } }, required: ['page'] },
+      access: 'edit',
+      changesDocument: true,
+      destructive: true,
+      summary: (args) => t('Delete the page {name}', { name: String(args.page ?? '') }),
+      execute: (args) => {
+        requireEdit()
+        const page = findPage(args)
+        const open = ctx.current() === page.id
+        doc.transact(() => deletePage(doc, page.id), NB_ORIGIN)
+        if (open) ctx.openPage(allPages(doc)[0]?.id ?? null)
+        return { deleted: page.id, title: pageTitle(page) }
+      },
+    },
+    {
       name: 'append_text',
       description: 'Adds Markdown text (paragraphs, "# " headings, "- " lists, "- [ ] " checklists) at the end of a page ("page": id or title; default: the open page), which is opened. Added directly, not as a suggestion; one undo step.',
       inputSchema: { type: 'object', properties: { page: { type: 'string' }, text: { type: 'string' } }, required: ['text'] },
       access: 'edit',
       changesDocument: true,
+      summary: (args) => (args.page ? t('Add text to the page {name}', { name: String(args.page) }) : t('Add text to the open page')),
       execute: async (args) => {
         requireEdit()
         const page = findPage(args)
@@ -142,6 +207,7 @@ export function notebookTools(ctx: NotebookContext): AppTools {
   ]
   return {
     tools,
+    group: (fn) => groupYUndo(ctx.undoManagers(), fn),
     selection: () => {
       const id = ctx.current()
       const page = id ? allPages(doc).find((p) => p.id === id) : undefined

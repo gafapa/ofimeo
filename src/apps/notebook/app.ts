@@ -124,6 +124,8 @@ export interface NotebookContext {
   printScope(scope: Scope): void
   undo(): void
   redo(): void
+  // The notebook's and the open page's undo histories (apply_batch groups them).
+  undoManagers(): (Y.UndoManager | undefined)[]
   ink: InkLayer
   nav: Nav
 }
@@ -653,6 +655,7 @@ export function mountNotebook(session: Session, root: HTMLElement): NotebookCont
     printScope: (scope) => printScope(scope),
     undo,
     redo,
+    undoManagers: () => [nbUndo, textUndo()],
     ink,
     get nav() {
       return nav

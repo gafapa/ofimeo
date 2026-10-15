@@ -1,0 +1,62 @@
+{n} changes in one step ||| {n} modifications en une seule étape ||| {n} Änderungen in einem Schritt
+{n} changes in one step, including: {list} ||| {n} modifications en une seule étape, dont : {list} ||| {n} Änderungen in einem Schritt, darunter: {list}
+{n} changes in one step: {list} ||| {n} modifications en une seule étape : {list} ||| {n} Änderungen in einem Schritt: {list}
+{n} changes to review ||| {n} modifications à examiner ||| {n} Änderungen zu prüfen
+{n} pending ||| {n} en attente ||| {n} ausstehend
+Accept all ||| Tout accepter ||| Alle annehmen
+accepted ||| accepté ||| angenommen
+Accepted ||| Accepté ||| Angenommen
+Add an element to the drawing: {type} ||| Ajouter un élément au dessin : {type} ||| Ein Element zur Zeichnung hinzufügen: {type}
+Add a note to {cell} ||| Ajouter une note à {cell} ||| Eine Notiz zu {cell} hinzufügen
+Add text to the open page ||| Ajouter du texte à la page ouverte ||| Text zur geöffneten Seite hinzufügen
+Add text to the page {name} ||| Ajouter du texte à la page {name} ||| Text zur Seite {name} hinzufügen
+Add the page {name} ||| Ajouter la page {name} ||| Die Seite {name} hinzufügen
+Add the question “{title}” ||| Ajouter la question « {title} » ||| Die Frage „{title}“ hinzufügen
+Add the shape “{label}” ||| Ajouter la forme « {label} » ||| Die Form „{label}“ hinzufügen
+Add the sheet {name} ||| Ajouter la feuille {name} ||| Das Tabellenblatt {name} hinzufügen
+Add the slide “{title}” ||| Ajouter la diapositive « {title} » ||| Die Folie „{title}“ hinzufügen
+Change a label to “{label}” ||| Remplacer une étiquette par « {label} » ||| Eine Beschriftung in „{label}“ ändern
+Change a text of a slide to “{text}” ||| Remplacer un texte d’une diapositive par « {text} » ||| Einen Text einer Folie in „{text}“ ändern
+Change an element of the drawing ||| Modifier un élément du dessin ||| Ein Element der Zeichnung ändern
+Change the formatting of {text} ||| Modifier la mise en forme de {text} ||| Die Formatierung von {text} ändern
+Change the question “{title}” ||| Modifier la question « {title} » ||| Die Frage „{title}“ ändern
+Changes proposed by the AI assistant ||| Modifications proposées par l’assistant IA ||| Vom KI-Assistenten vorgeschlagene Änderungen
+Changes to the text are always suggestions; with this option, formatting and other changes also wait for you to accept them. ||| Les modifications du texte sont toujours des suggestions ; avec cette option, la mise en forme et les autres modifications attendent aussi que vous les acceptiez. ||| Textänderungen sind immer Vorschläge; mit dieser Option warten auch Formatierungen und andere Änderungen darauf, dass Sie sie annehmen.
+Clear {range} in {sheet} ||| Effacer {range} dans {sheet} ||| {range} in {sheet} leeren
+Connect two shapes{label} ||| Relier deux formes{label} ||| Zwei Formen verbinden{label}
+Could not be applied: {error} ||| N’a pas pu être appliqué : {error} ||| Konnte nicht angewendet werden: {error}
+Delete {n} columns from column {column} in {sheet} ||| Supprimer {n} colonnes à partir de la colonne {column} dans {sheet} ||| {n} Spalten ab Spalte {column} in {sheet} löschen
+Delete {n} elements of the drawing ||| Supprimer {n} éléments du dessin ||| {n} Elemente der Zeichnung löschen
+Delete {n} objects ||| Supprimer {n} objets ||| {n} Objekte löschen
+Delete {n} rows from row {row} in {sheet} ||| Supprimer {n} lignes à partir de la ligne {row} dans {sheet} ||| {n} Zeilen ab Zeile {row} in {sheet} löschen
+Delete page {n} and everything on it ||| Supprimer la page {n} et tout son contenu ||| Seite {n} mit ihrem gesamten Inhalt löschen
+Delete slide {n} ||| Supprimer la diapositive {n} ||| Folie {n} löschen
+Delete the annotation: {what} ||| Supprimer l’annotation : {what} ||| Die Anmerkung löschen: {what}
+Delete the page {name} ||| Supprimer la page {name} ||| Die Seite {name} löschen
+Delete the question “{title}” ||| Supprimer la question « {title} » ||| Die Frage „{title}“ löschen
+Delete the sheet {sheet} ||| Supprimer la feuille {sheet} ||| Das Tabellenblatt {sheet} löschen
+Duplicate slide {n} ||| Dupliquer la diapositive {n} ||| Folie {n} duplizieren
+Duplicate the sheet {sheet} ||| Dupliquer la feuille {sheet} ||| Das Tabellenblatt {sheet} duplizieren
+Each change it proposes waits in a panel where you accept or reject it. ||| Chaque modification proposée attend dans un panneau où vous l’acceptez ou la refusez. ||| Jede vorgeschlagene Änderung wartet in einem Bereich, in dem Sie sie annehmen oder ablehnen.
+Highlight “{text}” on page {n} ||| Surligner « {text} » à la page {n} ||| „{text}“ auf Seite {n} hervorheben
+Insert {n} columns before column {column} in {sheet} ||| Insérer {n} colonnes avant la colonne {column} dans {sheet} ||| {n} Spalten vor Spalte {column} in {sheet} einfügen
+Insert {n} rows before row {row} in {sheet} ||| Insérer {n} lignes avant la ligne {row} dans {sheet} ||| {n} Zeilen vor Zeile {row} in {sheet} einfügen
+Insert a chart of {range} ||| Insérer un graphique de {range} ||| Ein Diagramm von {range} einfügen
+Make {text} a heading of level {level} ||| Transformer {text} en titre de niveau {level} ||| {text} in eine Überschrift der Ebene {level} umwandeln
+Make {text} normal text ||| Transformer {text} en texte normal ||| {text} in normalen Text umwandeln
+Move a page to position {n} ||| Déplacer une page en position {n} ||| Eine Seite an Position {n} verschieben
+Move or resize an object ||| Déplacer ou redimensionner un objet ||| Ein Objekt verschieben oder seine Größe ändern
+Move slide {from} to position {to} ||| Déplacer la diapositive {from} en position {to} ||| Folie {from} an Position {to} verschieben
+Move the page {name} ||| Déplacer la page {name} ||| Die Seite {name} verschieben
+Move the question “{title}” to position {n} ||| Déplacer la question « {title} » en position {n} ||| Die Frage „{title}“ an Position {n} verschieben
+None pending ||| Aucune en attente ||| Keine ausstehend
+proposed ||| proposé ||| vorgeschlagen
+Reject all ||| Tout refuser ||| Alle ablehnen
+Rejected ||| Refusé ||| Abgelehnt
+Rename a page to {name} ||| Renommer une page en {name} ||| Eine Seite in {name} umbenennen
+Rename the sheet {sheet} to {name} ||| Renommer la feuille {sheet} en {name} ||| Das Tabellenblatt {sheet} in {name} umbenennen
+Review mode is on: nothing changes until you accept it. Each accepted change can be undone in one step. ||| Le mode révision est activé : rien ne change tant que vous ne l’acceptez pas. Chaque modification acceptée peut être annulée en une étape. ||| Der Prüfmodus ist aktiv: Nichts ändert sich, bevor Sie es annehmen. Jede angenommene Änderung lässt sich in einem Schritt rückgängig machen.
+Review proposals ({n}) ||| Examiner les propositions ({n}) ||| Vorschläge prüfen ({n})
+Review the assistant’s changes before they are applied ||| Examiner les modifications de l’assistant avant de les appliquer ||| Änderungen des Assistenten vor dem Anwenden prüfen
+the selected text ||| le texte sélectionné ||| den ausgewählten Text
+Write values from {cell} in {sheet} ||| Écrire des valeurs à partir de {cell} dans {sheet} ||| Werte ab {cell} in {sheet} schreiben

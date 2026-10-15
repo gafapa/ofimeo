@@ -14,8 +14,9 @@ import type { Session } from '../session'
 import { aiCallEnded, aiCallStarted, checkRate, logActivity, MAX_INPUT_CHARS, summarizeArgs } from './activity'
 import { afterAiChange, announce, beforeAiChange } from './ai'
 import { requestConfirmation } from './confirm'
-import { allowedTools, assertAllowed, confirmationOf } from './gate'
-import { isWebMcpEnabled } from './state'
+import { allowedTools, assertAllowed, confirmationOf, summaryOf } from './gate'
+import { propose } from './proposals'
+import { isReviewMode, isWebMcpEnabled } from './state'
 import { isImageResult, type OfimeoTool, type ToolArgs } from './types'
 
 let contextPromise: Promise<ModelContext> | null = null
@@ -54,8 +55,35 @@ function toResult(tool: OfimeoTool, result: unknown): CallResult {
   return out
 }
 
-// The tool as registered: gate, limits, confirmation, attribution and result
-// format around the app's execute().
+// Runs the tool's change as the assistant's (version history framing).
+async function perform(session: Session, tool: OfimeoTool, args: ToolArgs): Promise<unknown> {
+  if (tool.changesDocument) beforeAiChange(session)
+  const result = await tool.execute(args)
+  if (tool.changesDocument) afterAiChange(session)
+  return result
+}
+
+// In review mode, changes wait for the user (except writer suggestions, which
+// are reviewed as suggestions anyway).
+const proposes = (session: Session, tool: OfimeoTool) => isReviewMode() && !!tool.changesDocument && !tool.suggestion && session.canEdit
+
+// A proposal the user accepted.
+async function runAccepted(session: Session, tool: OfimeoTool, args: ToolArgs): Promise<unknown> {
+  let ok = false
+  aiCallStarted()
+  try {
+    const result = await perform(session, tool, args)
+    ok = true
+    return result
+  } finally {
+    aiCallEnded(ok)
+    logActivity({ time: Date.now(), tool: tool.name, args: summarizeArgs(args), ok, write: true, note: ok ? 'accepted' : 'failed' })
+    announce({ tool: tool.name, write: true, ok })
+  }
+}
+
+// The tool as registered: gate, limits, review mode, confirmation,
+// attribution and result format around the app's execute().
 function wrap(session: Session, tool: OfimeoTool) {
   const readOnly = isReadOnly(tool)
   return async (input: unknown): Promise<CallResult> => {
@@ -71,17 +99,23 @@ function wrap(session: Session, tool: OfimeoTool) {
       if (raw.length > MAX_INPUT_CHARS) throw new Error(`The arguments are too large (more than ${MAX_INPUT_CHARS} characters); split the work into several calls`)
       args = (typeof input === 'string' ? JSON.parse(input || '{}') : (input ?? {})) as ToolArgs
       if (!readOnly) checkRate()
+      if (proposes(session, tool)) {
+        const callArgs = args
+        const proposal = propose(session, tool.name, summaryOf(tool, args), args, () => runAccepted(session, tool, callArgs))
+        note = 'proposed'
+        ok = true
+        return toResult(
+          { ...tool, outputSchema: undefined },
+          { status: 'proposed', proposal: proposal.id, message: 'Review mode is on: the user accepts or rejects this change. list_proposals tells the outcome.' },
+        )
+      }
       const question = confirmationOf(tool, args)
       if (question && !(await requestConfirmation(question))) {
         note = 'declined'
         throw new Error('The user did not allow this change.')
       }
-      if (tool.changesDocument) beforeAiChange(session)
-      const result = await tool.execute(args)
-      if (tool.changesDocument) {
-        afterAiChange(session)
-        changed = true
-      }
+      const result = await perform(session, tool, args)
+      changed = !!tool.changesDocument
       ok = true
       return toResult(tool, result)
     } catch (err) {

@@ -10,8 +10,11 @@ import { listVersions } from '../versions'
 import { userChangedLast } from './activity'
 import { aiLabel, canRevertAi, revertAiChanges } from './ai'
 import { askUser } from './confirm'
+import { allowed, confirmationOf, summaryOf } from './gate'
+import { listProposals } from './proposals'
+import { isReviewMode } from './state'
 import type { EditActions } from './index'
-import { str, type AppTools, type OfimeoTool, type SelectionInfo } from './types'
+import { bool, str, type AppTools, type OfimeoTool, type SelectionInfo, type ToolArgs } from './types'
 
 const CAN: Record<Session['access'], string[]> = {
   view: ['read'],
@@ -20,6 +23,9 @@ const CAN: Record<Session['access'], string[]> = {
 }
 
 const MAX_NOTICE = 200
+const MAX_BATCH = 200
+// Tools that make no sense inside apply_batch.
+const NOT_IN_BATCH = new Set(['apply_batch', 'undo', 'redo', 'revert_ai_changes', 'ask_user', 'notify', 'show', 'list_proposals'])
 const MAX_QUESTION = 500
 
 // Text selected in the page outside the app's own selection model.
@@ -72,6 +78,8 @@ export function commonTools(session: Session, apps: AppTools[], edit: EditAction
           allowed: CAN[session.access],
           language: typeof meta.get('lang') === 'string' ? meta.get('lang') : null,
           versions: listVersions(session.doc).length,
+          // Changes wait for the user (list_proposals).
+          review_mode: session.canEdit && isReviewMode(),
           ...extra,
         }
       },
@@ -184,6 +192,93 @@ export function commonTools(session: Session, apps: AppTools[], edit: EditAction
       },
     },
   ]
+
+  // ---------- Batches ----------
+
+  const byName = new Map(apps.flatMap((a) => a.tools).map((tool) => [tool.name, tool]))
+  const group = first('group') ?? (<T>(fn: () => Promise<T>) => fn())
+  const operations = (args: ToolArgs): { tool: OfimeoTool; args: ToolArgs }[] => {
+    const list = args.operations
+    if (!Array.isArray(list) || !list.length) throw new Error('operations must be a non-empty array of {tool, args}')
+    if (list.length > MAX_BATCH) throw new Error(`At most ${MAX_BATCH} operations per batch`)
+    return list.map((op, i) => {
+      const name = String((op as { tool?: unknown })?.tool ?? '')
+      const tool = byName.get(name)
+      if (!tool || NOT_IN_BATCH.has(name)) throw new Error(`Operation ${i + 1}: "${name}" cannot be used in a batch`)
+      if (!allowed(session, tool) || (tool.available && !tool.available())) throw new Error(`Operation ${i + 1}: ${name} is not available`)
+      const opArgs = (op as { args?: unknown }).args ?? {}
+      if (typeof opArgs !== 'object' || Array.isArray(opArgs)) throw new Error(`Operation ${i + 1}: args must be an object`)
+      return { tool, args: opArgs as ToolArgs }
+    })
+  }
+  tools.push(
+    {
+      name: 'apply_batch',
+      description: `Runs several changing tools of this app in order as ONE step of the undo history and one entry of the version history (at most ${MAX_BATCH}). operations: [{tool, args}] with the same arguments as calling each tool. Stops at the first error unless stop_on_error is false; returns each result. Use it for bulk work instead of many calls.`,
+      inputSchema: {
+        type: 'object',
+        properties: {
+          operations: {
+            type: 'array',
+            items: { type: 'object', properties: { tool: { type: 'string' }, args: { type: 'object' } }, required: ['tool'] },
+            maxItems: MAX_BATCH,
+          },
+          stop_on_error: { type: 'boolean', description: 'Default true.' },
+        },
+        required: ['operations'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => {
+        const n = Array.isArray(args.operations) ? args.operations.length : 0
+        try {
+          const list = operations(args).map((op) => summaryOf(op.tool, op.args))
+          return t('{n} changes in one step: {list}', { n, list: list.slice(0, 5).join('; ') + (list.length > 5 ? '…' : '') })
+        } catch {
+          return t('{n} changes in one step', { n })
+        }
+      },
+      confirm: (args) => {
+        try {
+          const ops = operations(args)
+          const asked = ops.map((op) => confirmationOf(op.tool, op.args)).filter(Boolean) as string[]
+          return asked.length ? t('{n} changes in one step, including: {list}', { n: ops.length, list: asked.slice(0, 5).join('; ') + (asked.length > 5 ? '…' : '') }) : null
+        } catch {
+          return null
+        }
+      },
+      execute: async (args) => {
+        editable()
+        const ops = operations(args)
+        const stop = bool(args, 'stop_on_error', true)
+        const results: { tool: string; ok: boolean; result?: unknown; error?: string }[] = []
+        await group(async () => {
+          for (const op of ops) {
+            try {
+              results.push({ tool: op.tool.name, ok: true, result: await op.tool.execute(op.args) })
+            } catch (err) {
+              results.push({ tool: op.tool.name, ok: false, error: (err as Error)?.message ?? String(err) })
+              if (stop) break
+            }
+          }
+        })
+        return { done: results.filter((r) => r.ok).length, of: ops.length, results }
+      },
+    },
+    {
+      name: 'list_proposals',
+      description:
+        'In review mode (set by the user) your changes are proposed instead of applied. Lists the proposals of this page: id, tool, summary, status (pending, accepted, rejected, failed) and the result or error once decided.',
+      inputSchema: { type: 'object', properties: { pending_only: { type: 'boolean' } } },
+      access: 'edit',
+      readOnly: true,
+      untrusted: false,
+      execute: (args) =>
+        listProposals(session)
+          .filter((p) => !bool(args, 'pending_only') || p.status === 'pending')
+          .map((p) => ({ id: p.id, tool: p.tool, summary: p.summary, status: p.status, ...(p.error ? { error: p.error } : {}), ...(p.status === 'accepted' ? { result: p.result } : {}) })),
+    },
+  )
 
   if (show) {
     tools.push({

@@ -242,7 +242,7 @@ function mountEditorApp(state: FormState, root: HTMLElement): void {
   })
   const tb = frame.toolbar
   // AI assistants (WebMCP, off by default; editors only): the tool module loads only when turned on.
-  provideWebMcpTools(session, () => import('./webmcp').then((m) => m.formsTools(session, state, () => editor.render())))
+  provideWebMcpTools(session, () => import('./webmcp').then((m) => m.formsTools(session, state, () => editor.render(), undo)))
   tb.group(
     tb.button(Undo2, t('Undo'), () => undo.undo(), { shortcut: mod('Z'), enabled: () => undo.canUndo() }),
     tb.button(Redo2, t('Redo'), () => undo.redo(), { shortcut: mod('Y'), enabled: () => undo.canRedo() }),

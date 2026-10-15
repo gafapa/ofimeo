@@ -179,7 +179,7 @@ export function mountSlides(session: Session, root: HTMLElement): void {
     const index = list.findIndex((p) => p.id === after)
     if (index >= 0) sync.movePage(id, list[index + 1]?.id ?? null)
   }
-  const duplicateSlide = (source = sync.page) => {
+  const duplicateSlide = (source = sync.page): string | undefined => {
     if (readOnly) return
     const page = slides().find((p) => p.id === source)
     if (!page) return
@@ -191,6 +191,7 @@ export function mountSlides(session: Session, root: HTMLElement): void {
     const notes = notesText(doc, source).toString()
     if (notes) notesText(doc, id).insert(0, notes)
     sync.showPage(id)
+    return id
   }
   const hasContent = (id: string) => sync.pageRecords(id).some((r) => r.parent && r.value)
   const deleteSlide = async (id = sync.page) => {
@@ -869,7 +870,7 @@ export function mountSlides(session: Session, root: HTMLElement): void {
     zoom: editor.zoomTarget,
   })
   // AI assistants (WebMCP, off by default): the tool module loads only when turned on.
-  provideWebMcpTools(session, () => import('./webmcp').then((m) => m.slidesTools(session, editor, presentation)))
+  provideWebMcpTools(session, () => import('./webmcp').then((m) => m.slidesTools(session, editor, presentation, { duplicate: duplicateSlide })))
 
   // ---------- Toolbar ----------
 

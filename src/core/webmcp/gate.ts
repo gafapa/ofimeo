@@ -24,9 +24,12 @@ export function assertAllowed(session: Pick<Session, 'access'>, tool: OfimeoTool
   if (!allowed(session, tool)) throw new Error(`This link only allows "${session.access}" access; ${tool.name} needs "${tool.access}".`)
 }
 
+// What a call does, for the user.
+export const summaryOf = (tool: OfimeoTool, args: ToolArgs): string => tool.summary?.(args) || `${tool.title ?? tool.name} ${summarizeArgs(args)}`
+
 // What the user is asked before a call runs (null: nothing to confirm).
 export function confirmationOf(tool: OfimeoTool, args: ToolArgs): string | null {
   const custom = tool.confirm?.(args)
   if (custom) return custom
-  return tool.destructive ? `${tool.title ?? tool.name} ${summarizeArgs(args)}` : null
+  return tool.destructive ? summaryOf(tool, args) : null
 }

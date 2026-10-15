@@ -8,7 +8,10 @@
 import type { JSONContent } from '@tiptap/core'
 import type { Mark, Node as PMNode } from '@tiptap/pm/model'
 import { yUndoPluginKey } from '@tiptap/y-tiptap'
+import type * as Y from 'yjs'
+import { t } from '../../core/i18n'
 import { AI_CLIENT, AI_COLOR, AI_USER_ID, aiName } from '../../core/webmcp/ai'
+import { groupYUndo } from '../../core/webmcp/undo'
 import { bool, num, optNum, optStr, str, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
 import type { WriterContext } from './app'
 import { commentsMapOf, userIdOf } from './collab'
@@ -205,7 +208,9 @@ export function writerTools(ctx: WriterContext): AppTools {
     return m
   }
 
-  const undoManager = () => (yUndoPluginKey.getState(editor.state) as { undoManager?: { stopCapturing(): void } } | undefined)?.undoManager
+  const undoManager = () => (yUndoPluginKey.getState(editor.state) as { undoManager?: Y.UndoManager } | undefined)?.undoManager
+  // In apply_batch, all edits are one undo step.
+  let grouping = false
   // Runs an edit as the assistant: tracked as its suggestions, its authorship, one undo step.
   const asAssistant = <T>(fn: () => T): T => {
     const storage = editor.storage.suggestions
@@ -213,13 +218,17 @@ export function writerTools(ctx: WriterContext): AppTools {
     storage.enabled = true
     storage.user = { id: `${AI_USER_ID}:${userIdOf(session)}`, name: aiName(session), color: AI_COLOR }
     storage.client = AI_CLIENT
-    undoManager()?.stopCapturing()
+    if (!grouping) undoManager()?.stopCapturing()
     try {
       return fn()
     } finally {
       Object.assign(storage, saved)
-      undoManager()?.stopCapturing()
+      if (!grouping) undoManager()?.stopCapturing()
     }
+  }
+  const quoted = (args: ToolArgs) => {
+    const match = optStr(args, 'match')
+    return match ? `“${match.length > 60 ? `${match.slice(0, 59)}…` : match}”` : t('the selected text')
   }
   const requireEditable = () => {
     if (!editor.isEditable) throw new Error('The document is read-only in this tab')
@@ -332,6 +341,7 @@ export function writerTools(ctx: WriterContext): AppTools {
       },
       access: 'edit',
       changesDocument: true,
+      suggestion: true,
       execute: (args) => {
         requireEditable()
         const text = str(args, 'text')
@@ -361,6 +371,7 @@ export function writerTools(ctx: WriterContext): AppTools {
       },
       access: 'edit',
       changesDocument: true,
+      suggestion: true,
       execute: (args) => {
         requireEditable()
         const { from, to } = range(args)
@@ -375,6 +386,21 @@ export function writerTools(ctx: WriterContext): AppTools {
       },
     },
     {
+      name: 'delete_text',
+      description: 'Suggests deleting a piece of text (identified by "match" or from/to): it is marked for deletion until the user accepts or rejects the suggestion.',
+      inputSchema: { type: 'object', properties: { ...target } },
+      access: 'edit',
+      changesDocument: true,
+      suggestion: true,
+      execute: (args) => {
+        requireEditable()
+        const { from, to } = range(args)
+        if (from >= to) throw new Error('Empty range')
+        if (!asAssistant(() => editor.chain().deleteRange({ from, to }).run())) throw new Error('The text could not be deleted')
+        return { deleted: true, as: 'suggestion' }
+      },
+    },
+    {
       name: 'apply_heading',
       description:
         'Turns the paragraph(s) containing the text (match or from/to) into a heading of level 1–6, or back into normal text with level 0. Applied directly (headings are not tracked as suggestions); undoable in one step.',
@@ -385,6 +411,7 @@ export function writerTools(ctx: WriterContext): AppTools {
       },
       access: 'edit',
       changesDocument: true,
+      summary: (args) => (num(args, 'level', 0) >= 1 ? t('Make {text} a heading of level {level}', { text: quoted(args), level: Math.round(num(args, 'level', 1)) }) : t('Make {text} normal text', { text: quoted(args) })),
       execute: (args) => {
         requireEditable()
         const { from, to } = range(args)
@@ -422,6 +449,7 @@ export function writerTools(ctx: WriterContext): AppTools {
       },
       access: 'edit',
       changesDocument: true,
+      summary: (args) => t('Change the formatting of {text}', { text: quoted(args) }),
       execute: (args) => {
         requireEditable()
         const { from, to } = range(args)
@@ -455,6 +483,14 @@ export function writerTools(ctx: WriterContext): AppTools {
 
   return {
     tools,
+    group: async (fn) => {
+      grouping = true
+      try {
+        return await groupYUndo([undoManager()], fn)
+      } finally {
+        grouping = false
+      }
+    },
     selection: () => {
       const { from, to, empty } = editor.state.selection
       const $from = editor.state.selection.$from

@@ -37,3 +37,34 @@ if (typeof window !== 'undefined') {
     if (e.key === KEY) listeners.forEach((fn) => fn(e.newValue === '1'))
   })
 }
+
+// Review mode (per browser): the assistant's changes are proposed and wait
+// for the user to accept them (proposals.ts) instead of being applied.
+const REVIEW_KEY = 'ofimeo:webmcp:review'
+let reviewInPage: boolean | null = null
+const reviewListeners = new Set<(on: boolean) => void>()
+
+export function isReviewMode(): boolean {
+  if (reviewInPage !== null) return reviewInPage
+  try {
+    return localStorage.getItem(REVIEW_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function setReviewMode(on: boolean): void {
+  try {
+    if (on) localStorage.setItem(REVIEW_KEY, '1')
+    else localStorage.removeItem(REVIEW_KEY)
+    reviewInPage = null
+  } catch {
+    reviewInPage = on
+  }
+  reviewListeners.forEach((fn) => fn(on))
+}
+
+export function onReviewModeChange(fn: (on: boolean) => void): () => void {
+  reviewListeners.add(fn)
+  return () => reviewListeners.delete(fn)
+}

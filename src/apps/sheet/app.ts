@@ -318,7 +318,7 @@ export async function mountSheet(session: Session, root: HTMLElement): Promise<v
   // Univer's one-row tool bar is the spreadsheet's toolbar.
   shell.toolbar.hidden = true
   // AI assistants (WebMCP, off by default): the tool module loads only when turned on.
-  provideWebMcpTools(session, () => import('./webmcp').then((m) => m.sheetTools(session, univerAPI)))
+  provideWebMcpTools(session, () => import('./webmcp').then((m) => m.sheetTools(session, univerAPI, univer)))
 
   const stats = el('span', { class: 'sheet-stats' })
   stats.setAttribute('aria-live', 'polite')

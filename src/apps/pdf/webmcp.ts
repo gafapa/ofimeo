@@ -7,11 +7,11 @@ import { t } from '../../core/i18n'
 import type { Session } from '../../core/session'
 import { groupYUndo } from '../../core/webmcp/undo'
 import { AI_COLOR, aiName } from '../../core/webmcp/ai'
-import { bool, num, optNum, optStr, str, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
+import { bool, imageResult, num, optNum, optStr, str, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
 import { userIdOf } from '../writer/collab'
 import type { Editor } from './editor'
 import { apply, viewTransform } from './geometry'
-import { newId, notesMap, type Note, type PageEntry } from './model'
+import { annotsMap, newId, notesMap, pagesArray, type Note, type PageEntry } from './model'
 import { describe } from './render'
 import type { Viewer } from './viewer'
 
@@ -204,6 +204,23 @@ export function pdfTools(session: Session, viewer: Viewer, editor: Editor): AppT
   return {
     tools,
     group: (fn) => groupYUndo([editor.undo], fn),
+    render: async (args) => {
+      const { entry, index } = pageAt({ page: optNum(args, 'page') ?? viewer.currentIndex() + 1 })
+      if (entry.src === -1) throw new Error('This page is an inserted blank page')
+      const { pdfPageToPng } = await import('../../core/webmcp/render')
+      return imageResult(await pdfPageToPng(await viewer.page(entry.src)), `Page ${index + 1} of ${pages().length} (without the annotations)`)
+    },
+    renderSchema: { page: { type: 'integer', minimum: 1, description: 'Page number (default: the page shown).' } },
+    // Pages and annotations (the PDF itself does not change).
+    serialize: (ydoc) => {
+      const order = pagesArray(ydoc).toArray().map((p) => p.id)
+      return [
+        `pages: ${order.length}`,
+        ...[...annotsMap(ydoc).values()]
+          .sort((a, b) => order.indexOf(a.page) - order.indexOf(b.page) || a.time - b.time)
+          .map((a) => `page ${order.indexOf(a.page) + 1}: ${describe(a)}`),
+      ].join('\n')
+    },
     selection: () => {
       const page = viewer.currentIndex() + 1
       const annot = editor.selectedAnnot()

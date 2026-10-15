@@ -9,11 +9,27 @@ import { t } from '../../core/i18n'
 import type { FWorksheet } from '@univerjs/sheets/facade'
 import type { Session } from '../../core/session'
 import { aiName } from '../../core/webmcp/ai'
-import { bool, num, optStr, str, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
-import { CHART_TYPES, normalizeSpec, parseA1, toA1, type ChartType } from './charts/model'
+import type * as Y from 'yjs'
+import { bool, imageResult, num, optStr, str, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
+import { CHART_TYPES, colName, normalizeSpec, parseA1, toA1, type ChartType } from './charts/model'
 import { insertChart, listCharts } from './charts/view'
 
 const MAX_CELLS = 20_000
+const FORMULA_ERROR = /^#(DIV\/0!|REF!|NAME\?|VALUE!|N\/A|NUM!|NULL!|SPILL!|CALC!|ERROR!?)/
+// render: at most this many rows and columns.
+const PICTURE_ROWS = 100
+const PICTURE_COLUMNS = 26
+// get_spelling_issues: text cells checked.
+const SPELL_CELLS = 2000
+// diff_versions: cells listed.
+const DIFF_CELLS = 400
+
+interface LogEntry {
+  id: string
+  m: string
+  p: string
+}
+type CellValues = Record<string, Record<string, { v?: unknown; f?: string; si?: string } | null>>
 // Selections up to this size are returned with their values.
 const SELECTION_CELLS = 400
 
@@ -326,6 +342,29 @@ export function sheetTools(session: Session, univerAPI: FUniver, univer?: Univer
       },
     },
     {
+      name: 'list_formula_errors',
+      description: 'Lists the cells of every sheet whose formula gives an error (#DIV/0!, #REF!, #NAME?, #VALUE!, #N/A…): sheet, cell, error and formula.',
+      inputSchema: { type: 'object', properties: {} },
+      access: 'view',
+      execute: () => {
+        const errors: { sheet: string; cell: string; error: string; formula: string }[] = []
+        for (const s of workbook().getSheets()) {
+          const a1 = usedRange(s)
+          const r = a1 && parseA1(a1)
+          if (!r || (r.endRow - r.startRow + 1) * (r.endColumn - r.startColumn + 1) > MAX_CELLS) continue
+          const range = s.getRange(a1)
+          const display = range.getDisplayValues()
+          const formulas = range.getFormulas()
+          display.forEach((row, i) =>
+            row.forEach((value, j) => {
+              if (formulas[i]?.[j] && FORMULA_ERROR.test(String(value))) errors.push({ sheet: s.getSheetName(), cell: `${colName(r.startColumn + j)}${r.startRow + i + 1}`, error: String(value), formula: formulas[i][j] })
+            }),
+          )
+        }
+        return { count: errors.length, errors: errors.slice(0, 500) }
+      },
+    },
+    {
       name: 'list_comments',
       description: 'Lists the cell notes (comments) of every sheet: sheet, cell and text.',
       inputSchema: { type: 'object', properties: {} },
@@ -385,6 +424,77 @@ export function sheetTools(session: Session, univerAPI: FUniver, univer?: Univer
         ...(cells && cells <= SELECTION_CELLS ? { values: range.getValues(), formulas: range.getFormulas() } : { cells }),
       }
     },
+    render: async (args) => {
+      const s = sheetOf(args)
+      const a1 = optStr(args, 'range') || usedRange(s) || 'A1:J20'
+      const r = parseA1(a1)
+      if (!r) throw new Error(`Invalid range "${a1}"`)
+      const range = { ...r, endRow: Math.min(r.endRow, r.startRow + PICTURE_ROWS - 1), endColumn: Math.min(r.endColumn, r.startColumn + PICTURE_COLUMNS - 1) }
+      const { cellsToPng } = await import('../../core/webmcp/render')
+      const cells = s.getRange(toA1(range))
+      const values = cells.getDisplayValues()
+      const columns = Array.from({ length: range.endColumn - range.startColumn + 1 }, (_x, i) => colName(range.startColumn + i))
+      const rows = Array.from({ length: range.endRow - range.startRow + 1 }, (_x, i) => range.startRow + i + 1)
+      const backgrounds = (cells as unknown as { getBackgrounds?: () => string[][] }).getBackgrounds?.()
+      const blob = await cellsToPng({ columns, rows, values, background: backgrounds?.map((row) => row.map((c) => (c && c !== '#fff' && c !== '#ffffff' ? c : null))) })
+      return imageResult(blob, `${s.getSheetName()}!${toA1(range)}${toA1(range) !== toA1(r) ? ` (first ${PICTURE_ROWS} rows and ${PICTURE_COLUMNS} columns of ${a1})` : ''}`)
+    },
+    renderSchema: { range: { type: 'string', description: 'A1 range (default: the used range; at most 100 rows × 26 columns).' }, ...sheetArg },
+    // The workbook is a base plus a log of changes: what changed is the log
+    // entries that one state has and the other does not.
+    diff: (before: Y.Doc, after: Y.Doc) => {
+      const seen = new Set(before.getArray<LogEntry>('sheet-ops').toArray().map((e) => e.id))
+      const added = after.getArray<LogEntry>('sheet-ops').toArray().filter((e) => !seen.has(e.id))
+      const wb = univerAPI.getActiveWorkbook()
+      const sheetName = (id: unknown) => (typeof id === 'string' && wb?.getSheetBySheetId(id)?.getSheetName()) || String(id ?? '')
+      const cells: string[] = []
+      const other = new Map<string, number>()
+      for (const entry of added) {
+        let params: Record<string, unknown> = {}
+        try {
+          params = JSON.parse(entry.p)
+        } catch {
+          // Unreadable entry: counted below.
+        }
+        if (entry.m === 'sheet.mutation.set-range-values' && params.cellValue) {
+          for (const [row, cols] of Object.entries(params.cellValue as CellValues)) {
+            for (const [col, value] of Object.entries(cols ?? {})) {
+              if (cells.length >= DIFF_CELLS) break
+              const a1 = `${sheetName(params.subUnitId)}!${colName(Number(col))}${Number(row) + 1}`
+              cells.push(value && (value.f || value.v !== undefined) ? `${a1} = ${value.f ?? JSON.stringify(value.v)}` : `${a1} (format or cleared)`)
+            }
+          }
+        } else {
+          const name = entry.m.replace(/^sheet\.mutation\./, '')
+          other.set(name, (other.get(name) ?? 0) + 1)
+        }
+      }
+      if (after.getMap('sheet').get('base') !== before.getMap('sheet').get('base')) other.set('whole workbook replaced (restored version or import)', 1)
+      return { changes: added.length, cells, ...(cells.length >= DIFF_CELLS ? { truncated: true } : {}), other: Object.fromEntries(other) }
+    },
+    paragraphs: () => {
+      const parts: { where: string; text: string; context: 'table' }[] = []
+      for (const s of workbook().getSheets()) {
+        const a1 = usedRange(s)
+        const r = a1 && parseA1(a1)
+        if (!r) continue
+        const values = s.getRange(a1).getValues()
+        const formulas = s.getRange(a1).getFormulas()
+        values.forEach((row, i) =>
+          row.forEach((v, j) => {
+            if (parts.length < SPELL_CELLS && typeof v === 'string' && /\p{L}{2}/u.test(v) && !formulas[i]?.[j]) parts.push({ where: `${s.getSheetName()}!${colName(r.startColumn + j)}${r.startRow + i + 1}`, text: v, context: 'table' })
+          }),
+        )
+      }
+      return parts
+    },
+    accessibility: () =>
+      listCharts(univerAPI)
+        .filter((c) => !c.spec.title.trim())
+        .map((c) => ({
+          where: `chart of ${c.spec.range} on ${workbook().getSheets().find((s) => s.getSheetId() === c.hostSheetId)?.getSheetName() ?? ''}`,
+          problem: 'The chart has no title: screen readers and people reading a printout cannot tell what it shows.',
+        })),
     show: (args) => {
       const s = sheetOf(args)
       const r = parseA1(str(args, 'range'))

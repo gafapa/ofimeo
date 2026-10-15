@@ -8,7 +8,7 @@ import * as Y from 'yjs'
 import { t } from '../../core/i18n'
 import type { Session } from '../../core/session'
 import { groupYUndo } from '../../core/webmcp/undo'
-import { bool, num, optStr, str, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
+import { bool, num, optStr, str, type AccessibilityIssue, type AppTools, type OfimeoTool, type TextPart, type ToolArgs } from '../../core/webmcp/types'
 import { answerText, hasOptions, itemMap, itemsArray, newId, newQuestion, QUESTION_TYPES, readItems, readSettings, responsesMap, type Item, type QuestionType } from './model'
 import { LOCAL, type FormState } from './state'
 
@@ -195,6 +195,34 @@ export function formsTools(session: Session, state: FormState, render: () => voi
   return {
     tools,
     group: (fn) => groupYUndo([undo], fn),
+    serialize: (ydoc) =>
+      [
+        `# ${String(ydoc.getMap('meta').get('title') ?? '')}`,
+        readSettings(ydoc).description,
+        ...readItems(ydoc).map((i) =>
+          i.kind === 'section'
+            ? `## ${i.title}`
+            : `- ${i.title} [${i.type}${i.required ? ', required' : ''}]${i.options.length ? `: ${i.options.map((o) => o.label).join(' | ')}` : ''}`,
+        ),
+      ].join('\n'),
+    paragraphs: () => {
+      const parts: TextPart[] = []
+      readItems(doc).forEach((i, n) => {
+        const where = `${i.kind} ${n + 1} (${i.id})`
+        if (i.title) parts.push({ where: `${where} · title`, text: i.title, context: 'heading' })
+        if (i.description) parts.push({ where: `${where} · description`, text: i.description })
+        i.options.forEach((o, k) => o.label && parts.push({ where: `${where} · option ${k + 1}`, text: o.label, context: 'list' }))
+      })
+      return parts
+    },
+    accessibility: () => {
+      const issues: AccessibilityIssue[] = []
+      readItems(doc).forEach((i, n) => {
+        if (i.kind === 'question' && !i.title.trim()) issues.push({ where: `question ${n + 1} (${i.id})`, problem: 'The question has no text.', fix: `update_question {"id": "${i.id}", "title": "…"}` })
+        if (i.image && !i.title.trim() && !i.description.trim()) issues.push({ where: `item ${n + 1} (${i.id})`, problem: 'A picture with no text around it: say in the description what it shows.', fix: `update_question {"id": "${i.id}", "description": "…"}` })
+      })
+      return issues
+    },
     selection: () => {
       const id = (document.activeElement?.closest('.fm-card[data-id]') as HTMLElement | null)?.dataset.id
       const item = id ? readItems(doc).find((i) => i.id === id) : undefined

@@ -135,14 +135,32 @@ All apps (by access):
 | `revert_ai_changes` | edit | Restores the version before the assistant's first change (confirmed) |
 | `apply_batch`, `list_proposals` | edit | Several changes as one step; outcome of proposals |
 
+Seeing the document (view access; only in apps that support each one):
+
+| Tool | What it returns |
+| --- | --- |
+| `render` | A PNG (at most 2048 px): writer page (the exported PDF page), sheet range (a grid of its displayed values, at most 100 × 26), diagram page, slide, the whole drawing, notebook page (as printed), PDF page (without annotations). Forms have none. |
+| `list_versions`, `diff_versions` | Saved versions; lines added/removed of a text form of the document between a version and another one or now, and who changed it (authors of the Yjs clients). Spreadsheets list the cells changed (the mutation log) instead. |
+| `get_changes_since` | Without a token: a token (a snapshot kept in the page, at most 20). With it: what changed since and who, and a new token. |
+| `get_spelling_issues` | The suite's own checker (Hunspell, rules, Harper; LanguageTool only if the user configured it) in the document's language with the user's settings: where, text, message, replacements. |
+| `check_accessibility` | Writer: pictures without alt text (`set_alt_text`), skipped heading levels, tables without header row, vague link texts, long text without headings. Slides: no title, pictures, too much text. Sheet: charts without a title. Forms: questions without text. |
+| `list_formula_errors` | Spreadsheet cells whose formula gives an error. |
+
+**New documents:** `create_document` (any access; confirmed by the user)
+makes a new document of the user's from the content in its arguments
+(writer Markdown, sheet rows, slides outline, draw.io XML, drawing elements,
+form questions with answer keys, notebook sections and pages), stores it in
+this browser's library with new keys and opens it in a new tab. The assistant
+gets neither its link nor its keys, and it never reads other documents.
+
 Presentations add `next_slide`, `previous_slide`, `go_to_slide` and
 `get_speaker_notes` while this browser runs the slide show (the tool list is
 registered again when it starts and ends).
 
 | App | Read (view) | Comment | Edit |
 | --- | --- | --- | --- |
-| Documents | `get_text` (Markdown with CriticMarkup `{++ins++}` `{--del--}` for pending suggestions, or plain), `get_outline`, `find`, `list_comments` | `add_comment` (on text or as a reply) | `insert_text`, `replace_range`, `delete_text` (suggestions), `apply_heading`, `format` |
-| Spreadsheets | `list_sheets`, `read_range`, `list_comments` (cell notes) | – | `write_range` (values and `=` formulas), `add_sheet`, `insert_chart` (charts model of `src/apps/sheet/charts`), `add_comment` (cell note), `insert_rows`, `insert_columns`, `rename_sheet`, `duplicate_sheet`; confirmed: `delete_rows`, `delete_columns`, `clear_range`, `delete_sheet` |
+| Documents | `get_text` (Markdown with CriticMarkup `{++ins++}` `{--del--}` for pending suggestions, or plain), `get_outline`, `find`, `list_comments` | `add_comment` (on text or as a reply) | `insert_text`, `replace_range`, `delete_text` (suggestions), `apply_heading`, `format`, `set_alt_text` |
+| Spreadsheets | `list_sheets`, `read_range`, `list_comments` (cell notes), `list_formula_errors` | – | `write_range` (values and `=` formulas), `add_sheet`, `insert_chart` (charts model of `src/apps/sheet/charts`), `add_comment` (cell note), `insert_rows`, `insert_columns`, `rename_sheet`, `duplicate_sheet`; confirmed: `delete_rows`, `delete_columns`, `clear_range`, `delete_sheet` |
 | Presentations | `list_slides`, `get_slide`, `list_comments` | `add_comment` | `add_slide`, `set_text`, `move_object`, `move_slide`, `duplicate_slide`; confirmed: `delete_objects`, `delete_slide` |
 | Diagrams | `get_diagram` (summary or draw.io XML) | – | `add_shape`, `connect`, `set_label`, `move_object`, `add_page`, `rename_page`, `move_page`; confirmed: `delete_objects`, `delete_page` |
 | Forms (editors) | `get_form` | – | `add_question`, `update_question`, `move_question`, `get_responses` (editors only); confirmed: `delete_question` |
@@ -164,6 +182,10 @@ edit. Results are JSON text; failures return `isError: true` with a message.
 - `src/core/webmcp/activity.ts`: activity log, rate limit, who changed last.
 - `src/core/webmcp/proposals.ts`: review mode queue; `src/ui/webmcp-proposals.ts` its panel.
 - `src/core/webmcp/undo.ts`: grouping Yjs undo items (apply_batch).
+- `src/core/webmcp/see.ts`: render, versions, changes, spelling, accessibility;
+  `diff.ts` the line diff; `render.ts` PDF page / cell grid pictures.
+- `src/core/webmcp/create.ts`: `create_document`; `src/apps/forms/spec.ts`
+  compact question specs (options and correct answers by label).
 - `src/core/webmcp/registry.ts`: runtime (native or polyfill), registration,
   result format, attribution hooks.
 - `src/core/webmcp/ai.ts`: attribution (names, pseudo author, versions,
@@ -184,7 +206,9 @@ needs and `changesDocument: true` when it changes the document itself;
 `destructive` or `confirm(args)` when the user must allow it, `available()`
 when it only makes sense in some states (with `AppTools.watch`). The app's
 `AppTools` may also provide `selection`, `show` (+ `showSchema`), `undo` and
-`redo` (default: the Edit menu given to the frame) and `group` (apply_batch).
+`redo` (default: the Edit menu given to the frame), `group` (apply_batch),
+`render` (+ `renderSchema`), `serialize(doc)` or `diff(before, after)`
+(versions), `paragraphs` (spelling) and `accessibility`.
 Give changing tools a translated `summary(args)`: it is what the user reads
 in confirmations and proposals. The core does the rest.
 

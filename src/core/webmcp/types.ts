@@ -3,6 +3,7 @@
 // core (registry.ts) turns them into WebMCP registrations after the permission
 // gate (gate.ts) has filtered them for this browser's access.
 
+import type * as Y from 'yjs'
 import type { Access } from '../keys'
 
 // JSON Schema of a tool's input (always an object).
@@ -76,6 +77,20 @@ export async function imageResult(image: Blob | string, text?: string): Promise<
   return { kind: 'image', data: btoa(binary), mimeType: image.type || 'image/png', ...(text ? { text } : {}) }
 }
 
+export interface TextPart {
+  // Where the text is (e.g. "paragraph 3", "A4", "slide 2 · title").
+  where: string
+  text: string
+  context?: 'paragraph' | 'heading' | 'list' | 'table'
+}
+
+export interface AccessibilityIssue {
+  where: string
+  problem: string
+  // How to fix it (a tool and its arguments when there is one).
+  fix?: string
+}
+
 // What the selection tool returns (app-specific fields).
 export type SelectionInfo = Record<string, unknown> & { kind: string }
 
@@ -92,6 +107,18 @@ export interface AppTools {
   // Undo/redo of the app (default: the Edit menu actions given to the frame).
   undo?: () => void
   redo?: () => void
+  // A picture of part of the document (render): arguments in renderSchema.
+  render?: (args: ToolArgs) => Promise<ImageResult>
+  renderSchema?: JsonSchema['properties']
+  // The content of a document state (the current one or a version) as text
+  // lines, for diff_versions and get_changes_since.
+  serialize?: (doc: Y.Doc) => string | Promise<string>
+  // Instead of serialize: the changes between two states, described by the app.
+  diff?: (before: Y.Doc, after: Y.Doc) => unknown
+  // Text to check for spelling and grammar: where it is and the text.
+  paragraphs?: () => TextPart[] | Promise<TextPart[]>
+  // Accessibility problems of the document.
+  accessibility?: () => AccessibilityIssue[] | Promise<AccessibilityIssue[]>
   // Runs several changes as one step of the undo history (apply_batch).
   group?: <T>(fn: () => Promise<T>) => Promise<T>
   // Calls fn whenever the set of tools offered may change (e.g. a slide show

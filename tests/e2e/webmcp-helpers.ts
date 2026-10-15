@@ -8,7 +8,9 @@ export const ENGLISH = () => localStorage.setItem('ofimeo:language', 'en')
 export const ENABLED = () => localStorage.setItem('ofimeo:webmcp', '1')
 
 // Tools every app offers (by access).
-export const COMMON_VIEW = ['ask_user', 'get_document_info', 'get_selection', 'notify']
+export const COMMON_VIEW = ['ask_user', 'create_document', 'get_document_info', 'get_selection', 'list_versions', 'notify']
+// In apps that can show, compare and check their content.
+export const SEE = ['check_accessibility', 'diff_versions', 'get_changes_since', 'get_spelling_issues', 'render']
 export const COMMON_COMMENT = [...COMMON_VIEW, 'list_participants']
 export const COMMON_EDIT = [...COMMON_COMMENT, 'apply_batch', 'list_proposals', 'redo', 'revert_ai_changes', 'undo']
 

@@ -2,7 +2,7 @@
   "_help": "Owner data for the legal pages (docs/legal) and /.well-known/security.txt. Fill in every empty value before publishing; empty values are shown as highlighted [placeholders]. Build with LEGAL_STRICT=1 to fail while any remains. See docs/legal/README.md.",
   "siteName": "Ofimeo",
   "siteUrl": "https://ofimeo.com",
-  "lastUpdated": "2026-09-26",
+  "lastUpdated": "2026-10-15",
   "owner": {
     "_help": "Titular of the website (LSSI-CE art. 10) and data controller (GDPR art. 13.1.a). phone and registry are optional (registry: only for companies or registered entities).",
     "name": "Pablo Gallego Falcón",

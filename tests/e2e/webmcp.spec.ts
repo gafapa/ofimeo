@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { randomBytes } from 'node:crypto'
 import { APP_READY, openApp, RELAYS, trackErrors, uniqueDoc } from './helpers'
-import { call, COMMON_EDIT, COMMON_VIEW, ENABLED, ENGLISH, menu, sorted, toolNames } from './webmcp-helpers'
+import { call, COMMON_EDIT, COMMON_VIEW, ENABLED, ENGLISH, menu, SEE, sorted, toolNames } from './webmcp-helpers'
 
 test('writer: turned on from Tools, the assistant reads the text and its changes become suggestions', async ({ page }) => {
   const errors = trackErrors(page)
@@ -20,7 +20,7 @@ test('writer: turned on from Tools, the assistant reads the text and its changes
   await dialog.getByRole('button', { name: 'Allow', exact: true }).click()
   await expect(page.locator('.webmcp-indicator')).toBeVisible()
   await expect.poll(() => toolNames(page)).toEqual(
-    sorted(COMMON_EDIT, ['add_comment', 'apply_heading', 'delete_text', 'find', 'format', 'get_outline', 'get_text', 'insert_text', 'list_comments', 'replace_range', 'show']),
+    sorted(COMMON_EDIT, SEE, ['add_comment', 'apply_heading', 'delete_text', 'find', 'format', 'set_alt_text', 'get_outline', 'get_text', 'insert_text', 'list_comments', 'replace_range', 'show']),
   )
 
   const info = await call(page, 'get_document_info')
@@ -69,7 +69,7 @@ test('sheet: the assistant reads and writes ranges, adds sheets and charts', asy
   await page.addInitScript(ENGLISH)
   await page.addInitScript(ENABLED)
   await openApp(page, 'sheet')
-  await expect.poll(() => toolNames(page)).toEqual(sorted(COMMON_EDIT, ['add_comment', 'add_sheet', 'clear_range', 'delete_columns', 'delete_rows', 'delete_sheet', 'duplicate_sheet', 'insert_chart', 'insert_columns', 'insert_rows', 'list_comments', 'list_sheets', 'read_range', 'rename_sheet', 'show', 'write_range']))
+  await expect.poll(() => toolNames(page)).toEqual(sorted(COMMON_EDIT, SEE, ['add_comment', 'add_sheet', 'clear_range', 'delete_columns', 'delete_rows', 'delete_sheet', 'duplicate_sheet', 'insert_chart', 'insert_columns', 'insert_rows', 'list_comments', 'list_formula_errors', 'list_sheets', 'read_range', 'rename_sheet', 'show', 'write_range']))
 
   const written = await call(page, 'write_range', { range: 'A1', values: [['Month', 'Sales'], ['Jan', 10], ['Feb', 20], ['Total', '=SUM(B2:B3)']] })
   expect(written.data).toMatchObject({ written: 'A1:B4' })
@@ -115,7 +115,7 @@ test('a view link only gets read tools', async ({ browser }) => {
   await reader.goto(link)
   await reader.locator('.ProseMirror').waitFor({ timeout: 60_000 })
   await expect(reader.locator('.webmcp-indicator')).toBeVisible()
-  await expect.poll(() => toolNames(reader)).toEqual(sorted(COMMON_VIEW, ['find', 'get_outline', 'get_text', 'list_comments', 'show']))
+  await expect.poll(() => toolNames(reader)).toEqual(sorted(COMMON_VIEW, SEE, ['find', 'get_outline', 'get_text', 'list_comments', 'show']))
   expect((await call(reader, 'get_document_info')).data).toMatchObject({ access: 'view', allowed: ['read'] })
   await expect.poll(async () => (await call(reader, 'get_text')).data, { timeout: 60_000 }).toBe('Read me')
   expect(errors).toEqual([])

@@ -2903,6 +2903,8 @@ const gl: Record<string, string> = {
   'Review the assistant’s changes before they are applied': 'Revisar os cambios do asistente antes de aplicalos',
   'the selected text': 'o texto seleccionado',
   'Write values from {cell} in {sheet}': 'Escribir valores desde {cell} en {sheet}',
+  'Create a new document “{title}” ({kind}) and open it in a new tab': 'Crear un documento novo «{title}» ({kind}) e abrilo nunha lapela nova',
+  'Describe picture {n}: “{text}”': 'Describir a imaxe {n}: «{text}»',
 }
 
 export default gl

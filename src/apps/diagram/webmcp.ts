@@ -9,11 +9,12 @@
 import { Cell, Geometry } from '@maxgraph/core'
 import { t } from '../../core/i18n'
 import type { Session } from '../../core/session'
-import { htmlToText, num, optNum, optStr, str, textToHtml, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
+import type * as Y from 'yjs'
+import { htmlToText, imageResult, num, optNum, optStr, str, textToHtml, type AppTools, type OfimeoTool, type TextPart, type ToolArgs } from '../../core/webmcp/types'
 import { serializeDrawio } from './formats/drawio'
 import { styleFromString, type EditorGraph } from './graph'
 import { parseGeometry, parseStyle, type CellRecord } from './model'
-import type { DiagramSync } from './sync'
+import { DiagramSync } from './sync'
 
 // What the tools need from the editor (createDiagramEditor's result has it).
 export interface GraphEditor {
@@ -225,6 +226,26 @@ export function showCell(editor: GraphEditor, args: ToolArgs, key = 'page') {
   return { shown: true, [key]: editor.sync.pageList().findIndex((p) => p.id === editor.sync.page) + 1, ...(id ? { id } : {}) }
 }
 
+// A page as text lines for diffs: shapes and connectors by their labels.
+export function pageLines(cells: CellRecord[]): string[] {
+  const label = new Map(cells.map((r) => [r.id, htmlToText(r.value ?? '').replace(/\s+/g, ' ').trim()]))
+  const name = (id?: string | null) => (id ? label.get(id) || `#${id}` : '?')
+  const lines: string[] = []
+  for (const r of cells) {
+    if (!r.parent) continue
+    if (r.edge) lines.push(`connector ${name(r.source)} → ${name(r.target)}${label.get(r.id) ? ` “${label.get(r.id)}”` : ''}`)
+    else if (r.vertex) lines.push(`shape “${label.get(r.id) ?? ''}” (${parseStyle(r.style).values.get('shape') ?? parseStyle(r.style).bases[0] ?? 'rectangle'})`)
+  }
+  return lines
+}
+
+// Labels to check for spelling: page n · object id.
+export function labelParts(doc: Y.Doc, unit: string): TextPart[] {
+  return DiagramSync.readPages(doc).flatMap((p, i) =>
+    p.cells.filter((r) => r.parent && r.value).map((r) => ({ where: `${unit} ${i + 1} · ${r.id}`, text: htmlToText(r.value ?? '') })),
+  )
+}
+
 // ---------- Diagram tools ----------
 
 export function diagramTools(session: Session, editor: GraphEditor): AppTools {
@@ -421,6 +442,21 @@ export function diagramTools(session: Session, editor: GraphEditor): AppTools {
       return cells.length ? { kind: 'shapes', page, cells } : { kind: 'none', page }
     },
     group: (fn) => groupGraph(editor, fn),
+    render: async (args) => {
+      const pages = DiagramSync.readPages(session.doc)
+      const shown = pages.findIndex((p) => p.id === sync.page)
+      const n = Math.round(optNum(args, 'page') ?? shown + 1)
+      const page = pages[n - 1]
+      if (!page) throw new Error(`There is no page ${n} (there are ${pages.length})`)
+      const [{ renderPages }, { orderCells }, { svgToPng }, { svgScale }] = await Promise.all([import('./index'), import('./formats/drawio'), import('./export'), import('../../core/webmcp/render')])
+      const [svg] = await renderPages([orderCells(page.cells)], [page.background && page.background !== 'none' ? page.background : '#ffffff'])
+      const width = Number(svg.getAttribute('width')) || 800
+      const height = Number(svg.getAttribute('height')) || 600
+      return imageResult(await svgToPng(svg, svgScale(width, height)), `Page ${n} “${page.name}”`)
+    },
+    renderSchema: { ...pageArg },
+    serialize: (doc) => DiagramSync.readPages(doc).map((p) => [`## ${p.name}`, ...pageLines(p.cells)].join('\n')).join('\n'),
+    paragraphs: () => labelParts(session.doc, 'page'),
     show: (args) => showCell(editor, args),
     showSchema: { ...pageArg, id: { type: 'string', description: 'Object to select (id from get_diagram).' } },
     undo: editor.undo,

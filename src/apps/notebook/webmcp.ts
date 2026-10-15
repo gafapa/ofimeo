@@ -10,11 +10,11 @@ import { prosemirrorJSONToYXmlFragment } from '@tiptap/y-tiptap'
 import { yUndoPluginKey } from '@tiptap/y-tiptap'
 import { t } from '../../core/i18n'
 import { groupYUndo } from '../../core/webmcp/undo'
-import { optNum, optStr, str, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
+import { imageResult, num, optNum, optStr, str, type AppTools, type OfimeoTool, type TextPart, type ToolArgs } from '../../core/webmcp/types'
 import type { NotebookContext } from './app'
 import { notebookExtensions } from './extensions'
 import { pageContent } from './export'
-import { addPage, addSection, allPages, collectTags, deletePage, inkArray, movePage, NB_ORIGIN, pageTitle, readPages, readSections, updatePage, type Page } from './model'
+import { addPage, addSection, allPages, collectTags, deletePage, inkArray, movePage, NB_ORIGIN, notebookText, pageText, pageTitle, readPages, readSections, updatePage, type Page } from './model'
 
 const MAX_TEXT = 100_000
 
@@ -208,6 +208,27 @@ export function notebookTools(ctx: NotebookContext): AppTools {
   return {
     tools,
     group: (fn) => groupYUndo(ctx.undoManagers(), fn),
+    // A page as printed (text and ink), part by part when it is long.
+    render: async (args) => {
+      const page = findPage(args)
+      const [{ scopePdf }, { openPdf }, { pdfPageToPng }] = await Promise.all([import('./pdf'), import('../pdf/pdfjs'), import('../../core/webmcp/render')])
+      const pdf = await openPdf(new Uint8Array(await (await scopePdf(doc, { kind: 'page', id: page.id })).arrayBuffer()))
+      try {
+        const n = Math.max(1, Math.min(pdf.numPages, Math.round(num(args, 'part', 1))))
+        return imageResult(await pdfPageToPng(await pdf.getPage(n)), `“${pageTitle(page)}”, part ${n} of ${pdf.numPages}`)
+      } finally {
+        void pdf.loadingTask.destroy()
+      }
+    },
+    renderSchema: { page: { type: 'string', description: 'Page id or title (default: the open page).' }, part: { type: 'integer', minimum: 1, description: 'For long pages: which printed page (default 1).' } },
+    serialize: (ydoc) => notebookText(ydoc),
+    paragraphs: () =>
+      allPages(doc).flatMap((p) =>
+        [{ where: `page “${pageTitle(p)}” · title`, text: pageTitle(p), context: 'heading' as const }, ...pageText(doc, p.id)
+          .split('\n')
+          .filter((line) => line.trim())
+          .map((text, i) => ({ where: `page “${pageTitle(p)}” · paragraph ${i + 1}`, text }))] as TextPart[],
+      ),
     selection: () => {
       const id = ctx.current()
       const page = id ? allPages(doc).find((p) => p.id === id) : undefined

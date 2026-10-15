@@ -7,10 +7,11 @@
 // Wired in src/apps/slides/app.ts (after mountFrame):
 //   provideWebMcpTools(session, () => import('./webmcp').then((m) => m.slidesTools(session, editor)))
 
+import { t } from '../../core/i18n'
 import type { Session } from '../../core/session'
 import { AI_COLOR, aiName } from '../../core/webmcp/ai'
 import { htmlToText, optNum, optStr, str, textToHtml, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
-import { cellById, goToPage, selectedCells, setLabel, showCell, summarize, type GraphEditor } from '../diagram/webmcp'
+import { cellById, goToPage, groupGraph, movePageTo, objectTools, selectedCells, setLabel, showCell, showPageSafely, summarize, type GraphEditor } from '../diagram/webmcp'
 import { parseStyle, type CellRecord } from '../diagram/model'
 import { userIdOf } from '../writer/collab'
 import { slideCommentsMap, type SlideComment } from './comments'
@@ -22,7 +23,12 @@ const slideArg = { slide: { type: 'integer', minimum: 1, description: 'Slide num
 
 const roleOf = (r: CellRecord) => (parseStyle(r.style).values.get('slidePh') as Role | undefined) ?? null
 
-export function slidesTools(session: Session, editor: GraphEditor, presentation?: Presentation): AppTools {
+// What the app does for some tools (as its own menu items do).
+export interface SlideActions {
+  duplicate(id: string): string | undefined
+}
+
+export function slidesTools(session: Session, editor: GraphEditor, presentation?: Presentation, actions?: SlideActions): AppTools {
   const { sync, graph } = editor
   const doc = session.doc
   const slides = () => sync.pageList()
@@ -95,6 +101,7 @@ export function slidesTools(session: Session, editor: GraphEditor, presentation?
       },
       access: 'edit',
       changesDocument: true,
+      summary: (args) => t('Add the slide “{title}”', { title: String(args.title ?? '') }),
       execute: (args) => {
         editable()
         const layout = (optStr(args, 'layout') ?? 'titleContent') as LayoutId
@@ -115,7 +122,7 @@ export function slidesTools(session: Session, editor: GraphEditor, presentation?
         writeSlideMeta(doc, id, { layout })
         const notes = optStr(args, 'notes')
         if (notes) notesText(doc, id).insert(0, notes)
-        sync.showPage(id)
+        showPageSafely(editor, id)
         return { slide: slides().findIndex((p) => p.id === id) + 1 }
       },
     },
@@ -130,6 +137,7 @@ export function slidesTools(session: Session, editor: GraphEditor, presentation?
       },
       access: 'edit',
       changesDocument: true,
+      summary: (args) => t('Change a text of a slide to “{text}”', { text: String(args.text ?? '').slice(0, 80) }),
       execute: (args) => {
         editable()
         goToPage(editor, args, 'slide')
@@ -146,6 +154,59 @@ export function slidesTools(session: Session, editor: GraphEditor, presentation?
         }
         setLabel(editor, cellById(editor, cellId), str(args, 'text', ''))
         return { ok: true, id: cellId }
+      },
+    },
+    ...objectTools(editor, editable, 'slide'),
+    {
+      name: 'move_slide',
+      description: 'Moves a slide (default: the slide shown) so that it becomes slide number "to".',
+      inputSchema: { type: 'object', properties: { ...slideArg, to: { type: 'integer', minimum: 1 } }, required: ['to'] },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Move slide {from} to position {to}', { from: String(args.slide ?? ''), to: String(args.to) }),
+      execute: (args) => {
+        editable()
+        const { page } = slideAt(args)
+        return { slide: movePageTo(editor, page.id, Number(args.to)) }
+      },
+    },
+    {
+      name: 'duplicate_slide',
+      description: 'Copies a slide (default: the slide shown) with its notes, animations and transition, right after it, and shows the copy.',
+      inputSchema: { type: 'object', properties: { ...slideArg } },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Duplicate slide {n}', { n: String(args.slide ?? slideAt(args).n) }),
+      execute: (args) => {
+        editable()
+        if (!actions) throw new Error('Not available')
+        const { page } = slideAt(args)
+        const model = graph.getDataModel()
+        const level = model.updateLevel
+        for (let i = 0; i < level; i++) model.endUpdate()
+        const id = actions.duplicate(page.id)
+        for (let i = 0; i < level; i++) model.beginUpdate()
+        return { slide: slides().findIndex((p) => p.id === id) + 1 }
+      },
+    },
+    {
+      name: 'delete_slide',
+      description: 'Deletes a slide (not the last one). The user confirms it.',
+      inputSchema: { type: 'object', properties: { ...slideArg }, required: ['slide'] },
+      access: 'edit',
+      changesDocument: true,
+      destructive: true,
+      summary: (args) => t('Delete slide {n}', { n: String(args.slide) }),
+      execute: (args) => {
+        editable()
+        if (slides().length <= 1) throw new Error('The last slide cannot be deleted')
+        const { page } = slideAt(args)
+        const model = graph.getDataModel()
+        const level = model.updateLevel
+        for (let i = 0; i < level; i++) model.endUpdate()
+        sync.deletePage(page.id)
+        for (let i = 0; i < level; i++) model.beginUpdate()
+        return { slides: slides().length }
       },
     },
     {
@@ -233,6 +294,7 @@ export function slidesTools(session: Session, editor: GraphEditor, presentation?
       const slide = slides().findIndex((p) => p.id === sync.page) + 1
       return cells.length ? { kind: 'objects', slide, objects: cells } : { kind: 'none', slide }
     },
+    group: (fn) => groupGraph(editor, fn),
     show: (args) => showCell(editor, args, 'slide'),
     showSchema: { ...slideArg, id: { type: 'string', description: 'Object to select (id from get_slide).' } },
     undo: editor.undo,

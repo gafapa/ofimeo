@@ -11,6 +11,8 @@ import { isWebMcpEnabled, onWebMcpChange, onWebMcpTools, setWebMcpEnabled, start
 import { webMcpForbidden } from '../core/school-config'
 import { activityLog } from '../core/webmcp/activity'
 import { ACTIVITY_EVENT, canRevertAi, revertAiChanges, type WebMcpActivity } from '../core/webmcp/ai'
+import { isReviewMode, setReviewMode } from '../core/webmcp/state'
+import { setupProposals, type ProposalsPanel } from './webmcp-proposals'
 import { confirmDialog, el, icon, showDialog, toast, type MenuItem } from './widgets'
 import './webmcp.css'
 
@@ -52,9 +54,28 @@ function explanation(session: Session, on: boolean): HTMLElement {
       class: 'hint',
       textContent: t('This setting applies to every document you open in this browser. You can turn it off at any time from the Tools menu or the indicator in the top bar.'),
     }),
+    session.canEdit ? reviewSwitch(session) : null,
     on && names.length ? el('p', { class: 'hint mono', textContent: t('Tools offered: {tools}', { tools: names.join(', ') }) }) : null,
     on ? activityList() : null,
     el('p', {}, more),
+  )
+}
+
+// Review mode: the assistant's changes wait for the user to accept them.
+function reviewSwitch(session: Session): HTMLElement {
+  const box = el('input', { type: 'checkbox', checked: isReviewMode() })
+  box.addEventListener('change', () => setReviewMode(box.checked))
+  return el(
+    'div',
+    { class: 'webmcp-review' },
+    el('label', { class: 'check' }, box, t('Review the assistant’s changes before they are applied')),
+    el('p', {
+      class: 'hint',
+      textContent:
+        session.type === 'writer'
+          ? t('Changes to the text are always suggestions; with this option, formatting and other changes also wait for you to accept them.')
+          : t('Each change it proposes waits in a panel where you accept or reject it.'),
+    }),
   )
 }
 
@@ -70,7 +91,8 @@ function activityList(): HTMLElement {
   }
   const list = el('ol', { class: 'webmcp-activity-list' })
   for (const entry of entries) {
-    const status = entry.note === 'declined' ? t('not allowed') : entry.ok ? (entry.write ? t('changed') : t('read')) : t('failed')
+    const status =
+      entry.note === 'declined' ? t('not allowed') : entry.note === 'proposed' ? t('proposed') : entry.note === 'accepted' ? t('accepted') : entry.ok ? (entry.write ? t('changed') : t('read')) : t('failed')
     const item = el(
       'li',
       { class: entry.ok ? '' : 'failed' },
@@ -95,15 +117,20 @@ async function enableDialog(session: Session): Promise<void> {
   toast(t('AI assistants can now use this document'))
 }
 
+let proposals: ProposalsPanel | null = null
+
 async function statusDialog(session: Session): Promise<void> {
   const revert = session.canEdit && canRevertAi(session)
+  const pending = proposals?.pending() ?? 0
   const choice = await showDialog(t('AI assistant access is on'), explanation(session, true), [
     { label: t('Close'), value: 'close' },
+    ...(pending ? [{ label: t('Review proposals ({n})', { n: pending }), value: 'proposals' }] : []),
     ...(revert ? [{ label: t('Undo all AI changes…'), value: 'revert' }] : []),
     { label: t('Turn off'), value: 'off', primary: true, danger: true },
   ])
   if (choice === 'off') turnOff()
   if (choice === 'revert') await undoAll(session)
+  if (choice === 'proposals') proposals?.open()
 }
 
 async function undoAll(session: Session): Promise<void> {
@@ -142,15 +169,30 @@ export function setupWebMcp(session: Session, edit?: EditActions): void {
   startWebMcp(session, edit)
   const button = el('button', { type: 'button', class: 'webmcp-indicator', hidden: true })
   const label = el('span', { class: 'btn-label', textContent: t('AI access on') })
-  button.append(icon(Bot, 18), label)
-  button.addEventListener('click', () => void statusDialog(session))
+  const badge = el('span', { class: 'webmcp-badge', hidden: true })
+  button.append(icon(Bot, 18), label, badge)
+  let waiting = 0
+  // The proposals panel is created once the switch is on.
+  let creating = false
+  const ensureProposals = () => {
+    if (proposals || creating || !session.canEdit) return
+    creating = true
+    proposals = setupProposals(session, (n) => {
+      waiting = n
+      badge.hidden = !n
+      badge.textContent = String(n)
+      update()
+    })
+  }
+  button.addEventListener('click', () => (waiting ? proposals?.toggle() : void statusDialog(session)))
   document.querySelector('.appbar-actions')?.prepend(button)
   let last = ''
-  const update = () => {
+  function update() {
     const on = isWebMcpEnabled()
+    if (on) ensureProposals()
     button.hidden = !on
     button.title = [t('AI assistants can use this document (WebMCP). Click for details or to turn it off.'), last].filter(Boolean).join('\n')
-    button.setAttribute('aria-label', t('AI assistant access is on'))
+    button.setAttribute('aria-label', waiting ? `${t('AI assistant access is on')} · ${t('{n} changes to review', { n: waiting })}` : t('AI assistant access is on'))
   }
   onWebMcpChange(update)
   onWebMcpTools(session, update)
@@ -161,7 +203,7 @@ export function setupWebMcp(session: Session, edit?: EditActions): void {
     button.classList.add('busy')
     clearTimeout(pulse)
     pulse = window.setTimeout(() => button.classList.remove('busy'), 1500)
-    if (write && ok) toast(t('The AI assistant used {tool}', { tool }))
+    if (write && ok && !waiting) toast(t('The AI assistant used {tool}', { tool }))
     update()
   })
   update()

@@ -35,6 +35,11 @@ export interface OfimeoTool {
   // comments): the assistant is told not to follow instructions found in it.
   // Default: true for tools that change nothing.
   untrusted?: boolean
+  // Its change is already a suggestion the user accepts or rejects (writer
+  // text): never queued as a proposal in review mode.
+  suggestion?: boolean
+  // What a call does, for the user (confirmations, proposals); translated.
+  summary?: (args: ToolArgs) => string
   // Deletes or overwrites content: the user confirms every call (confirm.ts).
   destructive?: boolean
   // Asks the user to confirm this call when it returns a text (e.g. large changes).
@@ -87,6 +92,8 @@ export interface AppTools {
   // Undo/redo of the app (default: the Edit menu actions given to the frame).
   undo?: () => void
   redo?: () => void
+  // Runs several changes as one step of the undo history (apply_batch).
+  group?: <T>(fn: () => Promise<T>) => Promise<T>
   // Calls fn whenever the set of tools offered may change (e.g. a slide show
   // starts). Tools hide themselves with `available`.
   watch?: (fn: () => void) => void

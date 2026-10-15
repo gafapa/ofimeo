@@ -20,7 +20,7 @@ test('writer: turned on from Tools, the assistant reads the text and its changes
   await dialog.getByRole('button', { name: 'Allow', exact: true }).click()
   await expect(page.locator('.webmcp-indicator')).toBeVisible()
   await expect.poll(() => toolNames(page)).toEqual(
-    sorted(COMMON_EDIT, ['add_comment', 'apply_heading', 'find', 'format', 'get_outline', 'get_text', 'insert_text', 'list_comments', 'replace_range', 'show']),
+    sorted(COMMON_EDIT, ['add_comment', 'apply_heading', 'delete_text', 'find', 'format', 'get_outline', 'get_text', 'insert_text', 'list_comments', 'replace_range', 'show']),
   )
 
   const info = await call(page, 'get_document_info')
@@ -69,7 +69,7 @@ test('sheet: the assistant reads and writes ranges, adds sheets and charts', asy
   await page.addInitScript(ENGLISH)
   await page.addInitScript(ENABLED)
   await openApp(page, 'sheet')
-  await expect.poll(() => toolNames(page)).toEqual(sorted(COMMON_EDIT, ['add_comment', 'add_sheet', 'insert_chart', 'list_comments', 'list_sheets', 'read_range', 'show', 'write_range']))
+  await expect.poll(() => toolNames(page)).toEqual(sorted(COMMON_EDIT, ['add_comment', 'add_sheet', 'clear_range', 'delete_columns', 'delete_rows', 'delete_sheet', 'duplicate_sheet', 'insert_chart', 'insert_columns', 'insert_rows', 'list_comments', 'list_sheets', 'read_range', 'rename_sheet', 'show', 'write_range']))
 
   const written = await call(page, 'write_range', { range: 'A1', values: [['Month', 'Sales'], ['Jan', 10], ['Feb', 20], ['Total', '=SUM(B2:B3)']] })
   expect(written.data).toMatchObject({ written: 'A1:B4' })

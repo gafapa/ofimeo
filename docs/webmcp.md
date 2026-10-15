@@ -98,6 +98,28 @@ counts only.
   and offers **Undo all AI changes…**, which restores the version saved before
   its first change (the current state is kept as a version).
 
+## Review mode and batches
+
+- **Review mode** (per browser; the checkbox *Review the assistant's changes
+  before they are applied* in the indicator's dialog, editors only): changing
+  calls are not applied but queued as **proposals** and the tool answers
+  `{status: 'proposed', proposal}`. The *Changes proposed by the AI assistant*
+  panel opens by itself, lists each proposal with a plain-language summary
+  and offers Accept / Reject and Accept all / Reject all; the indicator shows
+  the number waiting. An accepted proposal runs then, as one undo step and
+  recorded as the assistant's. Destructive tools are proposals too (accepting
+  is the confirmation). Writer text changes stay suggestions (`suggestion`
+  tools are never queued). `list_proposals` gives the assistant the outcome.
+  Proposals live in the page: reloading drops the pending ones.
+- **`apply_batch`** runs up to 200 operations `{tool, args}` of the app as ONE
+  step of the undo history and one version: Yjs undo managers merge the
+  changes (writer, forms, notebook, PDF), Univer batches its undo items,
+  maxGraph keeps one model update per page, and Excalidraw gets the scene
+  once. Destructive operations make the whole batch confirmed once; in review
+  mode the batch is one proposal. Stops at the first error unless
+  `stop_on_error` is false; unknown or unavailable tools are refused before
+  anything changes.
+
 ## Tools
 
 All apps (by access):
@@ -111,6 +133,7 @@ All apps (by access):
 | `list_participants` | comment | People with the document open (name, colour, access) |
 | `undo`, `redo` | edit | One step of the app's undo history |
 | `revert_ai_changes` | edit | Restores the version before the assistant's first change (confirmed) |
+| `apply_batch`, `list_proposals` | edit | Several changes as one step; outcome of proposals |
 
 Presentations add `next_slide`, `previous_slide`, `go_to_slide` and
 `get_speaker_notes` while this browser runs the slide show (the tool list is
@@ -118,14 +141,14 @@ registered again when it starts and ends).
 
 | App | Read (view) | Comment | Edit |
 | --- | --- | --- | --- |
-| Documents | `get_text` (Markdown with CriticMarkup `{++ins++}` `{--del--}` for pending suggestions, or plain), `get_outline`, `find`, `list_comments` | `add_comment` (on text or as a reply) | `insert_text`, `replace_range` (suggestions), `apply_heading`, `format` |
-| Spreadsheets | `list_sheets`, `read_range`, `list_comments` (cell notes) | – | `write_range` (values and `=` formulas), `add_sheet`, `insert_chart` (charts model of `src/apps/sheet/charts`), `add_comment` (cell note) |
-| Presentations | `list_slides`, `get_slide`, `list_comments` | `add_comment` | `add_slide`, `set_text` |
-| Diagrams | `get_diagram` (summary or draw.io XML) | – | `add_shape`, `connect`, `set_label` |
-| Forms (editors) | `get_form` | – | `add_question`, `get_responses` (editors only) |
-| PDF | `get_text` (per page), `list_comments` | `add_note` | `add_highlight` |
-| Drawings | `get_scene` | – | `add_element` |
-| Notebooks | `list_pages` (sections, pages, levels), `get_page` (Markdown, by id or title) | – | `add_page` (with Markdown text), `append_text` (Markdown at the end of a page; direct edit, one undo step) |
+| Documents | `get_text` (Markdown with CriticMarkup `{++ins++}` `{--del--}` for pending suggestions, or plain), `get_outline`, `find`, `list_comments` | `add_comment` (on text or as a reply) | `insert_text`, `replace_range`, `delete_text` (suggestions), `apply_heading`, `format` |
+| Spreadsheets | `list_sheets`, `read_range`, `list_comments` (cell notes) | – | `write_range` (values and `=` formulas), `add_sheet`, `insert_chart` (charts model of `src/apps/sheet/charts`), `add_comment` (cell note), `insert_rows`, `insert_columns`, `rename_sheet`, `duplicate_sheet`; confirmed: `delete_rows`, `delete_columns`, `clear_range`, `delete_sheet` |
+| Presentations | `list_slides`, `get_slide`, `list_comments` | `add_comment` | `add_slide`, `set_text`, `move_object`, `move_slide`, `duplicate_slide`; confirmed: `delete_objects`, `delete_slide` |
+| Diagrams | `get_diagram` (summary or draw.io XML) | – | `add_shape`, `connect`, `set_label`, `move_object`, `add_page`, `rename_page`, `move_page`; confirmed: `delete_objects`, `delete_page` |
+| Forms (editors) | `get_form` | – | `add_question`, `update_question`, `move_question`, `get_responses` (editors only); confirmed: `delete_question` |
+| PDF | `get_text` (per page), `list_comments`, `list_annotations` | `add_note` | `add_highlight`; confirmed: `delete_annotation` |
+| Drawings | `get_scene` | – | `add_element`, `update_element`; confirmed: `delete_elements` |
+| Notebooks | `list_pages` (sections, pages, levels), `get_page` (Markdown, by id or title) | – | `add_page` (with Markdown text), `append_text` (Markdown at the end of a page; direct edit, one undo step), `rename_page`, `move_page`; confirmed: `delete_page` |
 
 Text is located by exact text (`match` + `occurrence`) rather than internal
 positions where possible; `find` also returns positions usable until the next
@@ -139,6 +162,8 @@ edit. Results are JSON text; failures return `isError: true` with a message.
 - `src/core/webmcp/gate.ts`: permission gate and confirmations.
 - `src/core/webmcp/confirm.ts`: confirmation and question dialogs.
 - `src/core/webmcp/activity.ts`: activity log, rate limit, who changed last.
+- `src/core/webmcp/proposals.ts`: review mode queue; `src/ui/webmcp-proposals.ts` its panel.
+- `src/core/webmcp/undo.ts`: grouping Yjs undo items (apply_batch).
 - `src/core/webmcp/registry.ts`: runtime (native or polyfill), registration,
   result format, attribution hooks.
 - `src/core/webmcp/ai.ts`: attribution (names, pseudo author, versions,
@@ -159,7 +184,9 @@ needs and `changesDocument: true` when it changes the document itself;
 `destructive` or `confirm(args)` when the user must allow it, `available()`
 when it only makes sense in some states (with `AppTools.watch`). The app's
 `AppTools` may also provide `selection`, `show` (+ `showSchema`), `undo` and
-`redo` (default: the Edit menu given to the frame). The core does the rest.
+`redo` (default: the Edit menu given to the frame) and `group` (apply_batch).
+Give changing tools a translated `summary(args)`: it is what the user reads
+in confirmations and proposals. The core does the rest.
 
 ## Limitations
 

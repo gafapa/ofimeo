@@ -4,9 +4,10 @@
 // version history. Drawings have no comments.
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CaptureUpdateAction, convertToExcalidrawElements } from '@excalidraw/excalidraw'
+import { CaptureUpdateAction, convertToExcalidrawElements, newElementWith, restoreElements } from '@excalidraw/excalidraw'
+import { t } from '../../core/i18n'
 import type { Session } from '../../core/session'
-import { num, optStr, type AppTools, type OfimeoTool } from '../../core/webmcp/types'
+import { num, optNum, optStr, str, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
 
 const TYPES = ['rectangle', 'ellipse', 'diamond', 'text', 'arrow', 'line'] as const
 
@@ -16,6 +17,32 @@ export function drawTools(session: Session, api: () => any): AppTools {
     if (!a) throw new Error('The drawing is still loading')
     return a
   }
+  // In apply_batch, the changes are collected and given to the scene once at
+  // the end, so they are one step of Excalidraw's undo history.
+  let pending: any[] | null = null
+  const scene = (): any[] => pending ?? excalidraw().getSceneElementsIncludingDeleted()
+  const commit = (elements: any[]) => {
+    if (pending) pending = elements
+    else excalidraw().updateScene({ elements, captureUpdate: CaptureUpdateAction.IMMEDIATELY })
+  }
+  const live = () => scene().filter((e) => !e.isDeleted)
+  const elementById = (id: string) => {
+    const element = live().find((e) => e.id === id)
+    if (!element) throw new Error(`No element with id "${id}" (use get_scene)`)
+    return element
+  }
+  const ids = (args: ToolArgs): string[] => {
+    const v = args.ids
+    const list = Array.isArray(v) ? v.map(String) : typeof v === 'string' ? [v] : []
+    if (!list.length) throw new Error('Give "ids": the ids of the elements')
+    return list
+  }
+  // Replaces elements of the scene by id.
+  const replaceElements = (changed: any[]) => {
+    const byId = new Map(changed.map((e) => [e.id, e]))
+    commit(scene().map((e) => byId.get(e.id) ?? e))
+  }
+
   const tools: OfimeoTool[] = [
     {
       name: 'get_scene',
@@ -60,8 +87,9 @@ export function drawTools(session: Session, api: () => any): AppTools {
       },
       access: 'edit',
       changesDocument: true,
+      summary: (args) => t('Add an element to the drawing: {type}', { type: String(args.type ?? '') }),
       execute: (args) => {
-        const a = excalidraw()
+        excalidraw()
         const type = optStr(args, 'type') as (typeof TYPES)[number]
         if (!TYPES.includes(type)) throw new Error(`Unknown element type "${type}"`)
         const linear = type === 'arrow' || type === 'line'
@@ -81,8 +109,68 @@ export function drawTools(session: Session, api: () => any): AppTools {
         } else if (text) base.label = { text }
         if (linear) base.points = [[0, 0], [base.width, base.height]]
         const created = convertToExcalidrawElements([base])
-        a.updateScene({ elements: [...a.getSceneElementsIncludingDeleted(), ...created], captureUpdate: CaptureUpdateAction.IMMEDIATELY })
+        commit([...scene(), ...created])
         return { id: created[0]?.id }
+      },
+    },
+    {
+      name: 'update_element',
+      description: 'Changes an element (id from get_scene): position x/y, size width/height, text (of a text element, or the label of a shape or arrow), stroke and fill colors. One undo step.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          x: { type: 'number' },
+          y: { type: 'number' },
+          width: { type: 'number' },
+          height: { type: 'number' },
+          text: { type: 'string' },
+          stroke: { type: 'string' },
+          fill: { type: 'string' },
+        },
+        required: ['id'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      summary: () => t('Change an element of the drawing'),
+      execute: (args) => {
+        const element = elementById(str(args, 'id'))
+        const patch: Record<string, unknown> = {}
+        for (const key of ['x', 'y', 'width', 'height'] as const) {
+          const v = optNum(args, key)
+          if (v !== undefined) patch[key] = key === 'width' || key === 'height' ? Math.max(1, v) : v
+        }
+        const stroke = optStr(args, 'stroke')
+        const fill = optStr(args, 'fill')
+        if (stroke) patch.strokeColor = stroke
+        if (fill) Object.assign(patch, { backgroundColor: fill, fillStyle: element.fillStyle === 'hachure' ? 'solid' : element.fillStyle })
+        const changed = [newElementWith(element, patch as never)]
+        const text = optStr(args, 'text')
+        if (text !== undefined) {
+          const label = element.type === 'text' ? changed[0] : live().find((e) => e.type === 'text' && e.containerId === element.id)
+          if (!label) throw new Error('This element has no text; add a labelled shape with add_element instead')
+          const updated = newElementWith(label, { text, originalText: text } as never)
+          const [measured] = restoreElements([updated], null, { refreshDimensions: true })
+          if (label.id === element.id) changed[0] = measured
+          else changed.push(measured)
+        }
+        replaceElements(changed)
+        return { id: element.id }
+      },
+    },
+    {
+      name: 'delete_elements',
+      description: 'Deletes elements (ids from get_scene) with their labels. The user confirms it.',
+      inputSchema: { type: 'object', properties: { ids: { type: 'array', items: { type: 'string' } } }, required: ['ids'] },
+      access: 'edit',
+      changesDocument: true,
+      destructive: true,
+      summary: (args) => t('Delete {n} elements of the drawing', { n: Array.isArray(args.ids) ? args.ids.length : 1 }),
+      execute: (args) => {
+        const wanted = new Set(ids(args).map((id) => elementById(id).id))
+        const doomed = live().filter((e) => wanted.has(e.id) || (e.containerId && wanted.has(e.containerId)))
+        replaceElements(doomed.map((e) => newElementWith(e, { isDeleted: true } as never)))
+        return { deleted: wanted.size }
       },
     },
   ]
@@ -93,6 +181,16 @@ export function drawTools(session: Session, api: () => any): AppTools {
   })
   return {
     tools,
+    group: async (fn) => {
+      pending = [...excalidraw().getSceneElementsIncludingDeleted()]
+      try {
+        return await fn()
+      } finally {
+        const elements = pending
+        pending = null
+        excalidraw().updateScene({ elements, captureUpdate: CaptureUpdateAction.IMMEDIATELY })
+      }
+    },
     selection: () => {
       const a = excalidraw()
       const ids = Object.keys(a.getAppState().selectedElementIds ?? {})

@@ -3,7 +3,9 @@
 // them); highlights are annotations of the document (edit links), each one a
 // single step of the annotation undo history, authored "AI assistant (<user>)".
 
+import { t } from '../../core/i18n'
 import type { Session } from '../../core/session'
+import { groupYUndo } from '../../core/webmcp/undo'
 import { AI_COLOR, aiName } from '../../core/webmcp/ai'
 import { bool, num, optNum, optStr, str, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
 import { userIdOf } from '../writer/collab'
@@ -146,6 +148,7 @@ export function pdfTools(session: Session, viewer: Viewer, editor: Editor): AppT
       },
       access: 'edit',
       changesDocument: true,
+      summary: (args) => t('Highlight “{text}” on page {n}', { text: String(args.text ?? '').slice(0, 80), n: String(args.page ?? '') }),
       execute: async (args) => {
         if (!editor.canEdit) throw new Error('The PDF is read-only in this tab')
         const { entry, index } = pageAt(args)
@@ -165,9 +168,42 @@ export function pdfTools(session: Session, viewer: Viewer, editor: Editor): AppT
         return { id: added.id }
       },
     },
+    {
+      name: 'list_annotations',
+      description: 'Lists the annotations of the PDF (highlights, ink, text boxes, stamps…): id, page, type and a description.',
+      inputSchema: { type: 'object', properties: { ...pageArg } },
+      access: 'view',
+      execute: (args) => {
+        const order = pages().map((p) => p.id)
+        const only = optNum(args, 'page')
+        return [...editor.annots.values()]
+          .filter((a) => only === undefined || order.indexOf(a.page) + 1 === Math.round(only))
+          .map((a) => ({ id: a.id, page: order.indexOf(a.page) + 1, type: a.type, description: describe(a), author: a.author }))
+      },
+    },
+    {
+      name: 'delete_annotation',
+      description: 'Deletes an annotation (id from list_annotations). The user confirms it.',
+      inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
+      access: 'edit',
+      changesDocument: true,
+      destructive: true,
+      summary: (args) => {
+        const a = [...editor.annots.values()].find((x) => x.id === args.id)
+        return t('Delete the annotation: {what}', { what: a ? describe(a) : String(args.id ?? '') })
+      },
+      execute: (args) => {
+        if (!editor.canEdit) throw new Error('The PDF is read-only in this tab')
+        const id = str(args, 'id')
+        if (![...editor.annots.values()].some((a) => a.id === id)) throw new Error(`No annotation with id "${id}"`)
+        editor.remove(id)
+        return { deleted: id }
+      },
+    },
   ]
   return {
     tools,
+    group: (fn) => groupYUndo([editor.undo], fn),
     selection: () => {
       const page = viewer.currentIndex() + 1
       const annot = editor.selectedAnnot()

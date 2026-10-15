@@ -1,0 +1,62 @@
+{n} changes in one step ||| {n} cambios en un solo paso ||| {n} cambios nun só paso
+{n} changes in one step, including: {list} ||| {n} cambios en un solo paso, entre ellos: {list} ||| {n} cambios nun só paso, entre eles: {list}
+{n} changes in one step: {list} ||| {n} cambios en un solo paso: {list} ||| {n} cambios nun só paso: {list}
+{n} changes to review ||| {n} cambios por revisar ||| {n} cambios por revisar
+{n} pending ||| {n} pendientes ||| {n} pendentes
+Accept all ||| Aceptar todo ||| Aceptar todo
+accepted ||| aceptado ||| aceptado
+Accepted ||| Aceptado ||| Aceptado
+Add an element to the drawing: {type} ||| Añadir un elemento al dibujo: {type} ||| Engadir un elemento ao debuxo: {type}
+Add a note to {cell} ||| Añadir una nota a {cell} ||| Engadir unha nota a {cell}
+Add text to the open page ||| Añadir texto a la página abierta ||| Engadir texto á páxina aberta
+Add text to the page {name} ||| Añadir texto a la página {name} ||| Engadir texto á páxina {name}
+Add the page {name} ||| Añadir la página {name} ||| Engadir a páxina {name}
+Add the question “{title}” ||| Añadir la pregunta «{title}» ||| Engadir a pregunta «{title}»
+Add the shape “{label}” ||| Añadir la forma «{label}» ||| Engadir a forma «{label}»
+Add the sheet {name} ||| Añadir la hoja {name} ||| Engadir a folla {name}
+Add the slide “{title}” ||| Añadir la diapositiva «{title}» ||| Engadir a diapositiva «{title}»
+Change a label to “{label}” ||| Cambiar una etiqueta a «{label}» ||| Cambiar unha etiqueta a «{label}»
+Change a text of a slide to “{text}” ||| Cambiar un texto de una diapositiva a «{text}» ||| Cambiar un texto dunha diapositiva a «{text}»
+Change an element of the drawing ||| Cambiar un elemento del dibujo ||| Cambiar un elemento do debuxo
+Change the formatting of {text} ||| Cambiar el formato de {text} ||| Cambiar o formato de {text}
+Change the question “{title}” ||| Cambiar la pregunta «{title}» ||| Cambiar a pregunta «{title}»
+Changes proposed by the AI assistant ||| Cambios propuestos por el asistente de IA ||| Cambios propostos polo asistente de IA
+Changes to the text are always suggestions; with this option, formatting and other changes also wait for you to accept them. ||| Los cambios en el texto son siempre sugerencias; con esta opción, el formato y los demás cambios también esperan a que los aceptes. ||| Os cambios no texto son sempre suxestións; con esta opción, o formato e os demais cambios tamén agardan a que os aceptes.
+Clear {range} in {sheet} ||| Vaciar {range} en {sheet} ||| Baleirar {range} en {sheet}
+Connect two shapes{label} ||| Conectar dos formas{label} ||| Conectar dúas formas{label}
+Could not be applied: {error} ||| No se pudo aplicar: {error} ||| Non se puido aplicar: {error}
+Delete {n} columns from column {column} in {sheet} ||| Eliminar {n} columnas desde la columna {column} en {sheet} ||| Eliminar {n} columnas desde a columna {column} en {sheet}
+Delete {n} elements of the drawing ||| Eliminar {n} elementos del dibujo ||| Eliminar {n} elementos do debuxo
+Delete {n} objects ||| Eliminar {n} objetos ||| Eliminar {n} obxectos
+Delete {n} rows from row {row} in {sheet} ||| Eliminar {n} filas desde la fila {row} en {sheet} ||| Eliminar {n} filas desde a fila {row} en {sheet}
+Delete page {n} and everything on it ||| Eliminar la página {n} y todo lo que contiene ||| Eliminar a páxina {n} e todo o que contén
+Delete slide {n} ||| Eliminar la diapositiva {n} ||| Eliminar a diapositiva {n}
+Delete the annotation: {what} ||| Eliminar la anotación: {what} ||| Eliminar a anotación: {what}
+Delete the page {name} ||| Eliminar la página {name} ||| Eliminar a páxina {name}
+Delete the question “{title}” ||| Eliminar la pregunta «{title}» ||| Eliminar a pregunta «{title}»
+Delete the sheet {sheet} ||| Eliminar la hoja {sheet} ||| Eliminar a folla {sheet}
+Duplicate slide {n} ||| Duplicar la diapositiva {n} ||| Duplicar a diapositiva {n}
+Duplicate the sheet {sheet} ||| Duplicar la hoja {sheet} ||| Duplicar a folla {sheet}
+Each change it proposes waits in a panel where you accept or reject it. ||| Cada cambio que propone espera en un panel donde lo aceptas o lo rechazas. ||| Cada cambio que propón agarda nun panel onde o aceptas ou o rexeitas.
+Highlight “{text}” on page {n} ||| Resaltar «{text}» en la página {n} ||| Realzar «{text}» na páxina {n}
+Insert {n} columns before column {column} in {sheet} ||| Insertar {n} columnas antes de la columna {column} en {sheet} ||| Inserir {n} columnas antes da columna {column} en {sheet}
+Insert {n} rows before row {row} in {sheet} ||| Insertar {n} filas antes de la fila {row} en {sheet} ||| Inserir {n} filas antes da fila {row} en {sheet}
+Insert a chart of {range} ||| Insertar un gráfico de {range} ||| Inserir un gráfico de {range}
+Make {text} a heading of level {level} ||| Convertir {text} en un título de nivel {level} ||| Converter {text} nun título de nivel {level}
+Make {text} normal text ||| Convertir {text} en texto normal ||| Converter {text} en texto normal
+Move a page to position {n} ||| Mover una página a la posición {n} ||| Mover unha páxina á posición {n}
+Move or resize an object ||| Mover o cambiar el tamaño de un objeto ||| Mover ou cambiar o tamaño dun obxecto
+Move slide {from} to position {to} ||| Mover la diapositiva {from} a la posición {to} ||| Mover a diapositiva {from} á posición {to}
+Move the page {name} ||| Mover la página {name} ||| Mover a páxina {name}
+Move the question “{title}” to position {n} ||| Mover la pregunta «{title}» a la posición {n} ||| Mover a pregunta «{title}» á posición {n}
+None pending ||| Ninguno pendiente ||| Ningún pendente
+proposed ||| propuesto ||| proposto
+Reject all ||| Rechazar todo ||| Rexeitar todo
+Rejected ||| Rechazado ||| Rexeitado
+Rename a page to {name} ||| Renombrar una página como {name} ||| Renomear unha páxina como {name}
+Rename the sheet {sheet} to {name} ||| Renombrar la hoja {sheet} como {name} ||| Renomear a folla {sheet} como {name}
+Review mode is on: nothing changes until you accept it. Each accepted change can be undone in one step. ||| El modo de revisión está activado: nada cambia hasta que lo aceptas. Cada cambio aceptado se puede deshacer en un paso. ||| O modo de revisión está activado: nada cambia ata que o aceptas. Cada cambio aceptado pódese desfacer nun paso.
+Review proposals ({n}) ||| Revisar propuestas ({n}) ||| Revisar propostas ({n})
+Review the assistant’s changes before they are applied ||| Revisar los cambios del asistente antes de aplicarlos ||| Revisar os cambios do asistente antes de aplicalos
+the selected text ||| el texto seleccionado ||| o texto seleccionado
+Write values from {cell} in {sheet} ||| Escribir valores desde {cell} en {sheet} ||| Escribir valores desde {cell} en {sheet}

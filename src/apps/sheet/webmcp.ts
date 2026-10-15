@@ -4,11 +4,12 @@
 // version history by the core. Notes (Univer cell notes) serve as comments;
 // they are part of the workbook, so only editors can add them.
 
-import type { FUniver } from '@univerjs/presets'
+import { IUndoRedoService, type FUniver, type Univer } from '@univerjs/presets'
+import { t } from '../../core/i18n'
 import type { FWorksheet } from '@univerjs/sheets/facade'
 import type { Session } from '../../core/session'
 import { aiName } from '../../core/webmcp/ai'
-import { bool, optStr, str, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
+import { bool, num, optStr, str, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
 import { CHART_TYPES, normalizeSpec, parseA1, toA1, type ChartType } from './charts/model'
 import { insertChart, listCharts } from './charts/view'
 
@@ -24,7 +25,7 @@ interface Note {
 type NoteSheet = FWorksheet & { getNotes?: () => Note[] }
 type NoteRange = { createOrUpdateNote?: (note: { note: string; width: number; height: number; show?: boolean }) => unknown }
 
-export function sheetTools(session: Session, univerAPI: FUniver): AppTools {
+export function sheetTools(session: Session, univerAPI: FUniver, univer?: Univer): AppTools {
   const workbook = () => {
     const wb = univerAPI.getActiveWorkbook()
     if (!wb) throw new Error('The spreadsheet is still loading')
@@ -45,6 +46,21 @@ export function sheetTools(session: Session, univerAPI: FUniver): AppTools {
     if (rows < 1 || cols < 1 || (rows === 1 && cols === 1 && [null, undefined, ''].includes(s.getRange(0, 0).getValue() as never))) return null
     return toA1({ startRow: 0, startColumn: 0, endRow: rows - 1, endColumn: cols - 1 })
   }
+
+  // Rows are numbered from 1, columns by letter (A, B, …, AA).
+  const columnIndex = (value: unknown): number => {
+    const text = String(value ?? '').trim().toUpperCase()
+    if (/^\d+$/.test(text)) return Number(text) - 1
+    if (!/^[A-Z]{1,3}$/.test(text)) throw new Error(`Invalid column "${value}"`)
+    return [...text].reduce((n, ch) => n * 26 + ch.charCodeAt(0) - 64, 0) - 1
+  }
+  const rowIndex = (args: ToolArgs, key: string) => {
+    const n = Math.round(num(args, key))
+    if (n < 1) throw new Error(`${key} must be 1 or more`)
+    return n - 1
+  }
+  const count = (args: ToolArgs) => Math.max(1, Math.min(1000, Math.round(num(args, 'count', 1))))
+  const where = (args: ToolArgs) => optStr(args, 'sheet') ?? workbook().getActiveSheet().getSheetName()
 
   const tools: OfimeoTool[] = [
     {
@@ -104,6 +120,7 @@ export function sheetTools(session: Session, univerAPI: FUniver): AppTools {
       },
       access: 'edit',
       changesDocument: true,
+      summary: (args) => t('Write values from {cell} in {sheet}', { cell: String(args.range ?? ''), sheet: where(args) }),
       execute: (args) => {
         const s = sheetOf(args)
         const r = parseA1(str(args, 'range'))
@@ -133,6 +150,7 @@ export function sheetTools(session: Session, univerAPI: FUniver): AppTools {
       inputSchema: { type: 'object', properties: { name: { type: 'string', description: 'Name of the new sheet.' } } },
       access: 'edit',
       changesDocument: true,
+      summary: (args) => t('Add the sheet {name}', { name: String(args.name ?? '') }),
       execute: (args) => {
         const name = optStr(args, 'name')?.trim()
         const wb = workbook()
@@ -161,6 +179,7 @@ export function sheetTools(session: Session, univerAPI: FUniver): AppTools {
       },
       access: 'edit',
       changesDocument: true,
+      summary: (args) => t('Insert a chart of {range}', { range: String(args.range ?? '') }),
       execute: (args) => {
         const s = sheetOf(args)
         const r = parseA1(str(args, 'range'))
@@ -185,6 +204,128 @@ export function sheetTools(session: Session, univerAPI: FUniver): AppTools {
       },
     },
     {
+      name: 'insert_rows',
+      description: 'Inserts empty rows before row "before" (1 = first row). Formulas below are adjusted.',
+      inputSchema: { type: 'object', properties: { before: { type: 'integer', minimum: 1 }, count: { type: 'integer', minimum: 1, maximum: 1000 }, ...sheetArg }, required: ['before'] },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Insert {n} rows before row {row} in {sheet}', { n: count(args), row: String(args.before), sheet: where(args) }),
+      execute: (args) => {
+        const s = sheetOf(args)
+        s.insertRowsBefore(rowIndex(args, 'before'), count(args))
+        return { sheet: s.getSheetName(), inserted: count(args) }
+      },
+    },
+    {
+      name: 'insert_columns',
+      description: 'Inserts empty columns before column "before" (a letter, e.g. "C", or a number).',
+      inputSchema: { type: 'object', properties: { before: { type: 'string' }, count: { type: 'integer', minimum: 1, maximum: 1000 }, ...sheetArg }, required: ['before'] },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Insert {n} columns before column {column} in {sheet}', { n: count(args), column: String(args.before), sheet: where(args) }),
+      execute: (args) => {
+        const s = sheetOf(args)
+        s.insertColumnsBefore(columnIndex(args.before), count(args))
+        return { sheet: s.getSheetName(), inserted: count(args) }
+      },
+    },
+    {
+      name: 'delete_rows',
+      description: 'Deletes rows starting at row "from" (1 = first row). The user confirms it.',
+      inputSchema: { type: 'object', properties: { from: { type: 'integer', minimum: 1 }, count: { type: 'integer', minimum: 1, maximum: 1000 }, ...sheetArg }, required: ['from'] },
+      access: 'edit',
+      changesDocument: true,
+      destructive: true,
+      summary: (args) => t('Delete {n} rows from row {row} in {sheet}', { n: count(args), row: String(args.from), sheet: where(args) }),
+      execute: (args) => {
+        const s = sheetOf(args)
+        s.deleteRows(rowIndex(args, 'from'), count(args))
+        return { sheet: s.getSheetName(), deleted: count(args) }
+      },
+    },
+    {
+      name: 'delete_columns',
+      description: 'Deletes columns starting at column "from" (a letter or a number). The user confirms it.',
+      inputSchema: { type: 'object', properties: { from: { type: 'string' }, count: { type: 'integer', minimum: 1, maximum: 1000 }, ...sheetArg }, required: ['from'] },
+      access: 'edit',
+      changesDocument: true,
+      destructive: true,
+      summary: (args) => t('Delete {n} columns from column {column} in {sheet}', { n: count(args), column: String(args.from), sheet: where(args) }),
+      execute: (args) => {
+        const s = sheetOf(args)
+        s.deleteColumns(columnIndex(args.from), count(args))
+        return { sheet: s.getSheetName(), deleted: count(args) }
+      },
+    },
+    {
+      name: 'clear_range',
+      description: 'Clears cells: their contents (default), their formats, or both ("all"). The user confirms it.',
+      inputSchema: { type: 'object', properties: { range: { type: 'string' }, what: { type: 'string', enum: ['contents', 'formats', 'all'] }, ...sheetArg }, required: ['range'] },
+      access: 'edit',
+      changesDocument: true,
+      destructive: true,
+      summary: (args) => t('Clear {range} in {sheet}', { range: String(args.range ?? ''), sheet: where(args) }),
+      execute: (args) => {
+        const s = sheetOf(args)
+        const r = parseA1(str(args, 'range'))
+        if (!r) throw new Error('Invalid range')
+        const range = s.getRange(toA1(r))
+        const what = optStr(args, 'what') ?? 'contents'
+        if (what === 'all') range.clear()
+        else if (what === 'formats') range.clearFormat()
+        else range.clearContent()
+        return { sheet: s.getSheetName(), cleared: toA1(r), what }
+      },
+    },
+    {
+      name: 'rename_sheet',
+      description: 'Renames a sheet.',
+      inputSchema: { type: 'object', properties: { ...sheetArg, name: { type: 'string', description: 'New name.' } }, required: ['name'] },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Rename the sheet {sheet} to {name}', { sheet: where(args), name: String(args.name ?? '') }),
+      execute: (args) => {
+        const s = sheetOf(args)
+        const name = str(args, 'name').trim()
+        if (!name) throw new Error('Empty name')
+        const other = workbook().getSheetByName(name)
+        if (other && other.getSheetId() !== s.getSheetId()) throw new Error(`A sheet named "${name}" already exists`)
+        s.setName(name)
+        return { name: s.getSheetName() }
+      },
+    },
+    {
+      name: 'duplicate_sheet',
+      description: 'Copies a sheet (with its data and formats) and makes the copy active.',
+      inputSchema: { type: 'object', properties: { ...sheetArg } },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Duplicate the sheet {sheet}', { sheet: where(args) }),
+      execute: (args) => {
+        const wb = workbook()
+        const copy = wb.duplicateSheet(sheetOf(args))
+        wb.setActiveSheet(copy)
+        return { name: copy.getSheetName() }
+      },
+    },
+    {
+      name: 'delete_sheet',
+      description: 'Deletes a sheet (not the last one). The user confirms it.',
+      inputSchema: { type: 'object', properties: { ...sheetArg }, required: ['sheet'] },
+      access: 'edit',
+      changesDocument: true,
+      destructive: true,
+      summary: (args) => t('Delete the sheet {sheet}', { sheet: where(args) }),
+      execute: (args) => {
+        const wb = workbook()
+        if (wb.getSheets().length <= 1) throw new Error('The last sheet cannot be deleted')
+        const s = sheetOf(args)
+        const name = s.getSheetName()
+        if (!wb.deleteSheet(s)) throw new Error('The sheet could not be deleted')
+        return { deleted: name }
+      },
+    },
+    {
       name: 'list_comments',
       description: 'Lists the cell notes (comments) of every sheet: sheet, cell and text.',
       inputSchema: { type: 'object', properties: {} },
@@ -204,6 +345,7 @@ export function sheetTools(session: Session, univerAPI: FUniver): AppTools {
       },
       access: 'edit',
       changesDocument: true,
+      summary: (args) => t('Add a note to {cell}', { cell: String(args.cell ?? '') }),
       execute: (args) => {
         const s = sheetOf(args)
         const r = parseA1(str(args, 'cell'))
@@ -220,6 +362,15 @@ export function sheetTools(session: Session, univerAPI: FUniver): AppTools {
 
   return {
     tools,
+    group: async (fn) => {
+      const undo = univer?.__getInjector().get(IUndoRedoService)
+      const batch = undo?.__tempBatchingUndoRedo(workbook().getId())
+      try {
+        return await fn()
+      } finally {
+        batch?.dispose()
+      }
+    },
     selection: () => {
       const s = workbook().getActiveSheet()
       const range = s.getSelection()?.getActiveRange()

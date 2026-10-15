@@ -9,6 +9,8 @@ import { Awareness } from 'y-protocols/awareness'
 import { checkRate, localChange, aiCallStarted, aiCallEnded, userChangedLast, resetActivity, summarizeArgs, MAX_CHANGES_PER_MINUTE } from '../../src/core/webmcp/activity'
 import { allowedTools, confirmationOf } from '../../src/core/webmcp/gate'
 import type { OfimeoTool } from '../../src/core/webmcp/types'
+import { acceptAll, acceptProposal, listProposals, pendingProposals, propose, rejectProposal } from '../../src/core/webmcp/proposals'
+import type { Session as OfimeoSession } from '../../src/core/session'
 
 class TestStorage {
   values = new Map<string, string>()
@@ -214,6 +216,22 @@ export async function runTests(): Promise<void> {
     localChange(Date.now() + 5000)
     assert.equal(userChangedLast(), true)
     resetActivity()
+  })
+  await check('WebMCP: proposals run only when accepted, in order, and report failures', async () => {
+    const fake = {} as OfimeoSession
+    const ran: string[] = []
+    const a = propose(fake, 'write_range', 'A', {}, async () => (ran.push('a'), 'done'))
+    const b = propose(fake, 'clear_range', 'B', {}, async () => { ran.push('b'); throw new Error('nope') })
+    const c = propose(fake, 'add_sheet', 'C', {}, async () => ran.push('c'))
+    assert.equal(pendingProposals(fake).length, 3)
+    rejectProposal(fake, c.id)
+    assert.deepEqual(ran, [])
+    await acceptProposal(fake, a.id)
+    await acceptAll(fake)
+    assert.deepEqual(ran, ['a', 'b'])
+    assert.deepEqual(listProposals(fake).map((p) => [p.id, p.status]), [[a.id, 'accepted'], [b.id, 'failed'], [c.id, 'rejected']])
+    assert.equal(listProposals(fake)[1].error, 'nope')
+    await assert.rejects(acceptProposal(fake, a.id), /No pending proposal/)
   })
   console.log(`${count}/${count} core tests passed`)
 }

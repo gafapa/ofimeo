@@ -72,7 +72,7 @@ test('school configuration: AI assistants (WebMCP) forbidden and shown as set by
   await serveConfig(page, { ...SCHOOL, defaults: {}, locked: ['webmcp'] })
   await openApp(page, 'writer')
   await expect(page.locator('.webmcp-indicator')).toBeHidden()
-  expect(await page.evaluate(() => 'modelContextTesting' in navigator)).toBe(false)
+  expect(await page.evaluate(() => !!(document as unknown as { modelContext?: unknown }).modelContext)).toBe(false)
 
   await page.locator('#menubar').getByText('Tools', { exact: true }).click()
   const item = page.locator('.menu-row', { hasText: 'Allow AI assistants (WebMCP)' })

@@ -1,8 +1,8 @@
 import type { Page } from '@playwright/test'
 
-// WebMCP: tools are called through navigator.modelContextTesting, the testing
-// hook of the @mcp-b/global polyfill (loaded because headless Chromium has no
-// native WebMCP).
+// WebMCP: tools are listed and called through document.modelContext
+// (getTools / executeTool), installed by the @mcp-b/global polyfill because
+// headless Chromium has no native WebMCP.
 
 export const ENGLISH = () => localStorage.setItem('ofimeo:language', 'en')
 export const ENABLED = () => localStorage.setItem('ofimeo:webmcp', '1')
@@ -14,10 +14,13 @@ export const SEE = ['check_accessibility', 'diff_versions', 'get_changes_since',
 export const COMMON_COMMENT = [...COMMON_VIEW, 'list_participants']
 export const COMMON_EDIT = [...COMMON_COMMENT, 'apply_batch', 'list_proposals', 'redo', 'revert_ai_changes', 'undo']
 
-type Tools = { listTools(): { name: string }[]; executeTool(name: string, args: string): Promise<string | null> }
+type Context = { getTools(): Promise<{ name: string }[]>; executeTool(tool: { name: string }, input: object): Promise<string> }
 
 export async function toolNames(page: Page): Promise<string[]> {
-  return page.evaluate(() => ((navigator as unknown as { modelContextTesting?: Tools }).modelContextTesting?.listTools() ?? []).map((t) => t.name).sort())
+  return page.evaluate(async () => {
+    const ctx = (document as unknown as { modelContext?: Context }).modelContext
+    return ctx ? (await ctx.getTools()).map((t) => t.name).sort() : []
+  })
 }
 
 export const sorted = (...lists: string[][]) => [...new Set(lists.flat())].sort()
@@ -31,7 +34,15 @@ export interface CallResult {
 
 // Calls a tool; returns the parsed JSON of its text result (or the text).
 export async function call(page: Page, name: string, args: Record<string, unknown> = {}): Promise<CallResult> {
-  const raw = await page.evaluate(([n, a]) => (navigator as unknown as { modelContextTesting: Tools }).modelContextTesting.executeTool(n, JSON.stringify(a)), [name, args] as const)
+  const raw = await page.evaluate(
+    async ([n, a]) => {
+      const ctx = (document as unknown as { modelContext: Context }).modelContext
+      const tool = (await ctx.getTools()).find((t) => t.name === n)
+      if (!tool) throw new Error(`No tool ${n}`)
+      return ctx.executeTool(tool, a)
+    },
+    [name, args] as const,
+  )
   const result = JSON.parse(raw ?? 'null') as { content: CallResult['content']; isError?: boolean }
   const text = result.content.find((c) => c.type === 'text')?.text ?? ''
   let data: unknown = text

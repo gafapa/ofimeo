@@ -1,15 +1,17 @@
 // WebMCP runtime (loaded only when the switch is on): finds the page's model
 // context and registers the allowed tools on it.
 //
-// The WebMCP draft exposes `document.modelContext` (earlier drafts:
-// `navigator.modelContext`) with `registerTool(tool, { signal })`. When the
+// The WebMCP draft exposes `document.modelContext` with
+// `registerTool(tool, { signal })`, `getTools()` and `executeTool()`. When the
 // browser has no native implementation, the MIT-licensed @mcp-b/global
 // polyfill is loaded; its transport only accepts clients of this page's own
 // origin (browser extensions talk to it through the page) and never the
-// parent page of an iframe. It also installs navigator.modelContextTesting,
-// which the end-to-end tests use to call the tools.
+// parent page of an iframe. The end-to-end tests call the tools through
+// `getTools()` and `executeTool()`.
 
-import type { ModelContext } from '@mcp-b/webmcp-types'
+import type {} from '@mcp-b/webmcp-types'
+
+type ModelContext = WebMCP.ModelContext
 import type { Session } from '../session'
 import { aiCallEnded, aiCallStarted, checkRate, logActivity, MAX_INPUT_CHARS, summarizeArgs } from './activity'
 import { afterAiChange, announce, beforeAiChange } from './ai'
@@ -23,12 +25,12 @@ let contextPromise: Promise<ModelContext> | null = null
 
 export function modelContext(): Promise<ModelContext> {
   contextPromise ??= (async () => {
-    const native = document.modelContext ?? navigator.modelContext
+    const native = document.modelContext
     if (native) return native
     window.__webModelContextOptions = { autoInitialize: false }
     const { initializeWebModelContext } = await import('@mcp-b/global')
     initializeWebModelContext({ transport: { tabServer: { allowedOrigins: [location.origin] }, iframeServer: false } })
-    const ctx = document.modelContext ?? navigator.modelContext
+    const ctx = document.modelContext
     if (!ctx) throw new Error('WebMCP is not available in this browser')
     return ctx
   })()

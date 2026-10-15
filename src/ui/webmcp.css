@@ -25,3 +25,11 @@
 .webmcp-dialog ul { margin: 0 0 12px; padding-left: 20px; }
 .webmcp-dialog li { margin: 4px 0; }
 .webmcp-dialog .mono { font-family: var(--font-mono); overflow-wrap: anywhere; }
+.webmcp-activity h3 { margin: 12px 0 6px; font-size: var(--fs-m); }
+.webmcp-activity-list { margin: 0 0 12px; padding: 0; list-style: none; max-height: 220px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-m); }
+.webmcp-activity-list li { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; padding: 4px 8px; font-size: var(--fs-s); border-bottom: 1px solid var(--border); }
+.webmcp-activity-list li:last-child { border-bottom: 0; }
+.webmcp-activity-list time, .webmcp-activity-status { color: var(--muted); }
+.webmcp-activity-list li.failed .webmcp-activity-status { color: var(--danger-text); }
+.webmcp-ask-action, .webmcp-ask-question { font-weight: 600; overflow-wrap: anywhere; white-space: pre-wrap; }
+.webmcp-ask textarea { width: 100%; }

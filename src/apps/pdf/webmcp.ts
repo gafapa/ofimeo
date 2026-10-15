@@ -10,6 +10,7 @@ import { userIdOf } from '../writer/collab'
 import type { Editor } from './editor'
 import { apply, viewTransform } from './geometry'
 import { newId, notesMap, type Note, type PageEntry } from './model'
+import { describe } from './render'
 import type { Viewer } from './viewer'
 
 const MAX_TEXT = 200_000
@@ -167,6 +168,19 @@ export function pdfTools(session: Session, viewer: Viewer, editor: Editor): AppT
   ]
   return {
     tools,
+    selection: () => {
+      const page = viewer.currentIndex() + 1
+      const annot = editor.selectedAnnot()
+      const text = window.getSelection()?.toString() ?? ''
+      if (annot) return { kind: 'annotation', page, annotation: { id: annot.id, type: annot.type, description: describe(annot) } }
+      return text ? { kind: 'text', page, text } : { kind: 'none', page }
+    },
+    show: (args) => {
+      const { index } = pageAt(args)
+      viewer.scrollToPage(index)
+      return { shown: true, page: index + 1 }
+    },
+    showSchema: { ...pageArg },
     info: () => ({ pages: pages().length, notes: [...notesMap(session).values()].filter((n) => !n.parent).length }),
   }
 }

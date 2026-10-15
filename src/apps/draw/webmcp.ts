@@ -86,8 +86,31 @@ export function drawTools(session: Session, api: () => any): AppTools {
       },
     },
   ]
+  const summary = (e: any, texts: Map<string, string>) => ({
+    id: e.id,
+    type: e.type,
+    ...(e.type === 'text' ? { text: e.text } : texts.has(e.id) ? { label: texts.get(e.id) } : {}),
+  })
   return {
     tools,
+    selection: () => {
+      const a = excalidraw()
+      const ids = Object.keys(a.getAppState().selectedElementIds ?? {})
+      const elements = (a.getSceneElements() as any[]).filter((e) => !e.isDeleted)
+      const texts = new Map<string, string>(elements.filter((e) => e.type === 'text' && e.containerId).map((e) => [e.containerId, e.text]))
+      const chosen = elements.filter((e) => ids.includes(e.id) && !(e.type === 'text' && e.containerId))
+      return chosen.length ? { kind: 'elements', elements: chosen.map((e) => summary(e, texts)) } : { kind: 'none' }
+    },
+    show: (args) => {
+      const a = excalidraw()
+      const id = optStr(args, 'id')
+      const element = (a.getSceneElements() as any[]).find((e) => e.id === id && !e.isDeleted)
+      if (!element) throw new Error(`No element with id "${id}"`)
+      a.updateScene({ appState: { selectedElementIds: { [element.id]: true } }, captureUpdate: CaptureUpdateAction.NEVER })
+      a.scrollToContent(element, { animate: false })
+      return { shown: true, id: element.id }
+    },
+    showSchema: { id: { type: 'string', description: 'Element to select (id from get_scene).' } },
     info: () => ({
       elements: ((api()?.getSceneElements() as any[]) ?? []).length,
       ai_changes: session.canEdit ? 'Each change is one undo step (Edit ▸ Undo) and is recorded as the AI assistant’s in the version history.' : 'none (read-only)',

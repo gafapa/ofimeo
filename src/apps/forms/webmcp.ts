@@ -20,7 +20,8 @@ const publicItem = (i: Item) => ({
   ...(i.type === 'scale' ? { min: i.min, max: i.max } : {}),
 })
 
-export function formsTools(session: Session, state: FormState): AppTools {
+// render: redraws the editor (changes with the LOCAL origin are not observed by it).
+export function formsTools(session: Session, state: FormState, render: () => void = () => {}): AppTools {
   const doc = session.doc
   const tools: OfimeoTool[] = [
     {
@@ -63,6 +64,7 @@ export function formsTools(session: Session, state: FormState): AppTools {
         if (options.length && hasOptions(type)) item.options = options.map((label) => ({ id: newId(), label }))
         const map = itemMap(item)
         doc.transact(() => itemsArray(doc).push([map]), LOCAL)
+        render()
         return { id: String(map.get('id')), position: itemsArray(doc).length }
       },
     },
@@ -88,6 +90,23 @@ export function formsTools(session: Session, state: FormState): AppTools {
   ]
   return {
     tools,
+    selection: () => {
+      const id = (document.activeElement?.closest('.fm-card[data-id]') as HTMLElement | null)?.dataset.id
+      const item = id ? readItems(doc).find((i) => i.id === id) : undefined
+      return item ? { kind: 'item', item: publicItem(item) } : { kind: 'none' }
+    },
+    show: async (args) => {
+      const id = str(args, 'id')
+      const find = () => document.querySelector<HTMLElement>(`.fm-card[data-id="${CSS.escape(id)}"]`)
+      // A question added just before is rendered on the next frames.
+      for (let i = 0; i < 30 && !find() && readItems(doc).some((item) => item.id === id); i++) await new Promise((r) => requestAnimationFrame(r))
+      const card = find()
+      if (!card) throw new Error(`No question or section with id "${id}" (use get_form)`)
+      card.scrollIntoView({ block: 'center' })
+      card.querySelector<HTMLElement>('input, textarea, [contenteditable="true"]')?.focus({ preventScroll: true })
+      return { shown: true, id }
+    },
+    showSchema: { id: { type: 'string', description: 'Question or section id from get_form.' } },
     info: () => ({
       questions: readItems(doc).filter((i) => i.kind === 'question').length,
       responses: state.priv ? responsesMap(state.priv).size : undefined,

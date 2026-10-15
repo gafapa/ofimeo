@@ -13,6 +13,8 @@ import { CHART_TYPES, normalizeSpec, parseA1, toA1, type ChartType } from './cha
 import { insertChart, listCharts } from './charts/view'
 
 const MAX_CELLS = 20_000
+// Selections up to this size are returned with their values.
+const SELECTION_CELLS = 400
 
 interface Note {
   row: number
@@ -218,6 +220,30 @@ export function sheetTools(session: Session, univerAPI: FUniver): AppTools {
 
   return {
     tools,
+    selection: () => {
+      const s = workbook().getActiveSheet()
+      const range = s.getSelection()?.getActiveRange()
+      if (!range) return { kind: 'none', sheet: s.getSheetName() }
+      const a1 = range.getA1Notation()
+      const r = parseA1(a1)
+      const cells = r ? (r.endRow - r.startRow + 1) * (r.endColumn - r.startColumn + 1) : 0
+      return {
+        kind: 'cells',
+        sheet: s.getSheetName(),
+        range: a1,
+        ...(cells && cells <= SELECTION_CELLS ? { values: range.getValues(), formulas: range.getFormulas() } : { cells }),
+      }
+    },
+    show: (args) => {
+      const s = sheetOf(args)
+      const r = parseA1(str(args, 'range'))
+      if (!r) throw new Error('Invalid range')
+      const wb = workbook()
+      if (wb.getActiveSheet().getSheetId() !== s.getSheetId()) wb.setActiveSheet(s)
+      s.getRange(toA1(r)).activate()
+      return { shown: true, sheet: s.getSheetName(), range: toA1(r) }
+    },
+    showSchema: { range: { type: 'string', description: 'A1 range to select, e.g. "B2:D9".' }, ...sheetArg },
     info: () => {
       const wb = univerAPI.getActiveWorkbook()
       return {

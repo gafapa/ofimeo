@@ -1,0 +1,18 @@
+Activity in this page ||| Actividad en esta página ||| Actividade nesta páxina
+Allow this change? ||| ¿Permitir este cambio? ||| Permitir este cambio?
+Answer ||| Responder ||| Responder
+changed ||| cambió ||| cambiou
+Do not allow ||| No permitir ||| Non permitir
+failed ||| falló ||| fallou
+not allowed ||| no permitido ||| non permitido
+read ||| leyó ||| leu
+The AI assistant asks ||| El asistente de IA pregunta ||| O asistente de IA pregunta
+The AI assistant wants to do this: ||| El asistente de IA quiere hacer esto: ||| O asistente de IA quere facer isto:
+The AI assistant’s changes were undone ||| Se han deshecho los cambios del asistente de IA ||| Desfixéronse os cambios do asistente de IA
+The assistant has not used this document yet. ||| El asistente aún no ha usado este documento. ||| O asistente aínda non usou este documento.
+The document goes back to the version saved before the AI assistant’s first change in this page. The current state is kept in the version history. ||| El documento vuelve a la versión guardada antes del primer cambio del asistente de IA en esta página. El estado actual se conserva en el historial de versiones. ||| O documento volve á versión gardada antes do primeiro cambio do asistente de IA nesta páxina. O estado actual consérvase no historial de versións.
+Undo all AI changes? ||| ¿Deshacer todos los cambios de la IA? ||| Desfacer todos os cambios da IA?
+Undo all AI changes… ||| Deshacer todos los cambios de la IA… ||| Desfacer todos os cambios da IA…
+Undo all ||| Deshacer todo ||| Desfacer todo
+Undo every change the AI assistant made in this document since the page was opened ||| Deshacer todos los cambios que el asistente de IA ha hecho en este documento desde que se abrió la página ||| Desfacer todos os cambios que o asistente de IA fixo neste documento desde que se abriu a páxina
+Undo the last change in the document (it was not made by the AI assistant) ||| Deshacer el último cambio del documento (no lo hizo el asistente de IA) ||| Desfacer o último cambio do documento (non o fixo o asistente de IA)

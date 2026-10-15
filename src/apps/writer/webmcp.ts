@@ -455,6 +455,19 @@ export function writerTools(ctx: WriterContext): AppTools {
 
   return {
     tools,
+    selection: () => {
+      const { from, to, empty } = editor.state.selection
+      const $from = editor.state.selection.$from
+      const paragraph = $from.parent.isTextblock ? $from.parent.textContent : ''
+      if (empty) return { kind: 'cursor', position: from, paragraph }
+      return { kind: 'text', from, to, text: doc().textBetween(from, to, '\n', '￼'), paragraph }
+    },
+    show: (args) => {
+      const r = range(args)
+      editor.chain().focus().setTextSelection(r).scrollIntoView().run()
+      return { shown: true, from: r.from, to: r.to }
+    },
+    showSchema: target,
     info: () => ({
       words: editor.storage.characterCount.words() as number,
       pages: ctx.pages(),

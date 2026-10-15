@@ -8,9 +8,11 @@
 //     changes (15 s without further changes, or when the page is closed).
 //   - Every call is announced to the page (event 'webmcp-activity') for the indicator.
 
+import type * as Y from 'yjs'
 import { t } from '../i18n'
 import type { Session } from '../session'
-import { saveVersion } from '../versions'
+import { restoreVersion, saveVersion, versionsArray, type Version } from '../versions'
+import { localChange } from './activity'
 
 export const AI_COLOR = '#7c3aed'
 // Pseudo Yjs client id of the assistant's writer authorship marks.
@@ -44,6 +46,8 @@ export function ensureAiAuthor(session: Session): void {
 
 interface Tracker {
   before: boolean
+  // The version saved before the assistant's first change (revert_ai_changes).
+  beforeVersion: Version | null
   timer: number
   pending: boolean
 }
@@ -52,7 +56,7 @@ const trackers = new WeakMap<Session, Tracker>()
 function tracker(session: Session): Tracker {
   let tr = trackers.get(session)
   if (!tr) {
-    const created: Tracker = { before: false, timer: 0, pending: false }
+    const created: Tracker = { before: false, beforeVersion: null, timer: 0, pending: false }
     trackers.set(session, created)
     window.addEventListener('pagehide', () => flush(session, created))
     tr = created
@@ -74,7 +78,7 @@ export function beforeAiChange(session: Session): void {
   ensureAiAuthor(session)
   if (tr.before) return
   tr.before = true
-  saveVersion(session, t('Before changes by the AI assistant'))
+  tr.beforeVersion = saveVersion(session, t('Before changes by the AI assistant'))
 }
 
 // Called after a tool changed the document.
@@ -83,4 +87,33 @@ export function afterAiChange(session: Session): void {
   tr.pending = true
   clearTimeout(tr.timer)
   tr.timer = window.setTimeout(() => flush(session, tr), 15_000)
+}
+
+// True when the assistant changed the document in this page session and its
+// "before" version can be restored.
+export const canRevertAi = (session: Session) => !!trackers.get(session)?.beforeVersion
+
+// Restores the version saved before the assistant's first change (the current
+// state is saved as a version first, so this can be undone too).
+export async function revertAiChanges(session: Session): Promise<void> {
+  const tr = trackers.get(session)
+  if (!tr?.beforeVersion) throw new Error('The AI assistant has not changed this document in this page session')
+  flush(session, tr)
+  await restoreVersion(session, tr.beforeVersion)
+  tr.before = false
+  tr.beforeVersion = null
+}
+
+const watched = new WeakSet<Session>()
+
+// Follows local changes of the document (who changed it last: activity.ts).
+export function watchLocalChanges(session: Session): void {
+  if (watched.has(session)) return
+  watched.add(session)
+  const versions = versionsArray(session.doc)
+  session.doc.on('afterTransaction', (tr: Y.Transaction) => {
+    if (!tr.local || !tr.changed.size) return
+    if (tr.changed.size === 1 && tr.changed.has(versions as never)) return
+    localChange()
+  })
 }

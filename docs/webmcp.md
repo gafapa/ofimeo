@@ -80,9 +80,41 @@ counts only.
 - **Comments** written by the assistant are signed "AI assistant (*user*)"
   (in the spreadsheet, the note text starts with it).
 
+## Confirmations, questions and limits
+
+- Tools marked *destructive* (deleting, reverting) and large changes ask the
+  user first in a dialog of the shared frame ("Allow this change?"); the
+  assistant gets an error when the user does not allow it. `undo` asks only
+  when the user changed the document after the assistant.
+- `ask_user` shows the assistant's question (with up to 4 choices or a free
+  answer) and `notify` a short notice. Dialogs are shown one at a time.
+- Arguments are limited to 1,000,000 characters per call and changes to 120
+  calls per minute.
+- Read tools are registered with WebMCP's `untrustedContentHint`: what they
+  return was written by people and may contain instructions the assistant
+  must not follow. `get_document_info` says so too.
+- The indicator's dialog lists the assistant's latest calls in the page
+  (*Activity in this page*: time, tool, read / changed / failed / not allowed)
+  and offers **Undo all AI changes…**, which restores the version saved before
+  its first change (the current state is kept as a version).
+
 ## Tools
 
-All apps: `get_document_info`.
+All apps (by access):
+
+| Tool | Access | What it does |
+| --- | --- | --- |
+| `get_document_info` | view | Title, app, access, language, versions count, app facts |
+| `get_selection` | view | What the user selected (text, cells, shapes, elements, question, page) |
+| `show` | view | Scrolls to and selects a place (app-specific arguments) |
+| `ask_user`, `notify` | view | Question to the user; short notice |
+| `list_participants` | comment | People with the document open (name, colour, access) |
+| `undo`, `redo` | edit | One step of the app's undo history |
+| `revert_ai_changes` | edit | Restores the version before the assistant's first change (confirmed) |
+
+Presentations add `next_slide`, `previous_slide`, `go_to_slide` and
+`get_speaker_notes` while this browser runs the slide show (the tool list is
+registered again when it starts and ends).
 
 | App | Read (view) | Comment | Edit |
 | --- | --- | --- | --- |
@@ -104,12 +136,14 @@ edit. Results are JSON text; failures return `isError: true` with a message.
 - `src/core/webmcp/index.ts`: `provideWebMcpTools(session, provider)`, the only
   import apps need; follows the switch and (re)registers.
 - `src/core/webmcp/state.ts`: the per-browser switch.
-- `src/core/webmcp/gate.ts`: permission gate.
+- `src/core/webmcp/gate.ts`: permission gate and confirmations.
+- `src/core/webmcp/confirm.ts`: confirmation and question dialogs.
+- `src/core/webmcp/activity.ts`: activity log, rate limit, who changed last.
 - `src/core/webmcp/registry.ts`: runtime (native or polyfill), registration,
   result format, attribution hooks.
 - `src/core/webmcp/ai.ts`: attribution (names, pseudo author, versions,
   activity events).
-- `src/core/webmcp/common.ts`: `get_document_info`.
+- `src/core/webmcp/common.ts`: the tools every app offers.
 - `src/core/webmcp/types.ts`: `OfimeoTool` (name, description, JSON schema,
   minimum `access`, `changesDocument`, `execute`) and argument helpers.
 - `src/ui/webmcp.ts`: Tools menu entry, explanation dialog, indicator
@@ -121,8 +155,11 @@ provideWebMcpTools(session, () => import('./webmcp').then((m) => m.writerTools(c
 ```
 
 A new tool is an `OfimeoTool` in the app's module with the least `access` it
-needs and `changesDocument: true` when it changes the document itself; the
-core does the rest.
+needs and `changesDocument: true` when it changes the document itself;
+`destructive` or `confirm(args)` when the user must allow it, `available()`
+when it only makes sense in some states (with `AppTools.watch`). The app's
+`AppTools` may also provide `selection`, `show` (+ `showSchema`), `undo` and
+`redo` (default: the Edit menu given to the frame). The core does the rest.
 
 ## Limitations
 

@@ -1,0 +1,18 @@
+Activity in this page ||| Activité sur cette page ||| Aktivität auf dieser Seite
+Allow this change? ||| Autoriser cette modification ? ||| Diese Änderung erlauben?
+Answer ||| Répondre ||| Antworten
+changed ||| a modifié ||| geändert
+Do not allow ||| Ne pas autoriser ||| Nicht erlauben
+failed ||| échec ||| fehlgeschlagen
+not allowed ||| non autorisé ||| nicht erlaubt
+read ||| a lu ||| gelesen
+The AI assistant asks ||| L’assistant IA demande ||| Der KI-Assistent fragt
+The AI assistant wants to do this: ||| L’assistant IA veut faire ceci : ||| Der KI-Assistent möchte Folgendes tun:
+The AI assistant’s changes were undone ||| Les modifications de l’assistant IA ont été annulées ||| Die Änderungen des KI-Assistenten wurden rückgängig gemacht
+The assistant has not used this document yet. ||| L’assistant n’a pas encore utilisé ce document. ||| Der Assistent hat dieses Dokument noch nicht verwendet.
+The document goes back to the version saved before the AI assistant’s first change in this page. The current state is kept in the version history. ||| Le document revient à la version enregistrée avant la première modification de l’assistant IA sur cette page. L’état actuel est conservé dans l’historique des versions. ||| Das Dokument kehrt zu der Version zurück, die vor der ersten Änderung des KI-Assistenten auf dieser Seite gespeichert wurde. Der aktuelle Stand bleibt im Versionsverlauf erhalten.
+Undo all AI changes? ||| Annuler toutes les modifications de l’IA ? ||| Alle KI-Änderungen rückgängig machen?
+Undo all AI changes… ||| Annuler toutes les modifications de l’IA… ||| Alle KI-Änderungen rückgängig machen…
+Undo all ||| Tout annuler ||| Alles rückgängig machen
+Undo every change the AI assistant made in this document since the page was opened ||| Annuler toutes les modifications faites par l’assistant IA dans ce document depuis l’ouverture de la page ||| Alle Änderungen rückgängig machen, die der KI-Assistent seit dem Öffnen der Seite in diesem Dokument vorgenommen hat
+Undo the last change in the document (it was not made by the AI assistant) ||| Annuler la dernière modification du document (elle n’a pas été faite par l’assistant IA) ||| Die letzte Änderung im Dokument rückgängig machen (sie stammt nicht vom KI-Assistenten)

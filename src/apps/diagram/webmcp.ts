@@ -20,6 +20,8 @@ export interface GraphEditor {
   sync: DiagramSync
   readOnly: boolean
   inBatch: <T>(fn: () => T) => T
+  undo: () => void
+  redo: () => void
 }
 
 export const SHAPES: Record<string, string> = {
@@ -92,6 +94,28 @@ export function summarize(records: CellRecord[]) {
     }
   }
   return { shapes, connectors }
+}
+
+// The selected shapes and connectors of the page shown.
+export function selectedCells(editor: GraphEditor) {
+  return editor.graph.getSelectionCells().map((c) => ({
+    id: c.getId(),
+    kind: c.isEdge() ? 'connector' : 'shape',
+    label: htmlToText(String(c.getValue() ?? '')),
+    ...(c.isEdge() ? { source: c.getTerminal(true)?.getId() ?? null, target: c.getTerminal(false)?.getId() ?? null } : {}),
+  }))
+}
+
+// Shows a page (and selects an object of it).
+export function showCell(editor: GraphEditor, args: ToolArgs, key = 'page') {
+  goToPage(editor, args, key)
+  const id = optStr(args, 'id')
+  if (id) {
+    const cell = cellById(editor, id)
+    editor.graph.setSelectionCell(cell)
+    editor.graph.scrollCellToVisible(cell)
+  }
+  return { shown: true, [key]: editor.sync.pageList().findIndex((p) => p.id === editor.sync.page) + 1, ...(id ? { id } : {}) }
 }
 
 // ---------- Diagram tools ----------
@@ -219,6 +243,15 @@ export function diagramTools(session: Session, editor: GraphEditor): AppTools {
 
   return {
     tools,
+    selection: () => {
+      const cells = selectedCells(editor)
+      const page = sync.pageList().findIndex((p) => p.id === sync.page) + 1
+      return cells.length ? { kind: 'shapes', page, cells } : { kind: 'none', page }
+    },
+    show: (args) => showCell(editor, args),
+    showSchema: { ...pageArg, id: { type: 'string', description: 'Object to select (id from get_diagram).' } },
+    undo: editor.undo,
+    redo: editor.redo,
     info: () => ({
       pages: sync.pageList().map((p) => p.name),
       page_shown: sync.pageList().findIndex((p) => p.id === sync.page) + 1,

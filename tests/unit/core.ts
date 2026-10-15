@@ -6,6 +6,9 @@ import { clearMoodleAccount, loadMoodleAccount, saveMoodleAccount, type MoodleAc
 import * as Y from 'yjs'
 import { Channel, RoomProvider } from '../../src/core/network'
 import { Awareness } from 'y-protocols/awareness'
+import { checkRate, localChange, aiCallStarted, aiCallEnded, userChangedLast, resetActivity, summarizeArgs, MAX_CHANGES_PER_MINUTE } from '../../src/core/webmcp/activity'
+import { allowedTools, confirmationOf } from '../../src/core/webmcp/gate'
+import type { OfimeoTool } from '../../src/core/webmcp/types'
 
 class TestStorage {
   values = new Map<string, string>()
@@ -179,6 +182,38 @@ export async function runTests(): Promise<void> {
       assert.equal(doc.getText('t').toString(), 'synthetic local edit')
       await room.makeAction('synthetic').send(new Uint8Array([1]))
     } finally { await room.destroy(); awareness.destroy(); doc.destroy() }
+  })
+  await check('WebMCP: tools are offered by access level', () => {
+    const tool = (name: string, access: OfimeoTool['access']): OfimeoTool => ({ name, description: '', inputSchema: { type: 'object', properties: {} }, access, execute: () => null })
+    const all = [tool('read', 'view'), tool('note', 'comment'), tool('change', 'edit')]
+    assert.deepEqual(allowedTools({ access: 'view' }, all).map((x) => x.name), ['read'])
+    assert.deepEqual(allowedTools({ access: 'comment' }, all).map((x) => x.name), ['read', 'note'])
+    assert.deepEqual(allowedTools({ access: 'edit' }, all).map((x) => x.name), ['read', 'note', 'change'])
+  })
+  await check('WebMCP: destructive and large changes are confirmed', () => {
+    const base: OfimeoTool = { name: 'delete_rows', description: '', inputSchema: { type: 'object', properties: {} }, access: 'edit', execute: () => null }
+    assert.equal(confirmationOf(base, {}), null)
+    assert.match(confirmationOf({ ...base, destructive: true }, { rows: '2:4' }) ?? '', /delete_rows .*2:4/)
+    assert.equal(confirmationOf({ ...base, confirm: (a) => (Number(a.n) > 10 ? 'many' : null) }, { n: 3 }), null)
+    assert.equal(confirmationOf({ ...base, confirm: (a) => (Number(a.n) > 10 ? 'many' : null) }, { n: 30 }), 'many')
+  })
+  await check('WebMCP: changes are rate limited', () => {
+    resetActivity()
+    const now = 1_000_000
+    for (let i = 0; i < MAX_CHANGES_PER_MINUTE; i++) checkRate(now + i)
+    assert.throws(() => checkRate(now + MAX_CHANGES_PER_MINUTE), /Too many changes/)
+    checkRate(now + 61_000 + MAX_CHANGES_PER_MINUTE)
+    assert.ok(summarizeArgs({ text: 'x'.repeat(1000) }).length <= 200)
+  })
+  await check('WebMCP: knows whether the user changed the document after the assistant', () => {
+    resetActivity()
+    aiCallStarted()
+    localChange(Date.now())
+    aiCallEnded(true)
+    assert.equal(userChangedLast(), false)
+    localChange(Date.now() + 5000)
+    assert.equal(userChangedLast(), true)
+    resetActivity()
   })
   console.log(`${count}/${count} core tests passed`)
 }

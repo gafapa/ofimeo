@@ -609,7 +609,16 @@ export function setupSheetA11y(o: SheetA11yOptions): SheetA11y {
       col = cur?.actualColumn ?? 0
       measure()
       render()
-      cellNode(row, col)?.focus()
+      const target = cellNode(row, col)
+      target?.focus()
+      // Univer may take the focus back while it settles (slow devices): the
+      // table keeps it unless the user moved it somewhere else.
+      const keep = () => {
+        const active = document.activeElement
+        if (tableOn && target?.isConnected && active !== target && (!active || active === document.body || o.host.contains(active))) target.focus()
+      }
+      requestAnimationFrame(keep)
+      setTimeout(keep, 300)
       const ws = sheet()
       if (ws) announce(`${t('Accessible table view')}. ${t('Sheet {name}', { name: ws.getSheetName() })}. ${cellText(ws, row, col)}`)
     } else {

@@ -221,8 +221,8 @@ Each dictionary is served as a separate data file next to its license (dictionar
 | @mermaid-js/parser | 1.2.1 | MIT | https://github.com/mermaid-js/mermaid |
 | @modelcontextprotocol/core | 2.0.0 | MIT | https://github.com/modelcontextprotocol/typescript-sdk |
 | @modelcontextprotocol/server | 2.0.0 | MIT | https://github.com/modelcontextprotocol/typescript-sdk |
-| @napi-rs/canvas | 1.0.9 | MIT | https://github.com/Brooooooklyn/canvas |
-| @napi-rs/canvas-win32-x64-msvc | 1.0.9 | MIT | https://github.com/Brooooooklyn/canvas |
+| @napi-rs/canvas | 1.0.11 | MIT | https://github.com/Brooooooklyn/canvas |
+| @napi-rs/canvas-win32-x64-msvc | 1.0.11 | MIT | https://github.com/Brooooooklyn/canvas |
 | @noble/ed25519 | 3.2.0 | MIT | https://github.com/paulmillr/noble-ed25519 |
 | @noble/secp256k1 | 3.2.0 | MIT | https://github.com/paulmillr/noble-secp256k1 |
 | @parcel/watcher | 2.6.0 | MIT | https://github.com/parcel-bundler/watcher |
@@ -644,7 +644,7 @@ Each dictionary is served as a separate data file next to its license (dictionar
 | path-is-absolute | 1.0.1 | MIT | https://github.com/sindresorhus/path-is-absolute |
 | path-key | 3.1.1 | MIT | https://github.com/sindresorhus/path-key |
 | pdf-lib | 1.17.1 | MIT | https://github.com/Hopding/pdf-lib |
-| pdfjs-dist | 6.3.289 | Apache-2.0 | https://github.com/mozilla/pdf.js |
+| pdfjs-dist | 6.4.299 | Apache-2.0 | https://github.com/mozilla/pdf.js |
 | perfect-freehand | 1.2.0 | MIT | https://github.com/steveruizok/perfect-freehand |
 | pica | 7.1.1 | MIT | https://github.com/nodeca/pica |
 | picomatch | 4.0.7 | MIT | https://github.com/micromatch/picomatch |
@@ -998,8 +998,8 @@ The following 302 packages are licensed under the MIT License with the standard 
 - @mcp-b/webmcp-types 5.1.0: Copyright (c) 2025 mcp-b contributors
 - @mermaid-js/parser 0.6.3: Copyright (c) 2023 Yokozuna59
 - @mermaid-js/parser 1.2.1: Copyright (c) 2023 Yokozuna59
-- @napi-rs/canvas 1.0.9: Copyright (c) 2020 lynweklm@gmail.com
-- @napi-rs/canvas-win32-x64-msvc 1.0.9: Copyright (c) the @napi-rs/canvas-win32-x64-msvc authors (no license file in the package)
+- @napi-rs/canvas 1.0.11: Copyright (c) 2020 lynweklm@gmail.com
+- @napi-rs/canvas-win32-x64-msvc 1.0.11: Copyright (c) the @napi-rs/canvas-win32-x64-msvc authors (no license file in the package)
 - @noble/ed25519 3.2.0: Copyright (c) 2019 Paul Miller (https://paulmillr.com)
 - @noble/secp256k1 3.2.0: Copyright (c) 2019 Paul Miller (https://paulmillr.com)
 - @parcel/watcher 2.6.0: Copyright (c) 2017-present Devon Govett
@@ -1366,7 +1366,7 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 
 ### @chevrotain/cst-dts-gen 11.0.3 and 66 more
 
-Applies to: @chevrotain/cst-dts-gen 11.0.3, @chevrotain/gast 11.0.3, @chevrotain/regexp-to-ast 11.0.3, @chevrotain/types 11.0.3, @chevrotain/types 11.1.2, @chevrotain/utils 11.0.3, @grpc/grpc-js 1.14.5, @grpc/proto-loader 0.8.1, @maxgraph/core 0.24.0, @univerjs/core 1.0.3, @univerjs/data-validation 1.0.3, @univerjs/design 1.0.3, @univerjs/docs 1.0.3, @univerjs/docs-drawing 1.0.3, @univerjs/docs-ui 1.0.3, @univerjs/drawing 1.0.3, @univerjs/drawing-ui 1.0.3, @univerjs/engine-formula 1.0.3, @univerjs/engine-render 1.0.3, @univerjs/find-replace 1.0.3, @univerjs/network 1.0.3, @univerjs/preset-sheets-conditional-formatting 1.0.3, @univerjs/preset-sheets-core 1.0.3, @univerjs/preset-sheets-data-validation 1.0.3, @univerjs/preset-sheets-drawing 1.0.3, @univerjs/preset-sheets-filter 1.0.3, @univerjs/preset-sheets-find-replace 1.0.3, @univerjs/preset-sheets-hyper-link 1.0.3, @univerjs/preset-sheets-note 1.0.3, @univerjs/preset-sheets-sort 1.0.3, @univerjs/preset-sheets-table 1.0.3, @univerjs/presets 1.0.3, @univerjs/protocol 1.0.3, @univerjs/rpc 1.0.3, @univerjs/sheets 1.0.3, @univerjs/sheets-conditional-formatting 1.0.3, @univerjs/sheets-conditional-formatting-ui 1.0.3, @univerjs/sheets-data-validation 1.0.3, @univerjs/sheets-data-validation-ui 1.0.3, @univerjs/sheets-drawing 1.0.3, @univerjs/sheets-drawing-ui 1.0.3, @univerjs/sheets-filter 1.0.3, @univerjs/sheets-filter-ui 1.0.3, @univerjs/sheets-find-replace 1.0.3, @univerjs/sheets-formula 1.0.3, @univerjs/sheets-formula-ui 1.0.3, @univerjs/sheets-hyper-link 1.0.3, @univerjs/sheets-hyper-link-ui 1.0.3, @univerjs/sheets-note 1.0.3, @univerjs/sheets-note-ui 1.0.3, @univerjs/sheets-numfmt 1.0.3, @univerjs/sheets-numfmt-ui 1.0.3, @univerjs/sheets-sort 1.0.3, @univerjs/sheets-sort-ui 1.0.3, @univerjs/sheets-table 1.0.3, @univerjs/sheets-table-ui 1.0.3, @univerjs/sheets-ui 1.0.3, @univerjs/telemetry 1.0.3, @univerjs/themes 1.0.3, @univerjs/ui 1.0.3, browser-fs-access 0.29.1, chevrotain 11.0.3, crc-32 1.2.2, detect-libc 2.1.2, long 5.3.2, pdfjs-dist 6.3.289, pwacompat 2.0.17
+Applies to: @chevrotain/cst-dts-gen 11.0.3, @chevrotain/gast 11.0.3, @chevrotain/regexp-to-ast 11.0.3, @chevrotain/types 11.0.3, @chevrotain/types 11.1.2, @chevrotain/utils 11.0.3, @grpc/grpc-js 1.14.5, @grpc/proto-loader 0.8.1, @maxgraph/core 0.24.0, @univerjs/core 1.0.3, @univerjs/data-validation 1.0.3, @univerjs/design 1.0.3, @univerjs/docs 1.0.3, @univerjs/docs-drawing 1.0.3, @univerjs/docs-ui 1.0.3, @univerjs/drawing 1.0.3, @univerjs/drawing-ui 1.0.3, @univerjs/engine-formula 1.0.3, @univerjs/engine-render 1.0.3, @univerjs/find-replace 1.0.3, @univerjs/network 1.0.3, @univerjs/preset-sheets-conditional-formatting 1.0.3, @univerjs/preset-sheets-core 1.0.3, @univerjs/preset-sheets-data-validation 1.0.3, @univerjs/preset-sheets-drawing 1.0.3, @univerjs/preset-sheets-filter 1.0.3, @univerjs/preset-sheets-find-replace 1.0.3, @univerjs/preset-sheets-hyper-link 1.0.3, @univerjs/preset-sheets-note 1.0.3, @univerjs/preset-sheets-sort 1.0.3, @univerjs/preset-sheets-table 1.0.3, @univerjs/presets 1.0.3, @univerjs/protocol 1.0.3, @univerjs/rpc 1.0.3, @univerjs/sheets 1.0.3, @univerjs/sheets-conditional-formatting 1.0.3, @univerjs/sheets-conditional-formatting-ui 1.0.3, @univerjs/sheets-data-validation 1.0.3, @univerjs/sheets-data-validation-ui 1.0.3, @univerjs/sheets-drawing 1.0.3, @univerjs/sheets-drawing-ui 1.0.3, @univerjs/sheets-filter 1.0.3, @univerjs/sheets-filter-ui 1.0.3, @univerjs/sheets-find-replace 1.0.3, @univerjs/sheets-formula 1.0.3, @univerjs/sheets-formula-ui 1.0.3, @univerjs/sheets-hyper-link 1.0.3, @univerjs/sheets-hyper-link-ui 1.0.3, @univerjs/sheets-note 1.0.3, @univerjs/sheets-note-ui 1.0.3, @univerjs/sheets-numfmt 1.0.3, @univerjs/sheets-numfmt-ui 1.0.3, @univerjs/sheets-sort 1.0.3, @univerjs/sheets-sort-ui 1.0.3, @univerjs/sheets-table 1.0.3, @univerjs/sheets-table-ui 1.0.3, @univerjs/sheets-ui 1.0.3, @univerjs/telemetry 1.0.3, @univerjs/themes 1.0.3, @univerjs/ui 1.0.3, browser-fs-access 0.29.1, chevrotain 11.0.3, crc-32 1.2.2, detect-libc 2.1.2, long 5.3.2, pdfjs-dist 6.4.299, pwacompat 2.0.17
 
 ````text
 Apache License 2.0: see the full text under "Apache License 2.0" at the top of this section.

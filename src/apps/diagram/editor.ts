@@ -110,7 +110,7 @@ export function createDiagramEditor(session: Session, options: EditorOptions) {
   const selectChanged = (_sender: unknown, evt: EventObject) => {
     const edit = evt.getProperty('edit') as UndoableEdit
     const cells = new Set<Cell>()
-    for (const change of edit.changes as Record<string, unknown>[]) {
+    for (const change of edit.changes as unknown as Record<string, unknown>[]) {
       const cell = (change.cell ?? change.child) as Cell | undefined
       if (cell && model.getCell(cell.getId()!) === cell) cells.add(cell)
     }

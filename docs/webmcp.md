@@ -27,16 +27,17 @@ provider handles what it reads (see the *Note on artificial intelligence* in
 ## Runtime
 
 `src/core/webmcp/registry.ts` uses the browser's native `document.modelContext`
-(or the older `navigator.modelContext`) when present. Otherwise it loads the
-MIT-licensed [`@mcp-b/global`](https://www.npmjs.com/package/@mcp-b/global)
-(pinned, 5.1.0; types from `@mcp-b/webmcp-types` 5.1.0), which implements the
-same API and bridges it to MCP-B browser extensions. Its transport is
-restricted to the page's own origin (`tabServer.allowedOrigins = [origin]`)
-and the iframe transport is off, so a page embedding Ofimeo cannot call the
-tools. Tools are registered with `registerTool(tool, { signal })` and removed by
-aborting the signal (when the switch is turned off). The polyfill also installs
-`navigator.modelContextTesting` (`listTools()`, `executeTool(name, json)`),
-which the end-to-end tests use.
+when present. Otherwise it loads the MIT-licensed
+[`@mcp-b/global`](https://www.npmjs.com/package/@mcp-b/global) (pinned, 6.0.0;
+types from `@mcp-b/webmcp-types` 6.0.0, which follows the standard
+`webmcp-types`), which installs the same API and bridges it to MCP-B browser
+extensions. Its transport is restricted to the page's own origin
+(`tabServer.allowedOrigins = [origin]`) and the iframe transport is off, so a
+page embedding Ofimeo cannot call the tools. Tools are registered with
+`registerTool(tool, { signal })` and removed by aborting the signal (when the
+switch is turned off). The end-to-end tests list and call them through the
+standard `getTools()` and `executeTool(tool, input)`, which return the result
+serialized as JSON.
 
 ## Permissions
 

@@ -12,7 +12,7 @@ test('writer: turned on from Tools, the assistant reads the text and its changes
 
   // Off by default: no indicator and no tools.
   await expect(page.locator('.webmcp-indicator')).toBeHidden()
-  expect(await page.evaluate(() => 'modelContextTesting' in navigator)).toBe(false)
+  expect(await page.evaluate(() => !!(document as unknown as { modelContext?: unknown }).modelContext)).toBe(false)
 
   await menu(page, 'Tools', 'Allow AI assistants (WebMCP)…')
   const dialog = page.locator('dialog[open]')

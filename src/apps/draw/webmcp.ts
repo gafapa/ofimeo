@@ -7,7 +7,8 @@
 import { CaptureUpdateAction, convertToExcalidrawElements, newElementWith, restoreElements } from '@excalidraw/excalidraw'
 import { t } from '../../core/i18n'
 import type { Session } from '../../core/session'
-import { num, optNum, optStr, str, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
+import type * as Y from 'yjs'
+import { imageResult, num, optNum, optStr, str, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
 
 const TYPES = ['rectangle', 'ellipse', 'diamond', 'text', 'arrow', 'line'] as const
 
@@ -181,6 +182,21 @@ export function drawTools(session: Session, api: () => any): AppTools {
   })
   return {
     tools,
+    render: async () => {
+      const { exportDrawing } = await import('./app')
+      return imageResult(await exportDrawing(excalidraw(), 'png'), 'The whole drawing')
+    },
+    renderSchema: {},
+    serialize: (doc: Y.Doc) => {
+      const elements = [...doc.getMap<any>('draw-elements').values()].filter((e) => !e.isDeleted)
+      const labels = new Map(elements.filter((e) => e.type === 'text' && e.containerId).map((e) => [e.containerId, e.text]))
+      return elements
+        .filter((e) => !(e.type === 'text' && e.containerId))
+        .sort((a, b) => (String(a.index ?? '') < String(b.index ?? '') ? -1 : 1))
+        .map((e) => `${e.type}${e.type === 'text' ? ` “${e.text}”` : labels.has(e.id) ? ` “${labels.get(e.id)}”` : ''}`)
+        .join('\n')
+    },
+    paragraphs: () => live().filter((e) => e.type === 'text' && e.text?.trim()).map((e) => ({ where: `element ${e.containerId ?? e.id}`, text: e.text })),
     group: async (fn) => {
       pending = [...excalidraw().getSceneElementsIncludingDeleted()]
       try {

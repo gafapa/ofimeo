@@ -12,6 +12,10 @@ import { aiLabel, canRevertAi, revertAiChanges } from './ai'
 import { askUser } from './confirm'
 import { allowed, confirmationOf, summaryOf } from './gate'
 import { listProposals } from './proposals'
+import { seeTools } from './see'
+import { absoluteUrl } from '../router'
+import type { DocType } from '../store'
+import { CONTENT_HELP, CREATABLE, createFromContent } from './create'
 import { isReviewMode } from './state'
 import type { EditActions } from './index'
 import { bool, str, type AppTools, type OfimeoTool, type SelectionInfo, type ToolArgs } from './types'
@@ -279,6 +283,43 @@ export function commonTools(session: Session, apps: AppTools[], edit: EditAction
           .map((p) => ({ id: p.id, tool: p.tool, summary: p.summary, status: p.status, ...(p.error ? { error: p.error } : {}), ...(p.status === 'accepted' ? { result: p.result } : {}) })),
     },
   )
+
+  tools.push(...seeTools(session, apps))
+
+  tools.push({
+    name: 'create_document',
+    description: `Creates a NEW document of the user's (in this browser's library, with full edit access) from the content you give, and opens it in a new tab: e.g. a quiz from this text, slides from an outline, a summary as a document. It does not change this document and you never get its link. The user confirms it. Content by app: ${CONTENT_HELP}`,
+    inputSchema: {
+      type: 'object',
+      properties: {
+        app: { type: 'string', enum: CREATABLE },
+        title: { type: 'string' },
+        markdown: { type: 'string' },
+        sheets: { type: 'array', items: { type: 'object' } },
+        slides: { type: 'array', items: { type: 'object' } },
+        drawio: { type: 'string' },
+        elements: { type: 'array', items: { type: 'object' } },
+        description: { type: 'string' },
+        quiz: { type: 'boolean' },
+        questions: { type: 'array', items: { type: 'object' } },
+        sections: { type: 'array', items: { type: 'object' } },
+      },
+      required: ['app', 'title'],
+    },
+    access: 'view',
+    readOnly: false,
+    untrusted: false,
+    confirm: (args) => t('Create a new document “{title}” ({kind}) and open it in a new tab', { title: String(args.title ?? ''), kind: CREATABLE.includes(args.app as DocType) ? appInfo(args.app as DocType).name : String(args.app ?? '') }),
+    execute: async (args) => {
+      const app = str(args, 'app') as DocType
+      if (!CREATABLE.includes(app)) throw new Error(`app must be one of ${CREATABLE.join(', ')}`)
+      const title = str(args, 'title').trim() || appInfo(app).untitled
+      const path = await createFromContent(app, title, args)
+      const tab = window.open(absoluteUrl(path), '_blank')
+      if (tab) tab.opener = null
+      return { created: true, app, title, opened: !!tab, ...(tab ? {} : { note: 'The browser did not open a new tab: the document is in the library on the home screen.' }) }
+    },
+  })
 
   if (show) {
     tools.push({

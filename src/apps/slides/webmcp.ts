@@ -10,8 +10,9 @@
 import { t } from '../../core/i18n'
 import type { Session } from '../../core/session'
 import { AI_COLOR, aiName } from '../../core/webmcp/ai'
-import { htmlToText, optNum, optStr, str, textToHtml, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
-import { cellById, goToPage, groupGraph, movePageTo, objectTools, selectedCells, setLabel, showCell, showPageSafely, summarize, type GraphEditor } from '../diagram/webmcp'
+import { htmlToText, imageResult, optNum, optStr, str, textToHtml, type AccessibilityIssue, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
+import { cellById, goToPage, groupGraph, labelParts, movePageTo, objectTools, pageLines, selectedCells, setLabel, showCell, showPageSafely, summarize, type GraphEditor } from '../diagram/webmcp'
+import { DiagramSync } from '../diagram/sync'
 import { parseStyle, type CellRecord } from '../diagram/model'
 import { userIdOf } from '../writer/collab'
 import { slideCommentsMap, type SlideComment } from './comments'
@@ -295,6 +296,50 @@ export function slidesTools(session: Session, editor: GraphEditor, presentation?
       return cells.length ? { kind: 'objects', slide, objects: cells } : { kind: 'none', slide }
     },
     group: (fn) => groupGraph(editor, fn),
+    render: async (args) => {
+      const [{ readPresentation }, { SlideRenderer }, { parseBackground }, { svgToPng }, { svgScale }] = await Promise.all([
+        import('./index'),
+        import('./render'),
+        import('./model'),
+        import('../diagram/export'),
+        import('../../core/webmcp/render'),
+      ])
+      const data = readPresentation(session)
+      const n = Math.round(optNum(args, 'slide') ?? slides().findIndex((p) => p.id === sync.page) + 1)
+      const slide = data.slides[n - 1]
+      if (!slide) throw new Error(`There is no slide ${n} (there are ${data.slides.length})`)
+      const renderer = new SlideRenderer(() => data.theme)
+      try {
+        await renderer.prepare(slide.cells)
+        const svg = renderer.render({ cells: slide.cells, background: parseBackground(slide.background, data.theme) }, data.width, data.height)
+        return imageResult(await svgToPng(svg, svgScale(data.width, data.height)), `Slide ${n} of ${data.slides.length}`)
+      } finally {
+        renderer.destroy()
+      }
+    },
+    renderSchema: { ...slideArg },
+    serialize: (ydoc) =>
+      DiagramSync.readPages(ydoc)
+        .map((p, i) => [`## Slide ${i + 1}`, ...pageLines(p.cells), ...(notesText(ydoc, p.id).toString().trim() ? [`notes: ${notesText(ydoc, p.id).toString().trim()}`] : [])].join('\n'))
+        .join('\n'),
+    paragraphs: () => [
+      ...labelParts(doc, 'slide'),
+      ...slides()
+        .map((p, i) => ({ where: `slide ${i + 1} · speaker notes`, text: notesText(doc, p.id).toString() }))
+        .filter((p) => p.text.trim()),
+    ],
+    accessibility: () => {
+      const issues: AccessibilityIssue[] = []
+      slides().forEach((p, i) => {
+        const items = texts(p.id)
+        if (!items.some((x) => x.role === 'title' && x.text.trim())) issues.push({ where: `slide ${i + 1}`, problem: 'The slide has no title: screen readers and the slide list identify slides by it.', fix: `set_text {"slide": ${i + 1}, "role": "title", "text": "…"}` })
+        const pictures = sync.pageRecords(p.id).filter((r) => r.vertex && /(^|;)image=|shape=image/.test(r.style ?? '')).length
+        if (pictures) issues.push({ where: `slide ${i + 1}`, problem: `${pictures} picture(s) without a description: describe them in the speaker notes or in a text on the slide.` })
+        const words = items.map((x) => x.text).join(' ').split(/\s+/).filter(Boolean).length
+        if (words > 120) issues.push({ where: `slide ${i + 1}`, problem: `Much text on one slide (${words} words): it is hard to read when presenting.` })
+      })
+      return issues
+    },
     show: (args) => showCell(editor, args, 'slide'),
     showSchema: { ...slideArg, id: { type: 'string', description: 'Object to select (id from get_slide).' } },
     undo: editor.undo,

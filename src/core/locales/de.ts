@@ -2903,6 +2903,8 @@ const de: Record<string, string> = {
   'Review the assistant’s changes before they are applied': 'Änderungen des Assistenten vor dem Anwenden prüfen',
   'the selected text': 'den ausgewählten Text',
   'Write values from {cell} in {sheet}': 'Werte ab {cell} in {sheet} schreiben',
+  'Create a new document “{title}” ({kind}) and open it in a new tab': 'Ein neues Dokument „{title}“ ({kind}) erstellen und in einem neuen Tab öffnen',
+  'Describe picture {n}: “{text}”': 'Bild {n} beschreiben: „{text}“',
 }
 
 export default de

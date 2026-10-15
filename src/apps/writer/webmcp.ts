@@ -7,12 +7,12 @@
 
 import type { JSONContent } from '@tiptap/core'
 import type { Mark, Node as PMNode } from '@tiptap/pm/model'
-import { yUndoPluginKey } from '@tiptap/y-tiptap'
+import { yUndoPluginKey, yXmlFragmentToProseMirrorRootNode } from '@tiptap/y-tiptap'
 import type * as Y from 'yjs'
 import { t } from '../../core/i18n'
 import { AI_CLIENT, AI_COLOR, AI_USER_ID, aiName } from '../../core/webmcp/ai'
 import { groupYUndo } from '../../core/webmcp/undo'
-import { bool, num, optNum, optStr, str, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
+import { bool, imageResult, num, optNum, optStr, str, type AccessibilityIssue, type AppTools, type OfimeoTool, type TextPart, type ToolArgs } from '../../core/webmcp/types'
 import type { WriterContext } from './app'
 import { commentsMapOf, userIdOf } from './collab'
 import { collectSuggestions } from './editor/suggestions'
@@ -177,6 +177,76 @@ function findAll(doc: PMNode, query: string, matchCase = false): Match[] {
     }
   })
   return out
+}
+
+// ---------- Checks ----------
+
+const OBJECT_CHAR = String.fromCharCode(0xfffc)
+
+// Text blocks with where they are (for spelling): "paragraph 3: “First words…”".
+function textParts(doc: PMNode): TextPart[] {
+  const parts: TextPart[] = []
+  let n = 0
+  doc.descendants((node, _pos, parent) => {
+    if (!node.isTextblock) return true
+    n++
+    // The visible text (without suggested deletions); objects as U+FFFC.
+    let text = ''
+    node.forEach((child) => {
+      if (!child.marks.some((m) => m.type.name === 'deletion')) text += child.isText ? child.text : OBJECT_CHAR
+    })
+    const start = text.trim().slice(0, 40)
+    const context = node.type.name === 'heading' ? 'heading' : parent?.type.name === 'tableCell' || parent?.type.name === 'tableHeader' ? 'table' : parent?.type.name === 'listItem' || parent?.type.name === 'taskItem' ? 'list' : 'paragraph'
+    parts.push({ where: `paragraph ${n}: “${start}${text.length > 40 ? '…' : ''}”`, text, context })
+    return false
+  })
+  return parts
+}
+
+// Images in document order (their number is the "image" argument of set_alt_text).
+function images(doc: PMNode): { node: PMNode; pos: number }[] {
+  const list: { node: PMNode; pos: number }[] = []
+  doc.descendants((node, pos) => {
+    if (node.type.name === 'image') list.push({ node, pos })
+  })
+  return list
+}
+
+function accessibilityIssues(doc: PMNode, words: number): AccessibilityIssue[] {
+  const issues: AccessibilityIssue[] = []
+  images(doc).forEach(({ node }, i) => {
+    if (!String(node.attrs.alt ?? '').trim()) issues.push({ where: `image ${i + 1}`, problem: 'The picture has no description (alternative text).', fix: `set_alt_text {"image": ${i + 1}, "text": "…"}` })
+  })
+  let previous = 0
+  let headings = 0
+  let tables = 0
+  doc.descendants((node) => {
+    if (node.type.name === 'heading') {
+      headings++
+      const level = Number(node.attrs.level) || 1
+      if (previous && level > previous + 1) issues.push({ where: `heading “${node.textContent.slice(0, 60)}”`, problem: `Heading level ${level} after level ${previous}: a level is skipped.`, fix: `apply_heading {"match": "${node.textContent.slice(0, 40)}", "level": ${previous + 1}}` })
+      if (!node.textContent.trim()) issues.push({ where: 'an empty heading', problem: 'A heading has no text.' })
+      previous = level
+      return false
+    }
+    if (node.type.name === 'table') {
+      tables++
+      const firstRow = node.firstChild
+      let header = false
+      firstRow?.forEach((cell) => (header ||= cell.type.name === 'tableHeader'))
+      if (!header) issues.push({ where: `table ${tables}`, problem: 'The table has no header row.' })
+      return false
+    }
+    if (node.isText) {
+      const link = node.marks.find((m) => m.type.name === 'link')
+      if (link && /^(here|click here|aquí|pincha aquí|haz clic aquí|aquí|ici|cliquez ici|hier)$/i.test(node.text?.trim() ?? '')) {
+        issues.push({ where: `link “${node.text}”`, problem: 'The link text does not say where it goes.' })
+      }
+    }
+    return true
+  })
+  if (!headings && words > 300) issues.push({ where: 'document', problem: 'A long document without headings is hard to navigate with a screen reader.', fix: 'apply_heading on the section titles' })
+  return issues
 }
 
 // ---------- Tools ----------
@@ -401,6 +471,27 @@ export function writerTools(ctx: WriterContext): AppTools {
       },
     },
     {
+      name: 'set_alt_text',
+      description: 'Sets the description (alternative text) of a picture, read by screen readers: "image" is its number in the document (1 = first, see check_accessibility). Applied directly; one undo step.',
+      inputSchema: { type: 'object', properties: { image: { type: 'integer', minimum: 1 }, text: { type: 'string' } }, required: ['image', 'text'] },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Describe picture {n}: “{text}”', { n: String(args.image), text: String(args.text ?? '').slice(0, 80) }),
+      execute: (args) => {
+        requireEditable()
+        const n = Math.round(num(args, 'image'))
+        const found = images(doc())[n - 1]
+        if (!found) throw new Error(`There is no picture ${n} (there are ${images(doc()).length})`)
+        const alt = str(args, 'text').trim()
+        // Attributes are not tracked by suggestions: applied directly, one undo step.
+        if (!grouping) undoManager()?.stopCapturing()
+        editor.view.dispatch(editor.state.tr.setNodeMarkup(found.pos, undefined, { ...found.node.attrs, alt }))
+        if (!grouping) undoManager()?.stopCapturing()
+        if (String(images(doc())[n - 1]?.node.attrs.alt ?? '') !== alt) throw new Error('The description could not be set')
+        return { image: n, alt }
+      },
+    },
+    {
       name: 'apply_heading',
       description:
         'Turns the paragraph(s) containing the text (match or from/to) into a heading of level 1–6, or back into normal text with level 0. Applied directly (headings are not tracked as suggestions); undoable in one step.',
@@ -504,6 +595,20 @@ export function writerTools(ctx: WriterContext): AppTools {
       return { shown: true, from: r.from, to: r.to }
     },
     showSchema: target,
+    render: async (args) => {
+      const [{ exportPdf }, { openPdf }, { pdfPageToPng }] = await Promise.all([import('./pdf'), import('../pdf/pdfjs'), import('../../core/webmcp/render')])
+      const pdf = await openPdf(new Uint8Array(await (await exportPdf(ctx)).arrayBuffer()))
+      try {
+        const n = Math.max(1, Math.min(pdf.numPages, Math.round(num(args, 'page', 1))))
+        return imageResult(await pdfPageToPng(await pdf.getPage(n)), `Page ${n} of ${pdf.numPages}`)
+      } finally {
+        void pdf.loadingTask.destroy()
+      }
+    },
+    renderSchema: { page: { type: 'integer', minimum: 1, description: 'Page number (1 = first; default 1).' } },
+    serialize: (ydoc) => toMarkdown(yXmlFragmentToProseMirrorRootNode(ydoc.getXmlFragment('body'), editor.schema)),
+    paragraphs: () => textParts(doc()),
+    accessibility: () => accessibilityIssues(doc(), editor.storage.characterCount.words() as number),
     info: () => ({
       words: editor.storage.characterCount.words() as number,
       pages: ctx.pages(),

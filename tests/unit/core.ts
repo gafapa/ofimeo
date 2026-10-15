@@ -11,6 +11,7 @@ import { allowedTools, confirmationOf } from '../../src/core/webmcp/gate'
 import type { OfimeoTool } from '../../src/core/webmcp/types'
 import { acceptAll, acceptProposal, listProposals, pendingProposals, propose, rejectProposal } from '../../src/core/webmcp/proposals'
 import type { Session as OfimeoSession } from '../../src/core/session'
+import { describeDiff, diffLines } from '../../src/core/webmcp/diff'
 
 class TestStorage {
   values = new Map<string, string>()
@@ -232,6 +233,18 @@ export async function runTests(): Promise<void> {
     assert.deepEqual(listProposals(fake).map((p) => [p.id, p.status]), [[a.id, 'accepted'], [b.id, 'failed'], [c.id, 'rejected']])
     assert.equal(listProposals(fake)[1].error, 'nope')
     await assert.rejects(acceptProposal(fake, a.id), /No pending proposal/)
+  })
+  await check('WebMCP: line differences', () => {
+    assert.deepEqual(diffLines(['a', 'b', 'c'], ['a', 'x', 'c']), [{ op: '-', line: 'b' }, { op: '+', line: 'x' }])
+    assert.deepEqual(diffLines(['a'], ['a', 'b']), [{ op: '+', line: 'b' }])
+    assert.deepEqual(diffLines(['a', 'b'], ['b']), [{ op: '-', line: 'a' }])
+    assert.deepEqual(diffLines(['same'], ['same']), [])
+    const lines = (prefix: string) => Array.from({ length: 50 }, (_x, i) => `${prefix}${i}`).join('\n')
+    const big = describeDiff(lines('l'), lines('m'), 10)
+    assert.equal(big.added, 50)
+    assert.equal(big.removed, 50)
+    assert.equal(big.changes.length, 10)
+    assert.equal(big.truncated, 90)
   })
   console.log(`${count}/${count} core tests passed`)
 }

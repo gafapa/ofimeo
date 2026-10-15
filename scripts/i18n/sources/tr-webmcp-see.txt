@@ -1,0 +1,2 @@
+Create a new document “{title}” ({kind}) and open it in a new tab ||| Crear un documento nuevo «{title}» ({kind}) y abrirlo en una pestaña nueva ||| Crear un documento novo «{title}» ({kind}) e abrilo nunha lapela nova
+Describe picture {n}: “{text}” ||| Describir la imagen {n}: «{text}» ||| Describir a imaxe {n}: «{text}»

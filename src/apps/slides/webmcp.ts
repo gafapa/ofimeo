@@ -15,6 +15,8 @@ import { cellById, goToPage, groupGraph, labelParts, movePageTo, objectTools, pa
 import { DiagramSync } from '../diagram/sync'
 import { parseStyle, type CellRecord } from '../diagram/model'
 import { userIdOf } from '../writer/collab'
+import { Cell, Geometry } from '@maxgraph/core'
+import { styleFromString } from '../diagram/graph'
 import { slideCommentsMap, type SlideComment } from './comments'
 import type { Presentation } from './present'
 import { LAYOUTS, notesText, presentationSize, readSlideMeta, slideCells, writeSlideMeta, type LayoutId, type Role } from './model'
@@ -47,6 +49,27 @@ export function slidesTools(session: Session, editor: GraphEditor, presentation?
       .pageRecords(id)
       .filter((r) => r.vertex && r.parent === '1')
       .map((r) => ({ role: roleOf(r), text: htmlToText(r.value ?? '') }))
+
+  // A new slide filled from {layout, title, subtitle, body, notes}, placed after slide number `after` (0: first).
+  const createSlide = (spec: ToolArgs, after: number): string => {
+    const layout = (optStr(spec, 'layout') ?? 'titleContent') as LayoutId
+    if (!LAYOUTS.some((l) => l.id === layout)) throw new Error(`Unknown layout "${layout}"`)
+    const size = presentationSize(doc)
+    const cells = slideCells(layout, size.width, size.height)
+    const values: Partial<Record<Role, string | undefined>> = { title: optStr(spec, 'title'), subtitle: optStr(spec, 'subtitle'), body: optStr(spec, 'body') }
+    for (const cell of cells) {
+      const role = roleOf(cell)
+      const text = role ? values[role] : undefined
+      if (text) cell.value = textToHtml(text)
+    }
+    const list = slides()
+    const id = sync.addPage(`Slide ${list.length + 1}`, cells)
+    sync.movePage(id, list[after]?.id ?? null)
+    writeSlideMeta(doc, id, { layout })
+    const notes = optStr(spec, 'notes')
+    if (notes) notesText(doc, id).insert(0, notes)
+    return id
+  }
 
   const tools: OfimeoTool[] = [
     {
@@ -105,24 +128,9 @@ export function slidesTools(session: Session, editor: GraphEditor, presentation?
       summary: (args) => t('Add the slide “{title}”', { title: String(args.title ?? '') }),
       execute: (args) => {
         editable()
-        const layout = (optStr(args, 'layout') ?? 'titleContent') as LayoutId
-        if (!LAYOUTS.some((l) => l.id === layout)) throw new Error(`Unknown layout "${layout}"`)
-        const size = presentationSize(doc)
-        const cells = slideCells(layout, size.width, size.height)
-        const values: Partial<Record<Role, string | undefined>> = { title: optStr(args, 'title'), subtitle: optStr(args, 'subtitle'), body: optStr(args, 'body') }
-        for (const cell of cells) {
-          const role = roleOf(cell)
-          const text = role ? values[role] : undefined
-          if (text) cell.value = textToHtml(text)
-        }
         const list = slides()
         const afterN = optNum(args, 'after')
-        const after = afterN === undefined ? list.findIndex((p) => p.id === sync.page) + 1 : Math.max(0, Math.min(list.length, Math.round(afterN)))
-        const id = sync.addPage(`Slide ${list.length + 1}`, cells)
-        sync.movePage(id, list[after]?.id ?? null)
-        writeSlideMeta(doc, id, { layout })
-        const notes = optStr(args, 'notes')
-        if (notes) notesText(doc, id).insert(0, notes)
+        const id = createSlide(args, afterN === undefined ? list.findIndex((p) => p.id === sync.page) + 1 : Math.max(0, Math.min(list.length, Math.round(afterN))))
         showPageSafely(editor, id)
         return { slide: slides().findIndex((p) => p.id === id) + 1 }
       },
@@ -158,6 +166,76 @@ export function slidesTools(session: Session, editor: GraphEditor, presentation?
       },
     },
     ...objectTools(editor, editable, 'slide'),
+    {
+      name: 'add_slides_from_outline',
+      description: `Adds several slides at once after a slide (default: the slide shown): each {title, body (one line per paragraph), subtitle, notes, layout (${LAYOUTS.map((l) => l.id).join(', ')})}. Shows the first new slide.`,
+      inputSchema: {
+        type: 'object',
+        properties: { slides: { type: 'array', items: { type: 'object' }, maxItems: 100 }, after: { type: 'integer', minimum: 0 } },
+        required: ['slides'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Add {n} slides', { n: Array.isArray(args.slides) ? args.slides.length : 0 }),
+      execute: (args) => {
+        editable()
+        const specs = Array.isArray(args.slides) ? (args.slides as ToolArgs[]).slice(0, 100) : []
+        if (!specs.length) throw new Error('Give at least one slide')
+        const list = slides()
+        const afterN = optNum(args, 'after')
+        let after = afterN === undefined ? list.findIndex((p) => p.id === sync.page) + 1 : Math.max(0, Math.min(list.length, Math.round(afterN)))
+        const ids = specs.map((spec) => {
+          const id = createSlide(spec, after)
+          after++
+          return id
+        })
+        showPageSafely(editor, ids[0])
+        return { slides: ids.map((id) => slides().findIndex((p) => p.id === id) + 1) }
+      },
+    },
+    {
+      name: 'add_function_graph',
+      description:
+        'Adds a math graph to a slide (default: the slide shown) as an editable picture: "expressions" as typed in the graph editor ("f(x) = x^2", "y = 2x + 1", "A = (1, 2)"…), optional window xmin/xmax/ymin/ymax, special, degrees, and position x/y/width.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          expressions: { type: 'array', items: { type: 'string' } },
+          xmin: { type: 'number' },
+          xmax: { type: 'number' },
+          ymin: { type: 'number' },
+          ymax: { type: 'number' },
+          special: { type: 'boolean' },
+          degrees: { type: 'boolean' },
+          x: { type: 'number' },
+          y: { type: 'number' },
+          width: { type: 'number' },
+          ...slideArg,
+        },
+        required: ['expressions'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Insert a graph of {list}', { list: (Array.isArray(args.expressions) ? args.expressions : []).join(', ').slice(0, 100) }),
+      execute: async (args) => {
+        editable()
+        const { graphFromSpec } = await import('../../ui/mathgraph/spec')
+        const result = await graphFromSpec({ ...(args as object), expressions: Array.isArray(args.expressions) ? args.expressions.map(String) : [] })
+        goToPage(editor, args, 'slide')
+        const size = presentationSize(doc)
+        const width = optNum(args, 'width') ?? Math.min(result.width, size.width / 2)
+        const height = Math.round((width * result.height) / result.width)
+        const cell = new Cell(
+          '',
+          new Geometry(optNum(args, 'x') ?? (size.width - width) / 2, optNum(args, 'y') ?? (size.height - height) / 2, width, height),
+          styleFromString(`shape=image;slideGraph=1;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;image=${result.png.replace(';base64,', ',')};`),
+        )
+        cell.setVertex(true)
+        ;(cell as Cell & { woData?: string }).woData = JSON.stringify({ graph: result.doc, alt: result.alt })
+        editor.inBatch(() => graph.addCell(cell, graph.getDefaultParent()))
+        return { id: cell.getId(), alt: result.alt, ...(result.errors.length ? { errors: result.errors } : {}) }
+      },
+    },
     {
       name: 'move_slide',
       description: 'Moves a slide (default: the slide shown) so that it becomes slide number "to".',

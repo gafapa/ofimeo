@@ -5,18 +5,21 @@
 // is one step of the notebook's undo history).
 
 import type { JSONContent } from '@tiptap/core'
+import type { Node as PMNode } from '@tiptap/pm/model'
 import { getSchema } from '@tiptap/core'
 import { prosemirrorJSONToYXmlFragment } from '@tiptap/y-tiptap'
 import { yUndoPluginKey } from '@tiptap/y-tiptap'
 import { t } from '../../core/i18n'
+import { fold, foldWithMap } from '../../core/library'
 import { groupYUndo } from '../../core/webmcp/undo'
 import { imageResult, num, optNum, optStr, str, type AppTools, type OfimeoTool, type TextPart, type ToolArgs } from '../../core/webmcp/types'
 import type { NotebookContext } from './app'
 import { notebookExtensions } from './extensions'
 import { pageContent } from './export'
-import { addPage, addSection, allPages, collectTags, deletePage, inkArray, movePage, NB_ORIGIN, notebookText, pageText, pageTitle, readPages, readSections, updatePage, type Page } from './model'
+import { addPage, addSection, allPages, collectTags, deletePage, inkArray, movePage, NB_ORIGIN, notebookText, pageText, pageTitle, readPages, readSections, TAG_IDS, tagLabel, updatePage, type Page, type TagId } from './model'
 
 const MAX_TEXT = 100_000
+
 
 export function notebookTools(ctx: NotebookContext): AppTools {
   const { doc, session } = ctx
@@ -40,6 +43,34 @@ export function notebookTools(ctx: NotebookContext): AppTools {
     if (text.length > MAX_TEXT) throw new Error(`Text is too long (at most ${MAX_TEXT} characters)`)
     const { importMarkdown } = await import('../writer/formats/markdown')
     return (await importMarkdown(text)).content ?? []
+  }
+  // The page's paragraph containing args.match (the page is opened), and its checklist item if any.
+  const paragraphWith = (args: ToolArgs) => {
+    const page = findPage(args)
+    ctx.openPage(page.id)
+    const editor = ctx.editor()
+    if (!editor) throw new Error('The page could not be opened')
+    const match = fold(str(args, 'match'))
+    let found: { pos: number; node: PMNode; item: { pos: number; node: PMNode } | null } | null = null
+    editor.state.doc.descendants((node, pos, parent) => {
+      if (found) return false
+      if (!node.isTextblock) return true
+      if (fold(node.textContent).includes(match)) {
+        const $pos = editor.state.doc.resolve(pos)
+        const itemPos = parent?.type.name === 'taskItem' ? $pos.before($pos.depth) : -1
+        found = { pos, node, item: itemPos >= 0 ? { pos: itemPos, node: parent! } : null }
+      }
+      return false
+    })
+    if (!found) throw new Error(`No paragraph with "${str(args, 'match')}" on that page`)
+    return { editor, ...(found as { pos: number; node: PMNode; item: { pos: number; node: PMNode } | null }) }
+  }
+  // One step of the page's undo history.
+  const editTextBlock = (editor: NonNullable<ReturnType<typeof ctx.editor>>, fn: () => void) => {
+    const undo = (yUndoPluginKey.getState(editor.state) as { undoManager?: { stopCapturing(): void } } | undefined)?.undoManager
+    undo?.stopCapturing()
+    fn()
+    undo?.stopCapturing()
   }
   const requireEdit = () => {
     if (!session.canEdit) throw new Error('The notebook is read-only in this tab')
@@ -176,6 +207,84 @@ export function notebookTools(ctx: NotebookContext): AppTools {
         doc.transact(() => deletePage(doc, page.id), NB_ORIGIN)
         if (open) ctx.openPage(allPages(doc)[0]?.id ?? null)
         return { deleted: page.id, title: pageTitle(page) }
+      },
+    },
+    {
+      name: 'search',
+      description: 'Finds text in every page of the notebook (case and accents ignored): up to 100 matches with the page (id, title, section) and context.',
+      inputSchema: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] },
+      access: 'view',
+      execute: (args) => {
+        const query = fold(str(args, 'query').trim())
+        if (!query) throw new Error('Empty query')
+        const matches: { page: string; title: string; section: string; context: string }[] = []
+        let count = 0
+        for (const page of allPages(doc)) {
+          const text = `${pageTitle(page)}\n${pageText(doc, page.id)}`
+          const { folded, map } = foldWithMap(text)
+          for (let i = folded.indexOf(query); i >= 0; i = folded.indexOf(query, i + query.length)) {
+            count++
+            const from = map[i]
+            const to = map[i + query.length]
+            if (matches.length < 100) matches.push({ page: page.id, title: pageTitle(page), section: sections().get(page.section)?.name ?? '', context: text.slice(Math.max(0, from - 40), to + 40).replace(/\n/g, ' ') })
+          }
+        }
+        return { count, matches }
+      },
+    },
+    {
+      name: 'list_tagged',
+      description: `Lists the tagged notes of the whole notebook (${[...TAG_IDS, 'done'].join(', ')}): page, tag and text; optionally only one tag. Useful for "what is left to do" or "my open questions".`,
+      inputSchema: { type: 'object', properties: { tag: { type: 'string', enum: [...TAG_IDS, 'done'] } } },
+      access: 'view',
+      execute: (args) => {
+        const pages = new Map(allPages(doc).map((p) => [p.id, p]))
+        const only = optStr(args, 'tag')
+        return collectTags(doc)
+          .filter((x) => !only || x.tag === only)
+          .map((x) => ({ page: x.page, title: pages.get(x.page) ? pageTitle(pages.get(x.page)!) : '', tag: x.tag, label: tagLabel(x.tag), text: x.text }))
+      },
+    },
+    {
+      name: 'set_tag',
+      description: `Tags the paragraph that contains "match" on a page ("page": id or title; default: the open page) as ${[...TAG_IDS, 'done'].join(', ')}, or removes its tag with "none". One undo step.`,
+      inputSchema: {
+        type: 'object',
+        properties: { page: { type: 'string' }, match: { type: 'string' }, tag: { type: 'string', enum: [...TAG_IDS, 'done', 'none'] } },
+        required: ['match', 'tag'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Tag a note of the page {name}', { name: String(args.page ?? '') }),
+      execute: (args) => {
+        requireEdit()
+        const tag = str(args, 'tag')
+        if (tag !== 'none' && !([...TAG_IDS, 'done'] as string[]).includes(tag)) throw new Error(`Unknown tag "${tag}"`)
+        const { editor, pos, node } = paragraphWith(args)
+        editTextBlock(editor, () => editor.view.dispatch(editor.state.tr.setNodeMarkup(pos, undefined, { ...node.attrs, nbTag: tag === 'none' ? null : (tag as TagId) })))
+        return { tagged: tag === 'none' ? null : tag, text: node.textContent.slice(0, 100) }
+      },
+    },
+    {
+      name: 'toggle_checkbox',
+      description: 'Checks or unchecks the checklist item (or the "To do"/"Done" note) that contains "match" on a page ("page": id or title; default: the open page). "checked" sets it; without it, it is toggled. One undo step.',
+      inputSchema: { type: 'object', properties: { page: { type: 'string' }, match: { type: 'string' }, checked: { type: 'boolean' } }, required: ['match'] },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Check “{text}”', { text: String(args.match ?? '').slice(0, 80) }),
+      execute: (args) => {
+        requireEdit()
+        const { editor, pos, node, item } = paragraphWith(args)
+        if (item) {
+          const checked = typeof args.checked === 'boolean' ? args.checked : !item.node.attrs.checked
+          editTextBlock(editor, () => editor.view.dispatch(editor.state.tr.setNodeMarkup(item.pos, undefined, { ...item.node.attrs, checked })))
+          return { checked }
+        }
+        const tag = node.attrs.nbTag
+        if (tag !== 'todo' && tag !== 'done') throw new Error('That paragraph is not a checklist item or a "To do" note')
+        const checked = typeof args.checked === 'boolean' ? args.checked : tag === 'todo'
+        editTextBlock(editor, () => editor.view.dispatch(editor.state.tr.setNodeMarkup(pos, undefined, { ...node.attrs, nbTag: checked ? 'done' : 'todo' })))
+        return { checked }
       },
     },
     {

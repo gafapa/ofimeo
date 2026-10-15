@@ -11,7 +11,7 @@ import { isWebMcpEnabled, onWebMcpChange, onWebMcpTools, setWebMcpEnabled, start
 import { webMcpForbidden } from '../core/school-config'
 import { activityLog } from '../core/webmcp/activity'
 import { ACTIVITY_EVENT, canRevertAi, revertAiChanges, type WebMcpActivity } from '../core/webmcp/ai'
-import { isReviewMode, setReviewMode } from '../core/webmcp/state'
+import { isReviewMode, realNamesAllowed, setRealNamesAllowed, setReviewMode } from '../core/webmcp/state'
 import { setupProposals, type ProposalsPanel } from './webmcp-proposals'
 import { confirmDialog, el, icon, showDialog, toast, type MenuItem } from './widgets'
 import './webmcp.css'
@@ -55,6 +55,7 @@ function explanation(session: Session, on: boolean): HTMLElement {
       textContent: t('This setting applies to every document you open in this browser. You can turn it off at any time from the Tools menu or the indicator in the top bar.'),
     }),
     session.canEdit ? reviewSwitch(session) : null,
+    session.canComment ? namesSwitch() : null,
     on && names.length ? el('p', { class: 'hint mono', textContent: t('Tools offered: {tools}', { tools: names.join(', ') }) }) : null,
     on ? activityList() : null,
     el('p', {}, more),
@@ -76,6 +77,18 @@ function reviewSwitch(session: Session): HTMLElement {
           ? t('Changes to the text are always suggestions; with this option, formatting and other changes also wait for you to accept them.')
           : t('Each change it proposes waits in a panel where you accept or reject it.'),
     }),
+  )
+}
+
+// Real names of respondents and participants, or pseudonyms (default).
+function namesSwitch(): HTMLElement {
+  const box = el('input', { type: 'checkbox', checked: realNamesAllowed() })
+  box.addEventListener('change', () => setRealNamesAllowed(box.checked))
+  return el(
+    'div',
+    { class: 'webmcp-review' },
+    el('label', { class: 'check' }, box, t('Give the assistant people’s real names')),
+    el('p', { class: 'hint', textContent: t('Off: form respondents and the people in the document reach the assistant as “Respondent 1”, “Participant 2”… Pupils’ data are better kept that way.') }),
   )
 }
 

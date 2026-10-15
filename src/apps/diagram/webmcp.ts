@@ -246,6 +246,146 @@ export function labelParts(doc: Y.Doc, unit: string): TextPart[] {
   )
 }
 
+// ---------- Graphs (add_graph, import_mermaid) ----------
+
+export interface GraphNode {
+  key: string
+  label: string
+  shape: string
+  fill?: string
+  stroke?: string
+  width?: number
+  height?: number
+  // Given position (mermaid layout); otherwise laid out in layers.
+  x?: number
+  y?: number
+}
+
+export interface GraphEdge {
+  from: string
+  to: string
+  label?: string
+  style?: string
+}
+
+// Layers by longest path from the nodes nobody points to (cycles are cut).
+function layers(nodes: GraphNode[], edges: GraphEdge[]): Map<string, number> {
+  const out = new Map(nodes.map((n) => [n.key, [] as string[]]))
+  const indegree = new Map(nodes.map((n) => [n.key, 0]))
+  for (const e of edges) {
+    if (!out.has(e.from) || !out.has(e.to) || e.from === e.to) continue
+    out.get(e.from)!.push(e.to)
+    indegree.set(e.to, indegree.get(e.to)! + 1)
+  }
+  const layer = new Map<string, number>()
+  const visit = (key: string, depth: number, path: Set<string>) => {
+    if (path.has(key) || (layer.get(key) ?? -1) >= depth) return
+    layer.set(key, depth)
+    path.add(key)
+    for (const next of out.get(key)!) visit(next, depth + 1, path)
+    path.delete(key)
+  }
+  const roots = nodes.filter((n) => !indegree.get(n.key))
+  for (const n of roots.length ? roots : nodes.slice(0, 1)) visit(n.key, 0, new Set())
+  for (const n of nodes) if (!layer.has(n.key)) visit(n.key, 0, new Set())
+  return layer
+}
+
+// Adds the nodes and edges to the page shown in one model update, placed
+// right of the existing content; returns cell id by node key.
+export function addGraphCells(editor: GraphEditor, nodes: GraphNode[], edges: GraphEdge[], direction: 'down' | 'right', origin: { x: number; y: number }): Record<string, string> {
+  const { graph } = editor
+  const keys = new Set<string>()
+  for (const n of nodes) {
+    if (!n.key || keys.has(n.key)) throw new Error(`Node ids must be unique and not empty ("${n.key}")`)
+    if (!SHAPES[n.shape]) throw new Error(`Unknown shape "${n.shape}"`)
+    keys.add(n.key)
+  }
+  for (const e of edges) if (!keys.has(e.from) || !keys.has(e.to)) throw new Error(`Edge ${e.from} → ${e.to}: unknown node`)
+  const layer = layers(nodes, edges)
+  const slot = new Map<number, number>()
+  const gapX = 60
+  const gapY = 50
+  const ids: Record<string, string> = {}
+  const cells = new Map<string, Cell>()
+  editor.inBatch(() => {
+    const parent = graph.getDefaultParent()
+    for (const n of nodes) {
+      const w = n.width ?? (n.shape === 'actor' ? 30 : 120)
+      const h = n.height ?? 60
+      let x = n.x
+      let y = n.y
+      if (x === undefined || y === undefined) {
+        const l = layer.get(n.key) ?? 0
+        const i = slot.get(l) ?? 0
+        slot.set(l, i + 1)
+        x = direction === 'right' ? l * (120 + gapX * 1.5) : i * (120 + gapX)
+        y = direction === 'right' ? i * (60 + gapY) : l * (60 + gapY * 1.5)
+      }
+      let style = SHAPES[n.shape]
+      if (n.fill) style += `fillColor=${n.fill};`
+      if (n.stroke) style += `strokeColor=${n.stroke};`
+      const cell = new Cell(textToHtml(n.label), new Geometry(origin.x + x, origin.y + y, w, h), styleFromString(style))
+      cell.setVertex(true)
+      graph.addCell(cell, parent)
+      cells.set(n.key, cell)
+      ids[n.key] = cell.getId()!
+    }
+    for (const e of edges) {
+      const geo = new Geometry()
+      geo.relative = true
+      const edge = new Cell(textToHtml(e.label ?? ''), geo, styleFromString(EDGE_STYLES[e.style ?? 'orthogonal'] ?? EDGE_STYLES.orthogonal))
+      edge.setEdge(true)
+      graph.addEdge(edge, parent, cells.get(e.from)!, cells.get(e.to)!)
+    }
+  })
+  return ids
+}
+
+// Mermaid → the skeleton of mermaid-to-excalidraw → shapes and connectors.
+export async function mermaidGraph(definition: string): Promise<{ nodes: GraphNode[]; edges: GraphEdge[] }> {
+  const { parseMermaidToExcalidraw } = await import('@excalidraw/mermaid-to-excalidraw')
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const { elements } = (await parseMermaidToExcalidraw(definition, { themeVariables: { fontSize: '16px' } })) as { elements: any[] }
+  const kinds: Record<string, string> = { rectangle: 'rectangle', ellipse: 'ellipse', diamond: 'rhombus', text: 'text' }
+  const nodes: GraphNode[] = []
+  const edges: GraphEdge[] = []
+  const minX = Math.min(0, ...elements.map((e) => Number(e.x) || 0))
+  const minY = Math.min(0, ...elements.map((e) => Number(e.y) || 0))
+  for (const e of elements) {
+    if (e.type === 'arrow' || e.type === 'line') {
+      if (e.start?.id && e.end?.id) edges.push({ from: String(e.start.id), to: String(e.end.id), label: e.label?.text ?? '' })
+    } else if (kinds[e.type] && (e.type !== 'text' || e.text)) {
+      nodes.push({
+        key: String(e.id ?? `n${nodes.length}`),
+        label: String(e.label?.text ?? e.text ?? ''),
+        shape: e.type === 'rectangle' && e.roundness ? 'rounded' : kinds[e.type],
+        x: Math.round((Number(e.x) || 0) - minX),
+        y: Math.round((Number(e.y) || 0) - minY),
+        width: Math.max(20, Math.round(Number(e.width) || 120)),
+        height: Math.max(20, Math.round(Number(e.height) || 60)),
+      })
+    }
+  }
+  const known = new Set(nodes.map((n) => n.key))
+  if (!nodes.length) throw new Error('Only Mermaid flowcharts (and similar graphs with nodes and arrows) can be turned into shapes here')
+  return { nodes, edges: edges.filter((e) => known.has(e.from) && known.has(e.to)) }
+}
+
+const nodeSchema = {
+  type: 'object',
+  properties: {
+    id: { type: 'string', description: 'Your key for edges (not the cell id).' },
+    label: { type: 'string' },
+    shape: { type: 'string', enum: Object.keys(SHAPES) },
+    fill: { type: 'string' },
+    stroke: { type: 'string' },
+    width: { type: 'number' },
+    height: { type: 'number' },
+  },
+  required: ['id'],
+}
+
 // ---------- Diagram tools ----------
 
 export function diagramTools(session: Session, editor: GraphEditor): AppTools {
@@ -358,6 +498,72 @@ export function diagramTools(session: Session, editor: GraphEditor): AppTools {
       },
     },
     ...objectTools(editor, editable, 'page'),
+    {
+      name: 'add_graph',
+      description:
+        'Adds a whole graph in one step: nodes (id = your key, label, shape, colors) and edges (from, to, label) laid out in layers (direction "down" or "right") to the right of the existing content of a page. One undo step. Returns the cell id of each node key.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          nodes: { type: 'array', items: nodeSchema, maxItems: 300 },
+          edges: { type: 'array', items: { type: 'object', properties: { from: { type: 'string' }, to: { type: 'string' }, label: { type: 'string' }, style: { type: 'string', enum: Object.keys(EDGE_STYLES) } }, required: ['from', 'to'] } },
+          direction: { type: 'string', enum: ['down', 'right'] },
+          ...pageArg,
+        },
+        required: ['nodes'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Add a graph of {n} shapes', { n: Array.isArray(args.nodes) ? args.nodes.length : 0 }),
+      execute: (args) => {
+        editable()
+        goToPage(editor, args)
+        const nodes = (Array.isArray(args.nodes) ? args.nodes : []).slice(0, 300).map((n: Record<string, unknown>) => ({
+          key: String(n.id ?? ''),
+          label: String(n.label ?? n.id ?? ''),
+          shape: String(n.shape ?? 'rounded'),
+          fill: n.fill ? String(n.fill) : undefined,
+          stroke: n.stroke ? String(n.stroke) : undefined,
+          width: typeof n.width === 'number' ? n.width : undefined,
+          height: typeof n.height === 'number' ? n.height : undefined,
+        }))
+        if (!nodes.length) throw new Error('Give at least one node')
+        const edges = (Array.isArray(args.edges) ? args.edges : []).map((e: Record<string, unknown>) => ({ from: String(e.from), to: String(e.to), label: e.label ? String(e.label) : '', style: e.style ? String(e.style) : undefined }))
+        return { ids: addGraphCells(editor, nodes, edges, optStr(args, 'direction') === 'right' ? 'right' : 'down', freeSpot()) }
+      },
+    },
+    {
+      name: 'import_mermaid',
+      description: 'Turns a Mermaid flowchart ("flowchart TD; A[Start] --> B{Ok?}" …) into shapes and connectors on a page, laid out by Mermaid, to the right of the existing content. One undo step.',
+      inputSchema: { type: 'object', properties: { definition: { type: 'string' }, ...pageArg }, required: ['definition'] },
+      access: 'edit',
+      changesDocument: true,
+      summary: () => t('Add a diagram from Mermaid'),
+      execute: async (args) => {
+        editable()
+        const { nodes, edges } = await mermaidGraph(str(args, 'definition'))
+        goToPage(editor, args)
+        return { ids: addGraphCells(editor, nodes, edges, 'down', freeSpot()) }
+      },
+    },
+    {
+      name: 'import_drawio',
+      description: 'Adds the pages of draw.io XML (an mxfile or one mxGraphModel) as new pages of the diagram and shows the first one.',
+      inputSchema: { type: 'object', properties: { xml: { type: 'string' } }, required: ['xml'] },
+      access: 'edit',
+      changesDocument: true,
+      summary: () => t('Add pages from draw.io'),
+      execute: async (args) => {
+        editable()
+        const { parseDrawio } = await import('./formats/drawio')
+        const xml = str(args, 'xml')
+        const pages = await parseDrawio(/<mxfile[\s>]/.test(xml) ? xml : `<mxfile><diagram name="Imported">${xml}</diagram></mxfile>`)
+        if (!pages.length) throw new Error('No pages in that XML')
+        const ids = pages.map((p) => sync.addPage(p.name || `Page ${sync.pageList().length + 1}`, p.cells, { background: p.background, pageWidth: p.pageWidth, pageHeight: p.pageHeight }))
+        showPageSafely(editor, ids[0])
+        return { pages: ids.map((id) => sync.pageList().findIndex((p) => p.id === id) + 1) }
+      },
+    },
     {
       name: 'add_page',
       description: 'Adds an empty page (optionally named) after the last one and shows it.',

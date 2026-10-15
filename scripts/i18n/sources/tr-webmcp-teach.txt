@@ -1,0 +1,32 @@
+{n} responses have points or comments suggested by the AI assistant that nobody has reviewed. ||| {n} respuestas tienen puntos o comentarios sugeridos por el asistente de IA que nadie ha revisado. ||| {n} respostas teñen puntos ou comentarios suxeridos polo asistente de IA que ninguén revisou.
+{title} (variant) ||| {title} (variante) ||| {title} (variante)
+Add {n} elements to the drawing ||| Añadir {n} elementos al dibujo ||| Engadir {n} elementos ao debuxo
+Add {n} questions ||| Añadir {n} preguntas ||| Engadir {n} preguntas
+Add {n} slides ||| Añadir {n} diapositivas ||| Engadir {n} diapositivas
+Add a diagram from Mermaid ||| Añadir un diagrama desde Mermaid ||| Engadir un diagrama desde Mermaid
+Add a graph of {n} shapes ||| Añadir un grafo de {n} formas ||| Engadir un grafo de {n} formas
+Add pages from draw.io ||| Añadir páginas desde draw.io ||| Engadir páxinas desde draw.io
+Add the source “{title}” to the bibliography ||| Añadir la fuente «{title}» a la bibliografía ||| Engadir a fonte «{title}» á bibliografía
+Change the form settings ||| Cambiar los ajustes del formulario ||| Cambiar os axustes do formulario
+Check “{text}” ||| Marcar «{text}» ||| Marcar «{text}»
+Cite a source after {text} ||| Citar una fuente después de {text} ||| Citar unha fonte despois de {text}
+Create a new document from one of your templates and open it in a new tab ||| Crear un documento nuevo a partir de una de tus plantillas y abrirlo en una pestaña nueva ||| Crear un documento novo a partir dun dos teus modelos e abrilo nunha lapela nova
+Create a new form “{title}” with the questions shuffled and open it in a new tab ||| Crear un formulario nuevo «{title}» con las preguntas mezcladas y abrirlo en una pestaña nueva ||| Crear un formulario novo «{title}» coas preguntas mesturadas e abrilo nunha lapela nova
+Give the assistant people’s real names ||| Dar al asistente los nombres reales de las personas ||| Darlle ao asistente os nomes reais das persoas
+Insert a graph of {list} ||| Insertar una gráfica de {list} ||| Inserir unha gráfica de {list}
+Insert the bibliography ||| Insertar la bibliografía ||| Inserir a bibliografía
+Insert the equation {latex} ||| Insertar la ecuación {latex} ||| Inserir a ecuación {latex}
+Keep as reviewed ||| Dar por revisado ||| Dar por revisado
+Let the AI assistant read your Moodle assignments (courses, names, due dates and instructions) ||| Dejar que el asistente de IA lea tus tareas de Moodle (cursos, nombres, fechas de entrega e instrucciones) ||| Deixar que o asistente de IA lea as túas tarefas de Moodle (cursos, nomes, datas de entrega e instrucións)
+Off: form respondents and the people in the document reach the assistant as “Respondent 1”, “Participant 2”… Pupils’ data are better kept that way. ||| Desactivado: quienes responden los formularios y las personas del documento le llegan al asistente como «Persona que responde 1», «Participante 2»… Así se protegen mejor los datos del alumnado. ||| Desactivado: quen responde os formularios e as persoas do documento chéganlle ao asistente como «Persoa que responde 1», «Participante 2»… Así protéxense mellor os datos do alumnado.
+Participant {n} ||| Participante {n} ||| Participante {n}
+Put a stamp on page {n} ||| Poner un sello en la página {n} ||| Poñer un selo na páxina {n}
+Release grades the AI assistant suggested? ||| ¿Publicar notas sugeridas por el asistente de IA? ||| Publicar notas suxeridas polo asistente de IA?
+Respondent {n} ||| Persona que responde {n} ||| Persoa que responde {n}
+Set the right answer of “{title}” ||| Fijar la respuesta correcta de «{title}» ||| Fixar a resposta correcta de «{title}»
+Strike through “{text}” on page {n} ||| Tachar «{text}» en la página {n} ||| Riscar «{text}» na páxina {n}
+Suggest a grade for response {n} ||| Sugerir una nota para la respuesta {n} ||| Suxerir unha nota para a resposta {n}
+Suggested by the AI assistant: check the points and the comment before releasing the grade. ||| Sugerido por el asistente de IA: revisa los puntos y el comentario antes de publicar la nota. ||| Suxerido polo asistente de IA: revisa os puntos e o comentario antes de publicar a nota.
+Tag a note of the page {name} ||| Etiquetar una nota de la página {name} ||| Etiquetar unha nota da páxina {name}
+Underline “{text}” on page {n} ||| Subrayar «{text}» en la página {n} ||| Subliñar «{text}» na páxina {n}
+Write “{text}” on page {n} ||| Escribir «{text}» en la página {n} ||| Escribir «{text}» na páxina {n}

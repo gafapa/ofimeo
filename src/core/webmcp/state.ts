@@ -68,3 +68,27 @@ export function onReviewModeChange(fn: (on: boolean) => void): () => void {
   reviewListeners.add(fn)
   return () => reviewListeners.delete(fn)
 }
+
+// People's names (form respondents, participants) are given to the assistant
+// as pseudonyms ("Respondent 3") unless the user allows real names (per browser).
+const NAMES_KEY = 'ofimeo:webmcp:names'
+let namesInPage: boolean | null = null
+
+export function realNamesAllowed(): boolean {
+  if (namesInPage !== null) return namesInPage
+  try {
+    return localStorage.getItem(NAMES_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function setRealNamesAllowed(on: boolean): void {
+  try {
+    if (on) localStorage.setItem(NAMES_KEY, '1')
+    else localStorage.removeItem(NAMES_KEY)
+    namesInPage = null
+  } catch {
+    namesInPage = on
+  }
+}

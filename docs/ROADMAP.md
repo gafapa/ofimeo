@@ -8,8 +8,9 @@ Limitations.
 
 Eight apps (writer, sheet, draw, diagram, slides, forms, PDF, notebook) on a
 shared frame, UI in en/es/gl/fr/de, P2P collaboration with signed permission
-links, store-and-forward sync, Nextcloud, Moodle, WebMCP, school config and
-Docker deployment. CI: type check, spelling rule tests, i18n key check, build,
+links, store-and-forward sync, Nextcloud, Moodle, WebMCP (about 140 tools:
+review mode, batches, pictures, versions, new documents, teaching tools,
+pseudonyms; see [webmcp.md](webmcp.md)), school config and Docker deployment. CI: type check, spelling rule tests, i18n key check, build,
 87 Playwright tests, permission/storage regressions, relay Go tests, Docker image build.
 
 ## Owner actions (not code)
@@ -36,6 +37,8 @@ remain unverified; see [the October review](PROJECT_REVIEW_2026-10-02.md).
       and slides (PPTX).
 - [ ] Text-to-speech voices and dictation on real devices.
 - [ ] Docker image on a Raspberry Pi and on Windows with the relay binary.
+- [ ] WebMCP with a real assistant (MCP-B extension, Chromium's built-in
+      agent): image results, confirmations and review mode end to end.
 
 ## Next (proposed priorities)
 

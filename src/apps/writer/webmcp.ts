@@ -19,6 +19,7 @@ import { collectSuggestions } from './editor/suggestions'
 import type { CommentRecord } from './review'
 import { encodeAnchor, PositionIndex } from './ypos'
 import { newSourceId, SOURCE_TYPES, type Person, type Source, type SourceType } from './references/types'
+import { CHART_TYPES } from '../sheet/charts/model'
 
 const MAX_TEXT = 200_000
 
@@ -183,6 +184,8 @@ function findAll(doc: PMNode, query: string, matchCase = false): Match[] {
 // ---------- Checks ----------
 
 const OBJECT_CHAR = String.fromCharCode(0xfffc)
+// Blocks removed when withdrawing the last suggested text leaves them empty.
+const CONTAINERS = new Set(['table', 'bulletList', 'orderedList', 'taskList', 'blockquote'])
 
 // Text blocks with where they are (for spelling): "paragraph 3: “First words…”".
 function textParts(doc: PMNode): TextPart[] {
@@ -653,6 +656,154 @@ export function writerTools(ctx: WriterContext): AppTools {
       },
     },
     {
+      name: 'insert_table',
+      description: 'Inserts a table as a tracked suggestion: "rows" is a 2-D array of cell texts (the first row is the header unless header is false), at the end of the document or before/after the paragraph containing "match".',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          rows: { type: 'array', items: { type: 'array', items: { type: ['string', 'number', 'boolean', 'null'] } } },
+          header: { type: 'boolean', description: 'Default true.' },
+          position: { type: 'string', enum: ['start', 'end', 'before', 'after'] },
+          ...target,
+        },
+        required: ['rows'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      suggestion: true,
+      execute: (args) => {
+        requireEditable()
+        const rows = Array.isArray(args.rows) ? (args.rows as unknown[][]).filter(Array.isArray) : []
+        const cols = Math.max(0, ...rows.map((r) => r.length))
+        if (!rows.length || !cols) throw new Error('Give rows of cells')
+        if (rows.length * cols > 5000) throw new Error('Table too large (at most 5000 cells)')
+        const header = args.header !== false
+        const cell = (value: unknown, head: boolean) => ({
+          type: head ? 'tableHeader' : 'tableCell',
+          content: [{ type: 'paragraph', content: value === null || value === undefined || value === '' ? [] : [{ type: 'text', text: String(value) }] }],
+        })
+        const table = { type: 'table', content: rows.map((row, r) => ({ type: 'tableRow', content: Array.from({ length: cols }, (_x, c) => cell(row[c], header && r === 0)) })) }
+        if (!asAssistant(() => editor.chain().insertContentAt(blockPosition(args), [table, { type: 'paragraph' }], { updateSelection: false }).run())) throw new Error('The table could not be inserted there')
+        return { inserted: true, rows: rows.length, columns: cols, as: 'suggestion' }
+      },
+    },
+    {
+      name: 'insert_link',
+      description: 'Turns a piece of text (match or from/to) into a link to a web address (http, https or mailto), or removes the link with url "". Applied directly; one undo step.',
+      inputSchema: { type: 'object', properties: { url: { type: 'string' }, ...target }, required: ['url'] },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Link {text} to {url}', { text: quoted(args), url: String(args.url ?? '') }),
+      execute: (args) => {
+        requireEditable()
+        const { from, to } = range(args)
+        if (from >= to) throw new Error('Empty range')
+        const url = str(args, 'url', '').trim()
+        const link = editor.schema.marks.link
+        if (!link) throw new Error('Links are not available')
+        if (url && !/^(https?:\/\/|mailto:)/i.test(url)) throw new Error('Only http, https and mailto addresses')
+        direct(() => editor.view.dispatch(url ? editor.state.tr.addMark(from, to, link.create({ href: url })) : editor.state.tr.removeMark(from, to, link)))
+        return { linked: !!url }
+      },
+    },
+    {
+      name: 'insert_chart',
+      description: `Inserts a chart with the data given (not linked to a spreadsheet): type (${CHART_TYPES.join(', ')}), title, labels (categories), series [{name, values}], optional axis titles and a caption; at the end of the document or after the paragraph containing "match". Applied directly; one undo step.`,
+      inputSchema: {
+        type: 'object',
+        properties: {
+          type: { type: 'string', enum: CHART_TYPES },
+          title: { type: 'string' },
+          labels: { type: 'array', items: { type: ['string', 'number'] } },
+          series: { type: 'array', items: { type: 'object', properties: { name: { type: 'string' }, values: { type: 'array', items: { type: ['number', 'null'] } } } } },
+          x_title: { type: 'string' },
+          y_title: { type: 'string' },
+          caption: { type: 'string' },
+          ...target,
+        },
+        required: ['labels', 'series'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Insert the chart “{title}”', { title: String(args.title ?? '') }),
+      execute: async (args) => {
+        requireEditable()
+        const [{ chartFromData, chartJson }, { CHART_HEIGHT, CHART_WIDTH }] = await Promise.all([import('../charts/embedded'), import('./editor/chart')])
+        const chart = chartFromData({
+          type: optStr(args, 'type') ?? 'column',
+          title: optStr(args, 'title'),
+          labels: Array.isArray(args.labels) ? args.labels : [],
+          series: Array.isArray(args.series) ? (args.series as { name?: unknown; values?: unknown[] }[]) : [],
+          xTitle: optStr(args, 'x_title'),
+          yTitle: optStr(args, 'y_title'),
+        })
+        const at = args.match || args.from !== undefined ? blockPosition({ ...args, position: 'after' }) : doc().content.size
+        const node = { type: 'chart', attrs: { chart: chartJson(chart), width: CHART_WIDTH, height: CHART_HEIGHT, caption: optStr(args, 'caption') ?? '' } }
+        if (!direct(() => editor.chain().insertContentAt(at, node, { updateSelection: false }).run())) throw new Error('The chart could not be inserted there')
+        return { inserted: true }
+      },
+    },
+    {
+      name: 'resolve_comment',
+      description: 'Marks a comment thread (id from list_comments) as resolved, or open again with resolved false.',
+      inputSchema: { type: 'object', properties: { id: { type: 'string' }, resolved: { type: 'boolean' } }, required: ['id'] },
+      access: 'comment',
+      execute: (args) => {
+        const comments = commentsMapOf(session)
+        const comment = comments.get(str(args, 'id')) as CommentRecord | undefined
+        if (!comment || comment.parent) throw new Error('No comment thread with that id')
+        comments.set(comment.id, { ...comment, resolved: args.resolved !== false })
+        return { id: comment.id, resolved: args.resolved !== false }
+      },
+    },
+    {
+      name: 'list_suggestions',
+      description: 'Lists the pending suggestions (tracked changes): id, insertion or deletion, author, text, and whether it is yours (the AI assistant’s).',
+      inputSchema: { type: 'object', properties: {} },
+      access: 'view',
+      execute: () =>
+        collectSuggestions(doc()).map((x) => ({ id: x.id, kind: x.kind, author: x.author, text: x.text, mine: x.authorId.startsWith(`${AI_USER_ID}:`) })),
+    },
+    {
+      name: 'withdraw_suggestion',
+      description: 'Withdraws one of YOUR pending suggestions (id from list_suggestions; not other people’s): an insertion disappears, a deletion is kept as text. Accepting or rejecting other suggestions is up to the user.',
+      inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
+      access: 'edit',
+      changesDocument: true,
+      suggestion: true,
+      execute: (args) => {
+        requireEditable()
+        const found = collectSuggestions(doc()).find((x) => x.id === args.id)
+        if (!found) throw new Error('No pending suggestion with that id')
+        if (!found.authorId.startsWith(`${AI_USER_ID}:`)) throw new Error('Only your own suggestions can be withdrawn; the user decides on the others')
+        // A table or list the assistant inserted goes away with its last suggested text.
+        const $pos = doc().resolve(found.from)
+        let container = -1
+        for (let d = $pos.depth; d > 0; d--) if (CONTAINERS.has($pos.node(d).type.name)) container = $pos.before(d)
+        const containerNode = container >= 0 ? doc().nodeAt(container) : null
+        const containerId = containerNode ? containerNode.type.name : null
+        let removed = false
+        direct(() => {
+          if (!editor.commands.rejectSuggestion(found.id)) throw new Error('The suggestion could not be withdrawn')
+          if (container < 0) return
+          const node = editor.state.doc.nodeAt(container)
+          if (node && node.type.name === containerId && !node.textContent.trim() && !collectSuggestions(node).length) {
+            editor.view.dispatch(editor.state.tr.delete(container, container + node.nodeSize))
+            removed = true
+          }
+        })
+        return { withdrawn: found.id, ...(removed ? { removed_empty: containerId } : {}) }
+      },
+    },
+    {
+      name: 'get_stats',
+      description:
+        'Counts and readability of the text: characters, words, sentences, paragraphs, average words per sentence and syllables per word, reading time and a readability score for the document’s language (Flesch for English, Fernández Huerta for Spanish and Galician, Kandel–Moles for French, Amstad for German; approximate syllable counting).',
+      inputSchema: { type: 'object', properties: {} },
+      access: 'view',
+      execute: () => textStats(editor.getText({ blockSeparator: '\n\n' }), String(ctx.spell.docLang() ?? 'en')),
+    },
+    {
       name: 'set_alt_text',
       description: 'Sets the description (alternative text) of a picture, read by screen readers: "image" is its number in the document (1 = first, see check_accessibility). Applied directly; one undo step.',
       inputSchema: { type: 'object', properties: { image: { type: 'integer', minimum: 1 }, text: { type: 'string' } }, required: ['image', 'text'] },
@@ -798,6 +949,47 @@ export function writerTools(ctx: WriterContext): AppTools {
       open_comments: review.collectThreads(false).length,
       ai_changes: session.canEdit ? 'Text changes are added as suggestions authored by the AI assistant; the user accepts or rejects them.' : 'none (read-only)',
     }),
+  }
+}
+
+// ---------- Readability ----------
+
+const VOWELS = /[aeiouyáéíóúàèìòùâêîôûäëïöüœæ]+/giu
+
+function syllables(word: string): number {
+  const w = word.toLowerCase()
+  const groups = w.match(VOWELS)?.length ?? 0
+  // English silent final e.
+  return Math.max(1, groups - (w.length > 2 && w.endsWith('e') && !/[aeiouy]e$/.test(w) ? 1 : 0))
+}
+
+export function textStats(text: string, lang: string) {
+  const words = text.match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) ?? []
+  const sentences = Math.max(1, (text.match(/[^.!?…]+[.!?…]+(?=\s|$)/gu) ?? []).length || (words.length ? 1 : 0))
+  const paragraphs = text.split(/\n{2,}/).filter((p) => p.trim()).length
+  const syl = words.reduce((n, w) => n + syllables(w), 0)
+  const wps = words.length / sentences
+  const spw = words.length ? syl / words.length : 0
+  const code = lang.slice(0, 2).toLowerCase()
+  const round = (n: number) => Math.round(n * 10) / 10
+  let readability: { index: string; score: number } | null = null
+  if (words.length >= 10) {
+    if (code === 'es' || code === 'gl') readability = { index: 'Fernández Huerta', score: round(206.84 - 0.6 * spw * 100 - 1.02 * (sentences / words.length) * 100) }
+    else if (code === 'fr') readability = { index: 'Kandel–Moles', score: round(207 - 1.015 * wps - 73.6 * spw) }
+    else if (code === 'de') readability = { index: 'Amstad', score: round(180 - wps - 58.5 * spw) }
+    else readability = { index: 'Flesch reading ease', score: round(206.835 - 1.015 * wps - 84.6 * spw) }
+  }
+  return {
+    characters: text.replace(/\n/g, '').length,
+    words: words.length,
+    sentences: words.length ? sentences : 0,
+    paragraphs,
+    words_per_sentence: round(wps),
+    syllables_per_word: round(spw),
+    reading_minutes: round(words.length / 200),
+    language: lang,
+    // 0–100: higher is easier (60–70 plain language; under 30 very difficult).
+    readability,
   }
 }
 

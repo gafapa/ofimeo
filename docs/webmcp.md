@@ -178,10 +178,10 @@ registered again when it starts and ends).
 
 | App | Read (view) | Comment | Edit |
 | --- | --- | --- | --- |
-| Documents | `get_text` (Markdown with CriticMarkup `{++ins++}` `{--del--}` for pending suggestions, or plain), `get_outline`, `find`, `list_comments`, `list_references` | `add_comment` (on text or as a reply) | `insert_text`, `insert_markdown` (tables, lists, links…), `replace_range`, `delete_text` (suggestions); `apply_heading`, `format`, `set_alt_text`, `insert_equation` (LaTeX), `add_function_graph`, `add_reference`, `cite`, `insert_bibliography` (direct, one undo step each) |
-| Spreadsheets | `list_sheets`, `read_range`, `list_comments` (cell notes), `list_formula_errors`, `describe_range` (statistics per column) | – | `write_range` (values and `=` formulas), `add_sheet`, `insert_chart` (charts model of `src/apps/sheet/charts`), `add_comment` (cell note), `insert_rows`, `insert_columns`, `rename_sheet`, `duplicate_sheet`; confirmed: `delete_rows`, `delete_columns`, `clear_range`, `delete_sheet` |
-| Presentations | `list_slides`, `get_slide`, `list_comments` | `add_comment` | `add_slide`, `add_slides_from_outline`, `add_function_graph`, `set_text`, `move_object`, `move_slide`, `duplicate_slide`; confirmed: `delete_objects`, `delete_slide` |
-| Diagrams | `get_diagram` (summary or draw.io XML) | – | `add_shape`, `connect`, `set_label`, `add_graph` (nodes and edges laid out in layers), `import_mermaid` (flowcharts, laid out by Mermaid), `import_drawio` (new pages), `move_object`, `add_page`, `rename_page`, `move_page`; confirmed: `delete_objects`, `delete_page` |
+| Documents | `get_text` (Markdown with CriticMarkup `{++ins++}` `{--del--}` for pending suggestions, or plain), `get_outline`, `find`, `list_comments`, `list_references` | `add_comment` (on text or as a reply) | `insert_text`, `insert_markdown` (tables, lists, links…), `replace_range`, `delete_text` (suggestions); `apply_heading`, `format`, `set_alt_text`, `insert_equation` (LaTeX), `add_function_graph`, `add_reference`, `cite`, `insert_bibliography`, `insert_link`, `insert_chart` (direct, one undo step each); `insert_table` (suggestion); `resolve_comment` (comment); `list_suggestions`, `withdraw_suggestion` (only the assistant's own; an emptied table or list it inserted goes too), `get_stats` (counts and a readability score per language) |
+| Spreadsheets | `list_sheets`, `read_range`, `list_comments` (cell notes), `list_formula_errors`, `describe_range` (statistics per column), `find` | – | `write_range` (values and `=` formulas), `add_sheet`, `insert_chart` (charts model of `src/apps/sheet/charts`), `add_comment` (cell note), `insert_rows`, `insert_columns`, `rename_sheet`, `duplicate_sheet`, `format_range`, `sort_range`, `freeze`, `add_conditional_format`, `create_pivot`; confirmed: `delete_rows`, `delete_columns`, `clear_range`, `delete_sheet` |
+| Presentations | `list_slides`, `get_slide`, `list_comments` | `add_comment` | `add_slide`, `add_slides_from_outline`, `add_function_graph`, `set_text`, `set_layout`, `set_notes`, `add_text_box`, `insert_chart`, `set_transition`, `add_animation`, `apply_theme`, `move_object`, `move_slide`, `duplicate_slide`; confirmed: `delete_objects`, `delete_slide` |
+| Diagrams | `get_diagram` (summary or draw.io XML) | – | `add_shape`, `connect`, `set_label`, `set_style`, `add_graph` (nodes and edges laid out in layers), `import_mermaid` (flowcharts, laid out by Mermaid), `import_drawio` (new pages), `move_object`, `add_page`, `rename_page`, `move_page`; confirmed: `delete_objects`, `delete_page` |
 | Forms (editors) | `get_form` | – | `add_question`, `add_questions` (with answer keys; `src/apps/forms/spec.ts`), `update_question`, `move_question`, `set_answer_key`, `set_settings`, `get_responses` and `summarize_responses` (editors only), `propose_grade`, `create_variant` (shuffled copy, confirmed); confirmed: `delete_question` |
 | PDF | `get_text` (per page), `list_comments`, `list_annotations`, `search` | `add_note`, `resolve_note` | `add_highlight`, `add_underline`, `add_strike`, `add_text` (text box), `add_stamp` (check, cross, good, revise, grade, custom); confirmed: `delete_annotation`. No signatures. |
 | Drawings | `get_scene` | – | `add_element`, `add_elements`, `mermaid_to_drawing`, `update_element`; confirmed: `delete_elements` |
@@ -231,6 +231,9 @@ when it only makes sense in some states (with `AppTools.watch`). The app's
 Give changing tools a translated `summary(args)`: it is what the user reads
 in confirmations and proposals. The core does the rest.
 
+The help center has the user-facing article *AI assistants (WebMCP)*
+(`ai-assistants`, linked from the WebMCP dialogs).
+
 ## Limitations
 
 - WebMCP is a draft; native support is behind flags in Chromium. Assistants
@@ -244,3 +247,9 @@ in confirmations and proposals. The core does the rest.
   access; diagrams and drawings have no comments.
 - Diagram and presentation edits act on the page/slide shown (the tools switch
   to the requested one).
+- Suggestions track text: a table or list the assistant inserts is removed with
+  `withdraw_suggestion`, but when the user rejects its text in the review rail
+  the empty structure stays (as with the user's own suggestions).
+- Image results (`render`) are MCP image content: assistants that only read
+  text get the caption.
+- Proposals live in the page; reloading drops the pending ones.

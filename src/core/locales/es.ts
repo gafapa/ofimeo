@@ -2937,6 +2937,20 @@ const es: Record<string, string> = {
   'Tag a note of the page {name}': 'Etiquetar una nota de la página {name}',
   'Underline “{text}” on page {n}': 'Subrayar «{text}» en la página {n}',
   'Write “{text}” on page {n}': 'Escribir «{text}» en la página {n}',
+  'Add the text “{text}” to a slide': 'Añadir el texto «{text}» a una diapositiva',
+  'Animate an object of slide {n}': 'Animar un objeto de la diapositiva {n}',
+  'Apply the theme {name}': 'Aplicar el tema {name}',
+  'Change the layout of slide {n}': 'Cambiar el diseño de la diapositiva {n}',
+  'Change the look of {n} objects': 'Cambiar el aspecto de {n} objetos',
+  'Change the speaker notes of slide {n}': 'Cambiar las notas del orador de la diapositiva {n}',
+  'Format {range} in {sheet}': 'Dar formato a {range} en {sheet}',
+  'Freeze {rows} rows and {columns} columns': 'Inmovilizar {rows} filas y {columns} columnas',
+  'Highlight cells of {range}': 'Resaltar celdas de {range}',
+  'Insert the chart “{title}”': 'Insertar el gráfico «{title}»',
+  'Link {text} to {url}': 'Enlazar {text} con {url}',
+  'Make a pivot table of {range}': 'Crear una tabla dinámica de {range}',
+  'Set the transition of slide {n}': 'Fijar la transición de la diapositiva {n}',
+  'Sort {range} by column {column}': 'Ordenar {range} por la columna {column}',
 }
 
 export default es

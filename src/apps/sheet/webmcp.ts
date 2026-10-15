@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // WebMCP tools of the spreadsheet (see src/core/webmcp). Loaded only while the
 // switch is on. Every write is one Univer command, so it is one step of the
 // spreadsheet's undo history, and it is recorded as the AI assistant's in the
@@ -15,6 +16,7 @@ import { CHART_TYPES, colName, normalizeSpec, parseA1, toA1, type ChartType } fr
 import { insertChart, listCharts } from './charts/view'
 
 const MAX_CELLS = 20_000
+const CONDITIONS = ['greater_than', 'less_than', 'between', 'equal_to', 'text_contains', 'empty', 'not_empty', 'duplicate', 'unique']
 const FORMULA_ERROR = /^#(DIV\/0!|REF!|NAME\?|VALUE!|N\/A|NUM!|NULL!|SPILL!|CALC!|ERROR!?)/
 // render: at most this many rows and columns.
 const PICTURE_ROWS = 100
@@ -77,6 +79,17 @@ export function sheetTools(session: Session, univerAPI: FUniver, univer?: Univer
   }
   const count = (args: ToolArgs) => Math.max(1, Math.min(1000, Math.round(num(args, 'count', 1))))
   const where = (args: ToolArgs) => optStr(args, 'sheet') ?? workbook().getActiveSheet().getSheetName()
+  // Several facade calls as one undo step.
+  const group = univer
+    ? async <T>(fn: () => Promise<T>): Promise<T> => {
+        const batch = univer.__getInjector().get(IUndoRedoService).__tempBatchingUndoRedo(workbook().getId())
+        try {
+          return await fn()
+        } finally {
+          batch.dispose()
+        }
+      }
+    : null
 
   const tools: OfimeoTool[] = [
     {
@@ -342,6 +355,213 @@ export function sheetTools(session: Session, univerAPI: FUniver, univer?: Univer
       },
     },
     {
+      name: 'format_range',
+      description: 'Formats cells: bold, italic, font_color, background, font_size, number_format (e.g. "0.00", "#,##0", "0%", "dd/mm/yyyy"), align (left, center, right), wrap. One undo step.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          range: { type: 'string' },
+          bold: { type: 'boolean' },
+          italic: { type: 'boolean' },
+          font_color: { type: 'string' },
+          background: { type: 'string' },
+          font_size: { type: 'number' },
+          number_format: { type: 'string' },
+          align: { type: 'string', enum: ['left', 'center', 'right'] },
+          wrap: { type: 'boolean' },
+          ...sheetArg,
+        },
+        required: ['range'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Format {range} in {sheet}', { range: String(args.range ?? ''), sheet: where(args) }),
+      execute: async (args) => {
+        const s = sheetOf(args)
+        const r = parseA1(str(args, 'range'))
+        if (!r) throw new Error('Invalid range')
+        const range = s.getRange(toA1(r))
+        const done: string[] = []
+        const apply = (key: string, fn: () => unknown) => {
+          if (args[key] === undefined) return
+          fn()
+          done.push(key)
+        }
+        await (group ?? ((fn: () => Promise<unknown>) => fn()))(async () => {
+          apply('bold', () => range.setFontWeight(args.bold ? 'bold' : 'normal'))
+          apply('italic', () => range.setFontStyle(args.italic ? 'italic' : 'normal'))
+          apply('font_color', () => range.setFontColor(String(args.font_color)))
+          apply('background', () => range.setBackground(String(args.background)))
+          apply('font_size', () => range.setFontSize(Math.max(6, Math.min(96, Number(args.font_size)))))
+          apply('number_format', () => range.setNumberFormat(String(args.number_format)))
+          apply('align', () => range.setHorizontalAlignment(String(args.align) as never))
+          apply('wrap', () => range.setWrap(!!args.wrap))
+        })
+        if (!done.length) throw new Error('Nothing to format')
+        return { range: toA1(r), formatted: done }
+      },
+    },
+    {
+      name: 'sort_range',
+      description: 'Sorts the rows of a range by one column (a letter inside the range), ascending (default) or descending; with has_header the first row stays on top. One undo step.',
+      inputSchema: {
+        type: 'object',
+        properties: { range: { type: 'string' }, column: { type: 'string' }, ascending: { type: 'boolean' }, has_header: { type: 'boolean' }, ...sheetArg },
+        required: ['range', 'column'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Sort {range} by column {column}', { range: String(args.range ?? ''), column: String(args.column ?? '') }),
+      execute: (args) => {
+        const s = sheetOf(args)
+        const r = parseA1(str(args, 'range'))
+        if (!r) throw new Error('Invalid range')
+        const column = columnIndex(args.column)
+        if (column < r.startColumn || column > r.endColumn) throw new Error('The column must be inside the range')
+        const body = { ...r, startRow: r.startRow + (bool(args, 'has_header') ? 1 : 0) }
+        if (body.startRow > body.endRow) throw new Error('Nothing to sort')
+        s.getRange(toA1(body)).sort({ column, ascending: args.ascending !== false })
+        return { sorted: toA1(body), by: colName(column), ascending: args.ascending !== false }
+      },
+    },
+    {
+      name: 'freeze',
+      description: 'Freezes the first rows and/or columns of a sheet (0 unfreezes).',
+      inputSchema: { type: 'object', properties: { rows: { type: 'integer', minimum: 0 }, columns: { type: 'integer', minimum: 0 }, ...sheetArg } },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Freeze {rows} rows and {columns} columns', { rows: String(args.rows ?? 0), columns: String(args.columns ?? 0) }),
+      execute: (args) => {
+        const s = sheetOf(args)
+        if (args.rows === undefined && args.columns === undefined) throw new Error('Give rows and/or columns')
+        if (args.rows !== undefined) s.setFrozenRows(Math.max(0, Math.round(num(args, 'rows'))))
+        if (args.columns !== undefined) s.setFrozenColumns(Math.max(0, Math.round(num(args, 'columns'))))
+        return { sheet: s.getSheetName(), rows: args.rows ?? null, columns: args.columns ?? null }
+      },
+    },
+    {
+      name: 'add_conditional_format',
+      description:
+        'Highlights cells of a range that meet a condition: when = greater_than, less_than, between, equal_to, text_contains, empty, not_empty, duplicate, unique (value, value2 for between); with background, font_color and/or bold.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          range: { type: 'string' },
+          when: { type: 'string', enum: CONDITIONS },
+          value: { type: ['number', 'string'] },
+          value2: { type: 'number' },
+          background: { type: 'string' },
+          font_color: { type: 'string' },
+          bold: { type: 'boolean' },
+          ...sheetArg,
+        },
+        required: ['range', 'when'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Highlight cells of {range}', { range: String(args.range ?? '') }),
+      execute: (args) => {
+        const s = sheetOf(args) as FWorksheet & { newConditionalFormattingRule?: () => any; addConditionalFormattingRule?: (rule: unknown) => unknown }
+        if (!s.newConditionalFormattingRule || !s.addConditionalFormattingRule) throw new Error('Conditional formatting is not available')
+        const r = parseA1(str(args, 'range'))
+        if (!r) throw new Error('Invalid range')
+        const value = Number(args.value)
+        let rule: any = s.newConditionalFormattingRule()
+        switch (str(args, 'when')) {
+          case 'greater_than': rule = rule.whenNumberGreaterThan(value); break
+          case 'less_than': rule = rule.whenNumberLessThan(value); break
+          case 'between': rule = rule.whenNumberBetween(value, num(args, 'value2')); break
+          case 'equal_to': rule = typeof args.value === 'number' ? rule.whenNumberEqualTo(value) : rule.whenTextEqualTo(String(args.value ?? '')); break
+          case 'text_contains': rule = rule.whenTextContains(String(args.value ?? '')); break
+          case 'empty': rule = rule.whenCellEmpty(); break
+          case 'not_empty': rule = rule.whenCellNotEmpty(); break
+          case 'duplicate': rule = rule.setDuplicateValues(); break
+          case 'unique': rule = rule.setUniqueValues(); break
+          default: throw new Error(`Unknown condition "${String(args.when)}"`)
+        }
+        rule = rule.setRanges([s.getRange(toA1(r)).getRange()])
+        if (!args.background && !args.font_color && args.bold === undefined) rule = rule.setBackground('#fce8b2')
+        if (args.background) rule = rule.setBackground(String(args.background))
+        if (args.font_color) rule = rule.setFontColor(String(args.font_color))
+        if (args.bold !== undefined) rule = rule.setBold(!!args.bold)
+        s.addConditionalFormattingRule(rule.build())
+        return { range: toA1(r), when: args.when }
+      },
+    },
+    {
+      name: 'create_pivot',
+      description:
+        'Makes a pivot table (kept up to date with Data ▸ Refresh pivot tables) from a source range with a header row: rows (a header), optional columns (a header), values (a header), agg (SUM, AVERAGE, COUNT, MIN, MAX), placed in a new sheet (default) or at a cell.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          source: { type: 'string', description: 'A1 range with the header row.' },
+          rows: { type: 'string' },
+          columns: { type: 'string' },
+          values: { type: 'string' },
+          agg: { type: 'string', enum: ['SUM', 'AVERAGE', 'COUNT', 'MIN', 'MAX'] },
+          at: { type: 'string', description: 'Top-left cell on the source sheet (default: a new sheet).' },
+          ...sheetArg,
+        },
+        required: ['source', 'rows', 'values'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Make a pivot table of {range}', { range: String(args.source ?? '') }),
+      execute: async (args) => {
+        const s = sheetOf(args)
+        const src = parseA1(str(args, 'source'))
+        if (!src || src.endRow <= src.startRow) throw new Error('The source needs a header row and data')
+        const header = s.getRange(src.startRow, src.startColumn, 1, src.endColumn - src.startColumn + 1).getValues()[0].map((v) => String(v ?? ''))
+        for (const key of ['rows', 'columns', 'values'] as const) {
+          const v = optStr(args, key)
+          if (v && !header.includes(v)) throw new Error(`"${v}" is not a header of the source (${header.join(', ')})`)
+        }
+        const [{ writePivot }, { uniqueSheetName }] = await Promise.all([import('./pivot'), import('./stats')])
+        const agg = (optStr(args, 'agg') ?? 'SUM').toUpperCase()
+        if (!['SUM', 'AVERAGE', 'COUNT', 'MIN', 'MAX'].includes(agg)) throw new Error('agg must be SUM, AVERAGE, COUNT, MIN or MAX')
+        const spec = { v: 1 as const, sourceSheetId: s.getSheetId(), source: toA1(src), rows: str(args, 'rows'), columns: optStr(args, 'columns') ?? '', values: str(args, 'values'), agg: agg as never, filter: '' }
+        const wb = workbook()
+        let target = s
+        let at = { row: 0, col: 0 }
+        const cell = optStr(args, 'at')
+        if (cell) {
+          const c = parseA1(cell)
+          if (!c) throw new Error('Invalid cell')
+          at = { row: c.startRow, col: c.startColumn }
+        } else target = wb.insertSheet(uniqueSheetName(univerAPI, t('Pivot table')))
+        if (!writePivot(univerAPI, target, at, spec)) throw new Error('The pivot table could not be made')
+        target.activate()
+        return { sheet: target.getSheetName(), at: `${colName(at.col)}${at.row + 1}` }
+      },
+    },
+    {
+      name: 'find',
+      description: 'Finds cells whose value or formula contains a text (case-insensitive) in every sheet: up to 200 cells with their value.',
+      inputSchema: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] },
+      access: 'view',
+      execute: (args) => {
+        const query = str(args, 'query').toLowerCase()
+        if (!query) throw new Error('Empty query')
+        const found: { sheet: string; cell: string; value: string; formula?: string }[] = []
+        for (const s of workbook().getSheets()) {
+          const a1 = usedRange(s)
+          const r = a1 && parseA1(a1)
+          if (!r || (r.endRow - r.startRow + 1) * (r.endColumn - r.startColumn + 1) > MAX_CELLS) continue
+          const range = s.getRange(a1)
+          const display = range.getDisplayValues()
+          const formulas = range.getFormulas()
+          display.forEach((row, i) =>
+            row.forEach((value, j) => {
+              const formula = formulas[i]?.[j]
+              if (found.length < 200 && (String(value).toLowerCase().includes(query) || formula?.toLowerCase().includes(query))) found.push({ sheet: s.getSheetName(), cell: `${colName(r.startColumn + j)}${r.startRow + i + 1}`, value: String(value), ...(formula ? { formula } : {}) })
+            }),
+          )
+        }
+        return { count: found.length, cells: found }
+      },
+    },
+    {
       name: 'describe_range',
       description: 'Descriptive statistics of each column of a range (A1, default: the used range; the first row is taken as headers when it holds text): count, mean, median, min, max, standard deviation, sum, and for text columns the most frequent values.',
       inputSchema: { type: 'object', properties: { range: { type: 'string' }, ...sheetArg } },
@@ -436,15 +656,7 @@ export function sheetTools(session: Session, univerAPI: FUniver, univer?: Univer
 
   return {
     tools,
-    group: async (fn) => {
-      const undo = univer?.__getInjector().get(IUndoRedoService)
-      const batch = undo?.__tempBatchingUndoRedo(workbook().getId())
-      try {
-        return await fn()
-      } finally {
-        batch?.dispose()
-      }
-    },
+    group: (fn) => (group ? group(fn) : fn()),
     selection: () => {
       const s = workbook().getActiveSheet()
       const range = s.getSelection()?.getActiveRange()

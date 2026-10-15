@@ -565,6 +565,50 @@ export function diagramTools(session: Session, editor: GraphEditor): AppTools {
       },
     },
     {
+      name: 'set_style',
+      description: 'Changes the look of shapes or connectors of the page shown (ids from get_diagram): fill, stroke (line color), font_color, font_size, bold, rounded, dashed, stroke_width. One undo step.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          ids: { type: 'array', items: { type: 'string' } },
+          fill: { type: 'string' },
+          stroke: { type: 'string' },
+          font_color: { type: 'string' },
+          font_size: { type: 'number' },
+          bold: { type: 'boolean' },
+          rounded: { type: 'boolean' },
+          dashed: { type: 'boolean' },
+          stroke_width: { type: 'number' },
+        },
+        required: ['ids'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Change the look of {n} objects', { n: Array.isArray(args.ids) ? args.ids.length : 1 }),
+      execute: (args) => {
+        editable()
+        const cells = (Array.isArray(args.ids) ? args.ids : [args.ids]).map((id) => cellById(editor, String(id)))
+        const changes: Record<string, unknown> = {}
+        if (args.fill !== undefined) changes.fillColor = String(args.fill)
+        if (args.stroke !== undefined) changes.strokeColor = String(args.stroke)
+        if (args.font_color !== undefined) changes.fontColor = String(args.font_color)
+        if (args.font_size !== undefined) changes.fontSize = Math.max(6, Math.min(96, Number(args.font_size)))
+        if (args.rounded !== undefined) changes.rounded = !!args.rounded
+        if (args.dashed !== undefined) changes.dashed = !!args.dashed
+        if (args.stroke_width !== undefined) changes.strokeWidth = Math.max(0, Math.min(20, Number(args.stroke_width)))
+        if (!Object.keys(changes).length && args.bold === undefined) throw new Error('Nothing to change')
+        const model = graph.getDataModel()
+        editor.inBatch(() => {
+          for (const cell of cells) {
+            const style = { ...(cell.getClonedStyle() as Record<string, unknown>), ...changes }
+            if (args.bold !== undefined) style.fontStyle = args.bold ? (Number(style.fontStyle) || 0) | 1 : (Number(style.fontStyle) || 0) & ~1
+            model.setStyle(cell, style as never)
+          }
+        })
+        return { changed: cells.length }
+      },
+    },
+    {
       name: 'add_page',
       description: 'Adds an empty page (optionally named) after the last one and shows it.',
       inputSchema: { type: 'object', properties: { name: { type: 'string' } } },

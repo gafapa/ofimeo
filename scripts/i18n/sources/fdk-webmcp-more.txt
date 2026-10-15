@@ -1,0 +1,14 @@
+Add the text “{text}” to a slide ||| Ajouter le texte « {text} » à une diapositive ||| Den Text „{text}“ zu einer Folie hinzufügen
+Animate an object of slide {n} ||| Animer un objet de la diapositive {n} ||| Ein Objekt auf Folie {n} animieren
+Apply the theme {name} ||| Appliquer le thème {name} ||| Das Design {name} anwenden
+Change the layout of slide {n} ||| Modifier la disposition de la diapositive {n} ||| Das Layout von Folie {n} ändern
+Change the look of {n} objects ||| Modifier l’apparence de {n} objets ||| Das Aussehen von {n} Objekten ändern
+Change the speaker notes of slide {n} ||| Modifier les notes de l’orateur de la diapositive {n} ||| Die Notizen zu Folie {n} ändern
+Format {range} in {sheet} ||| Mettre en forme {range} dans {sheet} ||| {range} in {sheet} formatieren
+Freeze {rows} rows and {columns} columns ||| Figer {rows} lignes et {columns} colonnes ||| {rows} Zeilen und {columns} Spalten fixieren
+Highlight cells of {range} ||| Mettre en évidence des cellules de {range} ||| Zellen von {range} hervorheben
+Insert the chart “{title}” ||| Insérer le graphique « {title} » ||| Das Diagramm „{title}“ einfügen
+Link {text} to {url} ||| Lier {text} à {url} ||| {text} mit {url} verlinken
+Make a pivot table of {range} ||| Créer un tableau croisé dynamique de {range} ||| Eine Pivot-Tabelle von {range} erstellen
+Set the transition of slide {n} ||| Définir la transition de la diapositive {n} ||| Den Übergang von Folie {n} festlegen
+Sort {range} by column {column} ||| Trier {range} selon la colonne {column} ||| {range} nach Spalte {column} sortieren

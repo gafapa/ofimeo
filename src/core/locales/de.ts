@@ -2937,6 +2937,20 @@ const de: Record<string, string> = {
   'Tag a note of the page {name}': 'Eine Notiz der Seite {name} markieren',
   'Underline “{text}” on page {n}': '„{text}“ auf Seite {n} unterstreichen',
   'Write “{text}” on page {n}': '„{text}“ auf Seite {n} schreiben',
+  'Add the text “{text}” to a slide': 'Den Text „{text}“ zu einer Folie hinzufügen',
+  'Animate an object of slide {n}': 'Ein Objekt auf Folie {n} animieren',
+  'Apply the theme {name}': 'Das Design {name} anwenden',
+  'Change the layout of slide {n}': 'Das Layout von Folie {n} ändern',
+  'Change the look of {n} objects': 'Das Aussehen von {n} Objekten ändern',
+  'Change the speaker notes of slide {n}': 'Die Notizen zu Folie {n} ändern',
+  'Format {range} in {sheet}': '{range} in {sheet} formatieren',
+  'Freeze {rows} rows and {columns} columns': '{rows} Zeilen und {columns} Spalten fixieren',
+  'Highlight cells of {range}': 'Zellen von {range} hervorheben',
+  'Insert the chart “{title}”': 'Das Diagramm „{title}“ einfügen',
+  'Link {text} to {url}': '{text} mit {url} verlinken',
+  'Make a pivot table of {range}': 'Eine Pivot-Tabelle von {range} erstellen',
+  'Set the transition of slide {n}': 'Den Übergang von Folie {n} festlegen',
+  'Sort {range} by column {column}': '{range} nach Spalte {column} sortieren',
 }
 
 export default de

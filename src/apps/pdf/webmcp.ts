@@ -12,10 +12,14 @@ import { userIdOf } from '../writer/collab'
 import type { Editor } from './editor'
 import { apply, viewTransform } from './geometry'
 import { annotsMap, newId, notesMap, pagesArray, type Note, type PageEntry } from './model'
-import { describe } from './render'
-import type { Viewer } from './viewer'
+import { describe, measure } from './render'
+import { stampSize } from './draw'
+import { findAll, type Viewer } from './viewer'
+import { gradeText, stampPresets } from './stamps'
 
 const MAX_TEXT = 200_000
+const MARKUP_COLORS = { highlight: '#ffd400', underline: '#1565c0', strike: '#c62828' } as const
+const STAMPS = ['check', 'cross', 'good', 'revise', 'grade', 'custom']
 
 interface TextItem {
   str: string
@@ -63,6 +67,9 @@ export function pdfTools(session: Session, viewer: Viewer, editor: Editor): AppT
     return { entry, index: n - 1 }
   }
   const pageArg = { page: { type: 'integer', minimum: 1, description: 'Page number (1 = first).' } }
+  const requireEdit = () => {
+    if (!editor.canEdit) throw new Error('The PDF is read-only in this tab')
+  }
 
   const tools: OfimeoTool[] = [
     {
@@ -133,39 +140,128 @@ export function pdfTools(session: Session, viewer: Viewer, editor: Editor): AppT
         return { id: base.id }
       },
     },
+    ...(['highlight', 'underline', 'strike'] as const).map(
+      (type): OfimeoTool => ({
+        name: `add_${type}`,
+        description: `${type === 'highlight' ? 'Highlights' : type === 'underline' ? 'Underlines' : 'Strikes through'} text on a page (the first occurrence, or "occurrence"). Case-sensitive. One undo step.`,
+        inputSchema: {
+          type: 'object',
+          properties: {
+            ...pageArg,
+            text: { type: 'string', description: 'Text to mark, as returned by get_text.' },
+            occurrence: { type: 'integer', minimum: 1 },
+            color: { type: 'string', description: `CSS color (default ${MARKUP_COLORS[type]}).` },
+          },
+          required: ['page', 'text'],
+        },
+        access: 'edit',
+        changesDocument: true,
+        summary: (args) =>
+          (type === 'highlight' ? t('Highlight “{text}” on page {n}', { text: String(args.text ?? '').slice(0, 80), n: String(args.page ?? '') }) : type === 'underline' ? t('Underline “{text}” on page {n}', { text: String(args.text ?? '').slice(0, 80), n: String(args.page ?? '') }) : t('Strike through “{text}” on page {n}', { text: String(args.text ?? '').slice(0, 80), n: String(args.page ?? '') })),
+        execute: async (args) => {
+          requireEdit()
+          const { entry, index } = pageAt(args)
+          if (entry.src === -1) throw new Error('This page has no text')
+          const query = str(args, 'text')
+          const pageText = await viewer.pageText(index)
+          const nth = Math.max(1, Math.round(num(args, 'occurrence', 1)))
+          let at = -1
+          for (let i = 0; i < nth; i++) {
+            at = pageText.indexOf(query, at + 1)
+            if (at < 0) throw new Error(i ? `Only ${i} occurrence(s) on this page` : 'Text not found on this page')
+          }
+          const rects = await textRects(viewer, entry, at, at + query.length)
+          if (!rects.length) throw new Error('Could not locate the text on the page')
+          const added = editor.add({ type, page: entry.id, color: optStr(args, 'color') ?? MARKUP_COLORS[type], rects, quote: query })
+          editor.replace({ ...added, author: aiName(session) })
+          return { id: added.id }
+        },
+      }),
+    ),
     {
-      name: 'add_highlight',
-      description: 'Highlights text on a page (the first occurrence, or "occurrence"). Case-sensitive. One undo step.',
+      name: 'add_text',
+      description: 'Writes a text box on a page at x/y (points from the top left; default top left), e.g. to fill in a worksheet or add a correction. One undo step.',
       inputSchema: {
         type: 'object',
-        properties: {
-          ...pageArg,
-          text: { type: 'string', description: 'Text to highlight, as returned by get_text.' },
-          occurrence: { type: 'integer', minimum: 1 },
-          color: { type: 'string', description: 'CSS color (default yellow).' },
-        },
+        properties: { ...pageArg, text: { type: 'string' }, x: { type: 'number' }, y: { type: 'number' }, size: { type: 'number', description: 'Font size (default 12).' }, color: { type: 'string' }, width: { type: 'number' } },
         required: ['page', 'text'],
       },
       access: 'edit',
       changesDocument: true,
-      summary: (args) => t('Highlight “{text}” on page {n}', { text: String(args.text ?? '').slice(0, 80), n: String(args.page ?? '') }),
-      execute: async (args) => {
-        if (!editor.canEdit) throw new Error('The PDF is read-only in this tab')
-        const { entry, index } = pageAt(args)
-        if (entry.src === -1) throw new Error('This page has no text')
-        const query = str(args, 'text')
-        const pageText = await viewer.pageText(index)
-        const nth = Math.max(1, Math.round(num(args, 'occurrence', 1)))
-        let at = -1
-        for (let i = 0; i < nth; i++) {
-          at = pageText.indexOf(query, at + 1)
-          if (at < 0) throw new Error(i ? `Only ${i} occurrence(s) on this page` : 'Text not found on this page')
-        }
-        const rects = await textRects(viewer, entry, at, at + query.length)
-        if (!rects.length) throw new Error('Could not locate the text on the page')
-        const added = editor.add({ type: 'highlight', page: entry.id, color: optStr(args, 'color') ?? '#ffd400', rects, quote: query })
+      summary: (args) => t('Write “{text}” on page {n}', { text: String(args.text ?? '').slice(0, 80), n: String(args.page ?? '') }),
+      execute: (args) => {
+        requireEdit()
+        const { entry } = pageAt(args)
+        const text = str(args, 'text')
+        if (!text.trim()) throw new Error('Empty text')
+        const size = Math.max(6, Math.min(72, num(args, 'size', 12)))
+        const lines = text.split('\n')
+        const w = num(args, 'width', Math.min(entry.w - 20, Math.max(...lines.map((l) => measure(l, size, false))) + 12))
+        const h = Math.round(lines.length * size * 1.2 + 6)
+        const x = Math.min(entry.w - 10, Math.max(0, num(args, 'x', 24)))
+        const y = Math.min(entry.h - 10, Math.max(0, num(args, 'y', 24)))
+        const added = editor.add({ type: 'text', page: entry.id, color: optStr(args, 'color') ?? '#d32f2f', x, y, w, h, size, text })
         editor.replace({ ...added, author: aiName(session) })
         return { id: added.id }
+      },
+    },
+    {
+      name: 'add_stamp',
+      description: `Puts a correction stamp on a page at x/y (points from the top left; its center): ${STAMPS.join(', ')}; "grade" shows "Grade: <text>", "custom" shows the text. One undo step.`,
+      inputSchema: {
+        type: 'object',
+        properties: { ...pageArg, stamp: { type: 'string', enum: STAMPS }, text: { type: 'string', description: 'For grade and custom stamps.' }, x: { type: 'number' }, y: { type: 'number' } },
+        required: ['page', 'stamp'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Put a stamp on page {n}', { n: String(args.page ?? '') }),
+      execute: (args) => {
+        requireEdit()
+        const { entry } = pageAt(args)
+        const spec = stampPresets().find((x) => x.id === args.stamp)
+        if (!spec) throw new Error(`Unknown stamp "${String(args.stamp)}"`)
+        const custom = optStr(args, 'text')?.trim()
+        if (spec.ask && !custom) throw new Error('This stamp needs "text"')
+        const label = spec.ask === 'grade' ? gradeText(custom!) : spec.ask === 'custom' ? custom : spec.text
+        const size = spec.size ?? 16
+        const base = { text: label, glyph: spec.glyph, size }
+        const [w, h] = label ? stampSize(base, measure) : [size * 1.8, size * 1.8]
+        const x = num(args, 'x', entry.w - w - 24) - (args.x === undefined ? 0 : w / 2)
+        const y = num(args, 'y', 24) - (args.y === undefined ? 0 : h / 2)
+        const added = editor.add({ type: 'stamp', page: entry.id, color: spec.color, ...base, x: Math.max(0, x), y: Math.max(0, y), w, h, alt: spec.alt || label })
+        editor.replace({ ...added, author: aiName(session) })
+        return { id: added.id }
+      },
+    },
+    {
+      name: 'search',
+      description: 'Finds text in the PDF (case and accents ignored): up to 100 matches with their page and context.',
+      inputSchema: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] },
+      access: 'view',
+      execute: async (args) => {
+        const query = str(args, 'query')
+        if (!query.trim()) throw new Error('Empty query')
+        const matches = await findAll(viewer, query)
+        const out: { page: number; context: string }[] = []
+        for (const m of matches.slice(0, 100)) {
+          const text = await viewer.pageText(m.index)
+          out.push({ page: m.index + 1, context: text.slice(Math.max(0, m.start - 40), m.end + 40) })
+        }
+        return { count: matches.length, matches: out }
+      },
+    },
+    {
+      name: 'resolve_note',
+      description: 'Marks a note (id from list_comments) as resolved, or open again with resolved false.',
+      inputSchema: { type: 'object', properties: { id: { type: 'string' }, resolved: { type: 'boolean' } }, required: ['id'] },
+      access: 'comment',
+      execute: (args) => {
+        const map = notesMap(session)
+        const note = map.get(str(args, 'id'))
+        if (!note || note.parent) throw new Error('No note with that id')
+        map.set(note.id, { ...note, resolved: args.resolved !== false })
+        return { id: note.id, resolved: args.resolved !== false }
       },
     },
     {

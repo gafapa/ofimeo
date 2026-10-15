@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@excalidraw/excalidraw": "0.18.1",
+    "@excalidraw/mermaid-to-excalidraw": "2.2.2",
     "@fontsource/architects-daughter": "5.3.0",
     "@fontsource/atkinson-hyperlegible": "5.3.0",
     "@fontsource/opendyslexic": "5.3.0",

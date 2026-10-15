@@ -122,6 +122,9 @@ export interface FormResponse {
 export interface Grade {
   points: Record<string, number>
   comments: Record<string, string>
+  // Questions whose points or comment the AI assistant suggested and an editor
+  // has not reviewed yet (shown as such; cleared when an editor changes them).
+  ai?: string[]
   // Time the grade was released to the respondent.
   released?: number
 }

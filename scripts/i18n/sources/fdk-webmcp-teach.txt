@@ -1,0 +1,32 @@
+{n} responses have points or comments suggested by the AI assistant that nobody has reviewed. ||| {n} réponses ont des points ou des commentaires suggérés par l’assistant IA que personne n’a vérifiés. ||| {n} Antworten haben vom KI-Assistenten vorgeschlagene Punkte oder Kommentare, die niemand geprüft hat.
+{title} (variant) ||| {title} (variante) ||| {title} (Variante)
+Add {n} elements to the drawing ||| Ajouter {n} éléments au dessin ||| {n} Elemente zur Zeichnung hinzufügen
+Add {n} questions ||| Ajouter {n} questions ||| {n} Fragen hinzufügen
+Add {n} slides ||| Ajouter {n} diapositives ||| {n} Folien hinzufügen
+Add a diagram from Mermaid ||| Ajouter un diagramme depuis Mermaid ||| Ein Diagramm aus Mermaid hinzufügen
+Add a graph of {n} shapes ||| Ajouter un graphe de {n} formes ||| Einen Graphen mit {n} Formen hinzufügen
+Add pages from draw.io ||| Ajouter des pages depuis draw.io ||| Seiten aus draw.io hinzufügen
+Add the source “{title}” to the bibliography ||| Ajouter la source « {title} » à la bibliographie ||| Die Quelle „{title}“ zum Literaturverzeichnis hinzufügen
+Change the form settings ||| Modifier les paramètres du formulaire ||| Die Formulareinstellungen ändern
+Check “{text}” ||| Cocher « {text} » ||| „{text}“ abhaken
+Cite a source after {text} ||| Citer une source après {text} ||| Eine Quelle nach {text} zitieren
+Create a new document from one of your templates and open it in a new tab ||| Créer un nouveau document à partir de l’un de vos modèles et l’ouvrir dans un nouvel onglet ||| Ein neues Dokument aus einer Ihrer Vorlagen erstellen und in einem neuen Tab öffnen
+Create a new form “{title}” with the questions shuffled and open it in a new tab ||| Créer un nouveau formulaire « {title} » avec les questions mélangées et l’ouvrir dans un nouvel onglet ||| Ein neues Formular „{title}“ mit gemischten Fragen erstellen und in einem neuen Tab öffnen
+Give the assistant people’s real names ||| Donner à l’assistant les vrais noms des personnes ||| Dem Assistenten die echten Namen der Personen geben
+Insert a graph of {list} ||| Insérer un graphique de {list} ||| Einen Funktionsgraphen von {list} einfügen
+Insert the bibliography ||| Insérer la bibliographie ||| Das Literaturverzeichnis einfügen
+Insert the equation {latex} ||| Insérer l’équation {latex} ||| Die Gleichung {latex} einfügen
+Keep as reviewed ||| Marquer comme vérifié ||| Als geprüft übernehmen
+Let the AI assistant read your Moodle assignments (courses, names, due dates and instructions) ||| Laisser l’assistant IA lire vos devoirs Moodle (cours, noms, dates de remise et consignes) ||| Den KI-Assistenten Ihre Moodle-Aufgaben lesen lassen (Kurse, Namen, Abgabetermine und Anweisungen)
+Off: form respondents and the people in the document reach the assistant as “Respondent 1”, “Participant 2”… Pupils’ data are better kept that way. ||| Désactivé : les personnes qui répondent aux formulaires et celles du document parviennent à l’assistant sous la forme « Répondant 1 », « Participant 2 »… Les données des élèves sont ainsi mieux protégées. ||| Aus: Antwortende von Formularen und Personen im Dokument erreichen den Assistenten als „Antwort 1“, „Teilnehmende Person 2“… So sind die Daten der Schülerinnen und Schüler besser geschützt.
+Participant {n} ||| Participant {n} ||| Teilnehmende Person {n}
+Put a stamp on page {n} ||| Apposer un tampon sur la page {n} ||| Einen Stempel auf Seite {n} setzen
+Release grades the AI assistant suggested? ||| Publier des notes suggérées par l’assistant IA ? ||| Vom KI-Assistenten vorgeschlagene Noten freigeben?
+Respondent {n} ||| Répondant {n} ||| Antwort {n}
+Set the right answer of “{title}” ||| Définir la bonne réponse de « {title} » ||| Die richtige Antwort von „{title}“ festlegen
+Strike through “{text}” on page {n} ||| Barrer « {text} » à la page {n} ||| „{text}“ auf Seite {n} durchstreichen
+Suggest a grade for response {n} ||| Suggérer une note pour la réponse {n} ||| Eine Note für Antwort {n} vorschlagen
+Suggested by the AI assistant: check the points and the comment before releasing the grade. ||| Suggéré par l’assistant IA : vérifiez les points et le commentaire avant de publier la note. ||| Vom KI-Assistenten vorgeschlagen: Prüfen Sie Punkte und Kommentar, bevor Sie die Note freigeben.
+Tag a note of the page {name} ||| Étiqueter une note de la page {name} ||| Eine Notiz der Seite {name} markieren
+Underline “{text}” on page {n} ||| Souligner « {text} » à la page {n} ||| „{text}“ auf Seite {n} unterstreichen
+Write “{text}” on page {n} ||| Écrire « {text} » sur la page {n} ||| „{text}“ auf Seite {n} schreiben

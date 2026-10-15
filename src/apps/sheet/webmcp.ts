@@ -342,6 +342,41 @@ export function sheetTools(session: Session, univerAPI: FUniver, univer?: Univer
       },
     },
     {
+      name: 'describe_range',
+      description: 'Descriptive statistics of each column of a range (A1, default: the used range; the first row is taken as headers when it holds text): count, mean, median, min, max, standard deviation, sum, and for text columns the most frequent values.',
+      inputSchema: { type: 'object', properties: { range: { type: 'string' }, ...sheetArg } },
+      access: 'view',
+      execute: (args) => {
+        const s = sheetOf(args)
+        const a1 = optStr(args, 'range') || usedRange(s)
+        const r = a1 && parseA1(a1)
+        if (!r) throw new Error('The sheet is empty or the range is invalid')
+        if ((r.endRow - r.startRow + 1) * (r.endColumn - r.startColumn + 1) > MAX_CELLS) throw new Error(`Range too large (more than ${MAX_CELLS} cells)`)
+        const values = s.getRange(toA1(r)).getValues()
+        const header = values[0]?.some((v) => typeof v === 'string' && v.trim() && Number.isNaN(Number(v))) ? values[0] : null
+        const rows = header ? values.slice(1) : values
+        const columns = (values[0] ?? []).map((_v, j) => {
+          const column = rows.map((row) => row[j]).filter((v) => v !== null && v !== undefined && v !== '')
+          const numbers = column.map((v) => (typeof v === 'number' ? v : typeof v === 'string' && v.trim() && !Number.isNaN(Number(v)) ? Number(v) : NaN)).filter((v) => Number.isFinite(v)) as number[]
+          const name = header ? String(header[j] ?? '') : colName(r.startColumn + j)
+          if (numbers.length && numbers.length >= column.length / 2) {
+            const sorted = [...numbers].sort((x, y) => x - y)
+            const sum = numbers.reduce((x, y) => x + y, 0)
+            const mean = sum / numbers.length
+            const mid = sorted.length >> 1
+            const median = sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
+            const sd = Math.sqrt(numbers.reduce((x, y) => x + (y - mean) ** 2, 0) / Math.max(1, numbers.length - 1))
+            const round = (n: number) => Math.round(n * 1e4) / 1e4
+            return { column: colName(r.startColumn + j), name, count: numbers.length, mean: round(mean), median: round(median), min: sorted[0], max: sorted[sorted.length - 1], sd: round(sd), sum: round(sum) }
+          }
+          const counts = new Map<string, number>()
+          for (const v of column) counts.set(String(v), (counts.get(String(v)) ?? 0) + 1)
+          return { column: colName(r.startColumn + j), name, count: column.length, distinct: counts.size, top: [...counts.entries()].sort((x, y) => y[1] - x[1]).slice(0, 5).map(([value, n]) => ({ value, n })) }
+        })
+        return { sheet: s.getSheetName(), range: toA1(r), headers: !!header, columns }
+      },
+    },
+    {
       name: 'list_formula_errors',
       description: 'Lists the cells of every sheet whose formula gives an error (#DIV/0!, #REF!, #NAME?, #VALUE!, #N/A…): sheet, cell, error and formula.',
       inputSchema: { type: 'object', properties: {} },

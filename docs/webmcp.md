@@ -153,20 +153,39 @@ form questions with answer keys, notebook sections and pages), stores it in
 this browser's library with new keys and opens it in a new tab. The assistant
 gets neither its link nor its keys, and it never reads other documents.
 
+Also in every app: `list_templates` and `create_from_template` (the user's own
+templates; a new document, confirmed) and `get_assignments` (the user's Moodle
+assignments as last loaded in this browser: course, name, due date, status,
+instructions as text; the user allows every call; no credentials, nothing
+fetched).
+
+## People's data
+
+Names of form respondents and of the people with the document open reach the
+assistant as pseudonyms ("Respondent 3", by order of submission;
+"Participant 2") unless the user ticks *Give the assistant people's real
+names* in the indicator's dialog (per browser, `ofimeo:webmcp:names`). Comment
+authors are shown as written. `summarize_responses` has no names at all.
+Grades the assistant suggests (`propose_grade`) are stored in the editor's
+private vault marked as AI suggestions (`Grade.ai`): the grading view shows
+"Suggested by the AI assistant" until an editor changes or accepts them, and
+releasing a grade with unreviewed suggestions asks first. The assistant never
+releases grades and never reads answer keys (`set_answer_key` writes only).
+
 Presentations add `next_slide`, `previous_slide`, `go_to_slide` and
 `get_speaker_notes` while this browser runs the slide show (the tool list is
 registered again when it starts and ends).
 
 | App | Read (view) | Comment | Edit |
 | --- | --- | --- | --- |
-| Documents | `get_text` (Markdown with CriticMarkup `{++ins++}` `{--del--}` for pending suggestions, or plain), `get_outline`, `find`, `list_comments` | `add_comment` (on text or as a reply) | `insert_text`, `replace_range`, `delete_text` (suggestions), `apply_heading`, `format`, `set_alt_text` |
-| Spreadsheets | `list_sheets`, `read_range`, `list_comments` (cell notes), `list_formula_errors` | – | `write_range` (values and `=` formulas), `add_sheet`, `insert_chart` (charts model of `src/apps/sheet/charts`), `add_comment` (cell note), `insert_rows`, `insert_columns`, `rename_sheet`, `duplicate_sheet`; confirmed: `delete_rows`, `delete_columns`, `clear_range`, `delete_sheet` |
-| Presentations | `list_slides`, `get_slide`, `list_comments` | `add_comment` | `add_slide`, `set_text`, `move_object`, `move_slide`, `duplicate_slide`; confirmed: `delete_objects`, `delete_slide` |
-| Diagrams | `get_diagram` (summary or draw.io XML) | – | `add_shape`, `connect`, `set_label`, `move_object`, `add_page`, `rename_page`, `move_page`; confirmed: `delete_objects`, `delete_page` |
-| Forms (editors) | `get_form` | – | `add_question`, `update_question`, `move_question`, `get_responses` (editors only); confirmed: `delete_question` |
-| PDF | `get_text` (per page), `list_comments`, `list_annotations` | `add_note` | `add_highlight`; confirmed: `delete_annotation` |
-| Drawings | `get_scene` | – | `add_element`, `update_element`; confirmed: `delete_elements` |
-| Notebooks | `list_pages` (sections, pages, levels), `get_page` (Markdown, by id or title) | – | `add_page` (with Markdown text), `append_text` (Markdown at the end of a page; direct edit, one undo step), `rename_page`, `move_page`; confirmed: `delete_page` |
+| Documents | `get_text` (Markdown with CriticMarkup `{++ins++}` `{--del--}` for pending suggestions, or plain), `get_outline`, `find`, `list_comments`, `list_references` | `add_comment` (on text or as a reply) | `insert_text`, `insert_markdown` (tables, lists, links…), `replace_range`, `delete_text` (suggestions); `apply_heading`, `format`, `set_alt_text`, `insert_equation` (LaTeX), `add_function_graph`, `add_reference`, `cite`, `insert_bibliography` (direct, one undo step each) |
+| Spreadsheets | `list_sheets`, `read_range`, `list_comments` (cell notes), `list_formula_errors`, `describe_range` (statistics per column) | – | `write_range` (values and `=` formulas), `add_sheet`, `insert_chart` (charts model of `src/apps/sheet/charts`), `add_comment` (cell note), `insert_rows`, `insert_columns`, `rename_sheet`, `duplicate_sheet`; confirmed: `delete_rows`, `delete_columns`, `clear_range`, `delete_sheet` |
+| Presentations | `list_slides`, `get_slide`, `list_comments` | `add_comment` | `add_slide`, `add_slides_from_outline`, `add_function_graph`, `set_text`, `move_object`, `move_slide`, `duplicate_slide`; confirmed: `delete_objects`, `delete_slide` |
+| Diagrams | `get_diagram` (summary or draw.io XML) | – | `add_shape`, `connect`, `set_label`, `add_graph` (nodes and edges laid out in layers), `import_mermaid` (flowcharts, laid out by Mermaid), `import_drawio` (new pages), `move_object`, `add_page`, `rename_page`, `move_page`; confirmed: `delete_objects`, `delete_page` |
+| Forms (editors) | `get_form` | – | `add_question`, `add_questions` (with answer keys; `src/apps/forms/spec.ts`), `update_question`, `move_question`, `set_answer_key`, `set_settings`, `get_responses` and `summarize_responses` (editors only), `propose_grade`, `create_variant` (shuffled copy, confirmed); confirmed: `delete_question` |
+| PDF | `get_text` (per page), `list_comments`, `list_annotations`, `search` | `add_note`, `resolve_note` | `add_highlight`, `add_underline`, `add_strike`, `add_text` (text box), `add_stamp` (check, cross, good, revise, grade, custom); confirmed: `delete_annotation`. No signatures. |
+| Drawings | `get_scene` | – | `add_element`, `add_elements`, `mermaid_to_drawing`, `update_element`; confirmed: `delete_elements` |
+| Notebooks | `list_pages` (sections, pages, levels), `get_page` (Markdown, by id or title), `search`, `list_tagged` | – | `set_tag`, `toggle_checkbox`, `add_page` (with Markdown text), `append_text` (Markdown at the end of a page; direct edit, one undo step), `rename_page`, `move_page`; confirmed: `delete_page` |
 
 Text is located by exact text (`match` + `occurrence`) rather than internal
 positions where possible; `find` also returns positions usable until the next

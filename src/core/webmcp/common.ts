@@ -16,9 +16,9 @@ import { seeTools } from './see'
 import { absoluteUrl } from '../router'
 import type { DocType } from '../store'
 import { CONTENT_HELP, CREATABLE, createFromContent } from './create'
-import { isReviewMode } from './state'
+import { isReviewMode, realNamesAllowed } from './state'
 import type { EditActions } from './index'
-import { bool, str, type AppTools, type OfimeoTool, type SelectionInfo, type ToolArgs } from './types'
+import { bool, htmlToText, str, type AppTools, type OfimeoTool, type SelectionInfo, type ToolArgs } from './types'
 
 const CAN: Record<Session['access'], string[]> = {
   view: ['read'],
@@ -144,15 +144,18 @@ export function commonTools(session: Session, apps: AppTools[], edit: EditAction
     },
     {
       name: 'list_participants',
-      description: 'Lists the people who have this document open now (display name, colour, their access, whether it is this browser).',
+      description:
+        'Lists the people who have this document open now (name, colour, their access, whether it is this browser). Others are pseudonyms ("Participant 2") unless the user allowed real names.',
       inputSchema: { type: 'object', properties: {} },
       access: 'comment',
       execute: () => {
         const self = session.awareness.clientID
+        const real = realNamesAllowed()
+        let n = 0
         return [...session.awareness.getStates()]
           .filter(([, s]) => s?.user)
           .map(([id, s]) => ({
-            name: String(s.user.name ?? ''),
+            name: id === self || real ? String(s.user.name ?? '') : t('Participant {n}', { n: ++n }),
             color: String(s.user.color ?? ''),
             access: (s.access as string | undefined) ?? null,
             ...(id === self ? { this_browser: true } : {}),
@@ -286,6 +289,65 @@ export function commonTools(session: Session, apps: AppTools[], edit: EditAction
 
   tools.push(...seeTools(session, apps))
 
+  // Opens a new document in a new tab (never telling the assistant its link).
+  const openNew = (path: string) => {
+    const tab = window.open(absoluteUrl(path), '_blank')
+    if (tab) tab.opener = null
+    return { opened: !!tab, ...(tab ? {} : { note: 'The browser did not open a new tab: the document is in the library on the home screen.' }) }
+  }
+
+  tools.push(
+    {
+      name: 'list_templates',
+      description: 'Lists the user’s own templates in this browser (id, kind of document, name, description). Use create_from_template to start a document from one.',
+      inputSchema: { type: 'object', properties: {} },
+      access: 'view',
+      execute: async () => {
+        const { listOwnTemplates } = await import('../library-templates')
+        return (await listOwnTemplates()).map((tpl) => ({ id: tpl.id, app: tpl.app, name: tpl.name, description: tpl.description }))
+      },
+    },
+    {
+      name: 'create_from_template',
+      description: 'Creates a new document of the user’s from one of their templates (id from list_templates) and opens it in a new tab. The user confirms it.',
+      inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
+      access: 'view',
+      readOnly: false,
+      untrusted: false,
+      confirm: () => t('Create a new document from one of your templates and open it in a new tab'),
+      execute: async (args) => {
+        const { listOwnTemplates, useOwnTemplate } = await import('../library-templates')
+        const tpl = (await listOwnTemplates()).find((x) => x.id === args.id)
+        if (!tpl) throw new Error('No template with that id (use list_templates)')
+        return { created: true, app: tpl.app, title: tpl.name, ...openNew(await useOwnTemplate(tpl)) }
+      },
+    },
+    {
+      name: 'get_assignments',
+      description:
+        'The user’s Moodle assignments as last loaded in this browser (course, name, due date, status and instructions as text), e.g. to check a piece of work against its instructions. The user allows it each time; nothing is fetched from Moodle and no credentials are given.',
+      inputSchema: { type: 'object', properties: { pending_only: { type: 'boolean' } } },
+      access: 'view',
+      untrusted: true,
+      confirm: () => t('Let the AI assistant read your Moodle assignments (courses, names, due dates and instructions)'),
+      execute: async (args) => {
+        const { loadTaskCache } = await import('../moodle-store')
+        const cache = loadTaskCache()
+        if (!cache) throw new Error('Moodle is not connected in this browser, or its assignments have not been loaded yet (home screen ▸ Moodle).')
+        return cache.tasks
+          .filter((task) => !bool(args, 'pending_only') || !(task.status === 'submitted' || task.graded))
+          .map((task) => ({
+            course: task.courseName,
+            name: task.name,
+            due: task.due ? new Date(task.due * 1000).toISOString() : null,
+            status: task.status,
+            instructions: htmlToText(task.intro ?? '').slice(0, 5000),
+            files: task.files.map((f) => f.name),
+          }))
+      },
+    },
+  )
+
   tools.push({
     name: 'create_document',
     description: `Creates a NEW document of the user's (in this browser's library, with full edit access) from the content you give, and opens it in a new tab: e.g. a quiz from this text, slides from an outline, a summary as a document. It does not change this document and you never get its link. The user confirms it. Content by app: ${CONTENT_HELP}`,
@@ -315,9 +377,7 @@ export function commonTools(session: Session, apps: AppTools[], edit: EditAction
       if (!CREATABLE.includes(app)) throw new Error(`app must be one of ${CREATABLE.join(', ')}`)
       const title = str(args, 'title').trim() || appInfo(app).untitled
       const path = await createFromContent(app, title, args)
-      const tab = window.open(absoluteUrl(path), '_blank')
-      if (tab) tab.opener = null
-      return { created: true, app, title, opened: !!tab, ...(tab ? {} : { note: 'The browser did not open a new tab: the document is in the library on the home screen.' }) }
+      return { created: true, app, title, ...openNew(path) }
     },
   })
 

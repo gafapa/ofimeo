@@ -26,6 +26,15 @@ import {
 } from './model'
 import { importResponseFiles, keyLookup, LOCAL, releaseGrades, type FormState } from './state'
 
+// An editor changed (or accepted) the AI assistant's suggestion for a question.
+const reviewed = (grade: Grade, question: string): Grade => {
+  if (!grade.ai?.includes(question)) return grade
+  const ai = grade.ai.filter((id) => id !== question)
+  const { ai: _old, ...rest } = grade
+  void _old
+  return ai.length ? { ...rest, ai } : rest
+}
+
 type View = 'summary' | 'individual' | 'grading' | 'stats'
 
 export interface ResultsView {
@@ -222,6 +231,7 @@ export function createResults(state: FormState, onCount: (n: number) => void): R
           'div',
           { class: 'fm-nav' },
           button(released ? t('Release again (updated grade)') : t('Release grade to this respondent'), async () => {
+            if (!(await confirmUnreviewed([response.id]))) return
             await releaseGrades(state, [response.id])
             toast(t('Grade released'))
             render()
@@ -248,17 +258,24 @@ export function createResults(state: FormState, onCount: (n: number) => void): R
           const p = { ...g.points }
           if (points.value === '') delete p[q.id]
           else p[q.id] = round(Math.max(0, Number(points.value)))
-          priv.transact(() => gradesMap(priv).set(response.id, { ...g, points: p }), LOCAL)
+          priv.transact(() => gradesMap(priv).set(response.id, reviewed({ ...g, points: p }, q.id)), LOCAL)
           render()
         })
         const comment = el('input', { class: 'field', value: grade.comments[q.id] ?? '', placeholder: t('Comment for the respondent (optional)') })
         comment.setAttribute('aria-label', t('Comment for the respondent (optional)'))
         comment.addEventListener('change', () => {
           const g = gradesMap(priv).get(response.id) ?? { points: {}, comments: {} }
-          priv.transact(() => gradesMap(priv).set(response.id, { ...g, comments: { ...g.comments, [q.id]: comment.value } }), LOCAL)
+          priv.transact(() => gradesMap(priv).set(response.id, reviewed({ ...g, comments: { ...g.comments, [q.id]: comment.value } }, q.id)), LOCAL)
         })
+        const suggested = grade.ai?.includes(q.id)
+          ? el('p', { class: 'fm-state warn fm-ai-draft' }, t('Suggested by the AI assistant: check the points and the comment before releasing the grade.'), ' ', button(t('Keep as reviewed'), () => {
+              const g = gradesMap(priv).get(response.id) ?? { points: {}, comments: {} }
+              priv.transact(() => gradesMap(priv).set(response.id, reviewed(g, q.id)), LOCAL)
+              render()
+            }))
+          : null
         const auto = qs.auto === null ? t('no automatic grade') : t('automatic: {points}', { points: qs.auto })
-        card.append(el('div', { class: 'fm-inline fm-grade' }, t('Points'), points, el('span', { class: 'hint', textContent: `/ ${q.points} · ${auto}` })), comment)
+        card.append(el('div', { class: 'fm-inline fm-grade' }, t('Points'), points, el('span', { class: 'hint', textContent: `/ ${q.points} · ${auto}` })), comment, ...(suggested ? [suggested] : []))
       } else if (qs) {
         card.append(el('p', { class: 'hint', textContent: `${qs.points === null ? '—' : qs.points} / ${qs.max}` }))
       }
@@ -266,9 +283,16 @@ export function createResults(state: FormState, onCount: (n: number) => void): R
     }
   }
 
+  // Grades with AI suggestions nobody reviewed: released only if the editor says so.
+  const confirmUnreviewed = async (ids: string[]) => {
+    const n = ids.filter((id) => gradesMap(priv).get(id)?.ai?.length).length
+    return !n || (await confirmDialog(t('Release grades the AI assistant suggested?'), t('{n} responses have points or comments suggested by the AI assistant that nobody has reviewed.', { n }), { confirmLabel: t('Release') }))
+  }
+
   const releaseAll = async () => {
     const items = readItems(doc)
     const responses = sortedResponses(priv)
+    if (!(await confirmUnreviewed(responses.map((r) => r.id)))) return
     const pending = responses.filter((r) => scoreResponse(items, keyLookup(priv), r, gradesMap(priv).get(r.id)).pending).length
     if (pending && !(await confirmDialog(t('Release all grades?'), t('{n} responses still have questions to grade by hand; they are released with what is graded so far.', { n: pending }), { confirmLabel: t('Release') }))) return
     const n = await releaseGrades(state, responses.map((r) => r.id))

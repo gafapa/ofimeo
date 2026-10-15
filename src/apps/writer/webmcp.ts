@@ -18,6 +18,7 @@ import { commentsMapOf, userIdOf } from './collab'
 import { collectSuggestions } from './editor/suggestions'
 import type { CommentRecord } from './review'
 import { encodeAnchor, PositionIndex } from './ypos'
+import { newSourceId, SOURCE_TYPES, type Person, type Source, type SourceType } from './references/types'
 
 const MAX_TEXT = 200_000
 
@@ -296,6 +297,23 @@ export function writerTools(ctx: WriterContext): AppTools {
       if (!grouping) undoManager()?.stopCapturing()
     }
   }
+  // Edits that suggestions do not track (attributes, atoms): applied directly as one undo step.
+  const direct = <T>(fn: () => T): T => {
+    if (!grouping) undoManager()?.stopCapturing()
+    try {
+      return fn()
+    } finally {
+      if (!grouping) undoManager()?.stopCapturing()
+    }
+  }
+  // Position between top-level blocks: start, end, or before/after the block holding "match".
+  const blockPosition = (args: ToolArgs): number => {
+    const position = optStr(args, 'position') ?? 'end'
+    if (position === 'start') return 0
+    if (position === 'end') return doc().content.size
+    const $pos = doc().resolve(range(args).from)
+    return position === 'before' ? $pos.before(1) : $pos.after(1)
+  }
   const quoted = (args: ToolArgs) => {
     const match = optStr(args, 'match')
     return match ? `“${match.length > 60 ? `${match.slice(0, 59)}…` : match}”` : t('the selected text')
@@ -471,6 +489,170 @@ export function writerTools(ctx: WriterContext): AppTools {
       },
     },
     {
+      name: 'insert_markdown',
+      description:
+        'Inserts Markdown as tracked suggestions: headings, lists, checklists, tables, quotes, links, **bold**, *italic*, `code`, pictures from data: URLs. position "start" or "end" of the document (default end), or "before"/"after" the paragraph containing "match".',
+      inputSchema: {
+        type: 'object',
+        properties: { markdown: { type: 'string' }, position: { type: 'string', enum: ['start', 'end', 'before', 'after'] }, ...target },
+        required: ['markdown'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      suggestion: true,
+      execute: async (args) => {
+        requireEditable()
+        const markdown = str(args, 'markdown')
+        if (markdown.length > MAX_TEXT) throw new Error(`Markdown too long (at most ${MAX_TEXT} characters)`)
+        const { importMarkdown } = await import('./formats/markdown')
+        const content = (await importMarkdown(markdown)).content ?? []
+        if (!content.length) throw new Error('Nothing to insert')
+        const at = blockPosition(args)
+        if (!asAssistant(() => editor.chain().insertContentAt(at, content, { updateSelection: false }).run())) throw new Error('The text could not be inserted there')
+        return { inserted: content.length, as: 'suggestion' }
+      },
+    },
+    {
+      name: 'insert_equation',
+      description: 'Inserts a LaTeX equation (e.g. "\\frac{a}{b}"), in the text (inline, after "match" or at the end) or as its own line (display). Applied directly; one undo step.',
+      inputSchema: {
+        type: 'object',
+        properties: { latex: { type: 'string' }, display: { type: 'boolean', description: 'Own centered line (default false).' }, position: { type: 'string', enum: ['end', 'before', 'after'] }, ...target },
+        required: ['latex'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Insert the equation {latex}', { latex: String(args.latex ?? '').slice(0, 80) }),
+      execute: (args) => {
+        requireEditable()
+        const latex = str(args, 'latex').trim()
+        if (!latex) throw new Error('Empty equation')
+        const node = { type: 'equation', attrs: { latex, display: bool(args, 'display') } }
+        const position = optStr(args, 'position') ?? (args.match || args.from !== undefined ? 'after' : 'end')
+        const content = position === 'end' ? [{ type: 'paragraph', content: [node] }] : [node]
+        const at = position === 'end' ? doc().content.size : position === 'before' ? range(args).from : range(args).to
+        if (!direct(() => editor.chain().insertContentAt(at, content, { updateSelection: false }).run())) throw new Error('The equation could not be inserted there')
+        return { inserted: true }
+      },
+    },
+    {
+      name: 'add_function_graph',
+      description:
+        'Inserts a math graph (an editable picture with alternative text): "expressions" as typed in the graph editor, e.g. "f(x) = x^2 - 1", "y = 2x + 1", "x^2 + y^2 = 9", "y < x", "A = (1, 2)", "Segment(A, B)"; optional window xmin/xmax/ymin/ymax, special (roots and extrema), degrees. Placed as its own paragraph at the end or after the paragraph containing "match". Applied directly; one undo step. Returns the alternative text and any expression errors.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          expressions: { type: 'array', items: { type: 'string' } },
+          xmin: { type: 'number' },
+          xmax: { type: 'number' },
+          ymin: { type: 'number' },
+          ymax: { type: 'number' },
+          special: { type: 'boolean' },
+          degrees: { type: 'boolean' },
+          position: { type: 'string', enum: ['end', 'after'] },
+          ...target,
+        },
+        required: ['expressions'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Insert a graph of {list}', { list: (Array.isArray(args.expressions) ? args.expressions : []).join(', ').slice(0, 100) }),
+      execute: async (args) => {
+        requireEditable()
+        const [{ graphFromSpec }, { TITLE_PREFIX }] = await Promise.all([import('../../ui/mathgraph/spec'), import('../../ui/mathgraph/model')])
+        const graph = await graphFromSpec({ ...(args as object), expressions: Array.isArray(args.expressions) ? args.expressions.map(String) : [] })
+        const image = { type: 'image', attrs: { src: graph.png, alt: graph.alt, title: TITLE_PREFIX + JSON.stringify(graph.doc), width: graph.width, height: graph.height } }
+        const at = optStr(args, 'position') === 'after' || args.match ? blockPosition({ ...args, position: 'after' }) : doc().content.size
+        if (!direct(() => editor.chain().insertContentAt(at, [{ type: 'paragraph', content: [image] }], { updateSelection: false }).run())) throw new Error('The graph could not be inserted there')
+        return { inserted: true, alt: graph.alt, ...(graph.errors.length ? { errors: graph.errors } : {}) }
+      },
+    },
+    {
+      name: 'list_references',
+      description: 'Lists the sources of the document’s bibliography (id, type, authors, title, date, container, publisher, url) and the citation style.',
+      inputSchema: { type: 'object', properties: {} },
+      access: 'view',
+      execute: () => ({
+        style: ctx.references.settings().style,
+        sources: ctx.references.sources().map((s) => ({ id: s.id, type: s.type, authors: s.authors.map(personText), title: s.title, ...pick(s, ['date', 'container', 'publisher', 'place', 'pages', 'url', 'doi']) })),
+      }),
+    },
+    {
+      name: 'add_reference',
+      description: `Adds a source to the bibliography (cite it with cite). type: ${SOURCE_TYPES.join(', ')}; authors as "Family, Given" (or an organization name); date "2020" or "2020-05-17"; container = journal, book of a chapter or website.`,
+      inputSchema: {
+        type: 'object',
+        properties: {
+          type: { type: 'string', enum: SOURCE_TYPES },
+          authors: { type: 'array', items: { type: 'string' } },
+          title: { type: 'string' },
+          date: { type: 'string' },
+          container: { type: 'string' },
+          publisher: { type: 'string' },
+          place: { type: 'string' },
+          volume: { type: 'string' },
+          issue: { type: 'string' },
+          pages: { type: 'string' },
+          edition: { type: 'string' },
+          url: { type: 'string' },
+          doi: { type: 'string' },
+          accessed: { type: 'string' },
+        },
+        required: ['type', 'title'],
+      },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Add the source “{title}” to the bibliography', { title: String(args.title ?? '') }),
+      execute: (args) => {
+        requireEditable()
+        const type = str(args, 'type') as SourceType
+        if (!SOURCE_TYPES.includes(type)) throw new Error(`Unknown source type "${type}"`)
+        const authors: Person[] = (Array.isArray(args.authors) ? args.authors.map(String) : []).map((a) => {
+          const [family, given] = a.split(',').map((x) => x.trim())
+          // Without "Family, Given" the name is kept whole (an organization or a single name).
+          return given ? { family, given } : { family: a.trim(), org: true }
+        })
+        const source: Source = { id: newSourceId(), type, authors, title: str(args, 'title'), ...pick(args as Record<string, unknown>, ['date', 'container', 'publisher', 'place', 'volume', 'issue', 'pages', 'edition', 'url', 'doi', 'accessed']) }
+        ctx.references.save(source)
+        return { id: source.id }
+      },
+    },
+    {
+      name: 'cite',
+      description: 'Inserts a citation of one or more sources (ids from list_references) after "match" (or at from/to), formatted in the document’s citation style; "locator" adds a page ("p. 12"). Applied directly; one undo step.',
+      inputSchema: { type: 'object', properties: { ids: { type: 'array', items: { type: 'string' } }, locator: { type: 'string' }, ...target }, required: ['ids'] },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Cite a source after {text}', { text: quoted(args) }),
+      execute: (args) => {
+        requireEditable()
+        const ids = (Array.isArray(args.ids) ? args.ids : [args.ids]).map(String)
+        for (const id of ids) if (!ctx.references.get(id)) throw new Error(`No source with id "${id}" (use list_references)`)
+        const at = range(args).to
+        if (!direct(() => editor.chain().insertContentAt(at, { type: 'citation', attrs: { ids, locator: optStr(args, 'locator') ?? '' } }, { updateSelection: false }).run())) throw new Error('The citation could not be inserted there')
+        return { cited: ids }
+      },
+    },
+    {
+      name: 'insert_bibliography',
+      description: 'Adds the bibliography (the list of cited sources, formatted and kept up to date) at the end of the document, with an optional heading.',
+      inputSchema: { type: 'object', properties: { title: { type: 'string' } } },
+      access: 'edit',
+      changesDocument: true,
+      summary: () => t('Insert the bibliography'),
+      execute: (args) => {
+        requireEditable()
+        let exists = false
+        doc().descendants((node) => ((exists ||= node.type.name === 'bibliography'), !exists))
+        if (exists) throw new Error('The document already has a bibliography')
+        const title = optStr(args, 'title')
+        const at = doc().content.size
+        const content = [...(title ? [{ type: 'heading', attrs: { level: 1 }, content: [{ type: 'text', text: title }] }] : []), { type: 'bibliography' }]
+        if (!direct(() => editor.chain().insertContentAt(at, content, { updateSelection: false }).run())) throw new Error('The bibliography could not be inserted')
+        return { inserted: true }
+      },
+    },
+    {
       name: 'set_alt_text',
       description: 'Sets the description (alternative text) of a picture, read by screen readers: "image" is its number in the document (1 = first, see check_accessibility). Applied directly; one undo step.',
       inputSchema: { type: 'object', properties: { image: { type: 'integer', minimum: 1 }, text: { type: 'string' } }, required: ['image', 'text'] },
@@ -617,6 +799,17 @@ export function writerTools(ctx: WriterContext): AppTools {
       ai_changes: session.canEdit ? 'Text changes are added as suggestions authored by the AI assistant; the user accepts or rejects them.' : 'none (read-only)',
     }),
   }
+}
+
+const personText = (p: Person) => (p.given ? `${p.family}, ${p.given}` : p.family)
+
+function pick(source: object, keys: string[]): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const key of keys) {
+    const v = (source as Record<string, unknown>)[key]
+    if (typeof v === 'string' && v.trim()) out[key] = v.trim()
+  }
+  return out
 }
 
 // Plain text as inline content (line breaks become hard breaks).

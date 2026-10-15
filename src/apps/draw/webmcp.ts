@@ -12,6 +12,29 @@ import { imageResult, num, optNum, optStr, str, type AppTools, type OfimeoTool, 
 
 const TYPES = ['rectangle', 'ellipse', 'diamond', 'text', 'arrow', 'line'] as const
 
+// An element described by the assistant, for convertToExcalidrawElements.
+function skeleton(args: ToolArgs): any {
+  const type = optStr(args, 'type') as (typeof TYPES)[number]
+  if (!TYPES.includes(type)) throw new Error(`Unknown element type "${type}"`)
+  const linear = type === 'arrow' || type === 'line'
+  const text = optStr(args, 'text')
+  const base: any = {
+    type,
+    x: num(args, 'x', 0),
+    y: num(args, 'y', 0),
+    width: num(args, 'width', 160),
+    height: num(args, 'height', linear ? 0 : 80),
+    ...(optStr(args, 'stroke') ? { strokeColor: optStr(args, 'stroke') } : {}),
+    ...(optStr(args, 'fill') ? { backgroundColor: optStr(args, 'fill'), fillStyle: 'solid' } : {}),
+  }
+  if (type === 'text') {
+    if (!text) throw new Error('A text element needs "text"')
+    base.text = text
+  } else if (text) base.label = { text }
+  if (linear) base.points = [[0, 0], [base.width, base.height]]
+  return base
+}
+
 export function drawTools(session: Session, api: () => any): AppTools {
   const excalidraw = () => {
     const a = api()
@@ -91,27 +114,46 @@ export function drawTools(session: Session, api: () => any): AppTools {
       summary: (args) => t('Add an element to the drawing: {type}', { type: String(args.type ?? '') }),
       execute: (args) => {
         excalidraw()
-        const type = optStr(args, 'type') as (typeof TYPES)[number]
-        if (!TYPES.includes(type)) throw new Error(`Unknown element type "${type}"`)
-        const linear = type === 'arrow' || type === 'line'
-        const text = optStr(args, 'text')
-        const base: any = {
-          type,
-          x: num(args, 'x', 0),
-          y: num(args, 'y', 0),
-          width: num(args, 'width', 160),
-          height: num(args, 'height', linear ? 0 : 80),
-          ...(optStr(args, 'stroke') ? { strokeColor: optStr(args, 'stroke') } : {}),
-          ...(optStr(args, 'fill') ? { backgroundColor: optStr(args, 'fill'), fillStyle: 'solid' } : {}),
-        }
-        if (type === 'text') {
-          if (!text) throw new Error('A text element needs "text"')
-          base.text = text
-        } else if (text) base.label = { text }
-        if (linear) base.points = [[0, 0], [base.width, base.height]]
+        const base = skeleton(args)
         const created = convertToExcalidrawElements([base])
         commit([...scene(), ...created])
         return { id: created[0]?.id }
+      },
+    },
+    {
+      name: 'add_elements',
+      description: `Adds several elements at once (each like add_element: type ${TYPES.join(', ')}, x, y, width, height, text, stroke, fill). One undo step. Returns their ids in order.`,
+      inputSchema: { type: 'object', properties: { elements: { type: 'array', items: { type: 'object' }, maxItems: 500 } }, required: ['elements'] },
+      access: 'edit',
+      changesDocument: true,
+      summary: (args) => t('Add {n} elements to the drawing', { n: Array.isArray(args.elements) ? args.elements.length : 0 }),
+      execute: (args) => {
+        excalidraw()
+        const list = Array.isArray(args.elements) ? (args.elements as Record<string, unknown>[]).slice(0, 500) : []
+        if (!list.length) throw new Error('Give at least one element')
+        const created = convertToExcalidrawElements(list.map(skeleton))
+        commit([...scene(), ...created])
+        return { ids: created.filter((e: any) => !(e.type === 'text' && e.containerId)).map((e: any) => e.id) }
+      },
+    },
+    {
+      name: 'mermaid_to_drawing',
+      description: 'Turns a Mermaid diagram (flowchart, sequence, class… as the drawing app’s "Diagram from Mermaid" supports) into hand-drawn elements placed to the right of the drawing. One undo step.',
+      inputSchema: { type: 'object', properties: { definition: { type: 'string' } }, required: ['definition'] },
+      access: 'edit',
+      changesDocument: true,
+      summary: () => t('Add a diagram from Mermaid'),
+      execute: async (args) => {
+        const a = excalidraw()
+        const { parseMermaidToExcalidraw } = await import('@excalidraw/mermaid-to-excalidraw')
+        const result = (await parseMermaidToExcalidraw(str(args, 'definition'), { themeVariables: { fontSize: '20px' } })) as { elements: any[]; files?: Record<string, any> }
+        const created = convertToExcalidrawElements(result.elements as never, { regenerateIds: true })
+        const right = Math.max(0, ...live().map((e) => e.x + e.width)) + (live().length ? 80 : 0)
+        const left = Math.min(...created.map((e: any) => e.x))
+        const moved = created.map((e: any) => ({ ...e, x: e.x - left + right }))
+        if (result.files && Object.keys(result.files).length) a.addFiles(Object.values(result.files))
+        commit([...scene(), ...moved])
+        return { elements: moved.length }
       },
     },
     {

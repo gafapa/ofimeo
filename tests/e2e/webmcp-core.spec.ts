@@ -17,7 +17,7 @@ test('common tools: selection, show, questions, notices, undo with confirmation,
 
   // Selection and show.
   await page.keyboard.press('Shift+Home')
-  expect((await call(page, 'get_selection')).data).toMatchObject({ kind: 'text', text: 'Alpha beta gamma.' })
+  await expect.poll(async () => (await call(page, 'get_selection')).data).toMatchObject({ kind: 'text', text: 'Alpha beta gamma.' })
   expect((await call(page, 'show', { match: 'beta' })).data).toMatchObject({ shown: true })
   expect((await call(page, 'get_selection')).data).toMatchObject({ kind: 'text', text: 'beta' })
 

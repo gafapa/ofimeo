@@ -1,38 +1,7 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { randomBytes } from 'node:crypto'
 import { APP_READY, openApp, RELAYS, trackErrors, uniqueDoc } from './helpers'
-
-// WebMCP: tools are called through navigator.modelContextTesting, the testing
-// hook of the @mcp-b/global polyfill (loaded because headless Chromium has no
-// native WebMCP).
-
-const ENGLISH = () => localStorage.setItem('ofimeo:language', 'en')
-const ENABLED = () => localStorage.setItem('ofimeo:webmcp', '1')
-
-type Tools = { listTools(): { name: string }[]; executeTool(name: string, args: string): Promise<string | null> }
-
-async function toolNames(page: Page): Promise<string[]> {
-  return page.evaluate(() => ((navigator as unknown as { modelContextTesting?: Tools }).modelContextTesting?.listTools() ?? []).map((t) => t.name).sort())
-}
-
-// Calls a tool; returns the parsed JSON of its text result (or the text).
-async function call(page: Page, name: string, args: Record<string, unknown> = {}): Promise<{ error: boolean; data: unknown }> {
-  const raw = await page.evaluate(([n, a]) => (navigator as unknown as { modelContextTesting: Tools }).modelContextTesting.executeTool(n, JSON.stringify(a)), [name, args] as const)
-  const result = JSON.parse(raw ?? 'null') as { content: { text: string }[]; isError?: boolean }
-  const text = result.content[0]?.text ?? ''
-  let data: unknown = text
-  try {
-    data = JSON.parse(text)
-  } catch {
-    // Plain text result.
-  }
-  return { error: !!result.isError, data }
-}
-
-async function menu(page: Page, name: string, item: string) {
-  await page.locator('#menubar').getByText(name, { exact: true }).click()
-  await page.getByText(item, { exact: true }).last().click()
-}
+import { call, COMMON_EDIT, COMMON_VIEW, ENABLED, ENGLISH, menu, sorted, toolNames } from './webmcp-helpers'
 
 test('writer: turned on from Tools, the assistant reads the text and its changes become suggestions', async ({ page }) => {
   const errors = trackErrors(page)
@@ -51,7 +20,7 @@ test('writer: turned on from Tools, the assistant reads the text and its changes
   await dialog.getByRole('button', { name: 'Allow', exact: true }).click()
   await expect(page.locator('.webmcp-indicator')).toBeVisible()
   await expect.poll(() => toolNames(page)).toEqual(
-    ['add_comment', 'apply_heading', 'find', 'format', 'get_document_info', 'get_outline', 'get_text', 'insert_text', 'list_comments', 'replace_range'].sort(),
+    sorted(COMMON_EDIT, ['add_comment', 'apply_heading', 'find', 'format', 'get_outline', 'get_text', 'insert_text', 'list_comments', 'replace_range', 'show']),
   )
 
   const info = await call(page, 'get_document_info')
@@ -100,7 +69,7 @@ test('sheet: the assistant reads and writes ranges, adds sheets and charts', asy
   await page.addInitScript(ENGLISH)
   await page.addInitScript(ENABLED)
   await openApp(page, 'sheet')
-  await expect.poll(() => toolNames(page)).toEqual(['add_comment', 'add_sheet', 'get_document_info', 'insert_chart', 'list_comments', 'list_sheets', 'read_range', 'write_range'])
+  await expect.poll(() => toolNames(page)).toEqual(sorted(COMMON_EDIT, ['add_comment', 'add_sheet', 'insert_chart', 'list_comments', 'list_sheets', 'read_range', 'show', 'write_range']))
 
   const written = await call(page, 'write_range', { range: 'A1', values: [['Month', 'Sales'], ['Jan', 10], ['Feb', 20], ['Total', '=SUM(B2:B3)']] })
   expect(written.data).toMatchObject({ written: 'A1:B4' })
@@ -146,7 +115,7 @@ test('a view link only gets read tools', async ({ browser }) => {
   await reader.goto(link)
   await reader.locator('.ProseMirror').waitFor({ timeout: 60_000 })
   await expect(reader.locator('.webmcp-indicator')).toBeVisible()
-  await expect.poll(() => toolNames(reader)).toEqual(['find', 'get_document_info', 'get_outline', 'get_text', 'list_comments'])
+  await expect.poll(() => toolNames(reader)).toEqual(sorted(COMMON_VIEW, ['find', 'get_outline', 'get_text', 'list_comments', 'show']))
   expect((await call(reader, 'get_document_info')).data).toMatchObject({ access: 'view', allowed: ['read'] })
   await expect.poll(async () => (await call(reader, 'get_text')).data, { timeout: 60_000 }).toBe('Read me')
   expect(errors).toEqual([])

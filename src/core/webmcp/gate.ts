@@ -8,7 +8,8 @@
 
 import { accessRank } from '../keys'
 import type { Session } from '../session'
-import type { OfimeoTool } from './types'
+import { summarizeArgs } from './activity'
+import type { OfimeoTool, ToolArgs } from './types'
 
 export function allowed(session: Pick<Session, 'access'>, tool: Pick<OfimeoTool, 'access'>): boolean {
   return accessRank(session.access) >= accessRank(tool.access)
@@ -21,4 +22,11 @@ export function allowedTools(session: Pick<Session, 'access'>, tools: OfimeoTool
 export function assertAllowed(session: Pick<Session, 'access'>, tool: OfimeoTool, enabled: () => boolean): void {
   if (!enabled()) throw new Error('AI assistant access (WebMCP) is turned off in this browser.')
   if (!allowed(session, tool)) throw new Error(`This link only allows "${session.access}" access; ${tool.name} needs "${tool.access}".`)
+}
+
+// What the user is asked before a call runs (null: nothing to confirm).
+export function confirmationOf(tool: OfimeoTool, args: ToolArgs): string | null {
+  const custom = tool.confirm?.(args)
+  if (custom) return custom
+  return tool.destructive ? `${tool.title ?? tool.name} ${summarizeArgs(args)}` : null
 }

@@ -142,6 +142,21 @@ export function notebookTools(ctx: NotebookContext): AppTools {
   ]
   return {
     tools,
+    selection: () => {
+      const id = ctx.current()
+      const page = id ? allPages(doc).find((p) => p.id === id) : undefined
+      if (!page) return { kind: 'none' }
+      const editor = ctx.editor()
+      const sel = editor?.state.selection
+      const text = editor && sel && !sel.empty ? editor.state.doc.textBetween(sel.from, sel.to, String.fromCharCode(10)) : ''
+      return { kind: text ? 'text' : 'page', page: page.id, title: pageTitle(page), ...(text ? { text } : {}) }
+    },
+    show: (args) => {
+      const page = findPage(args)
+      ctx.openPage(page.id)
+      return { shown: true, page: page.id, title: pageTitle(page) }
+    },
+    showSchema: { page: { type: 'string', description: 'Page id or title (from list_pages).' } },
     info: () => ({ sections: readSections(doc).length, pages: allPages(doc).length, open_page: ctx.current() }),
   }
 }

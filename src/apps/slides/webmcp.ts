@@ -10,10 +10,11 @@
 import type { Session } from '../../core/session'
 import { AI_COLOR, aiName } from '../../core/webmcp/ai'
 import { htmlToText, optNum, optStr, str, textToHtml, type AppTools, type OfimeoTool, type ToolArgs } from '../../core/webmcp/types'
-import { cellById, goToPage, setLabel, summarize, type GraphEditor } from '../diagram/webmcp'
+import { cellById, goToPage, selectedCells, setLabel, showCell, summarize, type GraphEditor } from '../diagram/webmcp'
 import { parseStyle, type CellRecord } from '../diagram/model'
 import { userIdOf } from '../writer/collab'
 import { slideCommentsMap, type SlideComment } from './comments'
+import type { Presentation } from './present'
 import { LAYOUTS, notesText, presentationSize, readSlideMeta, slideCells, writeSlideMeta, type LayoutId, type Role } from './model'
 
 const ROLES: Role[] = ['title', 'subtitle', 'body', 'body2']
@@ -21,7 +22,7 @@ const slideArg = { slide: { type: 'integer', minimum: 1, description: 'Slide num
 
 const roleOf = (r: CellRecord) => (parseStyle(r.style).values.get('slidePh') as Role | undefined) ?? null
 
-export function slidesTools(session: Session, editor: GraphEditor): AppTools {
+export function slidesTools(session: Session, editor: GraphEditor, presentation?: Presentation): AppTools {
   const { sync, graph } = editor
   const doc = session.doc
   const slides = () => sync.pageList()
@@ -198,8 +199,44 @@ export function slidesTools(session: Session, editor: GraphEditor): AppTools {
     },
   ]
 
+  // While this browser presents: remote control and the speaker notes.
+  const presenting = () => !!presentation?.presenting
+  const current = () => {
+    const page = slides()[presentation!.slideIndex]
+    return { slide: presentation!.slideIndex + 1, of: slides().length, notes: page ? notesText(doc, page.id).toString() : '' }
+  }
+  const control = (name: string, description: string, run: (args: ToolArgs) => void, inputSchema: OfimeoTool['inputSchema'] = { type: 'object', properties: {} }): OfimeoTool => ({
+    name,
+    description,
+    inputSchema,
+    access: 'view',
+    readOnly: true,
+    available: presenting,
+    execute: (args) => {
+      if (!presenting()) throw new Error('No presentation is running in this tab')
+      run(args)
+      return current()
+    },
+  })
+  tools.push(
+    control('next_slide', 'During the slide show: plays the next animation step or goes to the next slide. Returns the slide shown and its speaker notes.', () => presentation!.forward()),
+    control('previous_slide', 'During the slide show: goes back one animation step or slide.', () => presentation!.back()),
+    control('go_to_slide', 'During the slide show: shows a slide by number.', (args) => presentation!.goToSlide(Math.round(optNum(args, 'slide') ?? 1) - 1), { type: 'object', properties: { ...slideArg }, required: ['slide'] }),
+    control('get_speaker_notes', 'During the slide show: the slide shown and its speaker notes.', () => {}),
+  )
+
   return {
     tools,
+    watch: (fn) => presentation?.onStateChange(fn),
+    selection: () => {
+      const cells = selectedCells(editor)
+      const slide = slides().findIndex((p) => p.id === sync.page) + 1
+      return cells.length ? { kind: 'objects', slide, objects: cells } : { kind: 'none', slide }
+    },
+    show: (args) => showCell(editor, args, 'slide'),
+    showSchema: { ...slideArg, id: { type: 'string', description: 'Object to select (id from get_slide).' } },
+    undo: editor.undo,
+    redo: editor.redo,
     info: () => ({
       slides: slides().length,
       slide_shown: slides().findIndex((p) => p.id === sync.page) + 1,

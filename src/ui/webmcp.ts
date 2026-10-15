@@ -7,10 +7,11 @@ import { Bot } from 'lucide'
 import { SUITE } from '../apps/registry'
 import { language, t } from '../core/i18n'
 import type { Session } from '../core/session'
-import { isWebMcpEnabled, onWebMcpChange, onWebMcpTools, setWebMcpEnabled, startWebMcp, webMcpToolNames } from '../core/webmcp'
+import { isWebMcpEnabled, onWebMcpChange, onWebMcpTools, setWebMcpEnabled, startWebMcp, webMcpToolNames, type EditActions } from '../core/webmcp'
 import { webMcpForbidden } from '../core/school-config'
-import { ACTIVITY_EVENT, type WebMcpActivity } from '../core/webmcp/ai'
-import { el, icon, showDialog, toast, type MenuItem } from './widgets'
+import { activityLog } from '../core/webmcp/activity'
+import { ACTIVITY_EVENT, canRevertAi, revertAiChanges, type WebMcpActivity } from '../core/webmcp/ai'
+import { confirmDialog, el, icon, showDialog, toast, type MenuItem } from './widgets'
 import './webmcp.css'
 
 const aiNotePage = () => `legal/${language}/ai.html`
@@ -52,8 +53,36 @@ function explanation(session: Session, on: boolean): HTMLElement {
       textContent: t('This setting applies to every document you open in this browser. You can turn it off at any time from the Tools menu or the indicator in the top bar.'),
     }),
     on && names.length ? el('p', { class: 'hint mono', textContent: t('Tools offered: {tools}', { tools: names.join(', ') }) }) : null,
+    on ? activityList() : null,
     el('p', {}, more),
   )
+}
+
+const ACTIVITY_SHOWN = 15
+
+// The assistant's latest calls in this page.
+function activityList(): HTMLElement {
+  const entries = activityLog().slice(0, ACTIVITY_SHOWN)
+  const section = el('section', { class: 'webmcp-activity' }, el('h3', { textContent: t('Activity in this page') }))
+  if (!entries.length) {
+    section.append(el('p', { class: 'hint', textContent: t('The assistant has not used this document yet.') }))
+    return section
+  }
+  const list = el('ol', { class: 'webmcp-activity-list' })
+  for (const entry of entries) {
+    const status = entry.note === 'declined' ? t('not allowed') : entry.ok ? (entry.write ? t('changed') : t('read')) : t('failed')
+    const item = el(
+      'li',
+      { class: entry.ok ? '' : 'failed' },
+      el('time', { textContent: new Date(entry.time).toLocaleTimeString() }),
+      el('span', { class: 'mono', textContent: entry.tool }),
+      el('span', { class: 'webmcp-activity-status', textContent: status }),
+    )
+    item.title = entry.args
+    list.append(item)
+  }
+  section.append(list)
+  return section
 }
 
 async function enableDialog(session: Session): Promise<void> {
@@ -67,11 +96,29 @@ async function enableDialog(session: Session): Promise<void> {
 }
 
 async function statusDialog(session: Session): Promise<void> {
+  const revert = session.canEdit && canRevertAi(session)
   const choice = await showDialog(t('AI assistant access is on'), explanation(session, true), [
     { label: t('Close'), value: 'close' },
+    ...(revert ? [{ label: t('Undo all AI changes…'), value: 'revert' }] : []),
     { label: t('Turn off'), value: 'off', primary: true, danger: true },
   ])
   if (choice === 'off') turnOff()
+  if (choice === 'revert') await undoAll(session)
+}
+
+async function undoAll(session: Session): Promise<void> {
+  const ok = await confirmDialog(
+    t('Undo all AI changes?'),
+    t('The document goes back to the version saved before the AI assistant’s first change in this page. The current state is kept in the version history.'),
+    { confirmLabel: t('Undo all'), danger: true },
+  )
+  if (!ok) return
+  try {
+    await revertAiChanges(session)
+    toast(t('The AI assistant’s changes were undone'))
+  } catch (err) {
+    toast((err as Error).message)
+  }
 }
 
 function turnOff(): void {
@@ -91,8 +138,8 @@ export function webMcpMenuItem(session: Session): MenuItem {
 }
 
 // Indicator in the app bar (visible while the switch is on) and the tools' registration.
-export function setupWebMcp(session: Session): void {
-  startWebMcp(session)
+export function setupWebMcp(session: Session, edit?: EditActions): void {
+  startWebMcp(session, edit)
   const button = el('button', { type: 'button', class: 'webmcp-indicator', hidden: true })
   const label = el('span', { class: 'btn-label', textContent: t('AI access on') })
   button.append(icon(Bot, 18), label)

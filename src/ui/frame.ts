@@ -129,6 +129,6 @@ export function mountFrame(spec: FrameSpec): Frame {
     ...spec.keys,
   })
   if (!session.hooks.print) session.hooks.print = spec.file.print
-  setupWebMcp(session)
+  setupWebMcp(session, editOptions)
   return { menus, toolbar, status, shortcuts }
 }

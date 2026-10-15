@@ -869,7 +869,7 @@ export function mountSlides(session: Session, root: HTMLElement): void {
     zoom: editor.zoomTarget,
   })
   // AI assistants (WebMCP, off by default): the tool module loads only when turned on.
-  provideWebMcpTools(session, () => import('./webmcp').then((m) => m.slidesTools(session, editor)))
+  provideWebMcpTools(session, () => import('./webmcp').then((m) => m.slidesTools(session, editor, presentation)))
 
   // ---------- Toolbar ----------
 

@@ -76,10 +76,39 @@ export class Presentation {
   }
   private wasFullscreen = false
 
+  private readonly stateListeners = new Set<() => void>()
+
   constructor(private readonly host: PresentHost) {}
 
   get active(): boolean {
     return !!this.root
+  }
+
+  // This browser runs the presentation (not following someone else's).
+  get presenting(): boolean {
+    return !!this.root && this.following === null
+  }
+
+  get slideIndex(): number {
+    return this.index
+  }
+
+  // Called when a presentation starts or ends.
+  onStateChange(fn: () => void): void {
+    this.stateListeners.add(fn)
+  }
+
+  // Remote control of a presentation this browser runs (WebMCP).
+  forward(): void {
+    if (this.presenting) this.next()
+  }
+
+  back(): void {
+    if (this.presenting) this.prev()
+  }
+
+  goToSlide(index: number): void {
+    if (this.presenting) this.go(index)
   }
 
   get isFollowing(): boolean {
@@ -141,6 +170,7 @@ export class Presentation {
     )
     const followNote = el('div', { class: 'present-follow-note' })
     this.root = el('div', { class: 'slides-present', tabIndex: -1 }, this.stage, hud, followNote)
+    queueMicrotask(() => this.stateListeners.forEach((fn) => fn()))
     this.root.setAttribute('role', 'dialog')
     this.root.setAttribute('aria-label', t('Presentation'))
     document.body.append(this.root)
@@ -204,6 +234,7 @@ export class Presentation {
     this.presenterStage = null
     this.root?.remove()
     this.root = null
+    this.stateListeners.forEach((fn) => fn())
     if (this.following === null) this.host.awareness.setLocalStateField('present', null)
     this.following = null
     this.presenterWindow?.close()

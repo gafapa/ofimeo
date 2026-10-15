@@ -18,6 +18,8 @@ export type ToolArgs = Record<string, unknown>
 export interface OfimeoTool {
   // snake_case, unique within the page (e.g. 'get_text').
   name: string
+  // Short human-readable name (default: derived from name).
+  title?: string
   // What the tool does, for the assistant (English; not translated).
   description: string
   inputSchema: JsonSchema
@@ -29,16 +31,67 @@ export interface OfimeoTool {
   // True when the tool changes the document itself (not only comments):
   // the core then records the change as the AI assistant's in the version history.
   changesDocument?: boolean
-  // Returns JSON-serialisable data (or a string); throw an Error to report a failure.
+  // True when the result carries text written by people (the document, its
+  // comments): the assistant is told not to follow instructions found in it.
+  // Default: true for tools that change nothing.
+  untrusted?: boolean
+  // Deletes or overwrites content: the user confirms every call (confirm.ts).
+  destructive?: boolean
+  // Asks the user to confirm this call when it returns a text (e.g. large changes).
+  confirm?: (args: ToolArgs) => string | null
+  // Offered only while this returns true (re-checked when AppTools.watch fires).
+  available?: () => boolean
+  // JSON Schema of an object result (structured content for the assistant).
+  outputSchema?: Record<string, unknown>
+  // Returns JSON-serialisable data, a string or an image (imageResult); throw
+  // an Error to report a failure.
   execute: (args: ToolArgs) => unknown | Promise<unknown>
 }
+
+// A picture result (render): base64 data plus an optional caption.
+export interface ImageResult {
+  kind: 'image'
+  data: string
+  mimeType: string
+  text?: string
+}
+
+export const isImageResult = (value: unknown): value is ImageResult =>
+  !!value && typeof value === 'object' && (value as ImageResult).kind === 'image' && typeof (value as ImageResult).data === 'string'
+
+export async function imageResult(image: Blob | string, text?: string): Promise<ImageResult> {
+  if (typeof image === 'string') {
+    const m = /^data:([^;,]+);base64,(.*)$/.exec(image)
+    if (!m) throw new Error('Not a base64 data URL')
+    return { kind: 'image', data: m[2], mimeType: m[1], ...(text ? { text } : {}) }
+  }
+  const bytes = new Uint8Array(await image.arrayBuffer())
+  let binary = ''
+  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+  return { kind: 'image', data: btoa(binary), mimeType: image.type || 'image/png', ...(text ? { text } : {}) }
+}
+
+// What the selection tool returns (app-specific fields).
+export type SelectionInfo = Record<string, unknown> & { kind: string }
 
 // What an app offers: its tools and extra facts for get_document_info
 // (counts, current page…). Never keys, share links or other documents.
 export interface AppTools {
   tools: OfimeoTool[]
   info?: () => Record<string, unknown> | Promise<Record<string, unknown>>
+  // What the user has selected (get_selection).
+  selection?: () => SelectionInfo | Promise<SelectionInfo>
+  // Shows a place of the document (show): its arguments are described by showSchema.
+  show?: (args: ToolArgs) => unknown | Promise<unknown>
+  showSchema?: JsonSchema['properties']
+  // Undo/redo of the app (default: the Edit menu actions given to the frame).
+  undo?: () => void
+  redo?: () => void
+  // Calls fn whenever the set of tools offered may change (e.g. a slide show
+  // starts). Tools hide themselves with `available`.
+  watch?: (fn: () => void) => void
 }
+
 
 // Built lazily: the app's tool module is only loaded when WebMCP is on.
 export type ToolProvider = () => AppTools | Promise<AppTools>

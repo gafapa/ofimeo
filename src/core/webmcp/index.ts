@@ -14,14 +14,24 @@
 
 import type { Session } from '../session'
 import { isWebMcpEnabled, onWebMcpChange } from './state'
-import type { ToolProvider } from './types'
+import type { AppTools, ToolProvider } from './types'
 import type { ToolRegistration } from './registry'
 
 export { isWebMcpEnabled, setWebMcpEnabled, onWebMcpChange } from './state'
 export type { AppTools, OfimeoTool, ToolProvider } from './types'
 
+// Undo/redo of the app's Edit menu (given to the frame), used by the undo and
+// redo tools when the app does not provide its own.
+export interface EditActions {
+  undo?: () => void
+  redo?: () => void
+}
+
 interface Entry {
   providers: ToolProvider[]
+  // Each provider is built once (its tools read the live state).
+  built: Map<ToolProvider, Promise<AppTools>>
+  edit: EditActions
   registration: ToolRegistration | null
   names: string[]
   queued: boolean
@@ -33,7 +43,7 @@ const entries = new WeakMap<Session, Entry>()
 function entry(session: Session): Entry {
   let e = entries.get(session)
   if (!e) {
-    const created: Entry = { providers: [], registration: null, names: [], queued: false, listeners: new Set() }
+    const created: Entry = { providers: [], built: new Map(), edit: {}, registration: null, names: [], queued: false, listeners: new Set() }
     entries.set(session, created)
     onWebMcpChange(() => schedule(session, created))
     e = created
@@ -58,16 +68,33 @@ async function refresh(session: Session, e: Entry): Promise<void> {
     return
   }
   try {
-    const [{ ToolRegistration }, { commonTools }] = await Promise.all([import('./registry'), import('./common')])
-    const apps = await Promise.all(e.providers.map((p) => p()))
+    const [{ ToolRegistration }, { commonTools }, { watchLocalChanges }] = await Promise.all([import('./registry'), import('./common'), import('./ai')])
+    watchLocalChanges(session)
+    const apps = await Promise.all(e.providers.map((p) => build(session, e, p)))
     if (!isWebMcpEnabled()) return
     e.registration ??= new ToolRegistration(session)
-    const names = await e.registration.register([...commonTools(session, apps), ...apps.flatMap((a) => a.tools)])
+    const names = await e.registration.register([...commonTools(session, apps, e.edit), ...apps.flatMap((a) => a.tools)])
     setNames(e, names)
   } catch (err) {
     console.warn('WebMCP: tools could not be registered', err)
     setNames(e, [])
   }
+}
+
+function build(session: Session, e: Entry, provider: ToolProvider): Promise<AppTools> {
+  let built = e.built.get(provider)
+  if (!built) {
+    built = Promise.resolve(provider()).then((app) => {
+      // The tools offered depend on the app's state: register again when it changes.
+      app.watch?.(() => {
+        if (isWebMcpEnabled()) schedule(session, e)
+      })
+      return app
+    })
+    built.catch(() => e.built.delete(provider))
+    e.built.set(provider, built)
+  }
+  return built
 }
 
 function setNames(e: Entry, names: string[]): void {
@@ -82,9 +109,12 @@ export function provideWebMcpTools(session: Session, provider: ToolProvider): vo
   schedule(session, e)
 }
 
-// Starts following the switch for a session without app tools (only get_document_info).
-export function startWebMcp(session: Session): void {
-  schedule(session, entry(session))
+// Starts following the switch for a session (called by the frame with the
+// Edit menu's undo and redo; apps without the frame get only the common tools).
+export function startWebMcp(session: Session, edit: EditActions = {}): void {
+  const e = entry(session)
+  e.edit = edit
+  schedule(session, e)
 }
 
 // Names of the tools currently registered for the session, and their changes.

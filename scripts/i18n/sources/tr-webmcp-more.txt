@@ -1,0 +1,14 @@
+Add the text “{text}” to a slide ||| Añadir el texto «{text}» a una diapositiva ||| Engadir o texto «{text}» a unha diapositiva
+Animate an object of slide {n} ||| Animar un objeto de la diapositiva {n} ||| Animar un obxecto da diapositiva {n}
+Apply the theme {name} ||| Aplicar el tema {name} ||| Aplicar o tema {name}
+Change the layout of slide {n} ||| Cambiar el diseño de la diapositiva {n} ||| Cambiar o deseño da diapositiva {n}
+Change the look of {n} objects ||| Cambiar el aspecto de {n} objetos ||| Cambiar o aspecto de {n} obxectos
+Change the speaker notes of slide {n} ||| Cambiar las notas del orador de la diapositiva {n} ||| Cambiar as notas do orador da diapositiva {n}
+Format {range} in {sheet} ||| Dar formato a {range} en {sheet} ||| Dar formato a {range} en {sheet}
+Freeze {rows} rows and {columns} columns ||| Inmovilizar {rows} filas y {columns} columnas ||| Inmobilizar {rows} filas e {columns} columnas
+Highlight cells of {range} ||| Resaltar celdas de {range} ||| Realzar celas de {range}
+Insert the chart “{title}” ||| Insertar el gráfico «{title}» ||| Inserir o gráfico «{title}»
+Link {text} to {url} ||| Enlazar {text} con {url} ||| Ligar {text} con {url}
+Make a pivot table of {range} ||| Crear una tabla dinámica de {range} ||| Crear unha táboa dinámica de {range}
+Set the transition of slide {n} ||| Fijar la transición de la diapositiva {n} ||| Fixar a transición da diapositiva {n}
+Sort {range} by column {column} ||| Ordenar {range} por la columna {column} ||| Ordenar {range} pola columna {column}

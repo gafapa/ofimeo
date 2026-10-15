@@ -124,7 +124,7 @@ async function enableDialog(session: Session): Promise<void> {
   const choice = await showDialog(t('Allow AI assistants?'), explanation(session, false), [
     { label: t('Cancel'), value: 'cancel' },
     { label: t('Allow'), value: 'ok', primary: true },
-  ])
+  ], false, 'ai-assistants')
   if (choice !== 'ok') return
   setWebMcpEnabled(true)
   toast(t('AI assistants can now use this document'))
@@ -140,7 +140,7 @@ async function statusDialog(session: Session): Promise<void> {
     ...(pending ? [{ label: t('Review proposals ({n})', { n: pending }), value: 'proposals' }] : []),
     ...(revert ? [{ label: t('Undo all AI changes…'), value: 'revert' }] : []),
     { label: t('Turn off'), value: 'off', primary: true, danger: true },
-  ])
+  ], false, 'ai-assistants')
   if (choice === 'off') turnOff()
   if (choice === 'revert') await undoAll(session)
   if (choice === 'proposals') proposals?.open()

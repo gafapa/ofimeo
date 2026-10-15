@@ -30,7 +30,7 @@ export function cellChart(data: string | undefined): EmbeddedChart | null {
   }
 }
 
-async function chartStyle(chart: EmbeddedChart, width: number, height: number, previous?: string): Promise<string> {
+export async function chartStyle(chart: EmbeddedChart, width: number, height: number, previous?: string): Promise<string> {
   const image = svgDataUri(await chartSvg(chart, width, height))
   // Keep the other keys (rotation, opacity…) of an existing chart.
   const keep = (previous ?? '').split(';').filter((p) => p && !/^(shape|image|imageAspect|slideChart)=/.test(p))

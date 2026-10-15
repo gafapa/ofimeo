@@ -249,12 +249,41 @@ Die Schritt-für-Schritt-Anleitung für die IT-Abteilung steht in der Projektdok
 - **Links sind Schlüssel**: Wer einen Link hat, erhält seinen Zugriff. Veröffentlichen Sie keine Bearbeitungslinks.
 - **Nextcloud**: Ihr Passwort wird nur an Ihren Nextcloud-Server gesendet.
 - **Diktieren** verwendet die Spracherkennung des Browsers, die den Ton an den Dienst des Browserherstellers senden kann.
+- **KI-Assistenten** können ein Dokument nur verwenden, wenn Sie es erlauben, und erhalten Pseudonyme statt der Namen von Personen: siehe [KI-Assistenten](help:ai-assistants).
 
 ## Tipps zum Teilen
 - Verwenden Sie einen Vornamen, Initialen oder einen Spitznamen.
 - Keine sensiblen personenbezogenen Daten (Gesundheit, Familiäres) in geteilte Dokumente schreiben.
 
 Lesen Sie die vollständige [Datenschutzerklärung](legal:privacy) und die [Informationen für Schulen](legal:schools).`,
+  },
+  'ai-assistants': {
+    title: "KI-Assistenten (WebMCP)",
+    keywords: "ki künstliche intelligenz assistent chatbot agent erweiterung webmcp mcp automatisieren prüfen vorschläge",
+    body: `Ofimeo hat keine eigene KI, aber ein KI-Assistent, den Sie in diesem Browser verwenden (eine Erweiterung oder der Agent des Browsers), kann über **WebMCP** mit dem geöffneten Dokument arbeiten, wenn Sie es erlauben.
+
+## Einschalten
+**Werkzeuge ▸ KI-Assistenten erlauben (WebMCP)…** erklärt, was der Assistent tun kann, und schaltet es für diesen Browser ein. Solange es eingeschaltet ist, wird oben die Anzeige **KI-Zugriff aktiv** angezeigt. Klicken Sie darauf, um zu sehen, was der Assistent getan hat, um es auszuschalten oder um alles rückgängig zu machen, was er geändert hat. Ihre Schule hat diese Option möglicherweise ausgeschaltet.
+
+## Was der Assistent tun kann
+Das hängt vom geöffneten Link ab:
+- **Ansehen**: das Dokument, seine Kommentare und Versionen lesen, Bilder seiner Seiten sehen, Rechtschreibung und Barrierefreiheit prüfen und *neue* Dokumente für Sie erstellen (zum Beispiel ein Quiz aus einem Text).
+- **Kommentieren**: außerdem Kommentare und Notizen hinzufügen.
+- **Bearbeiten**: außerdem Änderungen vornehmen: schreiben, formatieren, Folien, Formen, Fragen oder Diagramme hinzufügen, löschen…
+
+Er erhält nie Ihre Freigabelinks, Ihre Schlüssel oder Ihre anderen Dokumente.
+
+## Sie behalten die Kontrolle
+- In Dokumenten ist Text, den der Assistent schreibt, ein **Vorschlag**, den Sie annehmen oder ablehnen.
+- Bei **Löschen**, beim Rückgängigmachen seiner ganzen Arbeit und beim Erstellen von Dokumenten werden Sie immer vorher gefragt.
+- Mit **Änderungen des Assistenten vor dem Anwenden prüfen** (in der Anzeige) ändert sich nichts, bevor Sie es im Bereich **Vom KI-Assistenten vorgeschlagene Änderungen** annehmen.
+- Jede Änderung lässt sich rückgängig machen, wird im Versionsverlauf als Änderung des KI-Assistenten vermerkt, und **Alle KI-Änderungen rückgängig machen…** kehrt zur Version vor seiner ersten Änderung zurück.
+
+## Daten von Personen
+Antwortende von Formularen und die Personen im Dokument erreichen den Assistenten als **Pseudonyme** („Antwort 1“, „Teilnehmende Person 2“), sofern Sie nicht **Dem Assistenten die echten Namen der Personen geben** ankreuzen. Noten, die der Assistent in einem Quiz vorschlägt, sind als **Vom KI-Assistenten vorgeschlagen** gekennzeichnet, und nur Sie geben sie frei. Ihre Moodle-Aufgaben liest er nur, wenn Sie es jedes Mal erlauben.
+
+## Im Unterricht
+Halten Sie sich an die Regeln Ihrer Schule zur KI. Geben Sie Assistenten keine sensiblen Daten von Schülerinnen und Schülern und geben Sie an, welche Teile einer Arbeit mit KI entstanden sind. Lesen Sie den [Hinweis zu künstlicher Intelligenz](legal:ai).`,
   },
   shortcuts: {
     title: 'Tastenkombinationen',

@@ -251,12 +251,41 @@ Le guide pas à pas pour le service informatique se trouve dans la documentation
 - **Les liens sont des clés**${NB}: quiconque possède un lien obtient son accès. Ne publiez pas de liens de modification.
 - **Nextcloud**${NB}: votre mot de passe n’est envoyé qu’à votre serveur Nextcloud.
 - **La dictée** utilise la reconnaissance vocale du navigateur, qui peut envoyer l’audio au service de l’éditeur du navigateur.
+- Les **assistants IA** ne peuvent utiliser un document que si vous l’autorisez et reçoivent des pseudonymes au lieu des noms des personnes : voir [Assistants IA](help:ai-assistants).
 
 ## Conseils pour le partage
 - Utilisez un prénom, des initiales ou un pseudonyme.
 - Ne mettez pas de données personnelles sensibles (santé, situation familiale) dans des documents partagés.
 
 Lisez la [politique de confidentialité](legal:privacy) complète et les [informations pour les établissements](legal:schools).`,
+  },
+  'ai-assistants': {
+    title: "Assistants IA (WebMCP)",
+    keywords: "ia intelligence artificielle assistant chatbot agent extension webmcp mcp automatiser révision propositions",
+    body: `Ofimeo n’a pas d’IA propre, mais un assistant IA que vous utilisez dans ce navigateur (une extension ou l’agent du navigateur) peut travailler avec le document ouvert grâce à **WebMCP**, si vous l’autorisez.
+
+## L’activer
+**Outils ▸ Autoriser les assistants IA (WebMCP)…** explique ce que l’assistant pourra faire et l’active dans ce navigateur. Tant qu’il est actif, l’indicateur **Accès IA activé** s’affiche en haut. Cliquez dessus pour voir ce que l’assistant a fait, le désactiver ou annuler tout ce qu’il a modifié. Votre établissement a peut-être désactivé cette option.
+
+## Ce que l’assistant peut faire
+Cela dépend du lien que vous avez ouvert :
+- **Lecture** : lire le document, ses commentaires et ses versions, voir des images de ses pages, vérifier l’orthographe et l’accessibilité, et créer de *nouveaux* documents à vous (par exemple, un questionnaire à partir d’un texte).
+- **Commentaire** : en plus, ajouter des commentaires et des notes.
+- **Modification** : en plus, faire des modifications : écrire, mettre en forme, ajouter des diapositives, des formes, des questions ou des graphiques, supprimer…
+
+Il ne reçoit jamais vos liens de partage, vos clés ni vos autres documents.
+
+## Vous gardez le contrôle
+- Dans les documents, le texte écrit par l’assistant est une **suggestion** que vous acceptez ou refusez.
+- **Supprimer**, annuler tout son travail et créer des documents vous sont toujours demandés avant.
+- Avec **Examiner les modifications de l’assistant avant de les appliquer** (dans l’indicateur), rien ne change tant que vous ne l’acceptez pas dans le panneau **Modifications proposées par l’assistant IA**.
+- Chaque modification peut être annulée, est enregistrée comme celle de l’assistant IA dans l’historique des versions, et **Annuler toutes les modifications de l’IA…** revient à la version d’avant sa première modification.
+
+## Données des personnes
+Les personnes qui répondent aux formulaires et celles du document parviennent à l’assistant sous forme de **pseudonymes** (« Répondant 1 », « Participant 2 ») sauf si vous cochez **Donner à l’assistant les vrais noms des personnes**. Les notes que l’assistant suggère dans un questionnaire sont signalées **Suggéré par l’assistant IA** et vous seul les publiez. Il ne lit vos devoirs Moodle que si vous l’autorisez à chaque fois.
+
+## En classe
+Suivez les règles de votre établissement sur l’IA. Ne donnez pas aux assistants de données sensibles des élèves et indiquez quelles parties d’un travail ont été faites avec l’IA. Lisez la [note sur l’intelligence artificielle](legal:ai).`,
   },
   shortcuts: {
     title: 'Raccourcis clavier',

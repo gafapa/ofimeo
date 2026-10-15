@@ -119,3 +119,17 @@ export function sourceLabel(c: EmbeddedChart): string {
   if (!c.source) return t('Data typed in the document')
   return [c.source.title || t('Untitled spreadsheet'), c.source.sheetName, c.source.range].filter(Boolean).join(' › ')
 }
+
+// A chart with data typed in the document (WebMCP insert_chart): labels and
+// series as given, laid out like a sheet range with labels in the first
+// column and series names in the first row.
+export function chartFromData(input: { type: string; title?: string; labels: unknown[]; series: { name?: unknown; values?: unknown[] }[]; xTitle?: string; yTitle?: string }): EmbeddedChart {
+  const labels = input.labels.map((l) => String(l ?? ''))
+  const series = input.series.filter((s) => Array.isArray(s.values))
+  if (!labels.length || !series.length) throw new Error('Give "labels" and at least one series with "values"')
+  const rows: Cell[][] = [['', ...series.map((s, i) => String(s.name ?? seriesLabel(i + 1)))], ...labels.map((label, r) => [label, ...series.map((s) => (typeof s.values![r] === 'number' ? (s.values![r] as number) : Number.isFinite(Number(s.values![r])) ? Number(s.values![r]) : null))])]
+  const last = (n: number) => (n < 26 ? String.fromCharCode(65 + n) : `A${String.fromCharCode(65 + n - 26)}`)
+  const chart = readEmbedded({ spec: { type: input.type, sheetId: '', range: `A1:${last(series.length)}${rows.length}`, seriesIn: 'columns', title: input.title ?? '', xTitle: input.xTitle ?? '', yTitle: input.yTitle ?? '' } as unknown as ChartSpec, rows })
+  if (!chart) throw new Error('The chart could not be made from that data')
+  return chart
+}

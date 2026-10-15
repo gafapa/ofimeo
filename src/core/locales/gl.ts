@@ -2937,6 +2937,20 @@ const gl: Record<string, string> = {
   'Tag a note of the page {name}': 'Etiquetar unha nota da páxina {name}',
   'Underline “{text}” on page {n}': 'Subliñar «{text}» na páxina {n}',
   'Write “{text}” on page {n}': 'Escribir «{text}» na páxina {n}',
+  'Add the text “{text}” to a slide': 'Engadir o texto «{text}» a unha diapositiva',
+  'Animate an object of slide {n}': 'Animar un obxecto da diapositiva {n}',
+  'Apply the theme {name}': 'Aplicar o tema {name}',
+  'Change the layout of slide {n}': 'Cambiar o deseño da diapositiva {n}',
+  'Change the look of {n} objects': 'Cambiar o aspecto de {n} obxectos',
+  'Change the speaker notes of slide {n}': 'Cambiar as notas do orador da diapositiva {n}',
+  'Format {range} in {sheet}': 'Dar formato a {range} en {sheet}',
+  'Freeze {rows} rows and {columns} columns': 'Inmobilizar {rows} filas e {columns} columnas',
+  'Highlight cells of {range}': 'Realzar celas de {range}',
+  'Insert the chart “{title}”': 'Inserir o gráfico «{title}»',
+  'Link {text} to {url}': 'Ligar {text} con {url}',
+  'Make a pivot table of {range}': 'Crear unha táboa dinámica de {range}',
+  'Set the transition of slide {n}': 'Fixar a transición da diapositiva {n}',
+  'Sort {range} by column {column}': 'Ordenar {range} pola columna {column}',
 }
 
 export default gl

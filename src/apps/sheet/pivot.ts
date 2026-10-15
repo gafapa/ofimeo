@@ -130,7 +130,7 @@ export async function pivotDialog(univerAPI: FUniver): Promise<void> {
 }
 
 // Writes (or rewrites) a pivot table with its top-left cell at `at`.
-function writePivot(univerAPI: FUniver, target: FWorksheet, at: { row: number; col: number }, spec: PivotSpec): boolean {
+export function writePivot(univerAPI: FUniver, target: FWorksheet, at: { row: number; col: number }, spec: PivotSpec): boolean {
   const wb = univerAPI.getActiveWorkbook()!
   const source = wb.getSheetBySheetId(spec.sourceSheetId)
   const first = parseA1(spec.source)

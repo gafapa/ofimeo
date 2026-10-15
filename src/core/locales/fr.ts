@@ -2937,6 +2937,20 @@ const fr: Record<string, string> = {
   'Tag a note of the page {name}': 'Étiqueter une note de la page {name}',
   'Underline “{text}” on page {n}': 'Souligner « {text} » à la page {n}',
   'Write “{text}” on page {n}': 'Écrire « {text} » sur la page {n}',
+  'Add the text “{text}” to a slide': 'Ajouter le texte « {text} » à une diapositive',
+  'Animate an object of slide {n}': 'Animer un objet de la diapositive {n}',
+  'Apply the theme {name}': 'Appliquer le thème {name}',
+  'Change the layout of slide {n}': 'Modifier la disposition de la diapositive {n}',
+  'Change the look of {n} objects': 'Modifier l’apparence de {n} objets',
+  'Change the speaker notes of slide {n}': 'Modifier les notes de l’orateur de la diapositive {n}',
+  'Format {range} in {sheet}': 'Mettre en forme {range} dans {sheet}',
+  'Freeze {rows} rows and {columns} columns': 'Figer {rows} lignes et {columns} colonnes',
+  'Highlight cells of {range}': 'Mettre en évidence des cellules de {range}',
+  'Insert the chart “{title}”': 'Insérer le graphique « {title} »',
+  'Link {text} to {url}': 'Lier {text} à {url}',
+  'Make a pivot table of {range}': 'Créer un tableau croisé dynamique de {range}',
+  'Set the transition of slide {n}': 'Définir la transition de la diapositive {n}',
+  'Sort {range} by column {column}': 'Trier {range} selon la colonne {column}',
 }
 
 export default fr

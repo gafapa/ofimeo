@@ -249,12 +249,41 @@ The step-by-step guide for the IT department is in the project's documentation (
 - **Links are keys**: anyone who has a link gets its access. Do not post edit links publicly.
 - **Nextcloud**: your password is only sent to your Nextcloud server.
 - **Dictation** uses the browser's speech recognition, which may send the audio to the browser maker's service.
+- **AI assistants** can only use a document if you allow it, and get pseudonyms instead of people's names: see [AI assistants](help:ai-assistants).
 
 ## Tips for sharing
 - Use a first name, initials or a nickname.
 - Do not put sensitive personal data (health, family matters) in shared documents.
 
 Read the full [privacy policy](legal:privacy) and the [information for schools](legal:schools).`,
+  },
+  'ai-assistants': {
+    title: "AI assistants (WebMCP)",
+    keywords: "ai artificial intelligence assistant chatbot agent extension webmcp mcp automate review proposals",
+    body: `Ofimeo has no AI of its own, but an AI assistant you use in this browser (a browser extension or the browser's own agent) can work with the open document through **WebMCP**, if you allow it.
+
+## Turning it on
+**Tools ▸ Allow AI assistants (WebMCP)…** explains what the assistant will be able to do and turns it on for this browser. While it is on, the **AI access on** indicator is shown at the top. Click it to see what the assistant did, to turn it off or to undo everything it changed. Your school may have turned this option off.
+
+## What the assistant can do
+It depends on the link you opened:
+- **View**: read the document, its comments and versions, see pictures of its pages, check spelling and accessibility, and create *new* documents of yours (for example, a quiz from a text).
+- **Comment**: also add comments and notes.
+- **Edit**: also make changes: write, format, add slides, shapes, questions or charts, delete…
+
+It never gets your sharing links, your keys or your other documents.
+
+## You stay in control
+- In documents, text the assistant writes is a **suggestion** you accept or reject.
+- **Deleting**, undoing all its work and creating documents always ask you first.
+- With **Review the assistant's changes before they are applied** (in the indicator), nothing changes until you accept it in the **Changes proposed by the AI assistant** panel.
+- Every change can be undone, is recorded as the AI assistant's in the version history, and **Undo all AI changes…** goes back to the version before its first change.
+
+## People's data
+Form respondents and the people in the document reach the assistant as **pseudonyms** ("Respondent 1", "Participant 2") unless you tick **Give the assistant people's real names**. Grades the assistant suggests in a quiz are marked **Suggested by the AI assistant** and only you release them. It reads your Moodle assignments only if you allow it each time.
+
+## In class
+Follow your school's rules on AI. Do not give assistants sensitive data of pupils, and say which parts of a piece of work were done with AI. Read the [note on artificial intelligence](legal:ai).`,
   },
   shortcuts: {
     title: 'Keyboard shortcuts',

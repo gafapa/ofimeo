@@ -249,12 +249,41 @@ A guía paso a paso para o departamento de informática está na documentación 
 - **As ligazóns son chaves**: quen ten unha ligazón obtén o seu acceso. Non publiques ligazóns de edición.
 - **Nextcloud**: o teu contrasinal só se envía ao teu servidor Nextcloud.
 - **O ditado** usa o recoñecemento de voz do navegador, que pode enviar o audio ao servizo do fabricante do navegador.
+- Os **asistentes de IA** só poden usar un documento se o permites e reciben pseudónimos no canto dos nomes das persoas: ver [Asistentes de IA](help:ai-assistants).
 
 ## Consellos para compartir
 - Usa o nome, as iniciais ou un alcume.
 - Non poñas datos persoais sensibles (saúde, asuntos familiares) en documentos compartidos.
 
 Le a [política de privacidade](legal:privacy) completa e a [información para centros educativos](legal:schools).`,
+  },
+  'ai-assistants': {
+    title: "Asistentes de IA (WebMCP)",
+    keywords: "ia intelixencia artificial asistente chatbot axente extensión webmcp mcp automatizar revisión propostas",
+    body: `Ofimeo non ten IA propia, pero un asistente de IA que uses neste navegador (unha extensión ou o axente do propio navegador) pode traballar co documento aberto mediante **WebMCP**, se llo permites.
+
+## Activalo
+**Ferramentas ▸ Permitir asistentes de IA (WebMCP)…** explica o que poderá facer o asistente e actívao neste navegador. Mentres está activo, arriba vese o indicador **Acceso de IA activado**. Fai clic nel para ver o que fixo o asistente, desactivalo ou desfacer todo o que cambiou. O teu centro pode ter desactivada esta opción.
+
+## Que pode facer o asistente
+Depende da ligazón que abriches:
+- **Ver**: ler o documento, os seus comentarios e versións, ver imaxes das súas páxinas, revisar a ortografía e a accesibilidade, e crear documentos *novos* teus (por exemplo, un cuestionario a partir dun texto).
+- **Comentar**: ademais, engadir comentarios e notas.
+- **Editar**: ademais, facer cambios: escribir, dar formato, engadir diapositivas, formas, preguntas ou gráficos, borrar…
+
+Nunca recibe as túas ligazóns para compartir, as túas claves nin os teus outros documentos.
+
+## Ti tes o control
+- Nos documentos, o texto que escribe o asistente é unha **suxestión** que aceptas ou rexeitas.
+- **Borrar**, desfacer todo o seu traballo e crear documentos sempre cho pregunta antes.
+- Con **Revisar os cambios do asistente antes de aplicalos** (no indicador), nada cambia ata que o aceptas no panel **Cambios propostos polo asistente de IA**.
+- Cada cambio pódese desfacer, queda rexistrado como do asistente de IA no historial de versións, e **Desfacer todos os cambios da IA…** volve á versión anterior ao seu primeiro cambio.
+
+## Datos das persoas
+Quen responde os formularios e as persoas do documento chéganlle ao asistente como **pseudónimos** («Persoa que responde 1», «Participante 2») salvo que marques **Darlle ao asistente os nomes reais das persoas**. As notas que suxire o asistente nun cuestionario márcanse como **Suxerido polo asistente de IA** e só ti as publicas. Só le as túas tarefas de Moodle se llo permites cada vez.
+
+## Na aula
+Segue as normas do teu centro sobre a IA. Non lles deas aos asistentes datos sensibles do alumnado e indica que partes dun traballo se fixeron con IA. Le a [nota sobre intelixencia artificial](legal:ai).`,
   },
   shortcuts: {
     title: 'Atallos de teclado',

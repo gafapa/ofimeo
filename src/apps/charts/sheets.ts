@@ -9,7 +9,7 @@
 // for text (dates, percentages).
 
 import * as Y from 'yjs'
-import { IndexeddbPersistence } from 'y-indexeddb'
+import { DocumentPersistence } from '../../core/document-persistence'
 import { activeDocs, dbName, getDoc, type DocEntry } from '../../core/store'
 import { t } from '../../core/i18n'
 import type { Cell } from '../sheet/charts/model'
@@ -113,7 +113,7 @@ export async function loadLibrarySheet(docId: string): Promise<{ entry: DocEntry
   const entry = getDoc(docId)
   if (!entry || entry.type !== 'sheet' || entry.trashed) return null
   const doc = new Y.Doc()
-  const persistence = new IndexeddbPersistence(dbName(docId), doc)
+  const persistence = new DocumentPersistence(dbName(docId), doc)
   try {
     await persistence.whenSynced
     return { entry, tables: workbookTables(sheetDocWorkbook(doc)) }

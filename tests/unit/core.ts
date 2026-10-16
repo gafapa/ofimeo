@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { accessOf, keysForAccess, mergeKeys, newLinkKeys, resolveKeys, sign, verify } from '../../src/core/keys'
 import { isParsed, parseShareLink } from '../../src/core/import-link'
-import { listAccounts, saveAccount, removeAccount, startLoginFlow, type NcAccount } from '../../src/core/nextcloud'
+import { listAccounts, saveAccount, removeAccount, startLoginFlow, upload, NcError, type NcAccount } from '../../src/core/nextcloud'
 import { clearMoodleAccount, loadMoodleAccount, saveMoodleAccount, type MoodleAccount } from '../../src/core/moodle-store'
 import * as Y from 'yjs'
 import { Channel, RoomProvider } from '../../src/core/network'
@@ -146,6 +146,33 @@ export async function runTests(): Promise<void> {
     } finally {
       globalThis.fetch = realFetch
     }
+  })
+  await check('Nextcloud uploads never adopt a later metadata version', async () => {
+    const original = globalThis.fetch
+    const calls: RequestInit[] = []
+    globalThis.fetch = (async (_url, options) => {
+      calls.push(options!)
+      assert.equal(options?.method, 'PUT', 'Do not read an intervening writer\'s metadata')
+      return new Response(null, { status: 204 })
+    }) as typeof fetch
+    try {
+      const result = await upload(account, '/file.txt', new Blob(['synthetic']), { ifMatch: 'original' })
+      assert.equal(result.etag, undefined)
+      assert.equal((calls[0].headers as Record<string, string>)['If-Match'], '"original"')
+      // An unverified version must use create-only, which blocks an automatic overwrite.
+      globalThis.fetch = (async (_url, options) => {
+        assert.equal((options?.headers as Record<string, string>)['If-None-Match'], '*')
+        return new Response(null, { status: 412 })
+      }) as typeof fetch
+      await assert.rejects(upload(account, '/file.txt', new Blob(['next edit']), { createOnly: true }), (error) => error instanceof NcError && error.kind === 'exists')
+    } finally { globalThis.fetch = original }
+  })
+  await check('Nextcloud preserves only the version returned by the PUT', async () => {
+    const original = globalThis.fetch
+    globalThis.fetch = (async () => new Response(null, { status: 204, headers: { 'OC-ETag': 'our-version', 'OC-FileId': '42' } })) as typeof fetch
+    try {
+      assert.deepEqual(await upload(account, '/file.txt', new Blob(['synthetic']), { ifMatch: 'before' }), { etag: '"our-version"', fileId: '42' })
+    } finally { globalThis.fetch = original }
   })
   await check('a forged copy with a genuine signature does not hide the real change', async () => {
     Object.assign(globalThis, { window: globalThis })

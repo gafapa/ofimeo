@@ -21,7 +21,7 @@
 //                         people who are never online together (store-forward/)
 
 import * as Y from 'yjs'
-import { IndexeddbPersistence } from 'y-indexeddb'
+import { DocumentPersistence } from './document-persistence'
 import { Awareness, removeAwarenessStates } from 'y-protocols/awareness'
 import { accessRank, keysForAccess, mergeKeys, newLinkKeys, type Access, type DocKeys, type LinkKeys } from './keys'
 import { isRemoteOrigin, RoomProvider, type ChannelSecurity } from './network'
@@ -29,6 +29,8 @@ import { absoluteUrl, docPath } from './router'
 import { startStoreForward, type StoreForward } from './store-forward'
 import * as store from './store'
 import { t } from './i18n'
+import { mergeState, validateUpdate } from './y-storage'
+import { reportStorageError } from './storage-error'
 
 export type { Access } from './keys'
 
@@ -108,9 +110,9 @@ export async function openSession(type: store.DocType, docId: string, docKey: st
   const { access } = keys
 
   const doc = new Y.Doc()
-  const persistence = new IndexeddbPersistence(store.dbName(docId), doc)
+  const persistence = new DocumentPersistence(store.dbName(docId), doc)
   const commentsDoc = new Y.Doc()
-  const commentsPersistence = new IndexeddbPersistence(store.commentsDbName(docId), commentsDoc)
+  const commentsPersistence = new DocumentPersistence(store.commentsDbName(docId), commentsDoc)
   const awareness = new Awareness(doc)
   const user = store.loadUser()
   awareness.setLocalStateField('user', { name: user.name, color: user.color })
@@ -173,7 +175,7 @@ export async function openSession(type: store.DocType, docId: string, docKey: st
 function recordAuthor(session: Session): void {
   const { doc, authors, user } = session
   const onUpdate = (_update: Uint8Array, origin: unknown) => {
-    if (isRemoteOrigin(origin) || origin instanceof IndexeddbPersistence || origin === AUTHOR_ORIGIN) return
+    if (isRemoteOrigin(origin) || origin instanceof DocumentPersistence || origin === AUTHOR_ORIGIN) return
     doc.off('update', onUpdate)
     queueMicrotask(() => updateAuthor(session, user))
   }
@@ -194,21 +196,22 @@ export function updateAuthor(session: Session, user: store.User): void {
 
 // Creates a new local document (new keys, full edit) from prepared Yjs content
 // and returns its path.
-export async function createLocalDocument(type: store.DocType, title: string, fill: (doc: Y.Doc) => void): Promise<string> {
+export async function createLocalDocument(type: store.DocType, title: string, fill: (doc: Y.Doc) => void, privateState?: Uint8Array): Promise<string> {
+  if (privateState) validateUpdate(privateState)
   const id = store.newDocId()
   const key = store.newDocKey()
   const doc = new Y.Doc()
   fill(doc)
   doc.getMap<unknown>('meta').set('title', title)
-  // y-indexeddb stores the full current state when it first syncs.
-  const persistence = new IndexeddbPersistence(store.dbName(id), doc)
+  // Initial synchronization includes a committed write of the prepared state.
+  const persistence = new DocumentPersistence(store.dbName(id), doc)
   await persistence.whenSynced
   await persistence.destroy()
-  // That write may still be pending, and navigating right away can abort it; a
-  // read on a new connection is ordered after it, so wait for one.
-  const check = new IndexeddbPersistence(store.dbName(id), new Y.Doc())
-  await check.whenSynced
-  await check.destroy()
+  doc.destroy()
+  if (privateState) {
+    try { await mergeState(store.privateDbName(type, id), privateState) }
+    catch (error) { throw reportStorageError(error) }
+  }
   const keys = newLinkKeys()
   store.saveDoc({ id, key, type, title, keys, access: 'edit' })
   return docPath(type, id, key, keys)

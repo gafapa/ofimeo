@@ -3,7 +3,8 @@
 // (decrypt, store, acknowledge, grade release).
 
 import * as Y from 'yjs'
-import { IndexeddbPersistence } from 'y-indexeddb'
+import { DocumentPersistence } from '../../core/document-persistence'
+import { reportStorageError } from '../../core/storage-error'
 import type { PrivateStateHooks, Session } from '../../core/session'
 import { listVersions, RESTORE_ORIGIN } from '../../core/versions'
 import { t } from '../../core/i18n'
@@ -28,6 +29,7 @@ export interface FormState {
   session: Session
   // Editors only.
   priv: Y.Doc | null
+  persistence?: DocumentPersistence
   keys: EditorKeys | null
   transport: FormsTransport
   // Short code of the owner's signing key (shown to respondents and editors).
@@ -45,15 +47,15 @@ export async function openFormState(session: Session): Promise<FormState> {
   }
   const keys = await editorKeys(session.keys.link.edit)
   const priv = new Y.Doc()
-  const persistence = new IndexeddbPersistence(privateDbName(session.docId), priv)
+  const persistence = new DocumentPersistence(privateDbName(session.docId), priv)
   await persistence.whenSynced
   // Publish (signed) the key respondents encrypt to.
   const settings = settingsMap(session.doc)
   if (settings.get('responseKey') !== keys.responsePublic) session.doc.transact(() => settings.set('responseKey', keys.responsePublic), LOCAL)
   const transport = new FormsTransport(session, { key: keys.vault, doc: priv })
-  const state: FormState = { session, priv, keys, transport, fingerprint: code }
+  const state: FormState = { session, priv, persistence, keys, transport, fingerprint: code }
   session.hooks.privateState = answerKeyHooks(session, priv)
-  transport.onSubmit = (sealed) => void receiveSealed(state, sealed, 'p2p')
+  transport.onSubmit = (sealed) => void receiveSealed(state, sealed, 'p2p').catch(reportStorageError)
   if (import.meta.env.DEV) Object.assign(window, { formState: state })
   return state
 }
@@ -115,11 +117,16 @@ export async function receiveSealed(state: FormState, sealed: SealedResponse, vi
     response = { ...response, form: session.docId, receivedAt: Date.now(), via }
     priv.transact(() => responses.set(response.id, response), LOCAL)
   }
+  // A receipt must mean the answer survived a committed storage transaction,
+  // including retries of an answer retained in memory after a previous failure.
+  if (!state.persistence) throw reportStorageError(new Error('Private form persistence is unavailable'))
+  await state.persistence.flush()
   const receipts = receiptsMap(session.doc)
-  if (!receipts.has(response.id)) session.doc.transact(() => receipts.set(response.id, Date.now()), LOCAL)
+  const acknowledged = receipts.has(response.id)
+  if (!acknowledged) session.doc.transact(() => receipts.set(response.id, Date.now()), LOCAL)
   const settings = readSettings(session.doc)
-  if (!known && settings.quiz && settings.release === 'immediate') {
-    const sheet = scoreResponse(readItems(session.doc), keyLookup(priv), response, gradesMap(priv).get(response.id))
+  if (!acknowledged && settings.quiz && settings.release === 'immediate') {
+    const sheet = scoreResponse(readItems(session.doc), keyLookup(priv), known ?? response, gradesMap(priv).get(response.id))
     if (!sheet.pending) await releaseGrades(state, [response.id])
   }
   return known ?? response

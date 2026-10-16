@@ -5,7 +5,7 @@
 // left out and reported. Spreadsheets need the open app to export.
 
 import * as Y from 'yjs'
-import { IndexeddbPersistence } from 'y-indexeddb'
+import { DocumentPersistence } from '../core/document-persistence'
 import { appInfo } from '../apps/registry'
 import { downloadBlob, safeFileName } from '../core/handin'
 import { t } from '../core/i18n'
@@ -19,7 +19,7 @@ export const canDownload = (d: store.DocEntry) => d.type !== 'sheet'
 
 async function loadDoc(name: string): Promise<Y.Doc> {
   const doc = new Y.Doc()
-  const persistence = new IndexeddbPersistence(name, doc)
+  const persistence = new DocumentPersistence(name, doc)
   await persistence.whenSynced
   await persistence.destroy()
   return doc

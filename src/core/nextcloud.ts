@@ -351,14 +351,10 @@ export async function upload(a: NcAccount, path: string, blob: Blob, options: Up
   const res = await dav(a, 'PUT', path, { headers, body: blob })
   if (res.status === 412) throw new NcError(options.createOnly ? 'exists' : 'conflict', undefined, 412)
   if (!res.ok) throw statusError(res)
-  let etag = res.headers.get('OC-ETag') ?? res.headers.get('ETag') ?? undefined
-  let fileId = res.headers.get('OC-FileId') ?? undefined
-  // Headers not exposed to this origin: ask for them.
-  if (!etag) {
-    const entry = await stat(a, path).catch(() => null)
-    etag = entry?.etag
-    fileId = entry?.fileId ?? fileId
-  }
+  // Only this response identifies the version we wrote. A later PROPFIND can
+  // describe another writer's content and must never become our If-Match token.
+  const etag = res.headers.get('OC-ETag') ?? res.headers.get('ETag') ?? undefined
+  const fileId = res.headers.get('OC-FileId') ?? undefined
   return { etag: etag ? quoteEtag(etag) : undefined, fileId }
 }
 

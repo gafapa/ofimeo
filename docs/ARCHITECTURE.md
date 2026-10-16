@@ -9,7 +9,7 @@ Architecture; the reasons behind these choices are in
 ```
 Browser (PWA, one origin)
  ├─ main.ts ── router (#app=…&doc=…&key=…) ── home/ or apps/<app>/index.ts (dynamic import)
- ├─ core/session.ts ── Y.Doc + commentsDoc ── y-indexeddb (local, offline)
+ ├─ core/session.ts ── Y.Doc + commentsDoc ── DocumentPersistence (local, offline)
  │        │                     └─ awareness (cursors, names)
  │        ├─ network.ts ── Trystero: Nostr signalling → WebRTC data channels to peers
  │        │                (every update Ed25519-signed; peers verify)
@@ -38,7 +38,16 @@ Optional servers (never required):
 4. **Sync.** Local changes → IndexedDB immediately → signed updates to peers
    in the room → (if enabled) encrypted mailbox for offline peers.
 5. **Versions.** `core/versions.ts` stores named snapshots; restore is generic
-   (apps may add `hooks.privateState`, e.g. forms' answer key).
+     (apps may add `hooks.privateState`, e.g. forms' answer key).
+
+`core/document-persistence.ts` uses the existing y-indexeddb database schema,
+but acknowledges writes only after the IndexedDB transaction commits. Failed
+updates remain queued in memory, raise the persistent storage warning, and are
+retried on the next edit or explicit `flush()`. Reads and log compaction also
+wait for transaction completion; compaction includes other tabs' committed
+updates in the same transaction. Copies enter the document index only after
+both public content and any private state are durable. Form response receipts
+wait for a successful private-state flush.
 
 ## Permissions
 

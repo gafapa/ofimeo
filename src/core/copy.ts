@@ -4,7 +4,7 @@
 // content only (no version history, authors, comments or permission keys).
 
 import * as Y from 'yjs'
-import { IndexeddbPersistence } from 'y-indexeddb'
+import { DocumentPersistence } from './document-persistence'
 import { Awareness } from 'y-protocols/awareness'
 import { appInfo } from '../apps/registry'
 import { t } from './i18n'
@@ -41,23 +41,8 @@ export async function createCopyFromState(type: store.DocType, title: string, st
   const path = await createLocalDocument(type, title, (doc) => {
     Y.applyUpdate(doc, state)
     cleanCopy(type, doc)
-  })
-  const id = new URLSearchParams(path.split('#')[1]).get('doc')
-  if (privateState && id) await writePrivateState(type, id, privateState)
+  }, privateState ?? undefined)
   return path
-}
-
-async function writePrivateState(type: store.DocType, id: string, state: Uint8Array): Promise<void> {
-  const doc = new Y.Doc()
-  Y.applyUpdate(doc, state)
-  const persistence = new IndexeddbPersistence(store.privateDbName(type, id), doc)
-  await persistence.whenSynced
-  await persistence.destroy()
-  // As in createLocalDocument: wait until the write is done before navigating.
-  const check = new IndexeddbPersistence(store.privateDbName(type, id), new Y.Doc())
-  await check.whenSynced
-  await check.destroy()
-  doc.destroy()
 }
 
 export const copyTitle = (title: string, type?: store.DocType) => t('Copy of {title}', { title: title || (type ? appInfo(type).untitled : t('Untitled')) })
@@ -91,7 +76,7 @@ export async function copyFromLink(route: CopyLinkRoute, onStatus: (message: str
   const doc = new Y.Doc()
 
   if (known) {
-    const persistence = new IndexeddbPersistence(store.dbName(route.id), doc)
+    const persistence = new DocumentPersistence(store.dbName(route.id), doc)
     await persistence.whenSynced
     await persistence.destroy()
   }

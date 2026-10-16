@@ -708,7 +708,8 @@ export async function openFromNextcloud(): Promise<void> {
         path: entry.path,
         // Formats the app cannot write (e.g. .rtf, .doc) are saved with "Save to Nextcloud as…".
         format: SAVE_EXTS[target.info.type].includes(ext) ? ext : '',
-        etag: etag ?? entry.etag,
+        // The listing can describe a different version than the downloaded body.
+        etag,
         fileId: entry.fileId,
       })
     }

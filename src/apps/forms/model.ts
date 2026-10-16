@@ -17,7 +17,6 @@
 // stay with the editors.
 
 import * as Y from 'yjs'
-import { IndexeddbPersistence } from 'y-indexeddb'
 import { createLocalDocument } from '../../core/session'
 import * as store from '../../core/store'
 import { t } from '../../core/i18n'
@@ -249,24 +248,16 @@ export function parseFormFile(text: string): FormFile {
 
 // Creates a new local form (public definition plus private answer key); returns its path.
 export async function createForm(file: FormFile): Promise<string> {
-  const path = await createLocalDocument('forms', file.title, (doc) => {
-    const settings = settingsMap(doc)
-    for (const [key, value] of Object.entries(file.settings ?? {})) if (key !== 'responseKey') settings.set(key, value)
-    itemsArray(doc).push(file.items.map((i) => itemMap(i)))
-  })
-  if (file.answers && Object.keys(file.answers).length) {
-    const id = new URLSearchParams(path.split('#')[1]).get('doc')!
-    const priv = new Y.Doc()
-    const answers = answersMap(priv)
-    for (const [qid, key] of Object.entries(file.answers)) answers.set(qid, key)
-    const persistence = new IndexeddbPersistence(privateDbName(id), priv)
-    await persistence.whenSynced
-    await persistence.destroy()
-    const check = new IndexeddbPersistence(privateDbName(id), new Y.Doc())
-    await check.whenSynced
-    await check.destroy()
-  }
-  return path
+  const priv = new Y.Doc()
+  const answers = answersMap(priv)
+  for (const [qid, key] of Object.entries(file.answers ?? {})) answers.set(qid, key)
+  try {
+    return await createLocalDocument('forms', file.title, (doc) => {
+      const settings = settingsMap(doc)
+      for (const [key, value] of Object.entries(file.settings ?? {})) if (key !== 'responseKey') settings.set(key, value)
+      itemsArray(doc).push(file.items.map((i) => itemMap(i)))
+    }, answers.size ? Y.encodeStateAsUpdate(priv) : undefined)
+  } finally { priv.destroy() }
 }
 
 // ---------- Presenting answers ----------

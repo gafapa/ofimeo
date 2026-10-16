@@ -37,7 +37,12 @@ connections. Linked documents continue to use the account they were saved with.
   Nextcloud*, a conflict, or *Offline*. Click it for Save, Save as, *Show in
   Nextcloud* and *Stop saving to this file*.
 - **Conflicts**: every save sends the ETag of the version you opened or last
-  saved (`If-Match`). If someone changed the file in Nextcloud meanwhile, you
+  saved (`If-Match`). Only an ETag returned with the download or upload is
+  associated with that content; a later metadata request cannot establish its
+  version. If CORS hides that response header, automatic replacement is blocked
+  and a manual save asks before replacing an existing file. Configure the server
+  to expose `ETag` or `OC-ETag` for uninterrupted conditional saves.
+  If someone changed the file in Nextcloud meanwhile, you
   choose **Overwrite**, **Save as a copy** or **Cancel** (Nextcloud keeps
   older versions in its own version history).
 - **Autosave** (off by default): in the Nextcloud dialog, save linked

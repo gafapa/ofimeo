@@ -13,12 +13,16 @@ test.beforeAll(async () => {
       name: 'storage-fixture',
       resolveId(source) {
         if (source === 'storage-fixture') return '\0fixture'
-        if (source === './i18n') return '\0i18n'
+        if (source.endsWith('/i18n')) return '\0i18n'
         if (source === '../home/storage') return '\0storage-ui'
         if (source === './nextcloud') return '\0nextcloud'
+        if (source === './network') return '\0network'
+        if (source === './store-forward') return '\0store-forward'
       },
       load(id) {
-        if (id === '\0i18n') return 'export const t = (key) => key'
+        if (id === '\0i18n') return 'export const t = (key) => key; export const locale = () => "en"'
+        if (id === '\0network') return 'export const isRemoteOrigin = () => false; export class RoomProvider {}'
+        if (id === '\0store-forward') return 'export const startStoreForward = () => undefined'
         if (id === '\0storage-ui') return 'export const showPersistenceNotice = () => {}'
         if (id === '\0nextcloud') return `export const currentAccount = () => ({}); export const stat = async () => ({}); export const createFolder = async () => {}; export const joinPath = (a,b) => a+'/'+b; export const upload = async () => { if (window.failUpload) throw new Error('Synthetic upload failure') };`
         if (id === '\0fixture') return [
@@ -27,9 +31,13 @@ test.beforeAll(async () => {
           `import * as library from ${JSON.stringify(resolve('src/core/library.ts'))};`,
           `import * as kv from ${JSON.stringify(resolve('src/core/idb.ts'))};`,
           `import * as storage from ${JSON.stringify(resolve('src/core/y-storage.ts'))};`,
+          `import { DocumentPersistence } from ${JSON.stringify(resolve('src/core/document-persistence.ts'))};`,
+          `import { createLocalDocument } from ${JSON.stringify(resolve('src/core/session.ts'))};`,
+          `import { receiveSealed } from ${JSON.stringify(resolve('src/apps/forms/state.ts'))};`,
+          `import * as formCrypto from ${JSON.stringify(resolve('src/apps/forms/crypto.ts'))};`,
           `import * as keys from ${JSON.stringify(resolve('src/core/keys.ts'))};`,
           `import * as Y from 'yjs'; import JSZip from 'jszip';`,
-          `window.fixture = {backup,store,library,kv,storage,keys,Y,JSZip};`,
+          `window.fixture = {backup,store,library,kv,storage,keys,Y,JSZip,DocumentPersistence,receiveSealed,formCrypto,createLocalDocument};`,
         ].join('\n')
       },
     }],
@@ -91,6 +99,118 @@ test('aborts after request success reject KV, library and Yjs writes', async ({ 
     return { statuses: results.map((result: any) => result.status), kv: await kv.kvGet('aborted') ?? null, library: await library.dbGet('templates', 'aborted') ?? null }
   })
   expect(result).toEqual({ statuses: ['rejected', 'rejected', 'rejected'], kv: null, library: null })
+})
+
+test('live persistence rejects aborted writes and retries all retained changes', async ({ page }) => {
+  const result = await run(page, async () => {
+    const { DocumentPersistence, storage, Y } = (window as any).fixture
+    const doc = new Y.Doc()
+    const persistence = new DocumentPersistence('ofimeo:live-abort', doc)
+    await persistence.whenSynced
+    let warnings = 0
+    window.addEventListener('ofimeo-storage-error', () => warnings++)
+    const original = IDBObjectStore.prototype.add
+    IDBObjectStore.prototype.add = function (...args: any[]) {
+      const request = original.apply(this, args as any)
+      request.addEventListener('success', () => this.transaction.abort())
+      return request
+    }
+    let rejected = false
+    doc.getMap('data').set('first', 'retained after failure')
+    try { await persistence.flush() } catch { rejected = true }
+    finally { IDBObjectStore.prototype.add = original }
+    const before = new Y.Doc()
+    Y.applyUpdate(before, await storage.readState(persistence.name))
+    doc.getMap('data').set('second', 'next change')
+    await persistence.flush()
+    await persistence.destroy()
+    const after = new Y.Doc()
+    Y.applyUpdate(after, await storage.readState(persistence.name))
+    return { rejected, warned: warnings > 0, before: before.getMap('data').size, after: after.getMap('data').toJSON() }
+  })
+  expect(result).toEqual({ rejected: true, warned: true, before: 0, after: { first: 'retained after failure', second: 'next change' } })
+})
+
+test('initial persistence rejects a late transaction abort instead of reporting a saved copy', async ({ page }) => {
+  const result = await run(page, async () => {
+    const { DocumentPersistence, Y } = (window as any).fixture
+    const original = IDBObjectStore.prototype.add
+    IDBObjectStore.prototype.add = function (...args: any[]) {
+      const request = original.apply(this, args as any)
+      request.addEventListener('success', () => this.transaction.abort())
+      return request
+    }
+    const doc = new Y.Doc(); doc.getText('content').insert(0, 'prepared copy')
+    const persistence = new DocumentPersistence('ofimeo:initial-abort', doc)
+    try { await persistence.whenSynced; return false } catch { return true }
+    finally { IDBObjectStore.prototype.add = original }
+  })
+  expect(result).toBe(true)
+})
+
+test('log compaction retains changes committed by another open document', async ({ page }) => {
+  const result = await run(page, async () => {
+    const { DocumentPersistence, storage, Y } = (window as any).fixture
+    const name = 'ofimeo:compaction'
+    const first = new Y.Doc(), second = new Y.Doc()
+    const a = new DocumentPersistence(name, first), b = new DocumentPersistence(name, second)
+    await Promise.all([a.whenSynced, b.whenSynced])
+    second.getMap('data').set('other-tab', 'keep this')
+    await b.flush()
+    for (let i = 0; i < 505; i++) { first.getMap('data').set('counter', i); await a.flush() }
+    await Promise.all([a.destroy(), b.destroy()])
+    const restored = new Y.Doc(); Y.applyUpdate(restored, await storage.readState(name))
+    return restored.getMap('data').toJSON()
+  })
+  expect(result).toEqual({ 'other-tab': 'keep this', counter: 504 })
+})
+
+test('a form receipt waits for durable private storage and can retry a failed answer', async ({ page }) => {
+  test.skip(!await page.evaluate(() => (window as any).fixture.formCrypto.x25519Available()), 'Native X25519 is unavailable')
+  const result = await run(page, async () => {
+    const { DocumentPersistence, storage, Y, keys, receiveSealed, formCrypto } = (window as any).fixture
+    const editor = await formCrypto.editorKeys(keys.newLinkKeys().edit)
+    const priv = new Y.Doc(), doc = new Y.Doc()
+    doc.getMap('form-settings').set('quiz', true)
+    doc.getMap('form-settings').set('release', 'immediate')
+    const persistence = new DocumentPersistence('ofimeo:receipt-private', priv)
+    await persistence.whenSynced
+    const state = { priv, keys: editor, session: { docId: 'receipt-form', doc }, persistence }
+    const { sealed } = await formCrypto.sealResponse('receipt-form', editor.responsePublic, { id: 'answer-1', answers: {} })
+    const original = IDBObjectStore.prototype.add
+    IDBObjectStore.prototype.add = function (...args: any[]) {
+      const request = original.apply(this, args as any)
+      request.addEventListener('success', () => this.transaction.abort())
+      return request
+    }
+    let rejected = false
+    try { await receiveSealed(state, sealed, 'p2p') } catch { rejected = true }
+    finally { IDBObjectStore.prototype.add = original }
+    const before = doc.getMap('form-receipts').size
+    await receiveSealed(state, sealed, 'p2p')
+    const stored = new Y.Doc(); Y.applyUpdate(stored, await storage.readState(persistence.name))
+    await persistence.destroy()
+    return { rejected, before, acknowledged: doc.getMap('form-receipts').has('answer-1'), persisted: stored.getMap('responses').has('answer-1'), released: doc.getMap('form-results').has('answer-1') }
+  })
+  expect(result).toEqual({ rejected: true, before: 0, acknowledged: true, persisted: true, released: true })
+})
+
+test('copies are not indexed when private state cannot be committed', async ({ page }) => {
+  const result = await run(page, async () => {
+    const { createLocalDocument, store, Y } = (window as any).fixture
+    const priv = new Y.Doc(); priv.getMap('answers').set('q1', { value: 'synthetic' })
+    const original = IDBObjectStore.prototype.add
+    IDBObjectStore.prototype.add = function (...args: any[]) {
+      const request = original.apply(this, args as any)
+      if (this.transaction.db.name.endsWith(':forms-private')) request.addEventListener('success', () => this.transaction.abort())
+      return request
+    }
+    let rejected = false
+    try { await createLocalDocument('forms', 'Synthetic copy', () => {}, Y.encodeStateAsUpdate(priv)) } catch { rejected = true }
+    finally { IDBObjectStore.prototype.add = original }
+    return { rejected, docs: store.listDocs().length }
+  })
+  expect(result).toEqual({ rejected: true, docs: 0 })
 })
 
 test('quota failure is reported and the staged restore is retryable', async ({ page }) => {
@@ -202,5 +322,40 @@ test('storage failures leave an accessible warning while the editor remains usab
   await expect(page.locator('#storage-failure')).toHaveAttribute('role', 'alert')
   await expect(page.locator('#storage-failure')).toContainText('could not be saved')
   await expect(page.locator('.ProseMirror')).toContainText('Synthetic unsaved edit')
+  expect(errors).toEqual([])
+})
+
+test('live editor reports an IndexedDB abort and retries before reopening', async ({ page }) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await page.goto(`/${RELAYS}#app=writer&doc=live-editor-abort`)
+  const editor = page.locator('.ProseMirror')
+  await editor.waitFor()
+  await page.evaluate(() => {
+    const original = IDBObjectStore.prototype.add
+    Object.assign(window, { restoreStorage: () => { IDBObjectStore.prototype.add = original } })
+    IDBObjectStore.prototype.add = function (...args: any[]) {
+      const request = original.apply(this, args as any)
+      if (this.transaction.db.name === 'ofimeo:live-editor-abort') request.addEventListener('success', () => this.transaction.abort())
+      return request
+    }
+  })
+  await editor.fill('Retained after an IndexedDB abort')
+  await expect(page.locator('#storage-failure')).toContainText('could not be saved')
+  await expect(editor).toContainText('Retained after an IndexedDB abort')
+  await page.evaluate(() => {
+    ;(window as any).restoreStorage()
+    const original = IDBObjectStore.prototype.add
+    IDBObjectStore.prototype.add = function (...args: any[]) {
+      const request = original.apply(this, args as any)
+      if (this.transaction.db.name === 'ofimeo:live-editor-abort') this.transaction.addEventListener('complete', () => { (window as any).retryCommitted = true })
+      return request
+    }
+  })
+  await editor.press('End')
+  await page.keyboard.type(' and retried')
+  await expect.poll(() => page.evaluate(() => !!(window as any).retryCommitted)).toBe(true)
+  await page.reload()
+  await expect(editor).toContainText('Retained after an IndexedDB abort and retried')
   expect(errors).toEqual([])
 })

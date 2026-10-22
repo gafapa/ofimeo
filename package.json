@@ -96,7 +96,7 @@
     "@types/react-dom": "19.3.0",
     "axe-core": "4.13.0",
     "typescript": "7.0.2",
-    "vite": "8.3.2",
+    "vite": "8.3.5",
     "vite-plugin-pwa": "2.0.0",
     "workbox-build": "7.4.1",
     "workbox-window": "7.4.1",

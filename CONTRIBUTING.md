@@ -2,7 +2,7 @@
 
 ## Setup
 
-Requirements: Node 24 or later, npm; Go 1.27.2 or later for the relay;
+Requirements: Node 24 or later, npm; Go 1.27.3 or later for the relay;
 Playwright Chromium, Firefox and WebKit for browser tests.
 (`npx playwright install chromium firefox webkit` on a fresh machine).
 
@@ -79,3 +79,11 @@ Help articles are per-language TypeScript files in `src/help/articles/`
 - Record design decisions in [docs/DECISIONS.md](docs/DECISIONS.md) and plans
   in [docs/ROADMAP.md](docs/ROADMAP.md).
 - Historical design briefs and review reports: [docs/design/](docs/design/).
+
+## Dependency security updates
+
+CI rejects npm vulnerabilities at every severity. Relay releases run the same npm audit and a reachable Go vulnerability scan before building binaries. Keep the Go requirement in `relay/go.mod` and the Docker builder version aligned.
+
+The `@modelcontextprotocol/server` override pins 2.3.0 because WebMCP 6.0.3 still requests vulnerable server version 2.0.0. Remove the override only after the upstream dependency graph resolves a patched version, and run the WebMCP browser tests when changing it.
+
+Changes to `main` require a pull request with the `test`, `Relay (Go)` and `Docker image` checks passing against the current base branch. Force pushes and branch deletion are disabled, including for administrators.

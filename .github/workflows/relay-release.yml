@@ -27,6 +27,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Dependency security audit
+        run: npm audit --audit-level=low
       # The pinned draw.io release the shape libraries are generated from.
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
@@ -38,6 +40,9 @@ jobs:
       - name: Test the relay
         working-directory: relay
         run: go vet ./... && go test ./...
+      - name: Reachable Go vulnerabilities
+        working-directory: relay
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.8.0 ./...
       - name: Build the binaries
         working-directory: relay
         run: |

@@ -146,7 +146,7 @@ export class RoomProvider {
   // Raw message action for app protocols that are not a Yjs document (e.g. form
   // responses, forms/transport.ts). `name` is the Trystero action name (at most 12 bytes).
   makeAction(name: string): MessageAction<Uint8Array> {
-    return this.room?.makeAction<Uint8Array>(name) ?? { send: async () => {}, onMessage: null, onReceiveProgress: null }
+    return this.room?.makeAction<Uint8Array>(name) ?? { send: async () => {}, onReceive: null, onMessage: null, onReceiveProgress: null }
   }
 
   // Resolves when signed logs are loaded (call before relying on relaying).

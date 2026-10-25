@@ -165,7 +165,7 @@ export function normalizeServer(input: string): string {
   } catch {
     throw new NcError('bad-url')
   }
-  if (!url.hostname) throw new NcError('bad-url')
+  if (!url.hostname || !/^https?:$/.test(url.protocol) || url.username || url.password) throw new NcError('bad-url')
   const path = url.pathname
     .replace(/\/(index\.php|remote\.php|public\.php|ocs|apps|s|login|settings|status\.php)(\/.*)?$/, '')
     .replace(/\/+$/, '')
@@ -175,7 +175,12 @@ export function normalizeServer(input: string): string {
 export const encodePath = (path: string) =>
   path
     .split('/')
-    .map((p) => encodeURIComponent(p))
+    .map((p) => {
+      // Fetch normalizes dot segments even when percent-encoded. Refuse them
+      // before a WebDAV write can escape the selected user's files root.
+      if (p === '.' || p === '..') throw new NcError('bad-url')
+      return encodeURIComponent(p)
+    })
     .join('/')
 
 export const joinPath = (dir: string, name: string) => `${dir.replace(/\/+$/, '')}/${name}`.replace(/^(?!\/)/, '/')
@@ -206,7 +211,9 @@ async function send(url: string, method: string, auth: string | null, options: R
   const headers: Record<string, string> = { ...options.headers }
   if (auth) headers.Authorization = auth
   try {
-    return await fetch(url, { method, headers, body: options.body, credentials: 'omit', cache: 'no-store', redirect: 'follow', signal: options.signal })
+    // A 307/308 redirect can forward a private upload body to another origin.
+    // Use the installation's canonical address rather than following redirects.
+    return await fetch(url, { method, headers, body: options.body, credentials: 'omit', cache: 'no-store', redirect: 'error', signal: options.signal })
   } catch (err) {
     if ((err as Error).name === 'AbortError') throw err
     // A network failure: blocked by CORS, unreachable, certificate… The
@@ -538,7 +545,7 @@ export function parseShareUrl(input: string): { server: string; token: string } 
     throw new NcError('bad-url', t('Paste the whole share link, like https://cloud.school.org/s/AbC123.'))
   }
   const m = /^(.*?)\/(?:index\.php\/)?s\/([A-Za-z0-9]+)\/?$/.exec(url.pathname)
-  if (!m) throw new NcError('bad-url', t('Paste the whole share link, like https://cloud.school.org/s/AbC123.'))
+  if (!m || !/^https?:$/.test(url.protocol) || url.username || url.password) throw new NcError('bad-url', t('Paste the whole share link, like https://cloud.school.org/s/AbC123.'))
   return { server: `${url.protocol}//${url.host}${m[1]}`, token: m[2] }
 }
 

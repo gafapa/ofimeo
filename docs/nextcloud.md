@@ -5,6 +5,12 @@ and students can hand in their work to a teacher's Nextcloud upload link.
 There is no Ofimeo server in between: the browser talks directly to
 Nextcloud (WebDAV and a few OCS / login endpoints).
 
+Use the installation's canonical address, including any installation subfolder.
+API requests reject redirects: a 307/308 response must never forward a private
+document or login token to another destination. WebDAV paths also reject `.`
+and `..` segments before issuing a request. Server and share addresses must use
+HTTP or HTTPS and must not contain embedded user names or passwords.
+
 ## For users
 
 New connections last for the browser tab's session by default. Select **Remember

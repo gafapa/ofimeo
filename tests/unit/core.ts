@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { accessOf, keysForAccess, mergeKeys, newLinkKeys, resolveKeys, sign, verify } from '../../src/core/keys'
 import { isParsed, parseShareLink } from '../../src/core/import-link'
-import { listAccounts, saveAccount, removeAccount, startLoginFlow, upload, NcError, type NcAccount } from '../../src/core/nextcloud'
+import { listAccounts, saveAccount, removeAccount, startLoginFlow, upload, normalizeServer, parseShareUrl, davUrl, NcError, type NcAccount } from '../../src/core/nextcloud'
 import { clearMoodleAccount, loadMoodleAccount, saveMoodleAccount, type MoodleAccount } from '../../src/core/moodle-store'
 import * as Y from 'yjs'
 import { Channel, RoomProvider } from '../../src/core/network'
@@ -147,11 +147,33 @@ export async function runTests(): Promise<void> {
       globalThis.fetch = realFetch
     }
   })
+  await check('Nextcloud rejects credentials in addresses and non-web share links', () => {
+    for (const address of ['https://user:secret@cloud.example', 'https://user@cloud.example']) {
+      assert.throws(() => normalizeServer(address), NcError)
+      assert.throws(() => parseShareUrl(`${address}/s/AbC123`), NcError)
+    }
+    for (const scheme of ['ftp', 'javascript', 'file']) assert.throws(() => parseShareUrl(`${scheme}://cloud.example/s/AbC123`), NcError)
+    assert.equal(normalizeServer('https://cloud.example/nextcloud/index.php/apps/files'), 'https://cloud.example/nextcloud')
+    assert.deepEqual(parseShareUrl('https://cloud.example/nextcloud/s/AbC123'), { server: 'https://cloud.example/nextcloud', token: 'AbC123' })
+  })
+  await check('Nextcloud rejects WebDAV traversal before sending an upload', async () => {
+    const original = globalThis.fetch
+    globalThis.fetch = (async () => { throw new Error('Traversal must not reach fetch') }) as typeof fetch
+    try {
+      for (const path of ['/../outside.txt', '/folder/../../outside.txt', '/./file.txt']) {
+        assert.throws(() => davUrl(account, path), NcError)
+        await assert.rejects(upload(account, path, new Blob(['private'])), NcError)
+      }
+      assert.equal(new URL(davUrl(account, '/folder/a b.txt')).pathname, '/remote.php/dav/files/student/folder/a%20b.txt')
+      assert.ok(davUrl(account, '/%2e%2e/file.txt').includes('/%252e%252e/'))
+    } finally { globalThis.fetch = original }
+  })
   await check('Nextcloud uploads never adopt a later metadata version', async () => {
     const original = globalThis.fetch
     const calls: RequestInit[] = []
     globalThis.fetch = (async (_url, options) => {
       calls.push(options!)
+      assert.equal(options?.redirect, 'error', 'Private upload bodies must not follow redirects')
       assert.equal(options?.method, 'PUT', 'Do not read an intervening writer\'s metadata')
       return new Response(null, { status: 204 })
     }) as typeof fetch

@@ -68,6 +68,17 @@ exact versions, with the lockfile and third-party notices regenerated:
   X25519 is unavailable; that test passes in Chromium and Firefox.
 - `git diff --check`: passes.
 
+## Publication follow-up — 26 October 2026
+
+The first hosted PR run passed 236 browser tests but failed the chart export
+test on both attempts. Its screenshots showed an empty sheet: the test's
+hard-coded canvas click had not focused a cell before typing. The local run
+had passed, so its success did not establish that this coordinate worked on
+the Linux runner. The test now fills and verifies each source cell through the
+accessible table view, then selects `A1:B4` through the named reference box.
+The chart preview, native XLSX/ODS export and chart reimport assertions remain.
+Hosted CI must pass before this change is merged or published.
+
 ## Limits and retained scope
 
 The previous exclusion of legacy-storage migration remains in place; its

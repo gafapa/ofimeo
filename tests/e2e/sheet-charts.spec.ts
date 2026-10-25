@@ -3,24 +3,25 @@ import JSZip from 'jszip'
 import { readFileSync } from 'node:fs'
 import { openApp, RELAYS, trackErrors } from './helpers'
 
-// Types values column by column from A1 (Enter moves down, arrows move back up).
-// A1 is found from the grid's default geometry: formula bar, 46 × 20 px headers, 88 × 24 px cells.
+// Enter chart data through named table cells, independent of canvas geometry,
+// toolbar height, platform fonts and whether the first canvas has finished drawing.
 async function fill(page: Page, columns: string[][]) {
-  const host = (await page.locator('.sheet-host').boundingBox())!
-  await page.mouse.click(host.x + 90, host.y + 59)
+  const switchView = page.getByRole('button', { name: 'Switch to accessible table view' })
+  await switchView.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('grid')).toBeVisible()
   for (let c = 0; c < columns.length; c++) {
-    if (c) {
-      for (let i = 0; i < columns[c - 1].length; i++) await page.keyboard.press('ArrowUp')
-      await page.keyboard.press('ArrowRight')
-    }
-    for (const value of columns[c]) {
+    for (let r = 0; r < columns[c].length; r++) {
+      const value = columns[c][r]
+      const cell = page.locator(`.sheet-a11y-grid td[data-r="${r}"][data-c="${c}"]`)
+      await cell.click()
       await page.keyboard.type(value, { delay: 30 })
       await page.keyboard.press('Enter')
+      await expect(cell).toHaveText(value)
     }
   }
-  // Back to A1.
-  for (let i = 0; i < columns[columns.length - 1].length; i++) await page.keyboard.press('ArrowUp')
-  for (let c = 1; c < columns.length; c++) await page.keyboard.press('ArrowLeft')
+  await page.keyboard.press('Alt+Shift+T')
+  await expect(page.locator('.sheet-a11y-view')).toBeHidden()
 }
 
 async function menu(page: Page, name: string, item: string) {
@@ -37,8 +38,9 @@ test('insert a chart, save it as native charts in .xlsx and .ods, and open it ag
     ['Month', 'Sep', 'Oct', 'Nov'],
     ['Grade', '6', '7.5', '8'],
   ])
-  for (let i = 0; i < 3; i++) await page.keyboard.press('Shift+ArrowDown')
-  await page.keyboard.press('Shift+ArrowRight')
+  const nameBox = page.getByRole('textbox', { name: 'Name box (cell reference)' })
+  await nameBox.fill('A1:B4')
+  await nameBox.press('Enter')
 
   await menu(page, 'Insert', 'Chart…')
   const dialog = page.locator('dialog[open]')

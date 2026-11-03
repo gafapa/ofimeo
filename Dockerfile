@@ -11,6 +11,7 @@
 FROM --platform=$BUILDPLATFORM node:24-bookworm-slim AS web
 WORKDIR /src
 COPY package.json package-lock.json ./
+COPY vendor/ ./vendor/
 RUN npm ci --no-audit --no-fund
 COPY . .
 # The legal pages are built from legal.config.json: edit it (owner, DPO,

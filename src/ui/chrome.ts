@@ -38,6 +38,9 @@ export function setupChrome(session: Session, untitled: string): void {
   titleInput.addEventListener('keydown', (e) => e.key === 'Enter' && titleInput.blur())
   meta.observe(syncTitle)
   syncTitle()
+  // The shell can render before app setup finishes. Accept edits only after
+  // the input handler is attached, so an early rename cannot be discarded.
+  titleInput.disabled = false
 
   const badge = document.getElementById('access-badge')
   if (badge && !session.canEdit) {
@@ -131,7 +134,7 @@ export function setupSaveState(session: Session): void {
   const indicator = document.querySelector<HTMLElement>('.save-indicator')
   const label = document.getElementById('save-state')
   if (!indicator || !label) return
-  let timer = 0
+  let revision = 0
   const render = (saving: boolean) => {
     const text = saving ? t('Saving…') : t('Saved in this browser')
     label.textContent = text
@@ -139,11 +142,15 @@ export function setupSaveState(session: Session): void {
     indicator.title = text
     indicator.querySelector('svg')?.replaceWith(icon(saving ? CloudUpload : CloudCheck, 16))
   }
-  session.doc.on('update', () => {
+  const changed = () => {
+    const current = ++revision
     if (!indicator.classList.contains('saving')) render(true)
-    clearTimeout(timer)
-    timer = window.setTimeout(() => render(false), 600)
-  })
+    void session.flushStorage().then(() => {
+      if (current === revision) render(false)
+    }, () => { /* The persistence layer reports the failure; keep the unsaved state. */ })
+  }
+  session.doc.on('update', changed)
+  session.commentsDoc.on('update', changed)
   render(false)
 }
 

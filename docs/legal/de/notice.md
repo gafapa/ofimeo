@@ -27,7 +27,7 @@ Der Zugang ist frei, kostenlos und ohne Registrierung. Mit der Nutzung von {{sit
 ## 4. Geistiges und gewerbliches Eigentum
 
 - Der eigene Code von {{siteName}}, seine Gestaltung und seine Texte gehören dem Inhaber oder seinen Mitwirkenden und werden unter der im Projekt-Repository angegebenen Lizenz angeboten; ohne ausdrückliche Angabe sind alle Rechte vorbehalten.
-- {{siteName}} enthält Komponenten Dritter (Open-Source-Bibliotheken, Schriftarten, Rechtschreibwörterbücher und Formenbibliotheken von draw.io), die ihren eigenen Lizenzen unterliegen; diese sind unter [Lizenzen von Drittanbieter-Software](../../THIRD_PARTY_NOTICES.md) wiedergegeben. Diese Hinweise schränken die durch diese Lizenzen gewährten Rechte nicht ein.
+- {{siteName}} enthält Komponenten Dritter (Open-Source-Bibliotheken, Schriftarten, Rechtschreibwörterbücher und Formenbibliotheken von draw.io), die ihren eigenen Lizenzen unterliegen; diese sind unter [Lizenzen von Drittanbieter-Software](../../../THIRD_PARTY_NOTICES.md) wiedergegeben. Diese Hinweise schränken die durch diese Lizenzen gewährten Rechte nicht ein.
 - Der Name {{siteName}} und sein Logo sind Kennzeichen des Inhabers und dürfen nicht so verwendet werden, dass Verwechslungen über die Herkunft anderer Produkte oder Dienste entstehen.
 - Die von Nutzerinnen und Nutzern erstellten Dokumente gehören ihren Urhebern. Der Inhaber erwirbt daran keine Rechte und hat keinen Zugriff auf ihren Inhalt.
 

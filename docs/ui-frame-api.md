@@ -1,6 +1,6 @@
-# Ofimeo app frame: API for the app agents
+# Ofimeo app frame API
 
-The UI foundation (WP1 tokens and WP2 frame core) is in `src/ui/`. The writer (`src/apps/writer/app.ts` and `commands.ts`) is the reference implementation. The home screen (`src/home/home.ts`) uses the same Help items, keys and confirm dialog.
+The shared UI foundation is in `src/ui/`. The writer (`src/apps/writer/app.ts` and `commands.ts`) is the reference implementation. The home screen (`src/home/home.ts`) uses the same Help items, keys and confirm dialog.
 
 **Contract:** an app calls `renderShell` → `setupChrome` → `mountFrame`, then fills `frame.toolbar` and `frame.status`. Everything else (menu order, common keys, save state, zoom control, shortcuts dialog, About, Document details, Hand in and Share in the File menu) comes from the frame.
 
@@ -45,7 +45,7 @@ editor.on('transaction', frame.toolbar.refresh)
 | `zoom.ts` | `createZoomControl(target)` → `{element, update}`, `zoomMenuItems(target)`, `stepZoom(target, ±1)`, `formatZoom(z)` | The control is `− [100 % ▾] +`. The value opens the presets and Fit. `ZoomTarget = {get, set, fit?, isFit?, min?, max?, presets?, keys?}`. Use `zoomMenuItems(target)` for View ▸ Zoom so the menu matches the control. |
 | `widgets.ts` | `confirmDialog(title, text, {confirmLabel, cancelLabel, danger})`, `DialogButton.danger`, `MenuItem.visible`, `uiZoom()` | Replaces native `confirm()` (none remain in src/). `visible` hides items at open time; dangling separators are dropped. |
 | `about.ts` | `aboutDialog()`, `documentDetails(session, appRows)` | "About Ofimeo" and "Document details…": title, type, last change, size, access, versions, authors, Nextcloud file, then the app's rows. |
-| `chrome.ts` | `setupChrome` (now includes `setupSaveState`), `openShareDialog`, `handIn` | Save state for every app: a cloud icon plus a label. Phones show only the icon. Apps should **delete their own "Saving…/Saved" code**. |
+| `chrome.ts` | `setupChrome` (now includes `setupSaveState`), `openShareDialog`, `handIn` | Save state for every app: a cloud icon plus a label, acknowledged by `session.flushStorage()` after document/comment commits. Failed writes remain unsaved. Phones show only the icon. Apps should **delete their own "Saving…/Saved" code**. |
 | `brand.ts` | `brandMark(size)` | The Ofimeo "O" mark (same as `public/icons/icon.svg`). |
 | `registry.ts` | `AppInfo.product` (e.g. "Ofimeo Docs" / "Ofimeo Documentos"), `SUITE = 'Ofimeo'` | `AppInfo.type` values are unchanged. |
 
@@ -86,26 +86,9 @@ Keyboard shortcuts Ctrl+/ · Accessibility… Alt+Shift+A · **Connection test�
 - **Breakpoints:** 600 (phone), 760 (narrow), 900 (tablet). These are numbers only, because CSS variables do not work in media queries. They are also exported as `BREAKPOINTS`.
 - The dark, contrast-dark and contrast-light themes redefine **only tokens**. Components need no theme rules. Use `var(--app-color)` instead of app color literals (slides and draw already do).
 
-## Remaining work per app (next wave)
-- **Sheet (WP4):**
-  - Build on `mountFrame`. Pass `edit` with Univer commands and add View, Insert, Format and Data menus.
-  - `file.download` = PDF (via Print). Use `status: false` while the Univer footer stays.
-  - Delete the save-state code in `sheet/app.ts` (lines around `saveState`) and the hand-written `shortcuts()`, and pass `help.sections` instead.
-  - Theme Univer from the tokens.
-- **Draw (WP5):**
-  - Use `mountFrame` with the menubar visible. File = Download ▸ from `hooks.exportFormats` (PNG, SVG, .excalidraw), plus Print.
-  - Edit: undo and redo through synthetic keys; Find → `toggleSidebar`.
-  - Hide the Excalidraw hamburger. Set the `theme` prop from `data-a11y-theme`.
-  - Status bar zoom from `appState.zoom`. Save state already works through `setupChrome`.
-- **Diagram (WP6):**
-  - Use `mountFrame` with `edit: editor.editMenu()` (a ready `Menu`) or `EditMenuOptions` plus `slots.clipboard` / `slots.select`.
-  - `zoom` from the editor, with `keys: true` and `keys: { zoomIn, zoomOut, zoomReset }`.
-  - Remove the save-state code and `showShortcuts()` in `editor.ts` (move its rows to `help.sections`).
-  - Rebuild the toolbar with `createToolbar`.
-- **Slides (WP7):**
-  - Same approach as the diagram. Download ▸ PPTX and ODP from `exportFormats`, plus `download: [PDF, PNG slide, PNG all]`.
-  - Pass Slide size in `slots.print`.
-  - Put the "Present" button in a `{ pinned: true }` toolbar group.
-  - Remove the save-state code.
+## App integration
 
-The apps that are not migrated still work unchanged. `documentMenuItems`, `createMenuBar` and `#save-state` are kept. `#save-state` is now the label inside `.save-indicator`, so writing its `textContent` still works.
+Sheet, Draw, Diagram and Slides use mountFrame; their app entry points show
+engine-specific menu, toolbar, zoom and status integration. Use those maintained
+implementations when extending an app. The earlier migration work packages
+are complete and remain available in Git history.

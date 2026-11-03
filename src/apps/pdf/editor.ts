@@ -38,7 +38,7 @@ export class Editor {
   onNeedSignature: () => void = () => {}
   // Pen input seen: touch then scrolls instead of drawing.
   private penSeen = false
-  private editing: { id: string; box: HTMLTextAreaElement } | null = null
+  private editing: { id: string; box: HTMLTextAreaElement; draft?: Annot } | null = null
   private bubble: HTMLElement | null = null
   private cursorTimer = 0
 
@@ -257,12 +257,8 @@ export class Editor {
       case 'note':
         this.notes.create(v.entry.id, x - 10, y - 10)
         return this.setTool('select')
-      case 'text': {
-        const size = this.textSize
-        const a = this.add({ type: 'text', page: v.entry.id, color: this.lineColor, x, y: r2(y - size * 0.6), w: 200, h: r2(size * 1.2 + 6), size, text: '' })
-        this.setTool('select')
-        return this.editText(a)
-      }
+      case 'text':
+        return this.createText(v.entry.id, x, y)
       case 'stamp':
         return this.placeStamp(v, x, y)
       case 'sign': {
@@ -455,7 +451,18 @@ export class Editor {
 
   // ---------- Text boxes ----------
 
-  editText(a: Annot): void {
+  private createText(page: string, x: number, y: number): void {
+    const size = this.textSize
+    const draft: Annot = {
+      type: 'text', page, color: this.lineColor, x, y: r2(y - size * 0.6), w: 200, h: r2(size * 1.2 + 6), size, text: '',
+      id: newId(), time: Date.now(), author: this.session.user.name,
+    }
+    this.setTool('select')
+    this.select(null)
+    this.editText(draft, true)
+  }
+
+  editText(a: Annot, draft = false): void {
     const v = this.viewOf(a.page)
     if (!v || !this.canEdit) return
     this.finishEditing()
@@ -486,7 +493,7 @@ export class Editor {
       }
     })
     box.addEventListener('blur', () => this.finishEditing())
-    this.editing = { id: a.id, box }
+    this.editing = { id: a.id, box, ...(draft ? { draft: a } : {}) }
     v.el.append(box)
     this.renderPage(v)
     // Focus right away: typing that follows the click must land in the box.
@@ -499,19 +506,28 @@ export class Editor {
     const e = this.editing
     if (!e) return
     this.editing = null
-    const a = this.annots.get(e.id)
+    const a = e.draft ?? this.annots.get(e.id)
     const text = e.box.value.replace(/\s+$/, '')
     const height = e.box.getBoundingClientRect().height / this.viewer.scale
     e.box.remove()
     if (!a) return
-    if (!text && a.type === 'text') this.remove(a.id)
+    // A text-entry session is one undo step, regardless of typing duration.
+    // New boxes stay local drafts until committed; empty drafts leave no record.
+    this.undo.stopCapturing()
+    if (e.draft) {
+      if (text) this.transact(() => this.annots.set(a.id, { ...a, text, h: r2(Math.max(height, (a.size ?? 14) * 1.2 + 6)) }))
+    } else if (!text && a.type === 'text') this.remove(a.id)
     else if (a.type === 'stamp') {
       const [w, h] = stampSize({ ...a, text }, measure)
       if (text !== a.text) this.update(a.id, { text, w: r2(w), h: r2(h), alt: text })
       else this.renderPage(this.viewOf(a.page)!)
     } else if (text !== a.text || Math.abs(height - (a.h ?? 0)) > 1) this.update(a.id, { text, h: r2(Math.max(height, (a.size ?? 14) * 1.2 + 6)) })
     else this.renderPage(this.viewOf(a.page)!)
-    if (refocus) this.select(a.id, true)
+    this.undo.stopCapturing()
+    if (refocus) {
+      if (this.annots.has(a.id)) this.select(a.id, true)
+      else this.viewer.scroller.focus()
+    }
   }
 
   // ---------- Text markup ----------
@@ -667,12 +683,8 @@ export class Editor {
       case 'note':
         this.notes.create(v.entry.id, x - 10, y - 10)
         return this.setTool('select')
-      case 'text': {
-        const size = this.textSize
-        const a = this.add({ type: 'text', page: v.entry.id, color: this.lineColor, x: r2(x - 100), y: r2(y - size * 0.6), w: 200, h: r2(size * 1.2 + 6), size, text: '' })
-        this.setTool('select')
-        return this.editText(a)
-      }
+      case 'text':
+        return this.createText(v.entry.id, r2(x - 100), y)
       case 'stamp': {
         const before = new Set(this.annots.keys())
         this.placeStamp(v, x, y)

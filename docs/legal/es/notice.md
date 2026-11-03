@@ -27,7 +27,7 @@ El acceso es libre y gratuito y no requiere registro. El uso de {{siteName}} imp
 ## 4. Propiedad intelectual e industrial
 
 - El código propio de {{siteName}}, su diseño y sus textos pertenecen al titular o a sus contribuidores y se ofrecen bajo la licencia indicada en el repositorio del proyecto; en defecto de indicación expresa, quedan reservados todos los derechos.
-- {{siteName}} incluye componentes de terceros (bibliotecas de código abierto, tipos de letra, diccionarios ortográficos y bibliotecas de formas de draw.io) sujetos a sus propias licencias, que se reproducen en [Licencias de software de terceros](../../THIRD_PARTY_NOTICES.md). Nada de lo dispuesto en este aviso limita los derechos que dichas licencias conceden.
+- {{siteName}} incluye componentes de terceros (bibliotecas de código abierto, tipos de letra, diccionarios ortográficos y bibliotecas de formas de draw.io) sujetos a sus propias licencias, que se reproducen en [Licencias de software de terceros](../../../THIRD_PARTY_NOTICES.md). Nada de lo dispuesto en este aviso limita los derechos que dichas licencias conceden.
 - El nombre {{siteName}} y su logotipo son signos distintivos del titular y no pueden utilizarse de forma que induzcan a confusión sobre el origen de otros productos o servicios.
 - Los documentos que crean las personas usuarias pertenecen a sus autores. El titular no adquiere ningún derecho sobre ellos ni tiene acceso a su contenido.
 

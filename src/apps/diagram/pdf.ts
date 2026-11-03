@@ -5,6 +5,7 @@
 import { PDFDocument, rgb } from 'pdf-lib'
 import type { PageRecord } from './model'
 import { svgToPng } from './export'
+import { ganttRasterScale } from './gantt-model'
 
 export interface PdfPicture {
   png: Blob | null
@@ -57,7 +58,7 @@ export async function diagramPdf(pages: PageRecord[], title: string): Promise<Bl
     const height = Number(svg.getAttribute('height'))
     const empty = !pages[i].cells.some((c) => c.vertex || c.edge)
     pictures.push({
-      png: empty ? null : await svgToPng(svg, pictureRatio(width, height)),
+      png: empty ? null : await svgToPng(svg, pages[i].gantt ? ganttRasterScale(width, height) : pictureRatio(width, height)),
       width,
       height,
       pageWidth: (pages[i].pageWidth ?? 850) * 0.72,

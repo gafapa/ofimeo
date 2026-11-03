@@ -27,7 +27,7 @@ Access is free of charge and requires no registration. Using {{siteName}} implie
 ## 4. Intellectual and industrial property
 
 - The own code of {{siteName}}, its design and its texts belong to the owner or its contributors and are offered under the licence stated in the project's repository; unless expressly stated, all rights are reserved.
-- {{siteName}} includes third-party components (open source libraries, fonts, spelling dictionaries and draw.io shape libraries) subject to their own licences, reproduced in [Third-party software licenses](../../THIRD_PARTY_NOTICES.md). Nothing in this notice limits the rights granted by those licences.
+- {{siteName}} includes third-party components (open source libraries, fonts, spelling dictionaries and draw.io shape libraries) subject to their own licences, reproduced in [Third-party software licenses](../../../THIRD_PARTY_NOTICES.md). Nothing in this notice limits the rights granted by those licences.
 - The name {{siteName}} and its logo are distinctive signs of the owner and may not be used in a way that causes confusion about the origin of other products or services.
 - Documents created by users belong to their authors. The owner acquires no rights over them and has no access to their content.
 

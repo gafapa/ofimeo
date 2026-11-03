@@ -45,6 +45,7 @@ const notebook = (tabs: string[], body: string) =>
 const tagRow = (y: number, color: string) => circle(55, y, 2.5, color) + line(60, y, 120, y, '#dadce0', 2)
 
 export const THUMBS: Record<string, () => string> = {
+  gantt: () => svg(grid(52, 14, 7, 5, 14, 14, '#f1f3f4') + [0, 1, 2, 3].map((i) => line(8, 35 + i * 14, 42, 35 + i * 14, '#5f6368', 2) + rect(57 + i * 20, 30 + i * 14, 30, 9, '#d3e3fd', '#1a73e8', 2)).join('')),
   'nb-class-notes': () => notebook(['#1e88e5', '#43a047', '#e53935'], heading(18, '#202124', 44) + textLines(30, 3) + tagRow(52, '#f29900') + tagRow(60, '#8e24aa') + textLines(72, 2)),
   'nb-lab-notebook': () => notebook(['#00897b', '#3949ab'], heading(18, '#202124', 40) + textLines(28, 2) + grid(52, 44, 3, 4, 20, 7, '#e0f2f1') + tagRow(80, '#8e24aa')),
   'nb-reading-journal': () => notebook(['#8e24aa', '#fb8c00'], heading(18, '#202124', 48) + textLines(28, 2) + rect(52, 44, 3, 14, '#c4c7c5') + textLines(46, 2, 58, 56) + tagRow(66, '#8e24aa') + tagRow(74, '#f29900') + line(52, 86, 110, 90, '#1a237e', 1.5)),

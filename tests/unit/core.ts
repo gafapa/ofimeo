@@ -12,6 +12,7 @@ import type { OfimeoTool } from '../../src/core/webmcp/types'
 import { acceptAll, acceptProposal, listProposals, pendingProposals, propose, rejectProposal } from '../../src/core/webmcp/proposals'
 import type { Session as OfimeoSession } from '../../src/core/session'
 import { describeDiff, diffLines } from '../../src/core/webmcp/diff'
+import { runGanttTests } from './gantt'
 
 class TestStorage {
   values = new Map<string, string>()
@@ -119,13 +120,26 @@ export async function runTests(): Promise<void> {
     local.blocked = session.blocked = false
   })
   const moodle: MoodleAccount = { site: 'https://moodle.example', token: 'test-token', siteName: 'School', fullName: 'Student', userId: 1, transport: 'direct', connectedAt: 1, remember: false }
+  await check('Nextcloud disconnect removes only that account from retained legacy credentials', () => {
+    const other = { ...account, id: 'other', appPassword: 'other-legacy-secret' }
+    local.setItem('words-online:nextcloud', JSON.stringify([account, other]))
+    removeAccount(account.id)
+    assert.deepEqual(JSON.parse(local.getItem('words-online:nextcloud') ?? '[]'), [other])
+    saveAccount({ ...other, remember: false })
+    assert.equal(local.getItem('words-online:nextcloud'), '[]')
+    removeAccount(other.id)
+  })
   await check('session Moodle credentials stay out of localStorage and disconnect clears them', () => {
+    local.setItem('words-online:moodle', JSON.stringify(moodle))
     saveMoodleAccount(moodle)
     assert.equal(local.getItem('ofimeo:moodle'), null)
+    assert.equal(local.getItem('words-online:moodle'), null)
     assert.ok(session.getItem('ofimeo:moodle')?.includes(moodle.token))
+    local.setItem('words-online:moodle', JSON.stringify(moodle))
     clearMoodleAccount()
     assert.equal(loadMoodleAccount(), null)
     assert.equal(session.getItem('ofimeo:moodle'), null)
+    assert.equal(local.getItem('words-online:moodle'), null)
   })
   await check('Moodle can connect and disconnect without browser storage', () => {
     local.blocked = session.blocked = true
@@ -295,5 +309,6 @@ export async function runTests(): Promise<void> {
     assert.equal(big.changes.length, 10)
     assert.equal(big.truncated, 90)
   })
+  count += await runGanttTests()
   console.log(`${count}/${count} core tests passed`)
 }

@@ -15,6 +15,9 @@ import { serializeDrawio } from './formats/drawio'
 import { styleFromString, type EditorGraph } from './graph'
 import { parseGeometry, parseStyle, type CellRecord } from './model'
 import { DiagramSync } from './sync'
+import type { GanttView } from './gantt-view'
+import { readGantt } from './gantt-state'
+import { dayDate, scheduleTasks, todayDate, type GanttTask } from './gantt-model'
 
 // What the tools need from the editor (createDiagramEditor's result has it).
 export interface GraphEditor {
@@ -388,7 +391,7 @@ const nodeSchema = {
 
 // ---------- Diagram tools ----------
 
-export function diagramTools(session: Session, editor: GraphEditor): AppTools {
+export function diagramTools(session: Session, editor: GraphEditor, gantt?: GanttView): AppTools {
   const { graph, sync } = editor
   const editable = () => {
     if (editor.readOnly) throw new Error('The diagram is read-only in this tab')
@@ -422,9 +425,10 @@ export function diagramTools(session: Session, editor: GraphEditor): AppTools {
         const n = optNum(args, 'page')
         const page = n === undefined ? pages.find((p) => p.id === sync.page) : pages[Math.round(n) - 1]
         if (!page) throw new Error(`There is no page ${n}`)
-        const records = sync.pageRecords(page.id)
+        const snapshot = DiagramSync.readPages(session.doc).find((entry) => entry.id === page.id)!
+        const records = snapshot.cells
         const list = pages.map((p, i) => ({ page: i + 1, name: p.name, shown: p.id === sync.page }))
-        if (optStr(args, 'format') === 'xml') return { pages: list, xml: serializeDrawio([{ id: page.id, name: page.name, ...sync.pageAttrs(page.id), cells: records }]) }
+        if (optStr(args, 'format') === 'xml') return { pages: list, xml: serializeDrawio([snapshot]) }
         return { pages: list, page: pages.indexOf(page) + 1, ...summarize(records) }
       },
     },
@@ -611,13 +615,13 @@ export function diagramTools(session: Session, editor: GraphEditor): AppTools {
     {
       name: 'add_page',
       description: 'Adds an empty page (optionally named) after the last one and shows it.',
-      inputSchema: { type: 'object', properties: { name: { type: 'string' } } },
+      inputSchema: { type: 'object', properties: { name: { type: 'string' }, kind: { type: 'string', enum: ['diagram', 'gantt'], description: 'Use gantt to create a structured project schedule.' } } },
       access: 'edit',
       changesDocument: true,
       summary: (args) => t('Add the page {name}', { name: optStr(args, 'name') ?? '' }),
       execute: (args) => {
         editable()
-        const id = sync.addPage(optStr(args, 'name')?.trim() || `Page ${sync.pageList().length + 1}`)
+        const id = sync.addPage(optStr(args, 'name')?.trim() || `Page ${sync.pageList().length + 1}`, undefined, args.kind === 'gantt' ? { gantt: JSON.stringify({ version: 1, tasks: [] }) } : undefined)
         showPageSafely(editor, id)
         return { page: sync.pageList().findIndex((p) => p.id === id) + 1 }
       },
@@ -684,8 +688,70 @@ export function diagramTools(session: Session, editor: GraphEditor): AppTools {
     },
   ]
 
+  const isGantt = () => !!sync.pageAttrs().gantt
+  const shapeTools = new Set(['add_shape', 'connect', 'add_graph', 'import_mermaid', 'set_style', 'set_label', 'move_object', 'delete_objects'])
+  for (const tool of tools) {
+    if (!shapeTools.has(tool.name)) continue
+    const execute = tool.execute
+    tool.available = () => !isGantt()
+    tool.execute = (args) => {
+      const { page } = pageAt(editor, args)
+      if (sync.pageAttrs(page.id).gantt) throw new Error('Use the Gantt task tools to edit a structured schedule')
+      return execute(args)
+    }
+  }
+  const taskProperties = {
+    name: { type: 'string', maxLength: 200 }, start: { type: 'string', description: 'Earliest calendar date, YYYY-MM-DD.' },
+    duration: { type: 'integer', minimum: 1, maximum: 3660 }, owner: { type: 'string', maxLength: 100 },
+    progress: { type: 'integer', minimum: 0, maximum: 100 }, milestone: { type: 'boolean' },
+    dependencies: { type: 'array', items: { type: 'string' }, description: 'Predecessor task ids. Finish-to-start; calendar days, including weekends.' },
+  }
+  const taskStore = (args: ToolArgs) => {
+    editable()
+    const { page } = pageAt(editor, args)
+    if (!gantt || !sync.pageAttrs(page.id).gantt) throw new Error('Choose a Gantt page first')
+    return gantt.forPage(page.id)
+  }
+  tools.push({
+    name: 'get_gantt', description: 'Reads structured tasks and their dependency-adjusted dates on a Gantt page. The stored start date is an earliest requested date; milestones have zero duration.',
+    inputSchema: { type: 'object', properties: { ...pageArg } }, access: 'view', available: isGantt,
+    execute: (args) => {
+      const { page } = pageAt(editor, args)
+      return { page: page.name, tasks: scheduleTasks(readGantt(session.doc, page.id).tasks).map((task) => ({ ...task, effective_start: dayDate(task.startDay), effective_end: dayDate(task.milestone ? task.startDay : task.endDay - 1) })) }
+    },
+  }, {
+    name: 'add_gantt_task', description: 'Adds a task or milestone to a Gantt page; dependencies are validated and subsequent dates are recalculated.',
+    inputSchema: { type: 'object', properties: { ...pageArg, ...taskProperties }, required: ['name', 'start'] }, access: 'edit', changesDocument: true, available: isGantt,
+    summary: () => t('Add task'),
+    execute: (args) => {
+      const store = taskStore(args)
+      const task: GanttTask = { id: crypto.randomUUID(), name: str(args, 'name'), start: optStr(args, 'start') ?? todayDate(), duration: optNum(args, 'duration') ?? 3,
+        owner: optStr(args, 'owner') ?? '', progress: optNum(args, 'progress') ?? 0, milestone: args.milestone === true,
+        dependencies: Array.isArray(args.dependencies) ? args.dependencies.map(String) : [], order: Math.max(-1, ...store.read().tasks.map((entry) => entry.order)) + 1 }
+      store.add(task)
+      return { id: task.id }
+    },
+  }, {
+    name: 'update_gantt_task', description: 'Updates only supplied task fields. Rejects dependency cycles, missing predecessors and invalid dates before modifying the document.',
+    inputSchema: { type: 'object', properties: { ...pageArg, id: { type: 'string' }, ...taskProperties }, required: ['id'] }, access: 'edit', changesDocument: true, available: isGantt,
+    summary: () => t('Edit task'),
+    execute: (args) => {
+      const patch = Object.fromEntries(Object.keys(taskProperties).filter((key) => args[key] !== undefined).map((key) => [key, args[key]]))
+      taskStore(args).update(str(args, 'id'), patch)
+      return { ok: true }
+    },
+  }, {
+    name: 'delete_gantt_task', description: 'Deletes a task and its incoming dependency references. The user confirms this destructive action.',
+    inputSchema: { type: 'object', properties: { ...pageArg, id: { type: 'string' } }, required: ['id'] }, access: 'edit', changesDocument: true, destructive: true, available: isGantt,
+    summary: () => t('Delete task'), execute: (args) => { taskStore(args).remove(str(args, 'id')); return { ok: true } },
+  })
+
   return {
     tools,
+    watch: (changed) => {
+      const previous = sync.onPageShown
+      sync.onPageShown = () => { previous(); changed() }
+    },
     selection: () => {
       const cells = selectedCells(editor)
       const page = sync.pageList().findIndex((p) => p.id === sync.page) + 1
@@ -709,8 +775,8 @@ export function diagramTools(session: Session, editor: GraphEditor): AppTools {
     paragraphs: () => labelParts(session.doc, 'page'),
     show: (args) => showCell(editor, args),
     showSchema: { ...pageArg, id: { type: 'string', description: 'Object to select (id from get_diagram).' } },
-    undo: editor.undo,
-    redo: editor.redo,
+    undo: () => isGantt() ? gantt?.undo() : editor.undo(),
+    redo: () => isGantt() ? gantt?.redo() : editor.redo(),
     info: () => ({
       pages: sync.pageList().map((p) => p.name),
       page_shown: sync.pageList().findIndex((p) => p.id === sync.page) + 1,

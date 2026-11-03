@@ -52,7 +52,7 @@ The owner is not liable for damage arising from the use of the application, the 
 
 ## 8. Intellectual property in the program
 
-The program, its design and its components are protected by intellectual property rights, as set out in the [Legal notice](notice.md) and in [Third-party software licenses](../../THIRD_PARTY_NOTICES.md).
+The program, its design and its components are protected by intellectual property rights, as set out in the [Legal notice](notice.md) and in [Third-party software licenses](../../../THIRD_PARTY_NOTICES.md).
 
 ## 9. Changes to the terms
 

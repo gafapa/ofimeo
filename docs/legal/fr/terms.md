@@ -52,7 +52,7 @@ Le titulaire n’est pas responsable des dommages résultant de l’utilisation 
 
 ## 8. Propriété intellectuelle du programme
 
-Le programme, sa conception et ses composants sont protégés par des droits de propriété intellectuelle, comme indiqué dans les [Mentions légales](notice.md) et dans [Licences des logiciels tiers](../../THIRD_PARTY_NOTICES.md).
+Le programme, sa conception et ses composants sont protégés par des droits de propriété intellectuelle, comme indiqué dans les [Mentions légales](notice.md) et dans [Licences des logiciels tiers](../../../THIRD_PARTY_NOTICES.md).
 
 ## 9. Modification des conditions
 

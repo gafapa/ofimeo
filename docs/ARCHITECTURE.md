@@ -41,8 +41,11 @@ Optional servers (never required):
      (apps may add `hooks.privateState`, e.g. forms' answer key).
 
 `core/document-persistence.ts` uses the existing y-indexeddb database schema,
-but acknowledges writes only after the IndexedDB transaction commits. Failed
-updates remain queued in memory, raise the persistent storage warning, and are
+but acknowledges writes only after the IndexedDB transaction commits. The
+session's `flushStorage()` waits for document and comment commits; the shared
+save indicator uses it instead of a timer and retains the unsaved state after
+a failure. Drains resume edits queued while a previous write promise settles.
+Failed updates remain queued in memory, raise the persistent storage warning, and are
 retried on the next edit or explicit `flush()`. Reads and log compaction also
 wait for transaction completion; compaction includes other tabs' committed
 updates in the same transaction. Copies enter the document index only after
@@ -63,7 +66,7 @@ private Yjs doc for editors only and encrypt responses to editors.
 | App | Engine | Folder |
 | --- | --- | --- |
 | Writer | TipTap 3 / ProseMirror, own pagination and PDF writer | `src/apps/writer` |
-| Sheet | Univer 1.0.2 (pinned) + ECharts charts, formula pivots | `src/apps/sheet` |
+| Sheet | Univer (pinned in package.json) + ECharts charts, formula pivots | `src/apps/sheet` |
 | Draw | Excalidraw | `src/apps/draw` |
 | Diagram | Own editor on maxGraph, draw.io libraries | `src/apps/diagram` |
 | Slides | Diagram editor per slide + player/presenter | `src/apps/slides` |
@@ -73,6 +76,22 @@ private Yjs doc for editors only and encrypt responses to editors.
 
 Shared: `src/apps/charts` (charts for writer/slides), `src/ui/mathgraph`,
 `src/core/spell` + `src/ui/spell`, `src/help`, `src/templates`.
+
+Converter contracts live with the implementation: writer formats and types in
+`src/apps/writer/formats/`, spreadsheet formats in `src/apps/sheet/formats/`
+(Univer workbook snapshots), diagram records in `src/apps/diagram/model.ts`
+and draw.io/Visio readers in `src/apps/diagram/formats/`. Slides reuse the
+diagram editor. Preserve format compatibility through import/export round trips
+and realistic fixtures; supported features and omissions are listed in README.
+Original engine evaluations and migration briefs remain in Git history.
+
+Gantt pages inside Diagrams use per-task/per-field Yjs maps. Scheduling is
+derived deterministically from calendar dates and finish-to-start dependencies;
+exports generate ordinary diagram records plus a versioned task snapshot.
+See [gantt.md](gantt.md) for the data model, user flow and limits.
+
+See [security.md](security.md) for backup recovery, imported-content handling
+and the unresolved legacy-storage coexistence risk.
 
 ## Configuration
 

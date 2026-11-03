@@ -71,6 +71,7 @@ const ENTRIES: Entry[] = [
   ],
   ['concept-map', 'diagram', ['Mapa conceptual', 'Mapa conceptual', 'Carte conceptuelle', 'Concept-Map', 'Concept map'], ['Conceptos jerarquizados unidos por palabras de enlace.', 'Conceptos xerarquizados unidos por palabras de ligazón.', 'Notions hiérarchisées reliées par des mots de liaison.', 'Hierarchisch geordnete Begriffe, verbunden durch Verbindungswörter.', 'Concepts in a hierarchy, joined by linking words.']],
   ['timeline', 'diagram', ['Línea del tiempo', 'Liña do tempo', 'Frise chronologique', 'Zeitleiste', 'Timeline'], ['Acontecimientos ordenados con fechas y tarjetas.', 'Acontecementos ordenados con datas e tarxetas.', 'Événements ordonnés avec dates et cartes.', 'Geordnete Ereignisse mit Daten und Karten.', 'Events in order with dates and cards.']],
+  ['gantt', 'diagram', ['Diagrama de Gantt', 'Diagrama de Gantt', 'Diagramme de Gantt', 'Gantt-Diagramm', 'Gantt chart'], ['Planifica tareas con fechas, dependencias, hitos, responsables y avance.', 'Planifica tarefas con datas, dependencias, fitos, responsables e progreso.', 'Planifiez les tâches avec dates, dépendances, jalons, responsables et progression.', 'Aufgaben mit Terminen, Abhängigkeiten, Meilensteinen, Verantwortlichen und Fortschritt planen.', 'Plan tasks with dates, dependencies, milestones, owners and progress.']],
   [
     'flowchart',
     'diagram',

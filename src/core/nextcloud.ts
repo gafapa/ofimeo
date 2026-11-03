@@ -58,9 +58,22 @@ export function listAccounts(): NcAccount[] {
 export const getAccount = (id?: string): NcAccount | undefined => listAccounts().find((a) => a.id === id)
 export const currentAccount = (): NcAccount | undefined => listAccounts()[0]
 
+function forgetLegacyAccount(id: string): void {
+  try {
+    const key = 'words-online:nextcloud'
+    const raw = localStorage.getItem(key)
+    if (raw === null) return
+    const accounts: unknown = JSON.parse(raw)
+    if (Array.isArray(accounts)) localStorage.setItem(key, JSON.stringify(accounts.filter((account) => account?.id !== id)))
+  } catch {
+    // Preserve unparseable recovery data; browser storage may also be blocked.
+  }
+}
+
 export function saveAccount(account: NcAccount): void {
   const others = listAccounts().filter((a) => a.id !== account.id)
   memoryAccounts = [account, ...others]
+  forgetLegacyAccount(account.id)
   try {
     sessionStorage.setItem(ACTIVE_KEY, account.id)
     localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(memoryAccounts.filter((a) => a.remember !== false)))
@@ -73,6 +86,7 @@ export function saveAccount(account: NcAccount): void {
 
 export function removeAccount(id: string): void {
   memoryAccounts = listAccounts().filter((a) => a.id !== id)
+  forgetLegacyAccount(id)
   try {
     localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(memoryAccounts.filter((a) => a.remember !== false)))
     sessionStorage.setItem(ACCOUNTS_KEY, JSON.stringify(memoryAccounts.filter((a) => a.remember === false)))

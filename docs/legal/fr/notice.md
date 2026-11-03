@@ -27,7 +27,7 @@ L’accès est libre et gratuit et ne nécessite aucune inscription. L’utilisa
 ## 4. Propriété intellectuelle et industrielle
 
 - Le code propre de {{siteName}}, sa conception et ses textes appartiennent au titulaire ou à ses contributeurs et sont proposés sous la licence indiquée dans le dépôt du projet ; à défaut d’indication expresse, tous droits réservés.
-- {{siteName}} comprend des composants de tiers (bibliothèques open source, polices, dictionnaires orthographiques et bibliothèques de formes de draw.io) soumis à leurs propres licences, reproduites dans [Licences des logiciels tiers](../../THIRD_PARTY_NOTICES.md). Rien dans les présentes mentions ne limite les droits accordés par ces licences.
+- {{siteName}} comprend des composants de tiers (bibliothèques open source, polices, dictionnaires orthographiques et bibliothèques de formes de draw.io) soumis à leurs propres licences, reproduites dans [Licences des logiciels tiers](../../../THIRD_PARTY_NOTICES.md). Rien dans les présentes mentions ne limite les droits accordés par ces licences.
 - Le nom {{siteName}} et son logo sont des signes distinctifs du titulaire et ne peuvent pas être utilisés de manière à créer une confusion sur l’origine d’autres produits ou services.
 - Les documents créés par les utilisateurs appartiennent à leurs auteurs. Le titulaire n’acquiert aucun droit sur ceux-ci et n’a pas accès à leur contenu.
 

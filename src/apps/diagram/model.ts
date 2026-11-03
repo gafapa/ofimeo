@@ -45,6 +45,8 @@ export interface CellRecord {
 
 // Page settings kept with each page (draw.io's mxGraphModel attributes).
 export interface PageAttrs {
+  // Versioned structured Gantt snapshot in files; live tasks use per-field Yjs maps.
+  gantt?: string
   // Page background color ("none" or absent: transparent / white).
   background?: string
   // Page size for the page view and printing, in px (draw.io default 850×1100).
@@ -52,7 +54,7 @@ export interface PageAttrs {
   pageHeight?: number
 }
 
-export const PAGE_ATTRS = ['background', 'pageWidth', 'pageHeight'] as const
+export const PAGE_ATTRS = ['background', 'pageWidth', 'pageHeight', 'gantt'] as const
 
 export interface PageRecord extends PageAttrs {
   id: string

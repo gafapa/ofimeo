@@ -6,6 +6,7 @@
 import { emptyPage, newCellId, type CellRecord, type GeometryRecord, type PageAttrs, type PageRecord } from '../model'
 import { deflateRawSync } from './deflate'
 import { t } from '../../../core/i18n'
+import { parseGantt, scheduleTasks } from '../gantt-model'
 
 // Extra geometry kept in the JSON for fidelity: the collapsed/expanded size of
 // containers (draw.io's <mxRectangle as="alternateBounds">), as [x, y, width, height].
@@ -95,6 +96,12 @@ export async function decompressDiagram(text: string): Promise<string> {
 // Page settings of an <mxGraphModel>: background color and page size.
 function modelAttrs(model: Element): PageAttrs {
   const attrs: PageAttrs = {}
+  const gantt = model.getAttribute('ofimeoGantt')
+  if (gantt) {
+    const project = parseGantt(gantt)
+    scheduleTasks(project.tasks)
+    attrs.gantt = JSON.stringify(project)
+  }
   const bg = model.getAttribute('background')
   if (bg && bg !== 'none') attrs.background = bg
   for (const k of ['pageWidth', 'pageHeight'] as const) {
@@ -256,7 +263,7 @@ export function serializeModel(cells: CellRecord[]): string {
 
 function modelXml(cells: CellRecord[], indent: string, nl: string, attrs: PageAttrs = {}): string {
   const step = nl ? '  ' : ''
-  const modelAttrs = attrString([['background', attrs.background], ['pageWidth', attrs.pageWidth], ['pageHeight', attrs.pageHeight]])
+  const modelAttrs = attrString([['background', attrs.background], ['pageWidth', attrs.pageWidth], ['pageHeight', attrs.pageHeight], ['ofimeoGantt', attrs.gantt]])
   const lines = [`${indent}<mxGraphModel${modelAttrs}>`, `${indent}${step}<root>`]
   for (const cell of orderCells(cells)) lines.push(cellXml(cell, indent + step + step, step, nl))
   lines.push(`${indent}${step}</root>`, `${indent}</mxGraphModel>`)

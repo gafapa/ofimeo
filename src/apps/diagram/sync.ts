@@ -15,6 +15,9 @@ import * as Y from 'yjs'
 import { Cell, InternalEvent, type EventObject, type UndoableEdit } from '@maxgraph/core'
 import { cellToRecord, geometryFromJson, recordToCell, styleFromString, type DataCell, type EditorGraph } from './graph'
 import { CELL_FIELDS, PAGE_ATTRS, emptyPage, type CellRecord, type PageAttrs, type PageRecord } from './model'
+import { ganttKey, readGantt, writeGantt } from './gantt-state'
+import { parseGantt } from './gantt-model'
+import { ganttRecords } from './gantt-records'
 
 type FieldMap = Y.Map<string | number>
 type CellsMap = Y.Map<FieldMap>
@@ -60,7 +63,11 @@ export class DiagramSync {
 
   static readPages(doc: Y.Doc): PageRecord[] {
     const pages = doc.getMap<PageMeta>(PAGES_KEY)
-    return orderedPages(pages).map(({ id, name }) => ({ id, name, ...readAttrs(pages.get(id)), cells: readCells(doc.getMap<FieldMap>(cellsKey(id))) }))
+    return orderedPages(pages).map(({ id, name }) => {
+      const attrs = readAttrs(pages.get(id))
+      if (attrs.gantt) attrs.gantt = JSON.stringify(readGantt(doc, id))
+      return ganttRecords({ id, name, ...attrs, cells: readCells(doc.getMap<FieldMap>(cellsKey(id))) })
+    })
   }
 
   // ---------- Pages ----------
@@ -99,6 +106,7 @@ export class DiagramSync {
       this.pages.delete(id)
       const cells = this.doc.getMap<FieldMap>(cellsKey(id))
       for (const key of [...cells.keys()]) cells.delete(key)
+      this.doc.getMap(ganttKey(id)).clear()
     }, this)
     if (id === this.page) this.showPage(next)
     else this.onPagesChange()
@@ -378,6 +386,7 @@ function styleString(cell: Cell): string {
 // ---------- Yjs helpers ----------
 
 function writePage(doc: Y.Doc, page: PageRecord, pos: number): void {
+  if (page.gantt) writeGantt(doc, page.id, parseGantt(page.gantt))
   const attrs = PAGE_ATTRS.filter((k) => page[k] !== undefined && page[k] !== '').map((k): [string, string | number] => [k, page[k]!])
   doc.getMap<PageMeta>(PAGES_KEY).set(page.id, new Y.Map<string | number>([['name', page.name], ['pos', pos], ...attrs]))
   const cells = doc.getMap<FieldMap>(cellsKey(page.id))
@@ -388,6 +397,8 @@ function readAttrs(meta: PageMeta | undefined): PageAttrs {
   const out: PageAttrs = {}
   if (!meta) return out
   const bg = meta.get('background')
+  const gantt = meta.get('gantt')
+  if (typeof gantt === 'string' && gantt) out.gantt = gantt
   if (typeof bg === 'string' && bg) out.background = bg
   for (const k of ['pageWidth', 'pageHeight'] as const) {
     const v = Number(meta.get(k))

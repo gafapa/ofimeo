@@ -11,6 +11,12 @@ Ofimeo uses the same web services as the official Moodle app. Browser access
 also requires CORS or a configured school relay; native-app SSO callbacks are
 not implemented in Ofimeo.
 
+Use the final canonical Moodle and relay URLs, including HTTPS and the correct
+base path. Browser requests and relay forwarding reject redirects rather than
+forward passwords, tokens or uploaded files to a different address. A server
+that redirects an API or attachment request must be configured to expose the
+final endpoint directly.
+
 New connections and their task caches last for the browser tab's session by
 default. Select **Remember this connection on this device** to persist the
 token on a trusted personal device. Disconnect removes both persistent and

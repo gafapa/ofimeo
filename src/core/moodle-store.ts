@@ -91,6 +91,9 @@ export function writeLocal(key: string, value: string | null): void {
   try {
     if (value === null) localStorage.removeItem(key)
     else localStorage.setItem(key, value)
+    // An explicit account/cache change also retires its retained legacy copy.
+    // Disconnect must remove old tokens, not merely stop importing them.
+    if (key === ACCOUNT_KEY || key === TASKS_KEY) localStorage.removeItem(key.replace(/^ofimeo:/, 'words-online:'))
   } catch {
     // Private mode or storage full: kept only for this page.
   }
@@ -124,6 +127,7 @@ export function clearMoodleAccount(): void {
   writeLocal(ACCOUNT_KEY, null)
   try {
     sessionStorage.removeItem(ACCOUNT_KEY)
+    sessionStorage.removeItem('words-online:moodle')
   } catch {
     // Storage unavailable.
   }

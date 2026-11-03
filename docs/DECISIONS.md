@@ -53,7 +53,8 @@ not used for storage.
 
 **D10. Nextcloud via WebDAV + CORS**, not a Nextcloud app. *Why:* works with
 any existing Nextcloud; admins only add CORS headers (`docs/nextcloud.md`).
-*Cost:* whole-file save/open, one account per browser.
+*Cost:* whole-file save/open and server CORS configuration. Browsers can keep
+multiple accounts; a linked document retains its selected account identifier.
 
 ## Apps and engines
 
@@ -63,7 +64,7 @@ subset fonts) and metric-compatible fonts (Carlito, Caladea, Arimo, Tinos,
 Cousine) so documents paginate the same everywhere. *Cost:* paragraphs are not
 split across pages.
 
-**D12. Spreadsheet: Univer OSS 1.0.2, pinned.** Evaluated against
+**D12. Spreadsheet: Univer OSS, pinned in `package.json`.** Evaluated against
 alternatives when charts were requested; kept Univer and added our own charts
 (ECharts, float DOM), formula-based pivot tables and statistics aliases.
 Univer internal command ids are pinned; `missingCommands()` shows what to
@@ -81,8 +82,9 @@ editor.
 HKDF + AES-GCM) to a key only editors can derive; answer keys and grades live
 in a private Yjs doc synced only between editors.
 
-**D16. PDF: pdf.js 5.x legacy build + pdf-lib.** pdf.js 6 needs APIs missing
-in Playwright's Chromium. Password-protected PDFs keep the original encrypted
+**D16. PDF: pdf.js 6 legacy build + pdf-lib.** Standard fonts and CMaps are
+served from the application origin. Loading tasks own cleanup through
+`loadingTask.destroy()`. Password-protected PDFs keep the original encrypted
 bytes; the password is never stored in the document (sessionStorage only).
 
 **D17. Math graphs: own compact parser and SVG renderer** instead of JSXGraph

@@ -438,7 +438,7 @@ Fichier ▸ Télécharger au format enregistre des images PNG ou SVG, ou un fich
   },
   diagram: {
     title: 'Ofimeo Diagrammes',
-    keywords: 'diagramme organigramme logigramme carte mentale carte conceptuelle uml réseau drawio visio formes connecteurs frise chronologique',
+    keywords: 'gantt diagramme organigramme logigramme carte mentale carte conceptuelle uml réseau drawio visio formes connecteurs frise chronologique',
     body: `Diagrammes, logigrammes et cartes mentales, compatibles avec draw.io.
 
 - Faites glisser des formes depuis le **panneau des formes** vers le canevas, ou cliquez sur l’une d’elles pour l’insérer. La recherche trouve les formes par leur nom.
@@ -448,6 +448,9 @@ Fichier ▸ Télécharger au format enregistre des images PNG ou SVG, ou un fich
 - **Disposition** propose l’alignement, le groupement et les dispositions automatiques (arbre, cercle…).
 - **Affichage ▸ Plus de formes…** ajoute des bibliothèques comme UML, réseaux, plans d’étage, électricité ou BPMN.
 - Un diagramme peut avoir plusieurs pages (onglets en bas).
+
+## Planification avec Gantt
+Choisissez **Insertion → Diagramme de Gantt** ou le modèle **Diagramme de Gantt** de l’accueil. Cliquez sur les noms des tâches pour modifier les dates, la durée, les prédécesseurs, les responsables et la progression. Un jalon n’a pas de durée. Les dépendances ajustent automatiquement les dates ; les week-ends comptent comme jours calendaires. Faites glisser les barres pour les déplacer ou leur bord droit pour changer la durée. Les flèches déplacent une barre sélectionnée ; Maj+flèche change sa durée. Affichez les jours, semaines ou mois. Enregistrez en .drawio pour conserver les tâches modifiables dans Ofimeo, ou exportez en PDF, PNG ou SVG. Les liens en lecture seule ne permettent pas de modifier les tâches.
 
 ## Fichiers
 Ouvre et télécharge les fichiers draw.io (.drawio)${NB}; ouvre les dessins Visio (.vsdx). Téléchargez des images PNG ou SVG, ou imprimez et enregistrez en PDF.

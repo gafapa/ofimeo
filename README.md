@@ -22,9 +22,10 @@ where that is not enough.
 
 Storage keys and database names use the `ofimeo` prefix (`localStorage`
 `ofimeo:*`, IndexedDB `ofimeo:*` and `ofimeo-*`). Data saved under the former
-`words-online` names is moved to them the first time the app starts
+`words-online` names is copied to absent current stores when the app starts
 (`src/core/legacy-storage.ts`), so documents made before the rename keep
-working. Peer-to-peer room and signature identifiers keep the former name, so
+working. Originals remain available for recovery; existing current histories
+are kept independent (see [security.md](docs/security.md)). Peer-to-peer room and signature identifiers keep the former name, so
 existing links stay valid.
 
 ## Documentation
@@ -32,6 +33,8 @@ existing links stay valid.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): how the suite is built (session,
   sync, permissions, app frame, apps)
 - [docs/DECISIONS.md](docs/DECISIONS.md): design decisions and why they were made
+- [docs/security.md](docs/security.md): storage, backup and security guarantees,
+  regression coverage and known risks
 - [docs/ROADMAP.md](docs/ROADMAP.md): what comes next
 - [CONTRIBUTING.md](CONTRIBUTING.md): development setup, conventions, tests,
   translations
@@ -44,8 +47,11 @@ existing links stay valid.
 - [docs/nextcloud.md](docs/nextcloud.md): Nextcloud accounts, CORS, security
 - [docs/webmcp.md](docs/webmcp.md): AI assistants over WebMCP
 - [docs/ui-frame-api.md](docs/ui-frame-api.md): the shared app frame API
-- [docs/design/](docs/design/): design notes per area (editors, converters,
-  UI audit)
+
+Dependency versions are defined in `package.json`, `package-lock.json` and
+`relay/go.mod`. Current documentation describes the maintained implementation;
+superseded design briefs, translation batches and dated reviews are available
+in Git history.
 
 ## Word processor
 
@@ -532,6 +538,18 @@ replicas the same log order, so replaying it always yields the same workbook.
 - Labels are edited as rich text (bold, lists, colors) when they are HTML.
 - Links with view or comment access open the diagram read-only: zoom, pan,
   pages, downloads and presence keep working.
+
+### Gantt charts
+
+Create a project schedule with **Insert → Gantt chart** or the **Gantt chart**
+home template. Tasks have dates, calendar-day durations, predecessors, owners,
+milestones and completion percentages. Dependencies recalculate the calendar;
+bars can be moved and resized with the pointer or keyboard. Days, weeks and
+months are available, with a task editor, local undo and collaborative saving.
+View links are read-only. Files retain editable tasks in Ofimeo's `.drawio`
+metadata and include ordinary shapes for other draw.io editors; PDF, SVG and
+PNG exports show the schedule. See [docs/gantt.md](docs/gantt.md) for usage,
+scheduling rules, interoperability and limits.
 
 ## Presentations
 
@@ -1088,97 +1106,11 @@ Nextcloud. Full guide: [docs/nextcloud.md](docs/nextcloud.md).
   public WebDAV; students need no account.
 - Offline, Nextcloud actions are disabled with a message; nothing else changes.
 
-### Nextcloud for administrators: CORS
+### Nextcloud for administrators
 
-Unless Ofimeo is served from the Nextcloud address, the browser needs
-Nextcloud to allow its origin (CORS). Options:
-
-1. **Same address (recommended)**: copy `dist/` to e.g.
-   `https://cloud.school.org/office/` (nginx: `location ^~ /office/ { alias
-   /var/www/ofimeo/; }`; Apache: `Alias /office /var/www/ofimeo`).
-   No CORS needed; everything works, including the login flow.
-2. **The Nextcloud app "WebAppPassword"**: add the Ofimeo origin to its
-   allowed WebDAV origins. Covers WebDAV (browse, open, save) with app
-   passwords; not the login flow, revocation or share-link uploads.
-3. **CORS headers in the web server**, limited to the Ofimeo origin and
-   to `remote.php/dav`, `public.php/dav|webdav`, `ocs/v2.php/core/apppassword`
-   and `login/v2`, answering the `OPTIONS` preflight, allowing the
-   `Authorization`, `Depth`, `Destination`, `If-Match`, `If-None-Match`
-   and `OCS-APIRequest` headers and exposing `ETag`. Replace
-   `https://office.example.org`:
-
-```nginx
-# 1) In the http { } block (e.g. /etc/nginx/conf.d/ofimeo-cors.conf)
-map $http_origin $wo_origin {
-    default "";
-    "https://office.example.org" $http_origin;   # where Ofimeo runs (one line per site)
-}
-map $request_uri $wo_cors_path {
-    default 0;
-    "~^[^?]*/remote\.php/dav/" 1;
-    "~^[^?]*/public\.php/(dav|webdav)/" 1;
-    "~^[^?]*/ocs/v2\.php/core/apppassword" 1;
-    "~^[^?]*/login/v2" 1;
-}
-map "$wo_cors_path:$wo_origin" $wo_cors_origin {
-    default "";
-    "~^1:(?<o>.+)$" $o;
-}
-map $wo_cors_origin $wo_cors_methods {
-    "" "";
-    default "GET, HEAD, POST, PUT, DELETE, MKCOL, MOVE, COPY, PROPFIND, OPTIONS";
-}
-map $wo_cors_origin $wo_cors_headers {
-    "" "";
-    default "Authorization, Content-Type, Depth, Destination, Overwrite, If-Match, If-None-Match, OCS-APIRequest, X-Requested-With";
-}
-map $wo_cors_origin $wo_cors_expose {
-    "" "";
-    default "ETag, OC-ETag, OC-FileId, Content-Length";
-}
-map $wo_cors_origin $wo_cors_max_age {
-    "" "";
-    default 3600;
-}
-map "$request_method:$wo_cors_origin" $wo_preflight {
-    default 0;
-    "~^OPTIONS:." 1;
-}
-
-# 2) In Nextcloud's server { } block, next to its other add_header lines
-add_header Access-Control-Allow-Origin $wo_cors_origin always;
-add_header Access-Control-Allow-Methods $wo_cors_methods always;
-add_header Access-Control-Allow-Headers $wo_cors_headers always;
-add_header Access-Control-Expose-Headers $wo_cors_expose always;
-add_header Access-Control-Max-Age $wo_cors_max_age always;
-add_header Vary Origin always;
-if ($wo_preflight) {
-    return 204;
-}
-```
-
-```apache
-# In Nextcloud's <VirtualHost> (needs mod_headers and mod_rewrite)
-<IfModule mod_headers.c>
-    SetEnvIfExpr "req('Origin') in { 'https://office.example.org' } && %{REQUEST_URI} =~ m#/(remote\.php/dav/|public\.php/(dav|webdav)/|ocs/v2\.php/core/apppassword|login/v2)#" WO_CORS=1
-    Header always set Access-Control-Allow-Origin "expr=%{req:Origin}" env=WO_CORS
-    Header always set Access-Control-Allow-Methods "GET, HEAD, POST, PUT, DELETE, MKCOL, MOVE, COPY, PROPFIND, OPTIONS" env=WO_CORS
-    Header always set Access-Control-Allow-Headers "Authorization, Content-Type, Depth, Destination, Overwrite, If-Match, If-None-Match, OCS-APIRequest, X-Requested-With" env=WO_CORS
-    Header always set Access-Control-Expose-Headers "ETag, OC-ETag, OC-FileId, Content-Length" env=WO_CORS
-    Header always set Access-Control-Max-Age "3600" env=WO_CORS
-    Header always merge Vary "Origin" env=WO_CORS
-    # Answer the browser's preflight (OPTIONS) here: it never carries a login.
-    RewriteEngine On
-    RewriteCond %{ENV:WO_CORS} =1
-    RewriteCond %{REQUEST_METHOD} =OPTIONS
-    RewriteRule ^ - [R=204,L]
-</IfModule>
-```
-
-Credentials (server, user and app password) are stored in this browser's
-`sessionStorage` by default. **Remember this connection on this device** opts
-into `localStorage`. Credentials are sent only to that Nextcloud; see *Security notes* in
-[docs/nextcloud.md](docs/nextcloud.md).
+Use [docs/nextcloud.md](docs/nextcloud.md) for same-origin hosting, WebAppPassword,
+origin-restricted nginx/Apache CORS examples, conditional saves and diagnostics.
+The maintained Apache example is in `deploy/nextcloud-apache-cors.conf`.
 
 ## How collaboration works
 
@@ -1412,190 +1344,16 @@ open document. Details: [docs/webmcp.md](docs/webmcp.md).
 
 ## Architecture
 
-Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+The browser app lives in `src/`: `core/` handles sessions, persistence,
+permissions and integrations; `ui/` provides the shared frame; `apps/` contains
+the eight editors. `home/`, `templates/` and `help/` provide the library and
+learning resources. Apps and converters load as separate chunks when used.
 
-```
-src/
-  main.ts            Router: home screen or app, loaded with dynamic import()
-  core/              Shared, UI-free building blocks
-    offline.ts       Service worker registration
-    router.ts        #app=…&doc=…&key=… parsing and links
-    session.ts       Y.Doc + IndexedDB + awareness + P2P room for a document, access level
-    keys.ts          Permission keys in links, Ed25519 signing
-    network.ts       Yjs sync/awareness provider over Trystero (WebRTC + Nostr), signed sync
-    connectivity.ts  School relay settings (?relay=, /ofimeo/config, TURN credentials) and network checks
-    store.ts         Local document index (id, key, type, title, access, folder, tags, trash) and user identity
-    backup.ts        Persistent storage, .ofimeo-backup files (optional AES-GCM), restore by merging, auto backup
-    library.ts       Folders and tags, local database for the search index and own templates
-    library-search.ts, library-extract.ts, library-search.worker.ts
-                     Content search: text extracted from the Yjs state in a worker
-    library-templates.ts  Own templates (File ▸ Save as template…)
-    copy.ts          Copies of documents, template links
-    versions.ts      Version history, generic restore
-    handin.ts        Hand in (ZIP), printing
-    nextcloud.ts     Nextcloud client: accounts, diagnostics, Login Flow v2, WebDAV, share uploads
-    moodle.ts        Moodle client: token sign-in, assignments, hand in; moodle-store.ts: what this browser keeps
-    school-config.ts ofimeo.config.json: school settings applied before the first render, locked settings
-    import-link.ts   Google / Microsoft 365 share links → download URLs
-    cfb.ts           OLE compound file reader for .doc / .xls / .ppt
-    idb.ts           Small IndexedDB key-value store (signed logs)
-    formats.ts       Format helpers: XML, colors, units, images
-    i18n.ts          UI language, t() translations; locales/ holds the es, gl, fr and de catalogs
-    spell/           Spelling and grammar engine: worker.ts, checker.ts, hunspell.ts, tokenize.ts,
-                     variants.ts, settings.ts, client.ts, rules/ (per language, with tests)
-    store-forward/   Encrypted mailboxes on the relay or Nextcloud: index.ts (sync), crypto.ts, backends.ts
-    webmcp/          AI assistants over WebMCP: switch, permission gate, registry (native or polyfill), attribution;
-                     each app's tools are in apps/<app>/webmcp.ts (docs/webmcp.md)
-  ui/                Shared UI so every app looks the same (the "app frame", docs/ui-frame-api.md)
-    shell.ts         App frame markup: app bar, menu bar, toolbar row, status bar
-    frame.ts         mountFrame(): standard menus, keys, toolbar and status bar for an app
-    menus.ts         File / Edit / Help menus in one standard order
-    shortcuts.ts     Common keys (Ctrl+O/S/P/F/H, Ctrl+/, F1) and the shortcuts dialog
-    toolbar.ts       One-row toolbar with a "⋯" overflow menu
-    statusbar.ts     Status bar: info · language · save state · zoom; zoom.ts: zoom control
-    about.ts         About Ofimeo, Document details; brand.ts: the Ofimeo mark
-    chrome.ts        Title, save state, presence, connection status, share dialog + QR, hand in
-    chat.ts          Document chat panel
-    connection.ts    Connection test dialog (verdict, checks, report, school relay setting)
-    store-forward.ts Sync state next to the save state, store-and-forward settings
-    versions.ts      Make a copy / Save version / Version history (File menu items)
-    copylink.ts      Page shown while a template link makes a copy
-    nextcloud.ts     Nextcloud dialogs: account, CORS help, file browser, save, status, hand in
-    moodle.ts        Moodle account, Moodle tasks panel, Hand in to Moodle
-    import-link.ts   Import from link… dialog
-    school.ts        School name, logo, contacts and "Set by your school"; admin-config.ts: Help ▸ For administrators…
-    accessibility.ts Accessibility panel (fonts, themes, spacing, ruler); speech.ts: read aloud and dictation
-    webmcp.ts        Tools → Allow AI assistants (WebMCP) switch, explanation dialog, app bar indicator
-    equation.ts      Equation editor (MathLive, lazy) and KaTeX rendering / MathML
-    mathgraph/       Math graphs and geometry: expr.ts (parser), compute.ts, analysis.ts, render.ts,
-                     editor.ts, describe.ts (text readouts)
-    spell/           Spelling in every app: inline.ts (underlines in fields), dialog.ts (F7), menu.ts,
-                     service.ts, fields.ts, describe.ts
-    widgets.ts       Menus, context menus, popovers, color palette, dialogs, toasts
-    tokens.css       Design tokens (colors, spacing, radii, type, layers) and the themes; base.css, edu.css…
-  home/              Home screen: new document buttons, open file, documents (docs.ts: folders, tags,
-                     trash, search), storage.ts (storage and backup), download.ts, my-templates.ts,
-                     save-template.ts
-  templates/         Template gallery (catalog, thumbnails) and template content per app (one file each)
-  help/              Help center (center.ts), welcome tour and quick starts (tour.ts, prefs.ts),
-                     articles/<lang>.ts
-  legal/             Links to the generated legal pages and their styles
-  apps/
-    registry.ts      App list: name, icon, loader, supported files
-    draw/            Drawing (Excalidraw + Yjs element sync, menus, spell, webmcp)
-    charts/          Charts in documents and slides: dialog.ts, embedded.ts (chart + data snapshot),
-                     linked.ts (refresh from the source), sheets.ts (spreadsheet data without the sheet app)
-    forms/           Forms and quizzes (encrypted responses over the room, grading, results; see Forms)
-    pdf/             PDF annotation
-      viewer.ts      pdf.js viewer (pdfjs.ts loads it): lazy pages, text layer, thumbnails, find
-      editor.ts      Annotation tools, selection, keyboard, undo; render.ts: annotations as SVG
-      draw.ts        Drawing primitives shared by the screen and the PDF writer
-      model.ts       pdf-file / pdf-meta / pdf-pages / pdf-annots in Yjs; geometry.ts: view space
-      notes.ts       Sticky notes; stamps.ts: stamps and signature
-      import.ts      Existing annotations of an opened PDF; export.ts: editable or flattened PDF (pdf-lib);
-                     unicode-fonts.ts + fonts/: embedded subsets for non-Latin-1 text
-    notebook/        Notebook: model.ts (sections, pages, ink in Yjs), nav.ts (panel, search),
-                     extensions.ts, tags.ts, ink.ts, export.ts (Word, ODT, Markdown, ZIP), pdf.ts, print.ts
-    diagram/         Diagrams (maxGraph)
-      app.ts         Diagram app: menus, toolbar, page tabs, files
-      editor.ts      The editor without its frame (graph, sync, undo, zoom, clipboard,
-                     commands, panels, keyboard, presence), shared with slides/
-      graph.ts       maxGraph set up like draw.io; cells <-> plain records
-      model.ts       Plain diagram model shared by the editor, sync and converters
-      sync.ts        Pages/cells/fields in Yjs <-> graph model
-      presence.ts    Remote selections and pointers
-      sidebar.ts     Shape panel; palette.ts holds the libraries
-      libraries.ts   draw.io's libraries on demand: "More shapes", stencils, shape code
-      handles.ts     Yellow shape handles (draw.io's handle factories)
-      page.ts        Page background and size, page view
-      format.ts      Format panel
-      export.ts      SVG / PNG rendering; pdf.ts: PDF of every page
-      spell.ts       Spelling dialog over the labels of every page (and slide notes)
-      shapes/        draw.io shapes, markers, perimeters, stencils and stylesheet;
-                     compat.ts runs draw.io's shape code (mxGraph API) on maxGraph
-      formats/       .drawio import and export, .vsdx import (loaded on demand)
-    slides/          Presentations (on diagram/editor.ts)
-      app.ts         Slides app: slide panel, frame, themes, layouts, text tools, menus
-      model.ts       Slide sizes, themes, layouts and placeholders; per-slide settings and notes in Yjs
-      render.ts      Theme styling of graphs; offscreen slide rendering to SVG
-      slidelist.ts   Thumbnails panel; notes.ts: speaker notes bound to a Y.Text
-      animations.ts  Animations and transitions model; animpane.ts: animation pane; player.ts: playback
-      present.ts     Presenting, laser pointer, presenter view, following the presenter
-      comments.ts    Comments on slides and objects
-      charts.ts      Charts on slides; mathgraph.ts: math graphs on slides
-      formats/       PPTX / ODP export (elements.ts turns slides into neutral elements, pptx-anim.ts
-                     adds animations), PPTX / ODP / PPT import, chart.ts (PPTX charts) (loaded on demand)
-    sheet/           Spreadsheet
-      app.ts         Univer in the Ofimeo frame: file actions, status bar, presence, printing
-      menus.ts       Menus and shortcut rows; commands.ts: Univer command id adapter
-      theme.ts       Univer theme from our tokens
-      univer.ts      Univer presets and locales
-      charts/        Chart model, ECharts options and loader, live view, chart dialog, text summary
-      pivot.ts       Pivot tables as formulas; stats.ts + functions.ts: statistics, Spanish function aliases
-      warnings.ts    Data ▸ Warn before editing…
-      a11y.ts        Accessible table view and screen reader support
-      spell.ts       Spelling dialog over cells; spell-inline.ts: underlines in the cell editor
-      sync.ts        Mutation log over Yjs, rebuilds and checkpoints
-      transform.ts   Shifts concurrent edits through row/column changes
-      print.ts       Print layout of the current sheet
-      formats/       XLSX / ODS / CSV import and export, XLS import (loaded on demand)
-    writer/          Word processor
-      app.ts         Editor, print layout, zoom, status bar, file actions
-      commands.ts    Menus, toolbar, context menu
-      dialogs.ts     Page setup, header/footer, footnotes, links, tables…
-      pages.ts       Pagination: pages per section (size, orientation, margins),
-                     columns, footnotes; blocks placed with node decorations
-      sections.ts    Section settings at the cursor (page setup, columns)
-      fonts.ts       Shipped document fonts (fonts/: Carlito, Caladea, Arimo, Tinos, Cousine)
-      pdf/           Direct PDF export: sfnt.ts (WOFF/TrueType, subsetting),
-                     document.ts (PDF objects, fonts, outline, tags), render.ts
-                     (draws the laid-out pages), loaded on demand
-      references/    Sources and citations: format.ts (APA, MLA, Chicago in five
-                     languages), parse.ts (BibTeX, RIS, CSL-JSON), nodes.ts
-                     (citation and bibliography nodes), store.ts, ui.ts (dialogs)
-      merge/         Mail merge: panel.ts, data.ts, run.ts, frame.ts (PDF output)
-      charts.ts      Charts in documents (Insert ▸ Chart…, linked charts)
-      find.ts        Find & replace
-      review.ts      Comments and suggestions: highlights and the margin rail
-      authorship.ts  Authorship colors and contributions per author
-      ypos.ts        ProseMirror positions <-> Yjs (relative positions, item authors)
-      collab.ts      Session helpers (comments channel, authors, user id)
-      editor/        TipTap extensions and custom nodes (equation, chart, math graph,
-                     merge fields, suggestions, comment ranges, toc.ts: table of contents)
-      formats/       DOCX / ODT / Markdown import and export, DOC and RTF import (loaded on
-                     demand); math.ts converts MathML / OMML / LaTeX, bibliography-xml.ts
-                     Word's b:Sources, docx-charts.ts native charts
-      spell/         Spelling and grammar of the word processor: plugin.ts
-                     (decorations, incremental checks), ui.ts (Tools menu,
-                     context menu, status), dialog.ts (F7), lang.ts (paragraph
-                     language); the engine is core/spell/ and the parts shared
-                     by every app are ui/spell/
-relay/               Ofimeo Relay (Go, docs/relay.md); build.sh cross-compiles it
-  main.go            Flags, startup, the services it runs
-  config.go          ofimeo-relay.json and command-line overrides
-  nostr.go           Minimal in-memory Nostr relay (signaling for Trystero)
-  turnserver.go      STUN/TURN (pion/turn) with time-limited credentials
-  certs.go           TLS: Let's Encrypt, the school's certificate or a local CA
-  mux.go             One TLS port shared by HTTPS/WSS and TURN over TLS
-  web.go             HTTPS endpoints (/ofimeo/config…); pages.go: status and help pages
-  webapp.go          Serving the web app (--serve-app); embed_app.go / embed_none.go
-  store.go           Store-and-forward mailboxes (/ofimeo/store)
-  school.go          School configuration (--school-config) and container helpers
-  moodle.go          Moodle forwarding (--moodle-url)
-  proxy.go           Import proxy for share links (off by default)
-  netutil.go         Local network ranges; service.go: system service (systemd, launchd, Windows)
-  *_test.go          Go tests
-scripts/             Build helpers: Excalidraw assets, draw.io libraries, dictionaries, legal pages,
-                     third-party notices, grammar rule tests, i18n/ (catalog checks, translations)
-tests/
-  e2e/               Playwright specs (see Tests); helpers.ts, pdf-fixture.ts
-  fixtures/          Sample files (.drawio, HTML, protected PDF)
-  relay.mjs          Local Nostr relay for the tests
-  moodle-mock.mjs    Mock Moodle web service for moodle.spec.ts
-deploy/              nginx and Apache snippets, sample configuration
-```
-
-Each app and each converter is a separate chunk, loaded only when used.
+`relay/` is the optional Go server. `scripts/` prepares assets and runs fast
+checks; `tests/` holds browser/unit tests and local service fixtures; `deploy/`
+contains hosting examples. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for
+the document lifecycle and [docs/security.md](docs/security.md) for guarantees
+and known risks.
 
 ## Legal
 
@@ -1611,96 +1369,33 @@ processing template, text for families) and a note on AI, in Spanish
 link to them in the interface language. `scripts/third-party-notices.mjs`
 writes `THIRD_PARTY_NOTICES.md` (also served as `legal/licenses.html`) from the
 production dependencies and fails the build when one has no license. The texts
-are templates to be reviewed by a lawyer / DPO; the project's own license is
-not decided yet (options in [docs/legal/README.md](docs/legal/README.md)).
+are templates to be reviewed by a lawyer / DPO. Ofimeo's own code is licensed
+under [Apache-2.0](LICENSE); third-party licenses remain separate.
 
 ## Development
 
-`npm run dev` and `npm run build` first run `npm run prepare:assets`, which
-copies Excalidraw's fonts into `public/excalidraw` (the build also points
-Excalidraw's CDN fallback for fonts there) and builds draw.io's shape
-libraries into `public/diagram-libs` (both generated, not committed). The
-libraries come from the draw.io release pinned in `scripts/drawio.json`
-(downloaded once into `node_modules/.cache`, checked against its SHA-256);
-`DRAWIO_WAR_DIR=<unpacked draw.war>` uses a local copy instead, and `FORCE=1`
-rebuilds.
+Use Node 24 or later and npm; relay work also requires the Go version specified
+in `relay/go.mod`. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, translation
+updates, focused tests and workspace maintenance.
 
 ```bash
-npm install
-npm run dev       # dev server, reachable on the LAN
-npm run build     # type-check and build into dist/
-npm run preview   # serve the production build
-npm test          # grammar rule and catalog checks + end-to-end tests (build first)
+npm ci
+npm run dev         # prepare assets and start the development server
+npm run test:unit   # spelling, core, workflow and translation checks
+npm run build       # prepare assets, type-check and build dist/
+npm run test:e2e    # browser tests against the production build
 ```
 
-### Tests
-
-- `npm run test:unit`: grammar rule tests (`scripts/test-spell.mjs`) and the
-  translation catalog check (`npm run i18n:check`, below).
-- `npm run test:e2e`: about 80 Playwright tests in `tests/e2e/`, run against
-  the production build (`vite preview`) and a local Nostr relay
-  (`tests/relay.mjs`), never public relays. `E2E_RELAY_PORT` moves the test
-  relay off 7790. The specs:
-  - `smoke.spec.ts`: every app opens without errors, the home screen lists the
-    apps and templates, the UI follows the browser language.
-  - `collaboration.spec.ts`: two browsers edit the same document.
-  - `files.spec.ts`: `.drawio` and HTML files open from the home screen.
-  - `offline.spec.ts`: the installed app works offline.
-  - `connection.spec.ts`: the connection test, a school relay from the link.
-  - `library.spec.ts`: a password-protected backup restores content, versions
-    and comments after clearing the browser data; the trash.
-  - `home-content.spec.ts`: home Download without opening documents, content
-    search in forms and PDFs.
-  - `help.spec.ts`: help center search, welcome tour, quick starts.
-  - `chat-import.spec.ts`: document chat between browsers (mentions, unread
-    badge, view links, turning it off), the share-link parser, the Import
-    from link dialog and the relay's import proxy.
-  - `writer-toc-pdf.spec.ts`, `writer-merge-charts.spec.ts`,
-    `writer-pdf-review.spec.ts`: table of contents and PDF export, mail merge,
-    linked charts, DOCX round trips, Markdown, read-only links, PDF pages and
-    passwords.
-  - `math.spec.ts`: math graphs in documents and slides, geometry.
-  - `sheet-charts.spec.ts`, `sheet-forms.spec.ts`, `sheet-a11y.spec.ts`:
-    native charts in .xlsx/.ods, xlsx round trips, a quiz copy keeping its
-    answer key, read-only sheets, the accessible table view (with axe-core).
-  - `slides-diagram.spec.ts`: labels, animations and transitions through
-    .pptx, .odp import, hand in, keyboard navigation of the canvas.
-  - `forms.spec.ts`: one student's answers never reach another student's
-    browser (see *Forms*).
-  - `pdf.spec.ts`: annotations exported and reopened, two browsers annotating.
-  - `notebook.spec.ts`: sections, pages, tags, ink, sync and exports.
-  - `spell.spec.ts`: spelling in the sheet, slides, diagrams, forms, PDF and
-    drawings.
-  - `webmcp.spec.ts`: AI assistants get only the tools the link allows,
-    writer changes as suggestions.
-  - `deploy.spec.ts`: `ofimeo.config.json` (languages, hidden apps, templates,
-    locked relay, Nextcloud and WebMCP settings), the administrators' form, the
-    recommended security headers.
-  - `moodle.spec.ts`: Moodle sign-in, tasks, hand in, relay forwarding, single
-    sign-on (against `tests/moodle-mock.mjs`).
-  - `sync.spec.ts`: store-and-forward; builds and starts the real relay when
-    Go is installed (skipped otherwise) and runs a mock WebDAV server.
-- `npm run i18n:check` (`scripts/i18n/check-keys.mjs`): every `t('…')` /
-  `tn()` key in `src/` is present in the es, gl, fr and de catalogs with the
-  same `{placeholders}` (`-v` lists the missing, unused and mismatched keys). New translations are
-  added with `python3 scripts/i18n/apply-translations.py <es-gl file> <fr-de
-  file>` (files of `English ||| translation ||| translation` lines, usually in
-  `scripts/i18n/sources/`), which never touches existing keys.
-- `cd relay && go test ./...`: Ofimeo Relay (Nostr messages and signatures,
-  TURN allocations with time-limited credentials, certificates, the TLS port
-  shared by HTTPS and TURN, `/ofimeo/config`, serving the app, the
-  store-and-forward mailboxes, the school configuration, Moodle forwarding and
-  the import proxy against local mock servers).
-- GitHub Actions (`.github/workflows/ci.yml`) runs the type check, both test
-  suites and the build on every pull request and on pushes to `main`, plus
-  `go vet` and `go test` for the relay; the Playwright report is attached to
-  failed runs. Pushing a tag `relay-v1.2.3` builds the relay for every platform
-  and publishes a GitHub Release (`.github/workflows/relay-release.yml`).
+Asset preparation copies local editor resources, generates the pinned draw.io
+libraries and builds legal pages. Generated assets are excluded from Git.
+CI adds security/license gates, Go checks and Docker startup verification;
+the workflow definitions are in `.github/workflows/`.
 
 ## Deployment
 
-`.github/workflows/pages.yml` builds and publishes `dist/` to GitHub Pages on
-every push to `main` (enable *Settings → Pages → Source: GitHub Actions*).
+`.github/workflows/pages.yml` builds and publishes `dist/` to GitHub Pages
+after successful CI for the same `main` commit, including manual publication
+requests (enable *Settings → Pages → Source: GitHub Actions*).
 The build uses relative paths, so any static host or subfolder works.
 
 ### Schools: Docker, relay and `ofimeo.config.json`
@@ -1771,7 +1466,8 @@ Notebook, Chat); these are the general ones.
   covers English only and its messages are in English; the offline rules are
   deliberately few (precision over recall) and German noun capitalization is
   left to the dictionary.
-- Nextcloud: one active account per browser; saving exports the whole file (no
+- Nextcloud: multiple accounts can be remembered, with one selected for each
+  linked document. Saving exports the whole file (no
   partial or collaborative editing of the file in Nextcloud); a file opened in
   a format the app cannot write (e.g. `.md`, `.tsv`) is saved with *Save to
   Nextcloud as…*; image formats (PNG/SVG) save the current page only. Without

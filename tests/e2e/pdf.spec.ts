@@ -65,6 +65,9 @@ test('a PDF is annotated, exported with real annotations and reopened', async ({
   await page.keyboard.press('t')
   await page.mouse.click(box.x + 100, box.y + 520)
   await page.keyboard.type('Revisa la pregunta 2')
+  // Exceed the undo capture window: typing slowly must not split creation
+  // and the final text into separate undo steps.
+  await page.waitForTimeout(650)
   await page.keyboard.press('Control+Enter')
   await expect(page.locator('.pdf-overlay .pdf-annot-text')).toContainText('Revisa la pregunta 2')
   // Undo and redo the text box.
@@ -72,6 +75,23 @@ test('a PDF is annotated, exported with real annotations and reopened', async ({
   await expect(page.locator('.pdf-overlay .pdf-annot-text')).toHaveCount(0)
   await page.keyboard.press('Control+y')
   await expect(page.locator('.pdf-overlay .pdf-annot-text')).toHaveCount(1)
+  // Finishing an empty draft must not create an annotation or an undo step.
+  await page.keyboard.press('t')
+  await page.mouse.click(box.x + 100, box.y + 560)
+  await page.keyboard.press('Control+Enter')
+  await expect(page.locator('.pdf-overlay .pdf-annot-text')).toHaveCount(1)
+  await page.keyboard.press('Control+z')
+  await expect(page.locator('.pdf-overlay .pdf-annot-text')).toHaveCount(0)
+  await page.keyboard.press('Control+y')
+  await expect(page.locator('.pdf-overlay .pdf-annot-text')).toHaveCount(1)
+
+  // Editing an existing box has its own undo step and restores its old text.
+  await page.locator('.pdf-overlay .pdf-annot-text').press('Enter')
+  await page.locator('.pdf-text-editor').fill('Updated correction')
+  await page.keyboard.press('Control+Enter')
+  await expect(page.locator('.pdf-overlay .pdf-annot-text')).toContainText('Updated correction')
+  await page.keyboard.press('Control+z')
+  await expect(page.locator('.pdf-overlay .pdf-annot-text')).toContainText('Revisa la pregunta 2')
 
   // File ▸ Download as ▸ PDF with annotations (editable).
   await page.locator('.menubar-item', { hasText: 'File' }).click()

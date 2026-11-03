@@ -9,7 +9,7 @@ export const APP_READY: Record<string, string> = {
   writer: '.ProseMirror',
   sheet: '.app-sheet canvas',
   draw: '.excalidraw',
-  diagram: '.diagram-canvas svg',
+  diagram: '.diagram-body:not(.gantt-active) .diagram-canvas svg, .gantt-workspace:not([hidden])',
   slides: '.diagram-canvas svg',
 }
 

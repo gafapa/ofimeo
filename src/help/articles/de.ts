@@ -436,7 +436,7 @@ Datei ▸ Herunterladen als speichert PNG- oder SVG-Bilder oder eine .excalidraw
   },
   diagram: {
     title: 'Ofimeo Diagramme',
-    keywords: 'diagramm flussdiagramm concept-map mindmap uml netzwerk drawio visio formen verbinder zeitleiste',
+    keywords: 'gantt diagramm flussdiagramm concept-map mindmap uml netzwerk drawio visio formen verbinder zeitleiste',
     body: `Diagramme, Flussdiagramme und Concept-Maps, kompatibel mit draw.io.
 
 - Ziehen Sie Formen aus dem **Formenbereich** auf die Zeichenfläche oder klicken Sie auf eine, um sie einzufügen. Die Suche findet Formen nach Namen.
@@ -446,6 +446,9 @@ Datei ▸ Herunterladen als speichert PNG- oder SVG-Bilder oder eine .excalidraw
 - **Anordnen** bietet Ausrichten, Gruppieren und automatische Layouts (Baum, Kreis…).
 - **Ansicht ▸ Weitere Formen…** fügt Bibliotheken wie UML, Netzwerke, Grundrisse, Elektrotechnik oder BPMN hinzu.
 - Ein Diagramm kann mehrere Seiten haben (Registerkarten unten).
+
+## Projektplanung mit Gantt
+Wählen Sie **Einfügen → Gantt-Diagramm** oder die Vorlage **Gantt-Diagramm** auf der Startseite. Klicken Sie auf Aufgabennamen, um Termine, Dauer, Vorgänger, Verantwortliche und Fortschritt zu bearbeiten. Ein Meilenstein hat keine Dauer. Abhängigkeiten passen Termine automatisch an; Wochenenden zählen als Kalendertage. Ziehen Sie Balken zum Verschieben oder ihren rechten Rand zum Ändern der Dauer. Pfeiltasten verschieben einen fokussierten Balken; Umschalt+Pfeil ändert seine Dauer. Tage, Wochen und Monate stehen zur Auswahl. Speichern Sie als .drawio, um bearbeitbare Aufgaben in Ofimeo zu erhalten, oder exportieren Sie PDF, PNG oder SVG. Schreibgeschützte Links erlauben keine Aufgabenbearbeitung.
 
 ## Dateien
 Öffnet und speichert draw.io-Dateien (.drawio); öffnet Visio-Zeichnungen (.vsdx). Laden Sie PNG- oder SVG-Bilder herunter oder drucken Sie und speichern Sie als PDF.

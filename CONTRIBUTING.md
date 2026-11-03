@@ -7,7 +7,7 @@ Playwright Chromium, Firefox and WebKit for browser tests.
 (`npx playwright install chromium firefox webkit` on a fresh machine).
 
 ```bash
-npm install
+npm ci
 npm run dev        # dev server on the LAN (runs prepare:assets first)
 npm run build      # type check + production build into dist/
 npm run preview    # serve dist/
@@ -32,8 +32,10 @@ cd relay && go vet ./... && go test ./...
 ```
 
 - Run one spec: `npx playwright test tests/e2e/writer-toc-pdf.spec.ts`.
-- Chromium runs every spec; Firefox and WebKit run smoke, library, security
-  and storage-integrity checks. Use `--project=chromium` for a focused engine run.
+- Chromium runs every spec; Firefox and WebKit run Gantt, smoke, library,
+  security, legacy-migration and storage-integrity checks. Use `--project=chromium` for a focused engine run.
+- List the current cases with `npx playwright test --list`; test counts change
+  as coverage grows. Test discovery does not establish that the tests pass.
 - After building, `npm run measure:install` writes offline installation metrics
   into `dist/installation-metrics.json` without changing the caching policy.
 - Parallel runs on other ports: copy `playwright.config.ts` to
@@ -70,6 +72,11 @@ UI strings are English source text wrapped in `t('…')` / `tn(n, '…', '…')`
    (adds missing keys only; never removes).
 3. `npm run i18n:check` must report 0 missing and 0 placeholder mismatches.
 
+The locale catalogs are the maintained translation source. Remove temporary
+batch inputs once their keys have been applied and checked; the historical
+batches remain available in Git history. See
+[scripts/i18n/sources/README.md](scripts/i18n/sources/README.md).
+
 Help articles are per-language TypeScript files in `src/help/articles/`
 (all five languages must have every article; the type system enforces it).
 
@@ -78,12 +85,50 @@ Help articles are per-language TypeScript files in `src/help/articles/`
 - Feature docs: README.md. Admin docs: `docs/*.md`.
 - Record design decisions in [docs/DECISIONS.md](docs/DECISIONS.md) and plans
   in [docs/ROADMAP.md](docs/ROADMAP.md).
-- Historical design briefs and review reports: [docs/design/](docs/design/).
+- Maintain security guarantees and known risks in [docs/security.md](docs/security.md).
+- Keep current guides in the working tree. Retrieve superseded design briefs
+  and dated reviews from Git history instead of maintaining duplicate plans.
+
+## Workspace maintenance
+
+`dist/`, `test-results/`, `playwright-report/`, `public/excalidraw/`,
+`public/pdfjs/`, `public/diagram-libs/`, `public/legal/` and
+`public/.well-known/` are generated. They can be removed when no build, test or
+preview process is using them. `npm run build` recreates the distributable
+assets; browser tests recreate their result directories. To reclaim disk space,
+`node_modules/` can also be removed, including its cached draw.io download.
+Restore dependencies with `npm ci`, then run `npm run build`; rebuilding the
+shape libraries requires downloading the pinned, checksum-verified draw.io
+archive again. Keep `package.json`, `package-lock.json` and `scripts/drawio.json`.
+
+Keep `public/icons/`, `public/ofimeo.config.json`, deployment examples, legal
+source pages, licenses and test fixtures. Compatibility code and old-format
+importers are supported behavior, not disposable historical artifacts.
 
 ## Dependency security updates
 
 CI rejects npm vulnerabilities at every severity. Relay releases run the same npm audit and a reachable Go vulnerability scan before building binaries. Keep the Go requirement in `relay/go.mod` and the Docker builder version aligned.
 
 The `@modelcontextprotocol/server` override pins 2.3.0 because WebMCP 6.0.3 still requests vulnerable server version 2.0.0. Remove the override only after the upstream dependency graph resolves a patched version, and run the WebMCP browser tests when changing it.
+
+The glob/minimatch overrides address traversal cancellation and pattern
+amplification advisories. Archiver utilities use Glob 14's synchronous API and
+ExcelJS uses Unzipper 0.12 to remove the remaining glob 7 dependency. Keep
+ExcelJS's existing Archiver version: newer utility normalization assumes that
+`pipe()` returns its destination, while ExcelJS's custom StreamBuf does not.
+`scripts/test-dependencies.mjs` exercises both glob consumers, directory
+filtering, in-memory XLSX and streaming XLSX round trips. Run it when changing
+these overrides; a browser-only XLSX test does not exercise the Node path.
+The streaming writer output is checked with the in-memory reader and Unzipper's
+buffer API. ExcelJS's separate Node streaming reader is outside Ofimeo's browser
+API; shared-string caching there was observed to depend on event ordering and
+is not qualified by these tests.
+
+The resolver's unpatched upstream merge dependency is replaced by the private,
+locally maintained security patch in [vendor/deepmerge](vendor/deepmerge/README.md).
+The dependency regressions cover prototype poisoning through both inputs and
+the resolver's actual dependency path. Keep the all-severity audit gate;
+do not downgrade to an older unsafe merge implementation or suppress findings.
+See [security.md](docs/security.md) for scope and replacement requirements.
 
 Changes to `main` require a pull request with the `test`, `Relay (Go)` and `Docker image` checks passing against the current base branch. Force pushes and branch deletion are disabled, including for administrators.

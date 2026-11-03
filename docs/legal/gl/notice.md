@@ -27,7 +27,7 @@ O acceso é libre e gratuíto e non require rexistro. O uso de {{siteName}} impl
 ## 4. Propiedade intelectual e industrial
 
 - O código propio de {{siteName}}, o seu deseño e os seus textos pertencen ao titular ou aos seus contribuidores e ofrécense baixo a licenza indicada no repositorio do proxecto; en defecto de indicación expresa, quedan reservados todos os dereitos.
-- {{siteName}} inclúe compoñentes de terceiros (bibliotecas de código aberto, tipos de letra, dicionarios ortográficos e bibliotecas de formas de draw.io) suxeitos ás súas propias licenzas, que se reproducen en [Licenzas de software de terceiros](../../THIRD_PARTY_NOTICES.md). Nada do disposto neste aviso limita os dereitos que as ditas licenzas conceden.
+- {{siteName}} inclúe compoñentes de terceiros (bibliotecas de código aberto, tipos de letra, dicionarios ortográficos e bibliotecas de formas de draw.io) suxeitos ás súas propias licenzas, que se reproducen en [Licenzas de software de terceiros](../../../THIRD_PARTY_NOTICES.md). Nada do disposto neste aviso limita os dereitos que as ditas licenzas conceden.
 - O nome {{siteName}} e o seu logotipo son signos distintivos do titular e non poden utilizarse de forma que induzan a confusión sobre a orixe doutros produtos ou servizos.
 - Os documentos que crean as persoas usuarias pertencen aos seus autores. O titular non adquire ningún dereito sobre eles nin ten acceso ao seu contido.
 

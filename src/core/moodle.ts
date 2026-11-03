@@ -72,13 +72,18 @@ export function normalizeSite(input: string): string | null {
   } catch {
     return null
   }
-  if ((url.protocol !== 'https:' && url.protocol !== 'http:') || !url.hostname || url.username || /\s/.test(input.trim())) return null
+  if ((url.protocol !== 'https:' && url.protocol !== 'http:') || !url.hostname || url.username || url.password || /\s/.test(input.trim())) return null
   let path = url.pathname.replace(/\/+$/, '')
   path = path.replace(/\/(login\/index\.php|index\.php|my(\/.*)?|login|course\/view\.php|mod\/.*)$/i, '')
   return `${url.protocol}//${url.host}${path}`.replace(/\/+$/, '')
 }
 
-export const sameSite = (a: string | undefined, b: string | undefined): boolean => !!a && !!b && normalizeSite(a)?.toLowerCase() === normalizeSite(b)?.toLowerCase()
+export function sameSite(a: string | undefined, b: string | undefined): boolean {
+  if (!a || !b) return false
+  const site = normalizeSite(a)
+  // URL normalizes the scheme and host; the installation path is case-sensitive.
+  return site !== null && site === normalizeSite(b)
+}
 
 // The school's Moodle (ofimeo.config.json → moodle).
 export function schoolMoodle(): { url: string | null; viaRelay: boolean; locked: boolean } {
@@ -203,7 +208,7 @@ async function viaRelay(target: Target, endpoint: Endpoint, body: URLSearchParam
   const [url, init] = relayRequest(relay, target.site, endpoint, body, options.fileUrl)
   let response: Response
   try {
-    response = await fetch(url, { ...init, signal: AbortSignal.timeout(options.timeoutMs ?? 90_000) })
+    response = await fetch(url, { ...init, redirect: 'error', referrerPolicy: 'no-referrer', signal: AbortSignal.timeout(options.timeoutMs ?? 90_000) })
   } catch {
     throw new MoodleError(navigator.onLine ? 'relay' : 'offline')
   }
@@ -231,7 +236,7 @@ async function send(target: Target, endpoint: Endpoint, body: URLSearchParams | 
   }
   const [url, init] = directRequest(target.site, endpoint, body, options.fileUrl)
   try {
-    const response = await fetch(url, { ...init, signal: AbortSignal.timeout(options.timeoutMs ?? 90_000) })
+    const response = await fetch(url, { ...init, redirect: 'error', signal: AbortSignal.timeout(options.timeoutMs ?? 90_000) })
     target.transport = 'direct'
     return response
   } catch (err) {

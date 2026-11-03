@@ -436,7 +436,7 @@ Archivo ▸ Descargar como guarda imágenes PNG o SVG, o un archivo .excalidraw 
   },
   diagram: {
     title: 'Ofimeo Diagramas',
-    keywords: 'diagrama diagrama de flujo mapa conceptual mapa mental uml red drawio visio formas conectores organizador línea de tiempo',
+    keywords: 'gantt diagrama diagrama de flujo mapa conceptual mapa mental uml red drawio visio formas conectores organizador línea de tiempo',
     body: `Diagramas, diagramas de flujo y mapas conceptuales, compatibles con draw.io.
 
 - Arrastra formas desde el **panel de formas** al lienzo, o haz clic en una para insertarla. El buscador encuentra formas por su nombre.
@@ -446,6 +446,9 @@ Archivo ▸ Descargar como guarda imágenes PNG o SVG, o un archivo .excalidraw 
 - **Organizar** tiene alineación, agrupación y diseños automáticos (árbol, círculo…).
 - **Ver ▸ Más formas…** añade bibliotecas como UML, redes, planos de planta, electricidad o BPMN.
 - Un diagrama puede tener varias páginas (pestañas en la parte inferior).
+
+## Planificación con Gantt
+Elige **Insertar → Diagrama de Gantt** o la plantilla **Diagrama de Gantt** de la pantalla principal. Pulsa los nombres de las tareas para editar fechas, duración, predecesoras, responsables y avance. Un hito no tiene duración. Las dependencias ajustan las fechas automáticamente; los fines de semana cuentan como días naturales. Arrastra las barras para moverlas o su borde derecho para cambiar su duración. Las flechas mueven una barra enfocada; Mayús+flecha cambia su duración. Puedes ver días, semanas o meses. Guarda en .drawio para conservar las tareas editables en Ofimeo, o exporta PDF, PNG o SVG. Los enlaces de solo lectura no permiten editar tareas.
 
 ## Archivos
 Abre y descarga archivos de draw.io (.drawio); abre dibujos de Visio (.vsdx). Descarga imágenes PNG o SVG, o imprime y guarda como PDF.

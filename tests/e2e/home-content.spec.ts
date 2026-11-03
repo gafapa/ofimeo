@@ -149,7 +149,7 @@ test('templates have English content for the English interface', async ({ page }
   await page.goto(`/${RELAYS}`)
   await openTemplates(page)
   // Every template except the two tied to Spanish regulations.
-  await expect(page.locator('#home-panel-templates .tpl-grid:not(.my-tpl-grid) .tpl-card')).toHaveCount(27)
+  await expect(page.locator('#home-panel-templates .tpl-grid:not(.my-tpl-grid) .tpl-card')).toHaveCount(28)
 
   await create('Student report', '.ProseMirror')
   await expect(page.locator('.ProseMirror').first()).toContainText('Title of the work')

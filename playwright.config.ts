@@ -20,8 +20,8 @@ export default defineConfig({
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1366, height: 820 } } },
     // Core portability checks in the other engines; Chromium runs the complete suite.
-    { name: 'firefox', testMatch: /(?:smoke|library|security|storage-integrity)\.spec\.ts/, use: { ...devices['Desktop Firefox'], viewport: { width: 1366, height: 820 } } },
-    { name: 'webkit', testMatch: /(?:smoke|library|security|storage-integrity)\.spec\.ts/, use: { ...devices['Desktop Safari'], viewport: { width: 1366, height: 820 } } },
+    { name: 'firefox', testMatch: /(?:gantt|smoke|library|security|storage-integrity|legacy-storage)\.spec\.ts/, use: { ...devices['Desktop Firefox'], viewport: { width: 1366, height: 820 } } },
+    { name: 'webkit', testMatch: /(?:gantt|smoke|library|security|storage-integrity|legacy-storage)\.spec\.ts/, use: { ...devices['Desktop Safari'], viewport: { width: 1366, height: 820 } } },
   ],
   webServer: [
     { command: 'npx vite preview --host 127.0.0.1 --port 4173 --strictPort', url: 'http://127.0.0.1:4173', reuseExistingServer: !process.env.CI, timeout: 60_000 },

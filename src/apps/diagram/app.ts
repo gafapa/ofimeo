@@ -4,7 +4,7 @@
 // (.drawio / mxGraphModel XML). The editor itself (graph, commands, panels,
 // keyboard, find) lives in editor.ts and is shared with the slides app.
 
-import { BringToFront, Grid3x3, PaintBucket, PanelLeft, PanelRight, Pencil, Plus, Redo2, SendToBack, Trash2, Undo2 } from 'lucide'
+import { BringToFront, CalendarDays, Grid3x3, PaintBucket, PanelLeft, PanelRight, Pencil, Plus, Redo2, SendToBack, Trash2, Undo2 } from 'lucide'
 import { appInfo } from '../registry'
 import type { Session } from '../../core/session'
 import { t } from '../../core/i18n'
@@ -20,12 +20,20 @@ import { DiagramSync } from './sync'
 import { createPageSettings, type PageSettings } from './page'
 import { pageDisplayName } from './model'
 import { graphSpelling } from './spell'
+import { GanttView } from './gantt-view'
+import { ganttRasterScale, sampleGantt } from './gantt-model'
 
 export const DIAGRAM_ACCEPT = '.drawio,.xml,.vsdx,.vssx'
 
 const formats = () => import('./formats/drawio')
 
 export function mountDiagram(session: Session, root: HTMLElement): void {
+  const pagePreference = 'ofimeo:diagram-page'
+  let preferredPage: string | undefined
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(pagePreference) ?? 'null') as { doc?: string; page?: string } | null
+    if (saved?.doc === session.docId && typeof saved.page === 'string') preferredPage = saved.page
+  } catch { /* Page selection is optional when session storage is unavailable. */ }
   const info = appInfo('diagram')
   const shell = renderShell(info, root)
   setupChrome(session, info.untitled)
@@ -50,14 +58,17 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
     }
   }
   // Print (Ctrl+P, File ▸ Print…, and "Hand in" through session.hooks.print): the current page.
-  const print = () => {
-    graph.clearSelection()
-    printArea.replaceChildren(renderSvg(graph, { border: 0, background: page?.background() ?? '#ffffff' }))
-    window.print()
-    printArea.replaceChildren()
+  const print = async () => {
+    try {
+      graph.clearSelection()
+      printArea.replaceChildren(await currentSvg())
+      window.print()
+    } catch (error) { toast((error as Error).message) }
+    finally { printArea.replaceChildren() }
   }
 
   let page: PageSettings | undefined
+  let gantt: GanttView | undefined
   const editor = createDiagramEditor(session, {
     canvas,
     diagramOptions: () => page?.formatRows() ?? [],
@@ -65,15 +76,44 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
     readOnly: !session.canEdit,
     openFile: (file) => void openFile(file),
     onPagesChange: () => {
+      if (preferredPage && sync.pages.has(preferredPage) && sync.page !== preferredPage) {
+        const id = preferredPage
+        preferredPage = undefined
+        sync.showPage(id)
+        return
+      }
+      if (sync.pages.size) {
+        preferredPage = undefined
+        try { sessionStorage.setItem(pagePreference, JSON.stringify({ doc: session.docId, page: sync.page })) } catch { /* Optional UI state. */ }
+      }
       renderTabs()
       page?.update()
+      updateMode()
     },
     onPageShown: () => page?.update(),
+    onKey: (event) => gantt?.onKey(event) ?? false,
   })
   const { graph, sync, readOnly, sidebar, format, hasSelection } = editor
-  const editable = editor.editable
+  const isGantt = () => !!sync.pageAttrs().gantt
+  const editable = (predicate?: () => boolean) => () => !isGantt() && editor.editable(predicate)()
+  const diagramEntries = (items: MenuEntry[]): MenuEntry[] => items.map((item) => item === '-' ? item : ({ ...item, enabled: () => !isGantt() && (item.enabled?.() ?? true) }))
   page = createPageSettings(editor, canvas)
+  gantt = new GanttView(session)
   const background = () => page!.background() ?? '#ffffff'
+  const updateMode = () => {
+    const active = isGantt()
+    body.classList.toggle('gantt-active', active)
+    shell.toolbar.hidden = readOnly || active
+    graph.setEnabled(!readOnly && !active)
+    gantt!.show(active ? sync.page : null)
+    editor.selectionLabel.hidden = active
+  }
+  const currentSvg = async (): Promise<SVGSVGElement> => {
+    if (!isGantt()) return renderSvg(graph, { background: background() })
+    const current = DiagramSync.readPages(session.doc).find((entry) => entry.id === sync.page)!
+    const [{ renderPages }, { orderCells }] = await Promise.all([import('./index'), formats()])
+    return (await renderPages([orderCells(current.cells)], ['#ffffff']))[0]
+  }
 
   // ---------- Files ----------
 
@@ -103,8 +143,12 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
   // File ▸ Download as and "Save to Nextcloud" (the whole current page for images).
   session.hooks.exportFormats = () => [
     { ext: 'drawio', label: t('draw.io diagram (.drawio)'), build: async () => new Blob([(await formats()).serializeDrawio(DiagramSync.readPages(session.doc))], { type: 'application/vnd.jgraph.mxfile' }) },
-    { ext: 'svg', label: t('SVG image (current page)'), build: async () => new Blob([svgToString(renderSvg(graph, { background: background() }))], { type: 'image/svg+xml' }) },
-    { ext: 'png', label: t('PNG image (current page)'), build: () => svgToPng(renderSvg(graph, { background: background() })) },
+    { ext: 'svg', label: t('SVG image (current page)'), build: async () => new Blob([svgToString(await currentSvg())], { type: 'image/svg+xml' }) },
+    { ext: 'png', label: t('PNG image (current page)'), build: async () => {
+      const structured = isGantt()
+      const svg = await currentSvg()
+      return svgToPng(svg, structured ? ganttRasterScale(Number(svg.getAttribute('width')), Number(svg.getAttribute('height'))) : 2)
+    } },
     { ext: 'pdf', label: t('PDF document (all pages)'), build: async () => (await import('./pdf')).diagramPdf(DiagramSync.readPages(session.doc), title()) },
   ]
   // Document details: pages, shapes and connectors of the whole diagram.
@@ -136,12 +180,20 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
   // New pages get a translated name; the first page of a new document keeps the
   // fixed name "Page-1" so collaborators who create it at the same time agree.
   const addPage = () => {
+    if (readOnly) return
     const id = sync.addPage(t('Page {n}', { n: sync.pageList().length + 1 }))
     sync.showPage(id)
   }
   const duplicatePage = () => {
-    const current = sync.pageList().find((p) => p.id === sync.page)!
-    const id = sync.addPage(`${pageDisplayName(current.name)} (${t('copy')})`, sync.pageRecords(sync.page), sync.pageAttrs(sync.page))
+    if (readOnly) return
+    const current = DiagramSync.readPages(session.doc).find((p) => p.id === sync.page)!
+    const id = sync.addPage(`${pageDisplayName(current.name)} (${t('copy')})`, current.cells, { ...sync.pageAttrs(sync.page), gantt: current.gantt })
+    sync.showPage(id)
+  }
+  const addGantt = () => {
+    if (readOnly) return
+    const project = sampleGantt([t('Define the project'), t('Research'), t('Create the work'), t('Review the work'), t('Final delivery')])
+    const id = sync.addPage(t('Gantt chart'), undefined, { gantt: JSON.stringify(project) })
     sync.showPage(id)
   }
   const renamePage = async (id = sync.page) => {
@@ -152,10 +204,12 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
     if (name?.trim()) sync.renamePage(id, name.trim())
   }
   const deletePage = async (id = sync.page) => {
+    if (readOnly) return
     if (sync.pageList().length <= 1) return
     if (await confirmDialog(t('Delete page'), t('Delete this page for everyone?'), { confirmLabel: t('Delete'), danger: true })) sync.deletePage(id)
   }
   const movePage = (dir: -1 | 1) => {
+    if (readOnly) return
     const list = sync.pageList()
     const index = list.findIndex((p) => p.id === sync.page)
     if (dir < 0 && index > 0) sync.movePage(sync.page, list[index - 1].id)
@@ -194,15 +248,16 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
     pageTabs.append(add)
   }
   const pageMenu = (): MenuEntry[] => [
-    { label: t('New page'), run: addPage, enabled: editable() },
-    { label: t('Duplicate page'), run: duplicatePage, enabled: editable() },
-    { label: t('Rename page…'), run: () => void renamePage(), enabled: editable() },
-    { label: t('Delete page'), run: () => void deletePage(), enabled: editable(() => sync.pageList().length > 1) },
+    { label: t('New page'), run: addPage, enabled: editor.editable() },
+    { label: t('Gantt chart'), run: addGantt, enabled: editor.editable() },
+    { label: t('Duplicate page'), run: duplicatePage, enabled: editor.editable() },
+    { label: t('Rename page…'), run: () => void renamePage(), enabled: editor.editable() },
+    { label: t('Delete page'), run: () => void deletePage(), enabled: editor.editable(() => sync.pageList().length > 1) },
     '-',
-    { label: t('Move page left'), run: () => movePage(-1), enabled: editable() },
-    { label: t('Move page right'), run: () => movePage(1), enabled: editable() },
+    { label: t('Move page left'), run: () => movePage(-1), enabled: editor.editable() },
+    { label: t('Move page right'), run: () => movePage(1), enabled: editor.editable() },
     '-',
-    ...page!.menu(() => pageTabs),
+    ...diagramEntries(page!.menu(() => pageTabs)),
   ]
 
   // ---------- Menus ----------
@@ -217,17 +272,20 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
     active: () => editor.hasFontStyle(bit),
     enabled: editable(hasSelection),
   })
-  const view: Menu = { label: t('View'), items: [...editor.panelMenu(), ...page.viewMenu(), '-', ...editor.zoomMenu()] }
+  const view: Menu = { label: t('View'), items: diagramEntries([...editor.panelMenu(), ...page.viewMenu(), '-', ...editor.zoomMenu()]) }
   const insert: Menu = {
     label: t('Insert'),
     items: [
+      { label: t('Gantt chart'), run: addGantt, enabled: editor.editable() },
+      { label: t('Add task'), run: () => gantt!.addTask(), visible: isGantt, enabled: editor.editable() },
+      '-',
       { label: t('Text'), run: editor.insertText, enabled: editable() },
       { label: t('Image…'), run: () => imageInput.click(), enabled: editable() },
       '-',
       { label: t('Shapes'), run: () => (sidebar.element.hidden ? editor.togglePanel(sidebar.element) : undefined), enabled: editable() },
       { label: t('More shapes…'), run: editor.moreShapes, enabled: editable() },
       '-',
-      { label: t('New page'), run: addPage, enabled: editable() },
+      { label: t('New page'), run: addPage, enabled: editor.editable() },
     ],
   }
   const formatMenu: Menu = {
@@ -258,14 +316,18 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
       ],
       details,
     },
-    edit: { label: t('Edit'), items: editor.editMenu() },
-    menus: { view, insert, format: formatMenu, app: [{ label: t('Arrange'), items: editor.arrangeMenu() }, { label: t('Page'), items: pageMenu() }], tools: { label: t('Tools'), items: spelling.menu() } },
+    edit: { label: t('Edit'), items: [
+      { label: t('Undo'), run: () => gantt!.undo(), visible: isGantt, enabled: () => session.canEdit && gantt!.canUndo() },
+      { label: t('Redo'), run: () => gantt!.redo(), visible: isGantt, enabled: () => session.canEdit && gantt!.canRedo() },
+      ...editor.editMenu().map((item): MenuEntry => item === '-' ? item : ({ ...item, visible: () => !isGantt() && (item.visible?.() ?? true) })),
+    ] },
+    menus: { view, insert, format: formatMenu, app: [{ label: t('Arrange'), items: diagramEntries(editor.arrangeMenu()) }, { label: t('Page'), items: pageMenu() }], tools: { label: t('Tools'), items: diagramEntries(spelling.menu()) } },
     help: { sections: () => shortcutSections(t('Diagram'), [[t('Spelling and grammar'), 'F7']]) },
-    keys: { find: editor.find },
+    keys: { find: () => { if (!isGantt()) editor.find() } },
     zoom: editor.zoomTarget,
   })
   // AI assistants (WebMCP, off by default): the tool module loads only when turned on.
-  provideWebMcpTools(session, () => import('./webmcp').then((m) => m.diagramTools(session, editor)))
+  provideWebMcpTools(session, () => import('./webmcp').then((m) => m.diagramTools(session, editor, gantt)))
 
   // ---------- Toolbar ----------
 
@@ -284,6 +346,7 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
   if (readOnly) shell.toolbar.hidden = true
   else {
     tb.group(
+      tb.button(CalendarDays, t('Gantt chart'), addGantt),
       tb.button(PanelLeft, t('Shapes panel'), () => editor.togglePanel(sidebar.element), { active: () => !sidebar.element.hidden }),
       tb.button(PanelRight, t('Format panel'), () => editor.togglePanel(format.element), { active: () => !format.element.hidden }),
     )
@@ -306,7 +369,7 @@ export function mountDiagram(session: Session, root: HTMLElement): void {
 
   // ---------- Layout and status bar ----------
 
-  body.append(sidebar.element, canvas, format.element)
+  body.append(sidebar.element, canvas, format.element, gantt.element)
   shell.main.append(body)
   frame.status?.left.append(pageTabs)
   frame.status?.addRight(editor.selectionLabel)

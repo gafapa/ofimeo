@@ -84,14 +84,20 @@ export class DocumentPersistence {
         this.pending.splice(0, count)
       }
     }
-    this.running = operation().catch((error) => { throw reportStorageError(error) }).finally(() => { this.running = undefined })
+    let failed = false
+    this.running = operation().catch((error) => { failed = true; throw reportStorageError(error) }).finally(() => {
+      this.running = undefined
+      // A change can arrive after the loop ends but before this promise settles.
+      // Resume successful drains; failed writes stay queued for an explicit retry.
+      if (!failed && this.pending.length && !this.closed) void this.drain().catch(() => { /* Reported by drain. */ })
+    })
     return this.running
   }
 
   async flush(): Promise<void> {
     await this.whenSynced
     if (this.closed) throw new Error('Document persistence is closed')
-    await this.drain()
+    do { await this.drain() } while (this.pending.length)
   }
 
   async destroy(): Promise<void> {

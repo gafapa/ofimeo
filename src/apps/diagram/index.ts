@@ -7,6 +7,7 @@ import { renderSvg, svgToPng, svgToString } from './export'
 import { buildCells, createGraph } from './graph'
 import { DiagramSync } from './sync'
 import { t } from '../../core/i18n'
+import { ganttRasterScale } from './gantt-model'
 import './diagram.css'
 
 export const accept = DIAGRAM_ACCEPT
@@ -39,7 +40,7 @@ export async function submitFiles(session: Session): Promise<SubmitFile[]> {
   for (const [i, svg] of (await renderPages(pages.map((p) => orderCells(p.cells)), pages.map((p) => (p.background && p.background !== 'none' ? p.background : '#ffffff')))).entries()) {
     const name = pages.length > 1 ? `${title} - ${i + 1} ${pages[i].name}` : title
     files.push({ name: `${name}.svg`, blob: new Blob([svgToString(svg)], { type: 'image/svg+xml' }) })
-    files.push({ name: `${name}.png`, blob: await svgToPng(svg) })
+    files.push({ name: `${name}.png`, blob: await svgToPng(svg, pages[i].gantt ? ganttRasterScale(Number(svg.getAttribute('width')), Number(svg.getAttribute('height'))) : 2) })
   }
   return files
 }

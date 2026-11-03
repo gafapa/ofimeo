@@ -39,33 +39,35 @@ Markdown syntax in the sources: `{{key}}` inserts a value of `legal.config.json`
 
 ## Placeholders
 
-All owner data live in `legal.config.json`. Status at the time of writing (2026-09-26):
+All owner and deployment values live in `legal.config.json`. Inspect that
+file and the generated pages for the intended deployment instead of relying
+on a historical snapshot of filled or empty values.
 
-| Key | Used for | Status |
-| --- | --- | --- |
-| `siteName` | Name of the service | Ofimeo |
-| `siteUrl` | Site address; `Canonical` of security.txt | https://ofimeo.com |
-| `lastUpdated` | "Last updated" of every page | 2026-09-26 (update on every change) |
-| `owner.name` | Titular / data controller | Filled |
-| `owner.nif` | NIF/CIF | Filled |
-| `owner.address` | Domicilio | Filled |
-| `owner.email` | Contact email | Filled |
-| `owner.phone` | Phone (optional; row omitted when empty) | Empty (optional) |
-| `owner.registry` | Registry details (companies; optional) | Empty (not applicable to a natural person) |
-| `dpo.name`, `dpo.email` | Data Protection Officer | Empty: the texts say that none is designated and give `privacyEmail` |
-| `privacyEmail` | Requests about personal data (falls back to `owner.email`) | Filled |
-| `jurisdiction` | Optional forum clause (e.g. "los juzgados y tribunales de Pontevedra") | Empty: "the courts that have jurisdiction under the applicable law" |
-| `hosting.provider`, `hosting.country`, `hosting.transfers`, `hosting.privacyUrl` | Web host and international transfer basis | GitHub Pages defaults; change if the site moves |
-| `accessibility.status` | `partial` / `full` / `none` | `partial` |
-| `accessibility.preparedOn` | Date of the accessibility statement | 2026-09-26 |
-| `accessibility.reviewedOn` | Last review (optional) | Empty |
-| `accessibility.method` | `self` (self-assessment) or `audit` | `self` |
-| `accessibility.contactEmail` | Accessibility contact (falls back to `owner.email`) | Falls back |
-| `accessibility.complaintBody` | Public sector only: body handling complaints | Empty: private owner, voluntary statement |
-| `security.contact` | security.txt `Contact` | mailto:pablo@ofimeo.com |
-| `security.expires` | security.txt `Expires` (empty = build date + 180 days) | Empty (auto) |
-| `security.policy` | security.txt `Policy` URL (optional) | Empty |
-| `security.languages` | security.txt `Preferred-Languages` | es, gl, en |
+| Key | Used for |
+| --- | --- |
+| `siteName` | Name of the service |
+| `siteUrl` | Site address; `Canonical` of security.txt |
+| `lastUpdated` | "Last updated" of every page |
+| `owner.name` | Titular / data controller |
+| `owner.nif` | NIF/CIF |
+| `owner.address` | Domicilio |
+| `owner.email` | Contact email |
+| `owner.phone` | Phone (optional; row omitted when empty) |
+| `owner.registry` | Registry details (companies; optional) |
+| `dpo.name`, `dpo.email` | Data Protection Officer |
+| `privacyEmail` | Requests about personal data (falls back to `owner.email`) |
+| `jurisdiction` | Optional forum clause (e.g. "los juzgados y tribunales de Pontevedra") |
+| `hosting.provider`, `hosting.country`, `hosting.transfers`, `hosting.privacyUrl` | Web host and international transfer basis |
+| `accessibility.status` | `partial` / `full` / `none` |
+| `accessibility.preparedOn` | Date of the accessibility statement |
+| `accessibility.reviewedOn` | Last review (optional) |
+| `accessibility.method` | `self` (self-assessment) or `audit` |
+| `accessibility.contactEmail` | Accessibility contact (falls back to `owner.email`) |
+| `accessibility.complaintBody` | Public sector only: body handling complaints |
+| `security.contact` | security.txt `Contact` |
+| `security.expires` | security.txt `Expires` (empty = build date + 180 days) |
+| `security.policy` | security.txt `Policy` URL (optional) |
+| `security.languages` | security.txt `Preferred-Languages` |
 
 ## What the owner must check or decide before publishing
 
@@ -75,7 +77,10 @@ All owner data live in `legal.config.json`. Status at the time of writing (2026-
 4. **Jurisdiction clause** (`jurisdiction`), if a specific forum is wanted and lawful (not against consumers).
 5. **DPO.** Confirm that no DPO is required (GDPR art. 37, LOPDGDD art. 34). Schools and education authorities that deploy their own instance **must** fill in their DPO.
 6. **Accessibility.** The list of non-accessible content comes from a code review, not an audit. Commission an EN 301 549 audit, then update `accessibility.*` and the list in `accessibility.md`, and review the statement at least once a year.
-7. **WebMCP / AI.** At the time of writing the WebMCP integration was not present in the code base; the privacy policy, terms, AI note and school guide describe it as optional and off by default, and state that changes by assistants are recorded as suggestions or with their own authorship. Verify these statements when the feature lands, or remove them.
+7. **WebMCP / AI.** The integration is implemented and optional, off by default.
+   Keep the privacy policy, terms, AI note and school guide aligned with
+   [WebMCP behavior](../webmcp.md), including permissions, confirmations,
+   suggestions and authorship when the tools change.
 8. **Security wording.** The texts claim end-to-end encryption of collaboration (encrypted signalling with the document key, DTLS data channels) and Ed25519 signatures of document changes, which the code implements. They do **not** claim signed application updates: updates are delivered by the host over HTTPS. Do not add such a claim unless code signing is implemented.
 9. **Storage list.** `cookies.md` lists the localStorage/IndexedDB/Cache Storage keys in the code on 2026-09-26. Review it when features add storage (search the code for `ofimeo:`).
 10. **security.txt** must be served at `https://ofimeo.com/.well-known/security.txt` (domain root). It works when the build is published at the root of the domain; for a sub-path deployment (e.g. `user.github.io/repo/`) copy it to the domain root instead. `Expires` is renewed on each build; rebuild at least every six months or set `security.expires`.
@@ -91,15 +96,10 @@ All owner data live in `legal.config.json`. Status at the time of writing (2026-
 - **`buffers` 0.1.1** (dependency of `exceljs` → `unzipper` → `binary`) declares no license. It is Node.js-only and not in the browser build (the browser build of exceljs does not include it), so it is listed as "not bundled" in `NOT_BUNDLED` in the script. Any other package without a license fails the build.
 - **Ofimeo Relay** (`relay/`, Go) has its own Go module dependencies, which are not covered here. If the relay binary is distributed (and especially if it embeds the web app), generate its notices too (for example with `go-licenses`) and include this `THIRD_PARTY_NOTICES.md` with it.
 
-## Project license (not decided)
+## Project license
 
-The repository has no `LICENSE` file for Ofimeo's own code, so today **all rights are reserved** and nobody else may lawfully redistribute or modify it (the legal notice says so). All dependencies are compatible with each option below. The owner should choose one and add `LICENSE`:
-
-| License | Type | Implications for Ofimeo |
-| --- | --- | --- |
-| **MIT** | Permissive | Simplest; anyone (including companies) can reuse, modify and relicense, even in closed products. No patent grant. Maximum adoption, no guarantee that improvements come back. |
-| **Apache-2.0** | Permissive | Like MIT plus an explicit patent grant and patent-retaliation clause, a NOTICE mechanism and a requirement to mark changes. Same license as Univer, maxGraph and Harper. Compatible with GPL-3.0/AGPL-3.0 (not GPL-2.0-only). |
-| **AGPL-3.0** | Strong copyleft, network clause | Anyone who modifies Ofimeo and offers it to users over a network (e.g. a company or administration hosting a modified instance) must publish the modified source. Keeps improvements open; may discourage some commercial or institutional reuse. Apache-2.0/MIT/ISC dependencies are compatible. |
-| **EUPL-1.2** | Copyleft (weaker linking rules), EU public-sector licence | Created by the European Commission; official versions in all EU languages including Spanish, legally valid in EU law, covers network use (SaaS) as distribution. Explicit compatibility list (GPL-2.0/3.0, AGPL-3.0, LGPL, MPL-2.0, EPL, CeCILL…) allows combining with those. Well known by Spanish and Galician administrations (e.g. the CTT / Centro de Transferencia de Tecnología). |
-
-Points to weigh: whether institutions (Consellería, other regions) should be able to adopt and adapt it freely (EUPL-1.2 or Apache-2.0 are common choices in the public sector), whether improvements by third parties must stay open (AGPL-3.0 or EUPL-1.2) and whether contributions need a contributor agreement (CLA/DCO) so the owner can relicense later. The name and logo can be protected separately (trademark), whatever the code license.
+Ofimeo's original code is licensed under [Apache-2.0](../../LICENSE), with the
+project notice in [NOTICE](../../NOTICE). Keep these files when redistributing
+the project. Third-party code, fonts, dictionaries and draw.io assets retain
+their own licenses and notices; see
+[THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md).

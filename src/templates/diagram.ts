@@ -199,6 +199,20 @@ const BUILDERS: Record<string, (lang: Lang) => string> = {
 }
 
 export async function createDiagramTemplate(id: string, lang: Lang, name: string): Promise<string> {
+  if (id === 'gantt') {
+    const [{ createLocalDocument }, { DiagramSync }, { emptyPage }, { sampleGantt }] = await Promise.all([
+      import('../core/session'), import('../apps/diagram/sync'), import('../apps/diagram/model'), import('../apps/diagram/gantt-model'),
+    ])
+    const L = pick(lang)
+    const project = sampleGantt([
+      L('Definir el proyecto', 'Definir o proxecto', 'Définir le projet', 'Projekt festlegen', 'Define the project'),
+      L('Investigar', 'Investigar', 'Rechercher', 'Recherchieren', 'Research'),
+      L('Crear el trabajo', 'Crear o traballo', 'Réaliser le travail', 'Arbeit erstellen', 'Create the work'),
+      L('Revisar el trabajo', 'Revisar o traballo', 'Relire le travail', 'Arbeit prüfen', 'Review the work'),
+      L('Entrega final', 'Entrega final', 'Remise finale', 'Endabgabe', 'Final delivery'),
+    ])
+    return createLocalDocument('diagram', name, (doc) => DiagramSync.setPages(doc, [{ ...emptyPage('page-1', name), gantt: JSON.stringify(project) }]))
+  }
   const module = await appInfo('diagram').load!()
   return module.importFile(new File([BUILDERS[id](lang)], `${name}.drawio`, { type: 'application/xml' }))
 }

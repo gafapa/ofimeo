@@ -4,7 +4,7 @@
 //   writer   XmlFragments body, header, footer
 //   sheet    workbook snapshot (sheet.checkpoint or sheet.base) plus the set-range-values log
 //   draw     text of the Excalidraw elements (draw-elements)
-//   diagram  cell labels (diagram-cells:*) and page names; slides also speaker notes
+//   diagram  cell labels, Gantt task names/owners/dates and page names; slides also speaker notes
 //   forms    description, section and question titles, descriptions and options
 //            (form-settings, form-items; the answer key is private and never indexed)
 //   pdf      file name, text boxes, stamps and marked text (pdf-annots), sticky
@@ -158,9 +158,19 @@ function diagramText(doc: Y.Doc): string {
     if (name === 'diagram-pages') {
       for (const page of doc.getMap<Y.Map<unknown>>(name).values()) if (page instanceof Y.Map && page.get('name')) out.push(String(page.get('name')))
     } else if (name.startsWith('diagram-cells:')) {
+      if (doc.getMap<Y.Map<unknown>>('diagram-pages').get(name.slice('diagram-cells:'.length))?.get('gantt')) continue
       for (const cell of doc.getMap<Y.Map<unknown>>(name).values()) {
         const value = cell instanceof Y.Map ? cell.get('value') : undefined
         if (typeof value === 'string' && value) out.push(htmlText(value))
+      }
+    } else if (name.startsWith('diagram-gantt:')) {
+      if (!doc.getMap<Y.Map<unknown>>('diagram-pages').get(name.slice('diagram-gantt:'.length))?.get('gantt')) continue
+      for (const task of doc.getMap<Y.Map<unknown>>(name).values()) {
+        if (!(task instanceof Y.Map)) continue
+        for (const field of ['name', 'owner', 'start']) {
+          const value = task.get(field)
+          if (typeof value === 'string' && value) out.push(value)
+        }
       }
     } else if (name.startsWith('slides-notes:')) {
       out.push(doc.getText(name).toString())

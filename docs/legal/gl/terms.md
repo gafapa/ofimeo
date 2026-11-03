@@ -52,7 +52,7 @@ O titular non responde dos danos derivados do uso da aplicación, da perda de do
 
 ## 8. Propiedade intelectual do programa
 
-O programa, o seu deseño e os seus compoñentes están protexidos por dereitos de propiedade intelectual, segundo se indica no [Aviso legal](notice.md) e en [Licenzas de software de terceiros](../../THIRD_PARTY_NOTICES.md).
+O programa, o seu deseño e os seus compoñentes están protexidos por dereitos de propiedade intelectual, segundo se indica no [Aviso legal](notice.md) e en [Licenzas de software de terceiros](../../../THIRD_PARTY_NOTICES.md).
 
 ## 9. Modificación das condicións
 

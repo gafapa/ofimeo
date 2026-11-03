@@ -17,6 +17,7 @@
 //                         fills submitFiles / restoreVersion from the app's index.ts
 //   session.shareUrl(a)   link granting access `a` (never more than this browser has)
 //   session.copyUrl()     link that makes a private copy for whoever opens it
+//   session.flushStorage() waits for document and comment IndexedDB commits
 //   session.storeForward  encrypted mailboxes on the school relay / Nextcloud, for
 //                         people who are never online together (store-forward/)
 
@@ -95,6 +96,7 @@ export interface Session {
   commentsDoc: Y.Doc
   authors: Y.Map<AuthorInfo>
   hooks: SessionHooks
+  flushStorage: () => Promise<void>
   // Link for `access` (default: this browser's own access).
   shareUrl: (access?: Access) => string
   copyUrl: () => string
@@ -162,6 +164,7 @@ export async function openSession(type: store.DocType, docId: string, docKey: st
     commentsDoc,
     authors,
     hooks: {},
+    flushStorage: async () => { await Promise.all([persistence.flush(), commentsPersistence.flush()]) },
     shareUrl: (level = access) => absoluteUrl(docPath(type, docId, docKey, keysForAccess(keys.link, accessRank(level) > accessRank(access) ? access : level))),
     copyUrl: () => absoluteUrl(docPath(type, docId, docKey, keysForAccess(keys.link, 'view'), true)),
     warning: ignoredLink ? t('This link carries keys that do not match this document; it was opened with the access you already had.') : undefined,

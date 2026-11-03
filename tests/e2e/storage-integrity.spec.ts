@@ -131,6 +131,42 @@ test('live persistence rejects aborted writes and retries all retained changes',
   expect(result).toEqual({ rejected: true, warned: true, before: 0, after: { first: 'retained after failure', second: 'next change' } })
 })
 
+test('writes queued as a transaction completes are not stranded', async ({ page }) => {
+  const result = await run(page, async () => {
+    const { DocumentPersistence, storage, Y } = (window as any).fixture
+    const doc = new Y.Doc()
+    const persistence = new DocumentPersistence('ofimeo:flush-boundary', doc)
+    await persistence.whenSynced
+    const original = IDBObjectStore.prototype.add
+    let inject = true
+    let notify: () => void
+    const arrived = new Promise<void>((resolve) => { notify = resolve })
+    IDBObjectStore.prototype.add = function (...args: any[]) {
+      const request = original.apply(this, args as any)
+      if (this.transaction.db.name === persistence.name && inject) {
+        inject = false
+        this.transaction.addEventListener('complete', () => queueMicrotask(() => {
+          doc.getMap('data').set('later', 'also committed')
+          notify()
+        }))
+      }
+      return request
+    }
+    try {
+      doc.getMap('data').set('first', 'committed')
+      await arrived
+      const stored = new Y.Doc()
+      Y.applyUpdate(stored, await storage.readState(persistence.name))
+      return stored.getMap('data').toJSON()
+    } finally {
+      IDBObjectStore.prototype.add = original
+      await persistence.destroy()
+      doc.destroy()
+    }
+  })
+  expect(result).toEqual({ first: 'committed', later: 'also committed' })
+})
+
 test('initial persistence rejects a late transaction abort instead of reporting a saved copy', async ({ page }) => {
   const result = await run(page, async () => {
     const { DocumentPersistence, Y } = (window as any).fixture
@@ -343,6 +379,9 @@ test('live editor reports an IndexedDB abort and retries before reopening', asyn
   await editor.fill('Retained after an IndexedDB abort')
   await expect(page.locator('#storage-failure')).toContainText('could not be saved')
   await expect(editor).toContainText('Retained after an IndexedDB abort')
+  // A failed write must stay unsaved beyond the former timer-based indicator.
+  await page.waitForTimeout(750)
+  await expect(page.locator('.save-indicator')).toHaveClass(/\bsaving\b/)
   await page.evaluate(() => {
     ;(window as any).restoreStorage()
     const original = IDBObjectStore.prototype.add
@@ -355,6 +394,7 @@ test('live editor reports an IndexedDB abort and retries before reopening', asyn
   await editor.press('End')
   await page.keyboard.type(' and retried')
   await expect.poll(() => page.evaluate(() => !!(window as any).retryCommitted)).toBe(true)
+  await expect(page.locator('.save-indicator')).not.toHaveClass(/\bsaving\b/)
   await page.reload()
   await expect(editor).toContainText('Retained after an IndexedDB abort and retried')
   expect(errors).toEqual([])

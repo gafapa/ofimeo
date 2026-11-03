@@ -436,7 +436,7 @@ File ▸ Download as saves PNG or SVG pictures, or an .excalidraw file that you 
   },
   diagram: {
     title: 'Ofimeo Diagrams',
-    keywords: 'diagram flowchart concept map mind map uml network drawio visio shapes connectors organizer timeline',
+    keywords: 'gantt diagram flowchart concept map mind map uml network drawio visio shapes connectors organizer timeline',
     body: `Diagrams, flowcharts and concept maps, compatible with draw.io.
 
 - Drag shapes from the **shape panel** onto the canvas, or click one to insert it. The search box finds shapes by name.
@@ -446,6 +446,9 @@ File ▸ Download as saves PNG or SVG pictures, or an .excalidraw file that you 
 - **Arrange** has alignment, grouping and automatic layouts (tree, circle…).
 - **View ▸ More shapes…** adds libraries such as UML, networks, floor plans, electrical or BPMN.
 - A diagram can have several pages (tabs at the bottom).
+
+## Gantt project schedules
+Choose **Insert → Gantt chart** or the **Gantt chart** home template. Click task names to edit dates, duration, predecessors, responsible people and progress. A milestone has no duration. Dependencies adjust dates automatically; weekends count as calendar days. Drag bars to move them or their right edge to resize. Arrow keys move a focused bar; Shift+Arrow resizes it. Days, weeks and months are available. Save as .drawio to keep editable tasks in Ofimeo, or export PDF, PNG or SVG. View links cannot edit tasks.
 
 ## Files
 Opens and downloads draw.io (.drawio) files; opens Visio (.vsdx) drawings. Download PNG or SVG pictures, or print and save as PDF.

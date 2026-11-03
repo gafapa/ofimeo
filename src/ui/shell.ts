@@ -24,7 +24,7 @@ export function renderShell(app: AppInfo, root: HTMLElement): Shell {
           <a class="app-logo" href="${homePath()}">${app.letter}</a>
           <div class="title-block">
             <div class="title-row">
-              <input id="doc-title" class="doc-title" aria-label="${t('Title')}" spellcheck="false" />
+              <input id="doc-title" class="doc-title" aria-label="${t('Title')}" spellcheck="false" disabled />
               <span id="access-badge" class="access-badge" hidden></span>
               <span class="save-indicator"><span id="save-state" class="save-state"></span></span>
             </div>

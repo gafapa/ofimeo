@@ -52,7 +52,7 @@ Der Inhaber haftet nicht für Schäden aus der Nutzung der Anwendung, den Verlus
 
 ## 8. Geistiges Eigentum am Programm
 
-Das Programm, seine Gestaltung und seine Komponenten sind urheberrechtlich geschützt, wie im [Impressum und den rechtlichen Hinweisen](notice.md) und unter [Lizenzen von Drittanbieter-Software](../../THIRD_PARTY_NOTICES.md) angegeben.
+Das Programm, seine Gestaltung und seine Komponenten sind urheberrechtlich geschützt, wie im [Impressum und den rechtlichen Hinweisen](notice.md) und unter [Lizenzen von Drittanbieter-Software](../../../THIRD_PARTY_NOTICES.md) angegeben.
 
 ## 9. Änderung der Bedingungen
 
